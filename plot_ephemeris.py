@@ -12,51 +12,75 @@ ts = load.timescale(builtin=True)
 # Position of MWA site in Lat/Lon/Elevation
 MWA = Topos(latitude=-26.703319, longitude=116.670815, elevation_m=337.83)
 
-# open a Two Line Element (TLE) file
-with open('TLE/21576.txt', 'r') as f:
-    tle_list = [line.strip()
-                for line in f.read().split('\n') if line is not '']
 
-# List of satellite ephemeris from each set of TLE in the opened file
-# Epoch: Time at which TLE is most accurate (in JD - Julian Date)
-sats = []
-epochs = []
+def load_tle(tle_path):
+    '''Loads a tle file & returns list of sat objects and corresponding epochs''' 
+    
+    # open a Two Line Element (TLE) file
+    with open(tle_path, 'r') as f:
+        tle_list = [line.strip()
+                    for line in f.read().split('\n') if line is not '']
+    
+    # List of satellite ephemeris from each set of TLE in the opened file
+    # Epoch: Time at which TLE is most accurate (in JD - Julian Date)
+    sats = []
+    epochs = []
+    
+    for i in range(0, len(tle_list), 2):
+        sat = sf.sgp4lib.EarthSatellite(tle_list[i], tle_list[i+1])
+        epoch = sat.model.jdsatepoch
+        sats.append(sat)
+        epochs.append(epoch)
 
-for i in range(0, len(tle_list), 2):
-    sat = sf.sgp4lib.EarthSatellite(tle_list[i], tle_list[i+1])
-    epoch = sat.model.jdsatepoch
-    sats.append(sat)
-    epochs.append(epoch)
-
-# Midpoints between epochs of successive TLEs
-epochs = np.asarray(epochs)
-midpoints = (epochs[1:] + epochs[:-1]) / 2
-
-
-# Create time ranges in which TLEs are optimally accurate
-# for i in range(len(midpoints)):
-#    if i == 0:
-#        print(epochs[0], midpoints[0])
-#    elif i < range(len(midpoints))[-1]:
-#        print(midpoints[i-1], midpoints[i])
-#    else:
-#        print(midpoints[i], epochs[-1])
+    return (sats, epochs)
 
 
-# find time between epochs/ midpoints in seconds, using Astropy Time
-t1 = Time(epochs[0], format='jd').gps
-t2 = Time(epochs[2], format='jd').gps
-#t2 = Time(midpoints[0], format='jd').gps
-dt = round(t1 - t2)
+sats, epochs = load_tle('TLE/21576.txt')
 
-# Create a time array, every 20 seconds, starting at the first epoch, approximately
-seconds = range(dt)
-t = ts.utc(2019, 10, 28, 13, 00, seconds[::20])
+def epoch_ranges(epochs):
+    '''Creates a time array with intervals corresponding to 
+    epochs of best accuracy from the TLE file
+    '''
+    
+    # Midpoints between epochs of successive TLEs
+    epoch_list = np.asarray(epochs)
+    midpoints = list((epoch_list[1:] + epoch_list[:-1]) / 2)
+    epoch_range = [epochs[0]] + midpoints + [epochs[-1]]
+
+    return epoch_range
+
+epoch_range = epoch_ranges(epochs)
+
+
+def epoch_time_array(index_epoch, t_step):
+    '''Create a skyfield time object [time vector] at which
+    the sat position will be determined.
+    '''
+
+    # find time between epochs/ midpoints in seconds, using Astropy Time
+    t1 = Time(epoch_range[index_epoch], format='jd').gps
+    t2 = Time(epoch_range[index_epoch+1], format='jd').gps
+    dt = round(t1 - t2)
+    
+    t3 = Time(epoch_range[index_epoch], format='jd').iso
+    date, time = t3.split()
+    year, month, day = date.split('-')
+    hour, minute,_ = time.split(':')
+    
+    # Create a time array, every 20 seconds, starting at the first epoch, approximately
+    seconds = range(dt)
+    t_arr = ts.utc(int(year), int(month), int(day), int(hour), int(minute), seconds[::t_step])
+
+    return t_arr
+
+t_arr = epoch_time_array(2, 20)
+#TODO: What happens if the sat hasn't set in the time interval?
+#TODO: Reshape into pairs doesn't work
 
 # Define Satellite to be the first one in sats list
 # Find possition of sat at each timestep of time array
 satellite = sats[0]
-orbit = (satellite - MWA).at(t)
+orbit = (satellite - MWA).at(t_arr)
 alt, az, distance = orbit.altaz()
 
 # Check if sat is above the horizon, return boolean array
@@ -75,13 +99,14 @@ passes = boundaries.reshape(len(boundaries) // 2, 2)
 
 
 def plot_sat(pass_indices):
+    '''Plots a satellite pass on a polar alt/az map'''
     i, j = pass_indices
 
     # Set up the polar plot.
     plt.style.use('seaborn')
     ax = plt.subplot(111, polar=True)
     ax.set_ylim(90, 0)
-    ax.set_rgrids([0,30,60,90], angle=0)
+    ax.set_rgrids([0,30,60,90], angle=22)
     #ax.set_xticklabels(['N', '', 'E', '', 'S', '', 'W', ''])
     ax.set_theta_zero_location('N')
     ax.set_theta_direction(-1)
@@ -95,4 +120,4 @@ def plot_sat(pass_indices):
     plt.show()
 
 
-plot_sat(passes[1])
+plot_sat(passes[0])
