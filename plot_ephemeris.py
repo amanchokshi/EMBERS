@@ -121,7 +121,7 @@ def plot_sat(pass_indices):
     # Draw line and labels.
     θ = az.radians
     r = alt.degrees
-    ax.plot(θ[i:j+1], r[i:j+1], '-', linewidth=6, alpha=0.6, c='#1fab89')
+    ax.plot(θ[i:j+1], r[i:j+1], '-', linewidth=2, alpha=0.6, c='#1fab89')
     
     plt.tight_layout()
     #plt.show()
@@ -130,14 +130,17 @@ def plot_sat(pass_indices):
 
 sats, epochs = load_tle('TLE/21576.txt')
 epoch_range = epoch_ranges(epochs)
-t_arr, index_epoch = epoch_time_array(2, 20)
-passes, alt, az = sat_pass(t_arr, index_epoch)
+print(len(epoch_range))
+for i in range(len(epoch_range)-1):
+
+    t_arr, index_epoch = epoch_time_array(i, 20)
+    passes, alt, az = sat_pass(t_arr, index_epoch)
 
 
-for i in range(len(passes)):
-    if len(passes) == 0:
-        print('No Satellite Passes')
-    else:
-        plot_sat(passes[i])
-
+    for i in range(len(passes)):
+        if len(passes) == 0:
+            print('No Satellite Passes')
+        else:
+            plot_sat(passes[i])
+    
 plt.show()
