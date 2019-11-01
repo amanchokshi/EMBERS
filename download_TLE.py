@@ -99,13 +99,13 @@ norad_ids = {
         }
 
 #make a TLE directory
-os.mkdir('./TLE')
+os.mkdir('./outputs/TLE')
 
 for sat_name, n_id in norad_ids.items():
     data = st.tle(iter_lines=True, norad_cat_id=n_id, orderby='epoch desc', epoch='{}--{}'.format(start_date,stop_date), format='tle')
     print('downloading tle for {} satellite [{}] from space-tracks.org'.format(sat_name,n_id))
     #Sleep to limit downloads to 20 TLEs per minute
     time.sleep(3)
-    with open('TLE/{}.txt'.format(n_id), 'w') as fp:
+    with open('./outputs/TLE/{}.txt'.format(n_id), 'w') as fp:
         for line in data:
             fp.write(line + '\n')
