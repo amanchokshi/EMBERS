@@ -65,7 +65,7 @@ def epoch_ranges(epochs):
     return epoch_range
 
 
-def epoch_time_array(index_epoch, t_step):
+def epoch_time_array(index_epoch, epoch_range, t_step):
     '''Create a time array.
     
     Skyfield time object [time vector] at which
@@ -74,6 +74,7 @@ def epoch_time_array(index_epoch, t_step):
     Args:
         index_epoch: Index of epoch range to be converted to time array
         t_step: Cadence of time array
+        epoch_range: List of times, between which TLE is most accurate
 
     Returns:
         t_arr: Skyfield time object
@@ -212,7 +213,7 @@ if __name__ == '__main__':
     sats, epochs = load_tle(tle_path)
     epoch_range = epoch_ranges(epochs)
     for i in range(len(epoch_range) - 1):   
-        t_arr, index_epoch = epoch_time_array(i, cadence)
+        t_arr, index_epoch = epoch_time_array(i, epoch_range, cadence)
         passes, alt, az = sat_pass(sats, t_arr, index_epoch) 
         for pass_index in passes:
             t_rise, t_set, sat_alt, sat_az = ephem_data(t_arr, pass_index, alt, az)
