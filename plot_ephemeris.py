@@ -3,7 +3,6 @@ import argparse
 import matplotlib
 matplotlib.use
 import matplotlib.pyplot as plt
-plt.style.use('ggplot')
 
 parser = argparse.ArgumentParser(description=""" 
         Plot Satellite passes from json ephemeris files.
@@ -21,7 +20,8 @@ def sat_plot(alt, az):
     ax.set_rgrids([0,10,20,30,40,50,60,70,80,90], angle=22)
     ax.set_theta_zero_location('N')
     ax.set_theta_direction(-1)
-    ax.plot(az, alt, '-', linewidth=1, alpha=0.3, c='#1fab89')
+    ax.grid(color='darkslategrey', alpha=0.3)
+    ax.plot(az, alt, '-', linewidth=1, alpha=0.4, c='seagreen') #1fab89
     plt.tight_layout()
     plt.show()        
 
