@@ -88,7 +88,7 @@ norad_ids = {
         'ORBCOMM FM 16 DEB 4': 44022,
         'ORBCOMM FM 16 DEB 5': 44023,
         'ORBCOMM FM 16 DEB 6': 44024,
-        'ORBCOMM FM 16 DEB 7': 44025,
+        # 'ORBCOMM FM 16 DEB 7': 44025, [NO CURRENT TLEs FOUND!]
         'ORBCOMM FM 16 DEB 8': 44026,
         'ORBCOMM FM 16 DEB 9': 44027,
         'ORBCOMM FM 16 DEB 10': 44028,
@@ -96,10 +96,10 @@ norad_ids = {
         'NOAA 15': 25338,
         'Meteor M2': 40069,
         'Meteor M2-2': 44387
-        }
+       }
 
 #make a TLE directory
-os.mkdir('./outputs/TLE')
+os.makedirs(os.path.dirname('./outputs/TLE'), exist_ok=True)
 
 for sat_name, n_id in norad_ids.items():
     data = st.tle(iter_lines=True, norad_cat_id=n_id, orderby='epoch desc', epoch='{}--{}'.format(start_date,stop_date), format='tle')
