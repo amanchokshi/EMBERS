@@ -101,7 +101,7 @@ if os.environ.get('ST_USER') != None:
            }
     
     #make a TLE directory
-    os.makedirs(os.path.dirname('./outputs/TLE'), exist_ok=True)
+    os.makedirs(os.path.dirname('./outputs/TLE/'), exist_ok=True)
     
     for sat_name, n_id in norad_ids.items():
         data = st.tle(iter_lines=True, norad_cat_id=n_id, orderby='epoch desc', epoch='{}--{}'.format(start_date,stop_date), format='tle')
