@@ -13,7 +13,18 @@ parser.add_argument('--sat', metavar='\b', help='Norad cat ID of satellite. Ex:2
 args = parser.parse_args()
 sat_num = args.sat
 
+# Create output directory
+os.makedirs(os.path.dirname('./outputs/ephem_plots/'), exist_ok=True) 
+
+
 def sat_plot(alt, az, num_passes):
+    '''Plots satellite passes
+    
+    Args:
+        alt: list of altitude values
+        az: list of azimuth values
+        num_passes: Number of satellite passes
+    '''
     # Set up the polar plot.
     plt.figure(figsize=(6,6))
     plt.style.use('seaborn')
@@ -40,7 +51,8 @@ with open('./outputs/ephem_json/{}.json'.format(sat_num), 'r') as ephem:
         altitude.extend(alt)
     for az in sat_ephem['sat_az']:
         azimuth.extend(az)
-    os.makedirs(os.path.dirname('./outputs/ephem_plots/'), exist_ok=True) 
+    
+    
     sat_plot(altitude, azimuth, num_passes)
 
         
