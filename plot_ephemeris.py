@@ -35,8 +35,6 @@ def load_tle(tle_path):
     return (sats, epochs)
 
 
-sats, epochs = load_tle('TLE/21576.txt')
-
 def epoch_ranges(epochs):
     '''Creates a time array with intervals corresponding to 
     epochs of best accuracy from the TLE file
@@ -48,8 +46,6 @@ def epoch_ranges(epochs):
     epoch_range = [epochs[0]] + midpoints + [epochs[-1]]
 
     return epoch_range
-
-epoch_range = epoch_ranges(epochs)
 
 
 def epoch_time_array(index_epoch, t_step):
@@ -71,31 +67,42 @@ def epoch_time_array(index_epoch, t_step):
     seconds = range(dt)
     t_arr = ts.utc(int(year), int(month), int(day), int(hour), int(minute), seconds[::t_step])
 
-    return t_arr
+    return (t_arr, index_epoch)
 
-t_arr = epoch_time_array(2, 20)
-#TODO: What happens if the sat hasn't set in the time interval?
-#TODO: Reshape into pairs doesn't work
 
-# Define Satellite to be the first one in sats list
-# Find possition of sat at each timestep of time array
-satellite = sats[0]
-orbit = (satellite - MWA).at(t_arr)
-alt, az, distance = orbit.altaz()
 
-# Check if sat is above the horizon, return boolean array
-above_horizon = alt.degrees >= 0
+def sat_pass(t_arr, index_epoch):
+    '''Calculates alt/az of sat at every position instant of time array (t_arr).
+    Finds all the times that the sat is above the horizon, and returns the index
+    t_arr at which the sat rose and set.'''
 
-# Indicies of rare times that sats are above the horizon
-indicies, = above_horizon.nonzero()
+    # Define Satellite to be the first one in sats list
+    # Find possition of sat at each timestep of time array
+    satellite = sats[index_epoch]
+    orbit = (satellite - MWA).at(t_arr)
+    alt, az, _ = orbit.altaz()
+    
+    # Check if sat is above the horizon, return boolean array
+    above_horizon = alt.degrees >= 0
+    
+    # Indicies of rare times that sats are above the horizon
+    indicies, = above_horizon.nonzero()
+    
+    # Boundary times at which the sat either rises or sets
+    boundaries, = np.diff(above_horizon).nonzero()
+    
+    if above_horizon[0] == True:
+        boundaries = [indicies[0]]+ list(boundaries)
+        boundaries = np.asarray(boundaries)
+    
+    if above_horizon[-1] == True:
+        boundaries = list(boundaries) + [indicies[-1]]
+        boundaries = np.asarray(boundaries)
+    
+    # Reshape into pairs rise & set indicies
+    passes = boundaries.reshape(len(boundaries) // 2, 2)
 
-# Boundary times at which the sat either rises or sets
-boundaries, = np.diff(above_horizon).nonzero()
-# print(boundaries)
-
-# Reshape into pairs rise & set indicies
-passes = boundaries.reshape(len(boundaries) // 2, 2)
-#print(passes)
+    return (passes, alt, az)
 
 
 def plot_sat(pass_indices):
@@ -117,7 +124,20 @@ def plot_sat(pass_indices):
     ax.plot(θ[i:j+1], r[i:j+1], '-', linewidth=6, alpha=0.6, c='#1fab89')
     
     plt.tight_layout()
-    plt.show()
+    #plt.show()
 
 
-plot_sat(passes[0])
+
+sats, epochs = load_tle('TLE/21576.txt')
+epoch_range = epoch_ranges(epochs)
+t_arr, index_epoch = epoch_time_array(2, 20)
+passes, alt, az = sat_pass(t_arr, index_epoch)
+
+
+for i in range(len(passes)):
+    if len(passes) == 0:
+        print('No Satellite Passes')
+    else:
+        plot_sat(passes[i])
+
+plt.show()
