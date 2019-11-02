@@ -41,6 +41,9 @@ def load_tle(tle_path):
         sats.append(sat)
         epochs.append(epoch)
 
+    sats = np.asarray(sats)
+    epochs = np.asarray(epochs)
+
     return (sats, epochs)
 
 
@@ -61,11 +64,12 @@ def epoch_ranges(epochs):
     epoch_list = np.asarray(epochs)
     midpoints = list((epoch_list[1:] + epoch_list[:-1]) / 2)
     epoch_range = [epochs[0]] + midpoints + [epochs[-1]]
-
+    epoch_list = np.asarray(epoch_range)
+    
     return epoch_range
 
 
-def epoch_time_array(index_epoch, epoch_range, t_step):
+def epoch_time_array(index_epoch, cadence):
     '''Create a time array.
     
     Skyfield time object [time vector] at which
@@ -92,8 +96,8 @@ def epoch_time_array(index_epoch, epoch_range, t_step):
     hour, minute,_ = time.split(':')
     
     # Create a time array, every 20 seconds, starting at the first epoch, approximately
-    seconds = range(dt)
-    t_arr = ts.utc(int(year), int(month), int(day), int(hour), int(minute), seconds[::t_step])
+    seconds = np.arange(0,dt,cadence)
+    t_arr = ts.utc(int(year), int(month), int(day), int(hour), int(minute), seconds)
 
     return (t_arr, index_epoch)
 
@@ -197,7 +201,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     sat_name = args.sat
     tle_dir = args.tle
-    cadence = args.cadence
+    cadence = int(args.cadence)
     
     tle_path = '{}/{}.txt'.format(tle_dir, sat_name)
     
@@ -211,10 +215,12 @@ if __name__ == '__main__':
     sat_ephem['sat_az'] = []
     
     sats, epochs = load_tle(tle_path)
+ #   print(sats)
     epoch_range = epoch_ranges(epochs)
     for i in range(len(epoch_range) - 1):   
-        t_arr, index_epoch = epoch_time_array(i, epoch_range, cadence)
+        t_arr, index_epoch = epoch_time_array(i, cadence)
         passes, alt, az = sat_pass(sats, t_arr, index_epoch) 
+#        print(passes)
         for pass_index in passes:
             t_rise, t_set, sat_alt, sat_az = ephem_data(t_arr, pass_index, alt, az)
     
