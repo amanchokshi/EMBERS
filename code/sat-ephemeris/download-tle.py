@@ -15,10 +15,13 @@ if os.environ.get('ST_USER') != None:
     parser = argparse.ArgumentParser(description="""Downloads TLE files for the Beam Experiment from Space-tracks.org.""")
     parser.add_argument('--start_date', metavar='\b', help='Start date in format YYYY-MM-DD')
     parser.add_argument('--stop_date', metavar='\b', help='Stop date in format YYYY-MM-DD')
-    
+    parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/TLE/', help='Path to output directory. Default=./../../outputs/TLE/')
+
     args = parser.parse_args()
+
     start_date = args.start_date
     stop_date = args.stop_date
+    out_dir = args.out_dir
     
     # Dictionary of Satellite names and NORAD_CAT_ID. 
     # These are the active ORBCOMM, NOAA and METEOR Satellites as of October 2019.
@@ -101,14 +104,14 @@ if os.environ.get('ST_USER') != None:
            }
     
     #make a TLE directory
-    os.makedirs(os.path.dirname('./outputs/TLE/'), exist_ok=True)
+    os.makedirs(os.path.dirname(out_dir), exist_ok=True)
     
-    for sat_name, n_id in norad_ids.items():
-        data = st.tle(iter_lines=True, norad_cat_id=n_id, orderby='epoch desc', epoch='{}--{}'.format(start_date,stop_date), format='tle')
-        print('downloading tle for {} satellite [{}] from space-tracks.org'.format(sat_name,n_id))
+    for sat_name, sat_id in norad_ids.items():
+        data = st.tle(iter_lines=True, norad_cat_id=sat_id, orderby='epoch desc', epoch='{}--{}'.format(start_date,stop_date), format='tle')
+        print('downloading tle for {} satellite [{}] from space-tracks.org'.format(sat_name,sat_id))
         #Sleep to limit downloads to 20 TLEs per minute
         time.sleep(3)
-        with open('./outputs/TLE/{}.txt'.format(n_id), 'w') as fp:
+        with open('{}/{}.txt'.format(out_dir,sat_id), 'w') as fp:
             for line in data:
                 fp.write(line + '\n')
     
