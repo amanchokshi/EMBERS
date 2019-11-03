@@ -181,6 +181,36 @@ def ephem_data(t_arr, pass_index, alt, az):
     return (t_rise, t_set, sat_alt, sat_az)
 
 
+def sat_plot(sat_num, alt, az, num_passes):
+    '''Plots satellite passes
+    
+    Args:
+        alt: list of altitude values
+        az: list of azimuth values
+        num_passes: Number of satellite passes
+    '''
+    
+    import matplotlib.pyplot as plt
+    
+    # Set up the polar plot.
+    plt.style.use('seaborn')
+    figure = plt.figure(figsize=(6,6))
+    ax = figure.add_subplot(111, polar=True)
+    ax.set_ylim(90, 0)
+    ax.set_rgrids([0,10,20,30,40,50,60,70,80,90], angle=22)
+    ax.set_theta_zero_location('N')
+    ax.set_theta_direction(-1)
+    ax.set_title('Satellite {} Sky Coverage: {} Passes'.format(sat_num,num_passes), y=1.08)
+    ax.grid(color='#071011', linewidth=1.4, alpha=0.4)
+    plt.tight_layout()
+    
+    for i in range(len(alt)):
+        plt.plot(az[i], alt[i], '-', linewidth=1.4, alpha=0.4, color='#458323') #1fab89
+    
+    # Return plot for saving, showing, etc
+    return plt
+
+
 if __name__ == '__main__':
     
     import os
