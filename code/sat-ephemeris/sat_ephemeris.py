@@ -227,16 +227,19 @@ if __name__ == '__main__':
     parser.add_argument('--sat', metavar='\b', help='The Norad cat ID of satellite. Example: 21576')
     parser.add_argument('--tle', metavar='\b', default='./outputs/TLE', help='Directory where TLE files are saved. Default=./outputs/TLE')
     parser.add_argument('--cadence', metavar='\b', default=20, help='Rate at which sat alt/az is computed. Expensive! Default=20s')
+    parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/ephem_json/', help='Path to output directory. Default=./../../outputs/ephem_json/')
+
     
     args = parser.parse_args()
     sat_name = args.sat
     tle_dir = args.tle
     cadence = int(args.cadence)
+    out_dir = args.out_dir
     
     tle_path = '{}/{}.txt'.format(tle_dir, sat_name)
     
     
-    os.makedirs(os.path.dirname('./outputs/ephem_json/'), exist_ok=True)
+    os.makedirs(os.path.dirname(out_dir), exist_ok=True)
     
     sat_ephem = {}
     sat_ephem['t_rise'] = []
@@ -259,7 +262,7 @@ if __name__ == '__main__':
             sat_ephem['sat_alt'].append(sat_alt)
             sat_ephem['sat_az'].append(sat_az)
     
-    with open('./outputs/ephem_json/{}.json'.format(sat_name), 'w') as outfile:
+    with open('{}/{}.json'.format(out_dir,sat_name), 'w') as outfile:
         json.dump(sat_ephem, outfile)    
 
 
