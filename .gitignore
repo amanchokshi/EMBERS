@@ -3,3 +3,4 @@
 .DS_Store
 *__pycache__*
 code/sat-ephemeris/problem_sats.txt
+venv/
