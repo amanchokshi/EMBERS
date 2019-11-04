@@ -17,6 +17,7 @@ conda deactivate
 
 When running code in this repository, ensure that `sat-env`is active.
 
+&nbsp;
 
 ### Satellite Ephemeris  
 
@@ -57,7 +58,6 @@ python plot_ephemeris.py --help
 
 python plot_ephemeris.py --sat=XXXXX
 ```
-&nbsp;
 &nbsp;
 
 <p float="left">
