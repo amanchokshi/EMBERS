@@ -190,9 +190,9 @@ def sat_plot(sat_id, alt, az, num_passes):
         num_passes: Number of satellite passes
     '''
     
-    #import matplotlib
+    import matplotlib
     # Force matplotlib to not use X-Server backend
-    #matplotlib.use('Agg')
+    matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     
     # Set up the polar plot.
