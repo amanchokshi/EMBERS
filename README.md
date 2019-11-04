@@ -43,11 +43,30 @@ The MWA Satellite experiment is situated in remote Western Australia, at the Mur
 ```
 python sat_ephemeris.py --help
 
-python sat_ephemeris.py --sat=XXXXXX --cadence=20 
+python sat_ephemeris.py --sat=XXXXX --cadence=20 
 ```
 This produces a rise time `t_rise`, set time `t_set`, in gps seconds, for each satellite pass. It also produces a corresponding list of altitudes and azimuths for each pass. These are saved to a json file, to be used later.
 
 
+#### 3. Plot Ephemeris
+
+Using the json files created in the previous section, we can now plot satellite passes. This will give us an idea of sky coverage, and how much integration is required to build up a complete beam map.
+
+```
+python plot_ephemeris.py --help
+
+python plot_ephemeris.py --sat=XXXXX
+```
+&nbsp;
+&nbsp;
+
+<p float="left">
+  <img src="./documentation/21576.png" width="400" />
+  <img src="./documentation/23545.png" width="400" /> 
+</p>
 
 
-
+<p float="left">
+  <img src="./documentation/25981.png" width="400" />
+  <img src="./documentation/25982.png" width="400" /> 
+</p>
