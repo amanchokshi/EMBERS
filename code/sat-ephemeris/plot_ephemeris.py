@@ -28,8 +28,8 @@ with open('{}/{}.json'.format(json_dir,sat_id), 'r') as ephem:
     num_passes = len(sat_ephem['t_rise'])
     
     plt = sat_plot(sat_id, altitude, azimuth, num_passes)
-    plt.savefig('{}/{}'.format(out_dir,sat_id))
-    # plt.show()
+    #plt.savefig('{}/{}'.format(out_dir,sat_id))
+    plt.show()
 
 
 
