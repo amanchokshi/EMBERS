@@ -7,7 +7,7 @@ while read p; do
 done <sat_list.txt
 
 # 8 Jobs in Parallel
-parallel --jobs 14 < parallel_ephem.txt
+parallel --jobs 35 < parallel_ephem.txt
 
 rm parallel_ephem.txt
 rm sat_list.txt
