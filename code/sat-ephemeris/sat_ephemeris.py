@@ -172,10 +172,10 @@ def ephem_data(t_arr, pass_index, alt, az):
     t_rise = Time(t_arr[i].tt, format='jd').gps
     t_set = Time(t_arr[j].tt, format='jd').gps
 
-    θ = list(az.radians)
+    theta = list(az.radians)
     r = list(alt.degrees)
 
-    sat_az = θ[i:j+1]
+    sat_az = theta[i:j+1]
     sat_alt = r[i:j+1]
     
     return (t_rise, t_set, sat_alt, sat_az)
@@ -190,6 +190,9 @@ def sat_plot(sat_id, alt, az, num_passes):
         num_passes: Number of satellite passes
     '''
     
+    #import matplotlib
+    # Force matplotlib to not use X-Server backend
+    #matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     
     # Set up the polar plot.
@@ -210,7 +213,6 @@ def sat_plot(sat_id, alt, az, num_passes):
     # Return plot for saving, showing, etc
     return plt
 
-
 if __name__ == '__main__':
     
     import os
@@ -225,7 +227,7 @@ if __name__ == '__main__':
             """)
             
     parser.add_argument('--sat', metavar='\b', help='The Norad cat ID of satellite. Example: 21576')
-    parser.add_argument('--tle_dir', metavar='\b', default='./outputs/TLE', help='Directory where TLE files are saved. Default=./outputs/TLE')
+    parser.add_argument('--tle_dir', metavar='\b', default='./../../outputs/TLE', help='Directory where TLE files are saved. Default=./../../outputs/TLE')
     parser.add_argument('--cadence', metavar='\b', default=20, help='Rate at which sat alt/az is computed. Expensive! Default=20s')
     parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/ephem_json/', help='Path to output directory. Default=./../../outputs/ephem_json/')
 
