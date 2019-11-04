@@ -17,7 +17,7 @@ for file in os.listdir('./../../outputs/ephem_json'):
             alt.extend(sat_ephem['sat_alt'])
             t_set.extend(sat_ephem['t_set'])
             t_rise.extend(sat_ephem['t_rise'])
-            sat_id.extend([sat_ephem['sat_id'][0] for i in range(len(t_rise))])
+            sat_id.extend([sat_ephem['sat_id'][0] for i in range(len(sat_ephem['t_rise']))])
     
 print(len(sat_id))    
 print(len(t_set))
