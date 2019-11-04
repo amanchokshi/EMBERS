@@ -244,6 +244,7 @@ if __name__ == '__main__':
     os.makedirs(os.path.dirname(out_dir), exist_ok=True)
     
     sat_ephem = {}
+    sat_ephem['sat_id'] = [sat_name]
     sat_ephem['t_rise'] = []
     sat_ephem['t_set'] = []
     sat_ephem['sat_alt'] = []
