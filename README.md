@@ -81,3 +81,50 @@ python chrono_ephem.py --help
 
 python chrono_ephem.py
 ```
+
+### Beam Pointings
+
+The MWA Telescope points its beam in different directions by giving each of its 16 dipoles a different delay. These pointings are quantised, with 181 discrete pointings available, each of which is given a unique 'Grid-pointing' number.  
+
+It is important to know where the telescope is pointing at all times, because we will be making individual beam maps for each pointing. This metadata is available at [http://ws.mwatelescope.org](http://ws.mwatelescope.org/metadata/find). Metadata form the MWA telescope can be downloaded by following these steps.
+
+```
+cd ./code/beam-pointings/
+```
+
+let us download date between `2019-09-11 00:00:00` and `2019-11-02 00:00:00`. 
+First, we need to convert these dates to gps-seconds.
+
+```
+python date-gps.py --date='2019-09-11 00:00:00'
+gps: 1252195218
+
+python date-gps.py --date='2019-11-02 00:00:00'
+gps: 1256688018
+```
+
+Next, open [http://ws.mwatelescope.org](http://ws.mwatelescope.org/metadata/find). Enter the start and stop time. Also change the page size to 200. Leave all the other fields un-checked, as shown below. Finally, click `search`.
+
+
+
+<p float="left">
+  <img src="./documentation/metadata-1.jpg" width="1200" />
+</p>
+
+The important thing to note is the number of pages that are returned by the search. In this particular case it is 74.
+
+<p float="left">
+  <img src="./documentation/metadata-2.jpg" width="700" />
+</p>
+
+Using this information we can download the required metadata using `download-pointings.sh`. The site limits queries to approximately 200 per minute, which is why these steps were necessary.
+
+```
+source download_pointings.sh 74 1252195218 1256688018
+```
+
+The results of each page are downloaded to a json file in the `./../../ouputs/beam-pointings/` directory. The download script sleeps for 66s between each download, so as not to overload the MWA data servers.
+
+
+
+
