@@ -1,7 +1,6 @@
 import os
 import json
 import argparse
-import numpy as np
 
 parser = argparse.ArgumentParser(description="""
         Collates satellite pass data from all ephem json files.
