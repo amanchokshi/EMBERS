@@ -1,7 +1,18 @@
 import os
 import json
+import argparse
 import numpy as np
-from sat_ephemeris import sat_plot
+
+parser = argparse.ArgumentParser(description="""
+        Collates satellite pass data from all ephem json files.
+        Sorts the data based on rise time and saves it to a new
+        file - ultimate_ephem_list.json
+        """)
+
+parser.add_argument('--json_dir', metavar='\b', default='./../../outputs/ephem_json/', help='Directory where ephem json files live. Default=./../../outfile/ephem_json/')
+
+args = parser.parse_args()
+json_dir = args.json_dir
 
 sat_id = []
 t_rise = []
@@ -9,9 +20,9 @@ t_set = []
 alt = []
 az = []
 
-for file in os.listdir('./../../outputs/ephem_json'):
+for file in os.listdir(json_dir):
     if file.endswith('.json'):
-        f_path = os.path.join('./../../outputs/ephem_json', file)
+        f_path = os.path.join(json_dir, file)
 
         with open(f_path) as ephem:
             sat_ephem = json.load(ephem)
@@ -33,7 +44,7 @@ chrono_ephem['sat_alt'] = list(alt)
 chrono_ephem['sat_az'] = list(az)
 
 
-with open('./../../outputs/ephem_json/ultimate_ephem_list.json', 'w') as outfile:
+with open('{}/ultimate_ephem_list.json'.format(json_dir), 'w') as outfile:
     json.dump(chrono_ephem, outfile)
 
 
