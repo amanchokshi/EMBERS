@@ -70,3 +70,14 @@ python plot_ephemeris.py --sat=XXXXX
   <img src="./documentation/25981.png" width="400" />
   <img src="./documentation/25982.png" width="400" /> 
 </p>
+
+
+#### 4. Chronological Ephemeris
+
+In later stages of this pipeline, we will need satellite ephemeris in chronological order. `chrono_ephem.py` collates data in all the json files produced by `sat_ephemeris.py`. Satellite passes are sorted by rise time, and saved to a new file `ultimate_ephem_list.json`.
+
+```
+python chrono_ephem.py --help
+
+python chrono_ephem.py
+```
