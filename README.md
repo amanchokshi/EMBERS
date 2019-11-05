@@ -117,7 +117,7 @@ The important thing to note is the number of pages that are returned by the sear
   <img src="./documentation/metadata-2.jpg" width="700" />
 </p>
 
-Using this information we can download the required metadata using `download-pointings.sh`. The site limits queries to approximately 200 per minute, which is why these steps were necessary.
+Using this information we can download the required metadata using `download_pointings.sh`. The site limits queries to approximately 200 per minute, which is why these steps were necessary.
 
 ```
 source download_pointings.sh 74 1252195218 1256688018
