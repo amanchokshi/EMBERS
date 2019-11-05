@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser(description="""
         file - ultimate_ephem_list.json
         """)
 
-parser.add_argument('--json_dir', metavar='\b', default='./../../outputs/sat-ephemeris/ephem_json/', help='Directory where ephem json files live. Default=./../../outfile/sat-ephemeris/ephem_json/')
+parser.add_argument('--json_dir', metavar='\b', default='./../../outputs/sat-ephemeris/ephem_json/', help='Directory where ephem json files live. Default=./../../outputs/sat-ephemeris/ephem_json/')
 
 args = parser.parse_args()
 json_dir = args.json_dir
