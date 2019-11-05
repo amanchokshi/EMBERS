@@ -9,8 +9,8 @@ parser = argparse.ArgumentParser(description="""
         """)
 
 parser.add_argument('--sat', metavar='\b', help='Norad cat ID of satellite. Ex:23545')
-parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/ephem_plots/', help='Path to output directory. Default=./../../outputs/ephem_plots/')
-parser.add_argument('--json_dir', metavar='\b', default='./../../outputs/ephem_json/', help='Path to ephem_json directory. Default=./../../outputs/ephem_json/')
+parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/sat-ephemeris/ephem_plots/', help='Path to output directory. Default=./../../outputs/sat-ephemeris/ephem_plots/')
+parser.add_argument('--json_dir', metavar='\b', default='./../../outputs/sat-ephemeris/phem_json/', help='Path to ephem_json directory. Default=./../../outputs/sat-ephemeris/ephem_json/')
 
 args = parser.parse_args()
 sat_id = args.sat
