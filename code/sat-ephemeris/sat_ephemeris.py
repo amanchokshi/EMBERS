@@ -181,7 +181,7 @@ def ephem_data(t_arr, pass_index, alt, az):
     return (t_rise, t_set, sat_alt, sat_az)
 
 
-def sat_plot(sat_id, alt, az, num_passes):
+def sat_plot(sat_id, alt, az, num_passes, alpha=0.4):
     '''Plots satellite passes
     
     Args:
@@ -204,7 +204,7 @@ def sat_plot(sat_id, alt, az, num_passes):
     ax.set_theta_zero_location('N')
     ax.set_theta_direction(-1)
     ax.set_title('Satellite {} Sky Coverage: {} Passes'.format(sat_id,num_passes), y=1.08)
-    ax.grid(color='#071011', linewidth=1.4, alpha=0.4)
+    ax.grid(color='#071011', linewidth=1.4, alpha=alpha)
     plt.tight_layout()
     
     for i in range(len(alt)):
