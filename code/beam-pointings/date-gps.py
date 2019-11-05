@@ -10,6 +10,6 @@ parser.add_argument('--date', metavar='\b', help='Date-time to be converted to g
 args = parser.parse_args()
 date = args.date
 
-print(Time(date, format='iso').gps)
+print('gps: {}'.format(int(Time(date, format='iso').gps)))
 
 
