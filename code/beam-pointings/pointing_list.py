@@ -85,6 +85,7 @@ for i in range(len(p_change)):
         grid_pt.append(pointings[p_change[i]])
         t_length.append(sum(obs_length[p_change[i]:p_change[i+1]]))
 
+# Because of weird problem with int64 and json
 t_length = (np.asarray(t_length)).tolist()
 
 # Create dictionary to be saved to json
@@ -95,5 +96,5 @@ pointing_list['stop_gps'] = t_stop
 pointing_list['obs_length'] = t_length
 
 
-with open('pointing_list.json', 'w') as outfile:
+with open('{}/ultimate_pointing_times.json'.format(meta_dir), 'w') as outfile:
     json.dump(pointing_list, outfile)
