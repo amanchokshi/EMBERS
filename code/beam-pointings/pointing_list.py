@@ -62,9 +62,38 @@ start_gps = start_gps[:-1]
 # Find the index of pointings, where pointings change
 p_change = [i for i in range(1,len(pointings)) if pointings[i]!=pointings[i-1]]
 
+# Add 0 to the beginning and the lenght to the end, to have an inclusive list
+p_change.insert(0, 0)
+p_change.append(len(pointings))
 
-#pointing_list = {}
-#pointing_list['start_gps'] = []
-#pointing_list['stop_gps'] = []
-#pointing_list['pointing'] = []
+# This section is a bit confusing.
+# We have multiple consecutive observations at the same pointing.
+# This code extracts the beginning of a pointing block == t_start
+# The ending of pointing block == t_stop
+# The total integration over the block == t_length
+# The gridpointing number of the block
+# all of these data points are added to lists, whose index corresponds to pointing blocks
 
+t_start = []
+t_stop = []
+t_length = []
+grid_pt = []
+for i in range(len(p_change)):
+    if i+1 < len(p_change):
+        t_start.append(start_gps[p_change[i]])
+        t_stop.append(stop_gps[p_change[i+1] - 1 ])
+        grid_pt.append(pointings[p_change[i]])
+        t_length.append(sum(obs_length[p_change[i]:p_change[i+1]]))
+
+t_length = (np.asarray(t_length)).tolist()
+
+# Create dictionary to be saved to json
+pointing_list = {}
+pointing_list['grid_pt'] = grid_pt
+pointing_list['start_gps'] = t_start
+pointing_list['stop_gps'] = t_stop
+pointing_list['obs_length'] = t_length
+
+
+with open('pointing_list.json', 'w') as outfile:
+    json.dump(pointing_list, outfile)
