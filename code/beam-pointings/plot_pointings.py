@@ -1,7 +1,11 @@
 import json
 import argparse
 import numpy as np
-
+#import matplotlib
+## Force matplotlib to not use X-Server backend
+#matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+    
 
 parser = argparse.ArgumentParser(description="""
         Reads ultimate_pointing_times.json, and plots
@@ -40,11 +44,12 @@ for i in unique_pointings:
         if i == grid_pt[j]:
             time = time + obs_length[j]
     integrations.append(time)       
-            
-        
 
 
-for i in range(len(pointings)):
-    print(pointings[i], integrations[i])
-            
+int_hours = np.asarray(integrations)/(60*60)
+
+x = range(len(integrations))        
+plt.bar(x, int_hours)
+plt.xticks(x, pointings)
+plt.show()
 
