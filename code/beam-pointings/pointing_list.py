@@ -25,15 +25,15 @@ for file in os.listdir(meta_dir):
         with open(f_path) as table:
             data = json.load(table)
             for i in range(len(data)):
-                start.extend(data[i][0])
-                stop.extend(data[i][1])
-                pointings.extend(data[i][-1])
+                start.append(data[i][0])
+                stop.append(data[i][1])
+                pointings.append(data[i][-1])
 
 # sort the lists based on start_gps, incase files weren't read in correct order.
 
-start, stop, pointing = zip(*sorted(zip(start, stop, pointings)))
+start, stop, pointings = zip(*sorted(zip(start, stop, pointings)))
 
-print(pointing)       
+print(pointings)       
 
 
 #pointing_list = {}
