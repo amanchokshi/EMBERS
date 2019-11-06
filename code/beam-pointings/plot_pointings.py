@@ -5,6 +5,7 @@ import numpy as np
 ## Force matplotlib to not use X-Server backend
 #matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import seaborn as sns
     
 
 parser = argparse.ArgumentParser(description="""
@@ -48,8 +49,30 @@ for i in unique_pointings:
 
 int_hours = np.asarray(integrations)/(60*60)
 
-x = range(len(integrations))        
-plt.bar(x, int_hours)
-plt.xticks(x, pointings)
+# Only plot if integration for pointing is > threshold
+
+time_point = []
+point = []
+
+for i in range(len(int_hours)):
+    if int_hours[i] > 10:
+        point.append(pointings[i])
+        time_point.append(int_hours[i])
+
+x = range(len(time_point))
+leg = [int(i) for i in time_point]
+
+width=0.9
+fig, ax = plt.subplots(1, 1, figsize=(12,7))
+fig = plt.bar(x, time_point, color=sns.color_palette("rocket", len(time_point)))
+if point[0] == None:
+    point[0] = 'None'
+plt.xticks(x, point,  rotation='vertical')
+plt.ylabel('Hours')
+plt.xlim(-1,len(time_point))
+plt.xlabel('MWA Grid Poining Number')
+#plt.legend(fig, leg, loc = "upper right", title = 'Hours',prop={'size':7})
+plt.tight_layout()
 plt.show()
+
 
