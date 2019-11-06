@@ -58,8 +58,10 @@ pointings = pointings[:-1]
 end_gps = start_gps[1:]
 start_gps = start_gps[:-1]
 
-for i in range(len(pointings)):
-    print(start_gps[i], end_gps[i], obs_length[i], pointings[i])
+
+# Find the index of pointings, where pointings change
+p_change = [i for i in range(1,len(pointings)) if pointings[i]!=pointings[i-1]]
+
 
 #pointing_list = {}
 #pointing_list['start_gps'] = []
