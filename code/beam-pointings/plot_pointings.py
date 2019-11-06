@@ -62,8 +62,7 @@ for i in range(len(int_hours)):
 x = range(len(time_point))
 leg = [int(i) for i in time_point]
 
-width=0.9
-fig, ax = plt.subplots(1, 1, figsize=(12,7))
+fig, ax = plt.subplots(figsize=(12,7))
 fig = plt.bar(x, time_point, color=sns.color_palette("rocket", len(time_point)))
 if point[0] == None:
     point[0] = 'None'
