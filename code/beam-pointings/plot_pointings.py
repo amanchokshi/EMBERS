@@ -1,9 +1,9 @@
 import json
 import argparse
 import numpy as np
-#import matplotlib
-## Force matplotlib to not use X-Server backend
-#matplotlib.use('Agg')
+import matplotlib
+# Force matplotlib to not use X-Server backend
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
     
@@ -16,10 +16,14 @@ parser = argparse.ArgumentParser(description="""
 
 parser.add_argument('--meta_dir', metavar='\b', default='./../../outputs/beam-pointings/', help='Directory where json metadata files live. Default=./../../outputs/beam-pointings/')
 parser.add_argument('--f_name', metavar='\b', default='ultimate_pointing_times.json', help='File name of json to be plotted. Default=ultimate_pointing_times.json')
+parser.add_argument('--threshold', metavar='\b', default=15, help='Plot if integration at pointing is > threshold. Default=15')
+parser.add_argument('--plt_name', metavar='\b', default='pointing_integration', help='Name of plot to be save, default=pointing_integration')
 
 args = parser.parse_args()
 meta_dir = args.meta_dir
 f_name = args.f_name
+threshold = args.threshold
+plt_name = args.plt_name
 
 with open('{}{}'.format(meta_dir, f_name), 'r') as data:
     pointings = json.load(data)
@@ -55,23 +59,34 @@ time_point = []
 point = []
 
 for i in range(len(int_hours)):
-    if int_hours[i] > 10:
+    if int_hours[i] > threshold:
         point.append(pointings[i])
         time_point.append(int_hours[i])
 
 x = range(len(time_point))
 leg = [int(i) for i in time_point]
 
-fig, ax = plt.subplots(figsize=(12,7))
-fig = plt.bar(x, time_point, color=sns.color_palette("rocket", len(time_point)))
+plt.style.use('seaborn')
+fig, ax = plt.subplots(figsize=(12,6))
+barplot = plt.bar(x, time_point, color=sns.color_palette("rocket", len(time_point)))
+
+def autolabel(rects):
+    for idx,rect in enumerate(barplot):
+        height = rect.get_height()
+        ax.text(rect.get_x() + rect.get_width()/2., height,
+                leg[idx],
+                ha='center', va='bottom', rotation=0)
+
+autolabel(barplot)
+
 if point[0] == None:
-    point[0] = 'None'
+    point[0] = 'X'
 plt.xticks(x, point,  rotation='vertical')
 plt.ylabel('Hours')
-plt.xlim(-1,len(time_point))
-plt.xlabel('MWA Grid Poining Number')
-#plt.legend(fig, leg, loc = "upper right", title = 'Hours',prop={'size':7})
+plt.xlim(-0.7,len(time_point)-0.3)
+plt.xlabel('MWA Grid Pointing Number')
+plt.title('Integration at MWA Grid Pointings [Threshold: {} Hours]'.format(threshold))
 plt.tight_layout()
-plt.show()
+plt.savefig('{}/{}.png'.format(meta_dir,plt_name))
 
 
