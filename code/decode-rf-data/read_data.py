@@ -22,19 +22,14 @@ def read_data(filename):
             # The last two charachters are excluded - Newline char
             data_lines.append(list(data[:-2]))
         
-        
-        #print(list(data_lines[0]))
-        #power_lines = []
-        
-        
-        print(len(data_lines[0]))
-        water = np.array(data_lines)
-        print(water.shape)
-        
+        # I have no idea where the (-1/2) factor comes from
+        # Remenant of Jared Rasti's code. Seems to work
+        # Must be something to do with how data is written from RF
+        power = np.asarray(data_lines) * (-1 / 2)
         
         fig = plt.figure(figsize = (7,7))
         ax = fig.add_subplot(111)
-        ax.imshow(water)
+        ax.imshow(power)
         ax.set_aspect('auto')
         plt.show()
 
