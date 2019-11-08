@@ -1,5 +1,8 @@
 import numpy as np
+from datetime import datetime
+from astropy.time import Time, TimezoneInfo
 import matplotlib.pyplot as plt
+
 
 def read_data(filename):
     '''Converts raw rf data from the RF Explorer
@@ -29,15 +32,29 @@ def read_data(filename):
         
         return (power, times)
 
-def plot_waterfall(power, times):
+def plot_waterfall(power, times, n_axes=True):
+    
+    power_median = np.median(power)
+    image = power - power_median
+    vmin = 0
+    vmax = 30
+    
     plt.style.use('dark_background')
-    fig = plt.figure(figsize = (6,8))
-    ax = fig.add_axes([0.1, 0.1, 0.75, 0.85])
+    fig = plt.figure(figsize = (7,10))
+    ax = fig.add_axes([0.12, 0.1, 0.72, 0.85])
     #ax = fig.add_subplot(111)
-    im = ax.imshow(power, cmap='Spectral')
+    im = ax.imshow(image, vmin=vmin, vmax=vmax, interpolation='none', cmap='Spectral')
     ax.set_aspect('auto')
     cax = fig.add_axes([0.88, 0.1, 0.03, 0.85])
     fig.colorbar(im, cax=cax)
+    if n_axes == True:
+        times_iso = []
+        for i in range(len(times)):
+            times_iso.append(Time(float(times[i]), format='unix').iso)
+        print(times_iso)    
+    else:
+        ax.set_xlabel('Freq Channel')
+        ax.set_ylabel('Time Step')
     
     plt.show()
 
