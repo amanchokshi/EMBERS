@@ -1,6 +1,5 @@
+import time
 import numpy as np
-from datetime import datetime
-from astropy.time import Time, TimezoneInfo
 import matplotlib.pyplot as plt
 
 
@@ -48,10 +47,33 @@ def plot_waterfall(power, times, n_axes=True):
     cax = fig.add_axes([0.88, 0.1, 0.03, 0.85])
     fig.colorbar(im, cax=cax)
     if n_axes == True:
-        times_iso = []
+    
+        # Number of time steps on y-axis
+        number_t = 5
+        t_step = int(len(times)/(number_t-1))
+        times = times[::t_step]
+        
+        t_tz = []
+        
+        # Convert UNIX time to local HH:MM time
         for i in range(len(times)):
-            times_iso.append(Time(float(times[i]), format='unix').iso)
-        print(times_iso)    
+            t_tz.append(time.strftime('%H:%M', time.gmtime(float(times[i])+28800))) #28800=+8GMT @ PERTH
+        
+        # Frequency: x-axis
+        start_freq = 137.15
+        stop_freq = 138.55
+
+        x_ax = image.shape[1]
+        freqs = np.arange(start_freq, stop_freq, 0.25)
+        x_ticks = np.arange(0, x_ax, (0.25/0.0125)) # 0.0125MHz/ch
+        ax.set_xticks(x_ticks)
+        ax.set_xticklabels(freqs)
+
+        y_ax = image.shape[0]
+        y_ticks = np.arange(0, y_ax, t_step)
+        ax.set_yticks(y_ticks)
+        ax.set_yticklabels(t_tz)
+
     else:
         ax.set_xlabel('Freq Channel')
         ax.set_ylabel('Time Step')
