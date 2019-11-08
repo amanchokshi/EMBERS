@@ -1,11 +1,10 @@
 import numpy as np
-import matplotlib.pyplot as plt
-
 
 def read_data(filename):
     '''Converts raw rf data from the RF Explorer
     to a power and time array. The raw data is 
-    saved using unicode charachters.'''
+    saved in binary format. Time is in UNIX format.
+    '''
     
     with open(filename, 'rb') as f:
         next(f)
@@ -27,14 +26,8 @@ def read_data(filename):
         # Must be something to do with how data is written from RF
         power = np.asarray(data_lines) * (-1 / 2)
         
-        fig = plt.figure(figsize = (7,7))
-        ax = fig.add_subplot(111)
-        ax.imshow(power)
-        ax.set_aspect('auto')
-        plt.show()
+        return (power, times)
 
-
-read_data('./../../sample-data/rf0XX_2019-10-10-15:00.txt')
 
 
 
