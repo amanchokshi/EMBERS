@@ -1,5 +1,6 @@
 import time
 import numpy as np
+from colormap import spectral
 import matplotlib.pyplot as plt
 
 
@@ -38,11 +39,14 @@ def plot_waterfall(power, times, name, n_axes=True):
     image = power - power_median
     vmin = 0
     vmax = 30
+
+    # Custom spectral colormap
+    cmap = spectral()
     
     plt.style.use('dark_background')
     fig = plt.figure(figsize = (7,10))
     ax = fig.add_axes([0.12, 0.1, 0.72, 0.85])
-    im = ax.imshow(image, vmin=vmin, vmax=vmax, interpolation='none', cmap='Spectral')
+    im = ax.imshow(image, vmin=vmin, vmax=vmax, interpolation='none', cmap=cmap)
     cax = fig.add_axes([0.88, 0.1, 0.03, 0.85])
     fig.colorbar(im, cax=cax)
     ax.set_aspect('auto')
