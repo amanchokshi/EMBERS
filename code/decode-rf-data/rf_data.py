@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 def read_data(filename):
     '''Converts raw rf data from the RF Explorer
@@ -28,6 +29,21 @@ def read_data(filename):
         
         return (power, times)
 
+def plot_waterfall(power, times):
+    plt.style.use('dark_background')
+    fig = plt.figure(figsize = (6,8))
+    ax = fig.add_axes([0.1, 0.1, 0.75, 0.85])
+    #ax = fig.add_subplot(111)
+    im = ax.imshow(power, cmap='Spectral')
+    ax.set_aspect('auto')
+    cax = fig.add_axes([0.88, 0.1, 0.03, 0.85])
+    fig.colorbar(im, cax=cax)
+    
+    plt.show()
+
+
+power, times = read_data('./../../sample-data/rf0XX_2019-10-10-15:00.txt')
+plot_waterfall(power, times)    
 
 
 
