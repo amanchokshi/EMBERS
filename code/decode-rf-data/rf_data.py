@@ -31,7 +31,8 @@ def read_data(filename):
         
         return (power, times)
 
-def plot_waterfall(power, times, n_axes=True):
+
+def plot_waterfall(power, times, name, n_axes=True):
     
     power_median = np.median(power)
     image = power - power_median
@@ -41,11 +42,12 @@ def plot_waterfall(power, times, n_axes=True):
     plt.style.use('dark_background')
     fig = plt.figure(figsize = (7,10))
     ax = fig.add_axes([0.12, 0.1, 0.72, 0.85])
-    #ax = fig.add_subplot(111)
     im = ax.imshow(image, vmin=vmin, vmax=vmax, interpolation='none', cmap='Spectral')
-    ax.set_aspect('auto')
     cax = fig.add_axes([0.88, 0.1, 0.03, 0.85])
     fig.colorbar(im, cax=cax)
+    ax.set_aspect('auto')
+    ax.set_title('Waterfall Plot: {}'.format(name))
+
     if n_axes == True:
     
         # Number of time steps on y-axis
@@ -57,22 +59,29 @@ def plot_waterfall(power, times, n_axes=True):
         
         # Convert UNIX time to local HH:MM time
         for i in range(len(times)):
-            t_tz.append(time.strftime('%H:%M', time.gmtime(float(times[i])+28800))) #28800=+8GMT @ PERTH
-        
+            
+            perth_t = float(times[i])+28800 #28800=+8GMT @ PERTH
+            hms = time.strftime('%H:%M', time.gmtime(perth_t))
+            t_tz.append(hms)
+
         # Frequency: x-axis
         start_freq = 137.15
         stop_freq = 138.55
 
+        # X-axis stuff
         x_ax = image.shape[1]
         freqs = np.arange(start_freq, stop_freq, 0.25)
-        x_ticks = np.arange(0, x_ax, (0.25/0.0125)) # 0.0125MHz/ch
+        x_ticks = np.arange(0, x_ax, (0.25/0.0125)) #.0125MHz/ch
         ax.set_xticks(x_ticks)
         ax.set_xticklabels(freqs)
+        ax.set_xlabel('Freq [MHz]')
 
+        # Y-axis stuff
         y_ax = image.shape[0]
         y_ticks = np.arange(0, y_ax, t_step)
         ax.set_yticks(y_ticks)
         ax.set_yticklabels(t_tz)
+        ax.set_ylabel('Time [HH:MM]')
 
     else:
         ax.set_xlabel('Freq Channel')
@@ -82,7 +91,8 @@ def plot_waterfall(power, times, n_axes=True):
 
 
 power, times = read_data('./../../sample-data/rf0XX_2019-10-10-15:00.txt')
-plot_waterfall(power, times)    
+plot_waterfall(power, times, 'Test File Name', False)    
+
 
 
 
