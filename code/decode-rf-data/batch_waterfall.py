@@ -1,6 +1,7 @@
 import argparse
 import rf_data as rf
 from pathlib import Path
+from datetime import datetime, timedelta
 
 parser = argparse.ArgumentParser(description="""
     Plots waterfall plots for all data 
@@ -9,12 +10,12 @@ parser = argparse.ArgumentParser(description="""
     structure.
     """)
 
-parser.add_argument('--base_dir', metavar='\b', help='Dir where date is saved')
-parser.add_argument('--start_date', metaver='\b', help='Date from which to start plotting waterfalls')
-parser.add_argument('--stop_date', metaver='\b', help='Date until which to plot waterfalls')
+parser.add_argument('--data_dir', metavar='\b', help='Dir where date is saved')
+parser.add_argument('--start_date', metavar='\b', help='Date from which to start plotting waterfalls')
+parser.add_argument('--stop_date', metavar='\b', help='Date until which to plot waterfalls')
 
 args = parser.parse_args()
-base_dir = args.rf_dir
+data_dir = args.data_dir
 start_date = args.start_date
 stop_date = args.stop_date
 
@@ -29,4 +30,10 @@ tiles = [
         'S35XX', 'S35YY', 'S36XX', 'S36YY'
         ]
 
+#data_dir = Path(data_dir)
+#for i in tiles:
+#    print(data_dir /i)
 
+t = datetime.strptime('2019-11-07-17:50:00', '%Y-%m-%d-%H:%M:%S')
+print(t.strftime('%H:%M'))
+print((t+timedelta(hours=1)).strftime('%H:%M'))
