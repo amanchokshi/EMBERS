@@ -34,6 +34,23 @@ tiles = [
 #for i in tiles:
 #    print(data_dir /i)
 
-t = datetime.strptime('2019-11-07-17:50:00', '%Y-%m-%d-%H:%M:%S')
-print(t.strftime('%H:%M'))
-print((t+timedelta(hours=1)).strftime('%H:%M'))
+t_start = datetime.strptime(start_date, '%Y-%m-%d')
+t_stop = datetime.strptime(stop_date, '%Y-%m-%d')
+n_days = (t_stop - t_start).days
+dates = []
+date_time = []
+for i in range(n_days+1):
+    day = t_start + timedelta(days=i)
+    date = day.strftime('%Y-%m-%d')
+    dates.append(date)
+    d_t = []
+    for j in range(48):
+        d_time = (datetime.strptime(date, '%Y-%m-%d') + timedelta(minutes=30*j)).strftime('%Y-%m-%d-%H:%M')
+        d_t.append(d_time)
+
+    date_time.append(d_t)    
+
+print(dates)
+print(date_time)
+
+
