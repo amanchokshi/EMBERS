@@ -18,6 +18,24 @@ conda deactivate
 When running code in this repository, ensure that `sat-env`is active.
 
 &nbsp;
+### Decode RF Explorer Data
+
+The RF Explorers saves a single line of data, per time step, to a text file. This contains a timestamp, in UNIX time, and a binary string of power data, corresponding to power in dB per frequency channel. `rf_data.py` has two functions. The first, decodes the rf data files and returns a list of times, and a 2D array of powers. The second function used the time and power arrays to create a waterfall plot. This is an extremely useful diagnostic tool, displaying satellite passes at bright vertical streaks. 
+
+```
+python plot_waterfall.py --help
+
+python plot_waterfall.py
+```
+
+Can be used to plot a waterfall from a single rf data file.
+
+To plot waterfalls of a larger collection of data files, use `batch_waterfall.py`. Using a start date, and stop date, it plots waterfall plots for all data in between.
+
+```
+python batch_waterfall.py --help
+
+```
 
 ### Satellite Ephemeris  
 
