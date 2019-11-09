@@ -30,9 +30,6 @@ tiles = [
         'S35XX', 'S35YY', 'S36XX', 'S36YY'
         ]
 
-#data_dir = Path(data_dir)
-#for i in tiles:
-#    print(data_dir /i)
 
 t_start = datetime.strptime(start_date, '%Y-%m-%d')
 t_stop = datetime.strptime(stop_date, '%Y-%m-%d')
@@ -50,7 +47,12 @@ for i in range(n_days+1):
 
     date_time.append(d_t)    
 
-print(dates)
-print(date_time)
+
+data_dir = Path(data_dir)
+for tile in tiles:
+    for d in range(len(dates)):
+        print(data_dir/tile/dates[d])
+        for time_stamp in date_time[d]:
+            print(f'{tile}_{time_stamp}')
 
 
