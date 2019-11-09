@@ -65,4 +65,4 @@ for tile in tiles:
             
             
             plt.savefig(f'{save_dir}/{rf_name}.png')
-
+            plt.close()
