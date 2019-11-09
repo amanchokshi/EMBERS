@@ -56,13 +56,16 @@ for tile in tiles:
     for d in range(len(dates)):
         rf_path = data_dir/tile/dates[d]
         for time_stamp in date_time[d]:
-            rf_name = f'{tile}_{time_stamp}'
-            power, times = rf.read_data(f'{rf_path}/{rf_name}.txt')
-            plt = rf.plot_waterfall(power, times, rf_name)
+            try:
+                rf_name = f'{tile}_{time_stamp}'
+                power, times = rf.read_data(f'{rf_path}/{rf_name}.txt')
+                plt = rf.plot_waterfall(power, times, rf_name)
 
-            save_dir = out_dir/'waterfalls'/dates[d]/time_stamp
-            save_dir.mkdir(parents=True, exist_ok=True)
-            
-            
-            plt.savefig(f'{save_dir}/{rf_name}.png')
-            plt.close()
+                save_dir = out_dir/'waterfalls'/dates[d]/time_stamp
+                save_dir.mkdir(parents=True, exist_ok=True)
+                
+                
+                plt.savefig(f'{save_dir}/{rf_name}.png')
+                plt.close()
+            except Exception:
+                print(f'File {rf_name}.txt missing')
