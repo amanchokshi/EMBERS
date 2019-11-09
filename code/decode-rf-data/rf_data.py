@@ -34,9 +34,19 @@ def read_data(filename):
 
 
 def plot_waterfall(power, times, name, n_axes=True):
+    '''Using power and times array, creates a waterfall
+    plot depicting satellite passes in the raw rf data.
+    By default this function will use n_axes = True to
+    convert unix times to human readable HH:MM local time
+    for the y-axis, and use the rf freqencies for the x-azis.
     
+    If n_axes=False, will plot waterfall with time step
+    vs freq channel (0-112)
+    '''
+
     power_median = np.median(power)
     image = power - power_median
+    # setting dynamic range of waterfall to be 30 dB above the median
     vmin = 0
     vmax = 30
 
@@ -91,12 +101,6 @@ def plot_waterfall(power, times, name, n_axes=True):
         ax.set_xlabel('Freq Channel')
         ax.set_ylabel('Time Step')
     
-    plt.show()
-
-
-power, times = read_data('./../../sample-data/rf0XX_2019-10-10-15:00.txt')
-plot_waterfall(power, times, 'Test File Name', False)    
-
-
+    return plt
 
 
