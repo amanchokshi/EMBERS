@@ -36,11 +36,10 @@ Can be used to plot a waterfall from a single rf data file. The above code creat
   <img src="./documentation/S10XX_2019-10-10-02:30.png" width="400" /> 
 </p>
 
-To plot waterfalls of a larger collection of data files, use `batch_waterfall.py`. Using a start date, and stop date, it plots waterfall plots for all data in between.
+To plot a large batch of waterfall plots, use `batch_waterfall.py`. Using a start date, and stop date, it plots waterfall plots of all data found between them.
 
 ```
 python batch_waterfall.py --help
-
 ```
 
 ### Satellite Ephemeris  
