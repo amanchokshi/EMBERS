@@ -29,7 +29,12 @@ python plot_waterfall.py --rf_name=rf0XX_2019-10-10-02:30
 python plot_waterfall.py --rf_name=S10XX_2019-10-10-02:30
 ```
 
-Can be used to plot a waterfall from a single rf data file. The above code plots data from the two sample data files provided in the `data` directory.
+Can be used to plot a waterfall from a single rf data file. The above code creates waterfall plots from the two sample data files provided in the `data` directory. On the left is the waterfall plot of the reference antenna, with an obvious broadband weather satellite pass visible at the bottom right. The narrower vertical lines are ORBCOMM satellites. The plot on the right shows the same satellites as seen by an MWA tile. The nulls in the primary beam are clearly visible. 
+
+<p float="left">
+  <img src="./documentation/rf0XX_2019-10-10-02:30.png" width="400" />
+  <img src="./documentation/S10XX_2019-10-10-02:30.png" width="400" /> 
+</p>
 
 To plot waterfalls of a larger collection of data files, use `batch_waterfall.py`. Using a start date, and stop date, it plots waterfall plots for all data in between.
 
