@@ -11,13 +11,15 @@ parser = argparse.ArgumentParser(description="""
     """)
 
 parser.add_argument('--data_dir', metavar='\b', help='Dir where date is saved')
-parser.add_argument('--start_date', metavar='\b', help='Date from which to start plotting waterfalls')
-parser.add_argument('--stop_date', metavar='\b', help='Date until which to plot waterfalls')
+parser.add_argument('--start_date', metavar='\b', help='Date from which to start plotting waterfalls. Ex: 2019-10-10')
+parser.add_argument('--stop_date', metavar='\b', help='Date until which to plot waterfalls. Ex: 2019-10-11')
+parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/decode-rf-data',help='Output directory. Default=./../../outputs/decode-rf-data/')
 
 args = parser.parse_args()
 data_dir = args.data_dir
 start_date = args.start_date
 stop_date = args.stop_date
+out_dir = args.out_dir
 
 tiles = [
         'rf0XX', 'rf0YY', 'rf1XX', 'rf1YY',
@@ -49,10 +51,18 @@ for i in range(n_days+1):
 
 
 data_dir = Path(data_dir)
+out_dir = Path(out_dir)
 for tile in tiles:
     for d in range(len(dates)):
-        print(data_dir/tile/dates[d])
+        rf_path = data_dir/tile/dates[d]
         for time_stamp in date_time[d]:
-            print(f'{tile}_{time_stamp}')
+            rf_name = f'{tile}_{time_stamp}'
+            power, times = rf.read_data(f'{rf_path}{rf_name}')
+            plt = rf.plot_waterfall(power, times, rf_name)
 
+            save_dir = out_dir/'waterfalls'/dates[d]/time_stamp
+            save_dir.mkdir(parents=True, exist_ok=True)
+            
+            
+            plt.savefig(f'{save_dir}/{rf_name}.png')
 
