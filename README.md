@@ -25,10 +25,11 @@ The RF Explorers saves a single line of data, per time step, to a text file. Thi
 ```
 python plot_waterfall.py --help
 
-python plot_waterfall.py
+python plot_waterfall.py --rf_name=rf0XX_2019-10-10-02:30
+python plot_waterfall.py --rf_name=S10XX_2019-10-10-02:30
 ```
 
-Can be used to plot a waterfall from a single rf data file.
+Can be used to plot a waterfall from a single rf data file. The above code plots data from the two sample data files provided in the `data` directory.
 
 To plot waterfalls of a larger collection of data files, use `batch_waterfall.py`. Using a start date, and stop date, it plots waterfall plots for all data in between.
 
