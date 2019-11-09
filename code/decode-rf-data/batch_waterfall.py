@@ -57,7 +57,7 @@ for tile in tiles:
         rf_path = data_dir/tile/dates[d]
         for time_stamp in date_time[d]:
             rf_name = f'{tile}_{time_stamp}'
-            power, times = rf.read_data(f'{rf_path}{rf_name}')
+            power, times = rf.read_data(f'{rf_path}/{rf_name}.txt')
             plt = rf.plot_waterfall(power, times, rf_name)
 
             save_dir = out_dir/'waterfalls'/dates[d]/time_stamp
