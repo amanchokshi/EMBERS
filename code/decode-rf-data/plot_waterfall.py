@@ -7,8 +7,8 @@ parser = argparse.ArgumentParser(description="""
         Will plot a single waterfall plot
         """)
 
-parser.add_argument('--rf_dir', metavar='\b', default='./../../sample-data/', help='Path to rf data directory. Default=./../../sample-data/')
-parser.add_argument('--rf_name', metavar='\b', default='rf0XX_2019-10-10-15:00', help='Name of rf data file. Default=rf0XX_2019-10-10-15:00')
+parser.add_argument('--rf_dir', metavar='\b', default='./../../data/', help='Path to rf data directory. Default=./../../data/')
+parser.add_argument('--rf_name', metavar='\b', default='rf0XX_2019-10-10-02:30', help='Name of rf data file. Default=rf0XX_2019-10-10-02:30')
 parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/decode-rf-data/', help='Output dir. Default=./../../outputs/decode-rf_dir/')
 
 args = parser.parse_args()
