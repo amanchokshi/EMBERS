@@ -1,6 +1,7 @@
 import argparse
 import rf_data as rf
 from pathlib import Path
+import concurrent.futures
 from datetime import datetime, timedelta
 
 parser = argparse.ArgumentParser(description="""
@@ -36,15 +37,19 @@ tiles = [
 t_start = datetime.strptime(start_date, '%Y-%m-%d')
 t_stop = datetime.strptime(stop_date, '%Y-%m-%d')
 n_days = (t_stop - t_start).days
+
 dates = []
 date_time = []
+
 for i in range(n_days+1):
     day = t_start + timedelta(days=i)
     date = day.strftime('%Y-%m-%d')
     dates.append(date)
     d_t = []
+    
     for j in range(48):
-        d_time = (datetime.strptime(date, '%Y-%m-%d') + timedelta(minutes=30*j)).strftime('%Y-%m-%d-%H:%M')
+        t_delta = datetime.strptime(date,'%Y-%m-%d') + timedelta(minutes=30*j)
+        d_time = t_delta.strftime('%Y-%m-%d-%H:%M')
         d_t.append(d_time)
 
     date_time.append(d_t)    
@@ -52,20 +57,54 @@ for i in range(n_days+1):
 
 data_dir = Path(data_dir)
 out_dir = Path(out_dir)
+
+#for tile in tiles:
+#    for d in range(len(dates)):
+#        rf_path = data_dir/tile/dates[d]
+#        for time_stamp in date_time[d]:
+#            try:
+#                rf_name = f'{tile}_{time_stamp}'
+#                power, times = rf.read_data(f'{rf_path}/{rf_name}.txt')
+#                plt = rf.plot_waterfall(power, times, rf_name)
+#
+#                save_dir = out_dir/'waterfalls'/dates[d]/time_stamp
+#                save_dir.mkdir(parents=True, exist_ok=True)
+#                
+#                
+#                plt.savefig(f'{save_dir}/{rf_name}.png')
+#                plt.close()
+#            except Exception:
+#                print(f'File {rf_name}.txt missing')
+           
+
+
+def waterfall_plot(time_stamp):
+    try:
+        rf_name = f'{tile}_{time_stamp}'
+        power, times = rf.read_data(f'{rf_path}/{rf_name}.txt')
+        plt = rf.plot_waterfall(power, times, rf_name)
+
+        save_dir = out_dir/'waterfalls'/dates[d]/time_stamp
+        save_dir.mkdir(parents=True, exist_ok=True)
+        
+        
+        plt.savefig(f'{save_dir}/{rf_name}.png')
+        plt.close()
+    except Exception:
+        return f'File {rf_name}.txt missing'
+
 for tile in tiles:
     for d in range(len(dates)):
         rf_path = data_dir/tile/dates[d]
-        for time_stamp in date_time[d]:
-            try:
-                rf_name = f'{tile}_{time_stamp}'
-                power, times = rf.read_data(f'{rf_path}/{rf_name}.txt')
-                plt = rf.plot_waterfall(power, times, rf_name)
+        
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            results = executor.map(waterfall_plot, date_time[d])
+           
+        for result in results:
+            print(result)
 
-                save_dir = out_dir/'waterfalls'/dates[d]/time_stamp
-                save_dir.mkdir(parents=True, exist_ok=True)
-                
-                
-                plt.savefig(f'{save_dir}/{rf_name}.png')
-                plt.close()
-            except Exception:
-                print(f'File {rf_name}.txt missing')
+#        for time_stamp in date_time[d]:
+#            waterfall_plot(time_stamp)
+
+
+
