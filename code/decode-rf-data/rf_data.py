@@ -36,6 +36,21 @@ def read_data(filename):
         return (power, times)
 
 
+def tile_names():
+    '''A list of tile reference and MWA tile names '''
+    tiles = [
+            'rf0XX', 'rf0YY', 'rf1XX', 'rf1YY',
+            'S06XX', 'S06YY', 'S07XX', 'S07YY',
+            'S08XX', 'S08YY', 'S09XX', 'S09YY',
+            'S10XX', 'S10YY', 'S12XX', 'S12YY',
+            'S29XX', 'S29YY', 'S30XX', 'S30YY',
+            'S31XX', 'S31YY', 'S32XX', 'S32YY',
+            'S33XX', 'S33YY', 'S34XX', 'S34YY',
+            'S35XX', 'S35YY', 'S36XX', 'S36YY'
+            ]
+    return tiles
+
+
 def plot_waterfall(power, times, name, n_axes=True):
     '''Using power and times array, creates a waterfall
     plot depicting satellite passes in the raw rf data.
