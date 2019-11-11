@@ -22,16 +22,8 @@ start_date = args.start_date
 stop_date = args.stop_date
 out_dir = args.out_dir
 
-tiles = [
-        'rf0XX', 'rf0YY', 'rf1XX', 'rf1YY',
-        'S06XX', 'S06YY', 'S07XX', 'S07YY',
-        'S08XX', 'S08YY', 'S09XX', 'S09YY',
-        'S10XX', 'S10YY', 'S12XX', 'S12YY',
-        'S29XX', 'S29YY', 'S30XX', 'S30YY',
-        'S31XX', 'S31YY', 'S32XX', 'S32YY',
-        'S33XX', 'S33YY', 'S34XX', 'S34YY',
-        'S35XX', 'S35YY', 'S36XX', 'S36YY'
-        ]
+# Import list of tile names from rf_data.py
+tiles = rf.tile_names()
 
 
 t_start = datetime.strptime(start_date, '%Y-%m-%d')
