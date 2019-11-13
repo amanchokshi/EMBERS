@@ -1,5 +1,5 @@
 /outputs/*
 .DS_Store
 *__pycache__*
-code/sat-ephemeris/problem_sats.txt
+code/sat_ephemeris/problem_sats.txt
 conda_env_export.sh
