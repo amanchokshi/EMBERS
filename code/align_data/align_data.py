@@ -3,11 +3,12 @@ sys.path.append('../decode_rf_data')
 
 import rf_data as rf
 
+tile_list = rf.tile_names()
 
-r_power, r_times = rf.read_data('./../../data/rf0XX_2019-10-10-02:30.txt')
 
-tile_power, tile_times = rf.read_data('./../../data/S10XX_2019-10-10-02:30.txt')
+for i in rf.tile_names():
+    _, times = rf.read_data(f'/media/achokshi/satellites/tiles_data/{i}/2019-11-15/{i}_2019-11-15-02:30.txt')
+    print(f'{i}: {len(times)/(30*60):.2f} Hz')
 
-print((r_times[1]))
-print((tile_times[1]))
+
 
