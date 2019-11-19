@@ -5,9 +5,13 @@ import numpy as np
 from rf_data import read_data
 
 import matplotlib
-# Enable x-window display
+# Enable x-window
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
+
+from scipy.signal import savgol_filter
+
+
 
 
 #tile_list = rf.tile_names()
@@ -89,9 +93,12 @@ ref_t, ref_p, tile_t, tile_p = time_align('./../../data/rf0XX_2019-10-10-02:30.t
 
 print(f'△ T = {(ref_t[-1] - ref_t[0]) - (tile_t[-1] - tile_t[0])} seconds')
 
+savgol_sat = savgol_filter(ref_p[::, 4], 101, 3)
+
 
 plt.style.use('seaborn')
 plt.plot(ref_t, ref_p[::, 4], color='#7da87b', alpha=0.9)
+plt.plot(ref_t,savgol_sat, color='#ed6663', alpha=0.9)
 #plt.plot(tile_p[:, 4], color='#ed6663', alpha=0.8)
 plt.xlabel('Time')
 plt.ylabel('Power')
