@@ -6,7 +6,7 @@ import rf_data as rf
 
 
 #tile_list = rf.tile_names()
-def align_time(ref, tile):
+def time_align(ref, tile):
     '''Time align power and timing arrays.
     
     This alignes the beginning and end of the time arrays by 
@@ -80,7 +80,7 @@ def align_time(ref, tile):
     return(ref_t, ref_p, tile_t, tile_p)
     
     
-ref_t, _, tile_t, _ = align_time('./../../data/rf0XX_2019-10-10-02:30.txt', './../../data/S10XX_2019-10-10-02:30.txt') 
+ref_t, _, tile_t, _ = time_align('./../../data/rf0XX_2019-10-10-02:30.txt', './../../data/S10XX_2019-10-10-02:30.txt') 
 
 
 
