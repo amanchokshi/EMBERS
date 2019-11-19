@@ -91,6 +91,7 @@ print(f'△ T = {(ref_t[-1] - ref_t[0]) - (tile_t[-1] - tile_t[0])} seconds')
 
 
 plt.style.use('seaborn')
-plt.plot(ref_p[:, 4], color='#7da87b')
+plt.plot(ref_p[::, 4], color='#7da87b', alpha=0.9)
+#plt.plot(tile_p[:, 4], color='#ed6663', alpha=0.8)
 plt.tight_layout()
 plt.show()
