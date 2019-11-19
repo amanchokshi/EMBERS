@@ -4,6 +4,8 @@ sys.path.append('../decode_rf_data')
 import numpy as np
 from rf_data import read_data
 
+import matplotlib.pyplot as plt
+
 
 #tile_list = rf.tile_names()
 def time_align(ref, tile):
@@ -80,8 +82,10 @@ def time_align(ref, tile):
     return(ref_t, ref_p, tile_t, tile_p)
     
     
-ref_t, _, tile_t, _ = time_align('./../../data/rf0XX_2019-10-10-02:30.txt', './../../data/S10XX_2019-10-10-02:30.txt') 
+ref_t, ref_p, tile_t, tile_p = time_align('./../../data/rf0XX_2019-10-10-02:30.txt', './../../data/S10XX_2019-10-10-02:30.txt') 
 
 print(f'△ T = {(ref_t[-1] - ref_t[0]) - (tile_t[-1] - tile_t[0])} seconds')
 
+plt.plot(ref_p[:, 4])
 
+plt.savefig('test.png')
