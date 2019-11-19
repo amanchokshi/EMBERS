@@ -4,6 +4,8 @@ sys.path.append('../decode_rf_data')
 import numpy as np
 from rf_data import read_data
 
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 
@@ -88,4 +90,4 @@ print(f'△ T = {(ref_t[-1] - ref_t[0]) - (tile_t[-1] - tile_t[0])} seconds')
 
 plt.plot(ref_p[:, 4])
 
-plt.savefig('test.png')
+plt.show()
