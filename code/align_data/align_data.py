@@ -2,7 +2,7 @@ import sys
 sys.path.append('../decode_rf_data')
 
 import numpy as np
-import rf_data as rf
+from rf_data import read_data
 
 
 #tile_list = rf.tile_names()
@@ -15,8 +15,8 @@ def time_align(ref, tile):
     overlapping times.
     '''
 
-    ref_p, ref_t = rf.read_data(ref)
-    tile_p, tile_t = rf.read_data(tile)
+    ref_p, ref_t = read_data(ref)
+    tile_p, tile_t = read_data(tile)
     
     ref_t = np.asarray(ref_t).astype(float)
     tile_t = np.asarray(tile_t).astype(float)
@@ -82,6 +82,6 @@ def time_align(ref, tile):
     
 ref_t, _, tile_t, _ = time_align('./../../data/rf0XX_2019-10-10-02:30.txt', './../../data/S10XX_2019-10-10-02:30.txt') 
 
-
+print(f'△ T = {(ref_t[-1] - ref_t[0]) - (tile_t[-1] - tile_t[0])} seconds')
 
 
