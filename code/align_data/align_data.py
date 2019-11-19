@@ -7,6 +7,13 @@ import rf_data as rf
 
 #tile_list = rf.tile_names()
 def align_time(ref, tile):
+    '''Time align power and timing arrays.
+    
+    This alignes the beginning and end of the time arrays by 
+    minimising the difference between the start/stop times.
+    It basically crops the array to only include
+    overlapping times.
+    '''
 
     ref_p, ref_t = rf.read_data(ref)
     tile_p, tile_t = rf.read_data(tile)
@@ -14,10 +21,6 @@ def align_time(ref, tile):
     ref_t = np.asarray(ref_t).astype(float)
     tile_t = np.asarray(tile_t).astype(float)
     
-    # This alignes the beginning of the time arrays by 
-    # minimising the difference between the starting times
-    # It basically crops the array which started earlier
-    # to match the other time array
     
     delta_t = []
     if ref_t[0] >= tile_t[0]:
@@ -79,8 +82,6 @@ def align_time(ref, tile):
     
 ref_t, _, tile_t, _ = align_time('./../../data/rf0XX_2019-10-10-02:30.txt', './../../data/S10XX_2019-10-10-02:30.txt') 
 
-print(ref_t[0]-tile_t[0])
-print(ref_t[-1]-tile_t[-1])
 
 
 
