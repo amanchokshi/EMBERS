@@ -5,7 +5,7 @@ import numpy as np
 import rf_data as rf
 
 
-tile_list = rf.tile_names()
+#tile_list = rf.tile_names()
 
 ref_p, ref_t = rf.read_data('./../../data/rf0XX_2019-10-10-02:30.txt')
 tile_p, tile_t = rf.read_data('./../../data/S10XX_2019-10-10-02:30.txt')
@@ -73,6 +73,9 @@ else:
     tile_t = tile_t[:-min_idx]
     tile_p = tile_p[:-min_idx]
 
+
+print(ref_t[0]-tile_t[0])
+print(ref_t[-1]-tile_t[-1])
 
 
 
