@@ -101,15 +101,20 @@ savgol_tile = savgol_filter(tile_p[::, 4], 123, 1)
 
 plt.style.use('seaborn')
 
-plt.scatter(ref_t, ref_p[::, 4], color='#abcb89',marker='.', alpha=0.7)
-plt.plot(ref_t,savgol_ref, color='#25a55f', alpha=0.9)
+plt.scatter(ref_t, ref_p[::, 4], color='#abcb89',marker='.', alpha=0.7, label='ref tile')
+plt.plot(ref_t,savgol_ref, color='#25a55f', alpha=0.9, label='ref savgol')
 
 
-plt.scatter(tile_t, tile_p[::, 4], color='#ea7362',marker='.', alpha=0.7)
-plt.plot(tile_t,savgol_tile, color='#a64942', alpha=0.9)
+plt.scatter(tile_t, tile_p[::, 4], color='#ea7362',marker='.', alpha=0.7, label='aut tile')
+plt.plot(tile_t,savgol_tile, color='#a64942', alpha=0.9, label='aut savgol')
 
 #plt.imshow(savgol_sat)
 #plt.axis('auto')
+
+leg = plt.legend(loc="upper left", frameon=True)
+leg.get_frame().set_facecolor('white')
+for l in leg.legendHandles:
+    l.set_alpha(1)
 
 plt.xlabel('Time')
 plt.ylabel('Power')
