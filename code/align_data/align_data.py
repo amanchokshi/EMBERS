@@ -91,16 +91,22 @@ def time_align(ref, tile):
     
 ref_t, ref_p, tile_t, tile_p = time_align('./../../data/rf0XX_2019-10-10-02:30.txt', './../../data/S10XX_2019-10-10-02:30.txt') 
 
-print(f'△ T = {(ref_t[-1] - ref_t[0]) - (tile_t[-1] - tile_t[0])} seconds')
+#print(f'△ T = {(ref_t[-1] - ref_t[0]) - (tile_t[-1] - tile_t[0])} seconds')
 
 #savgol_sat = savgol_filter(ref_p, 123, 2, axis=0)
-savgol_sat = savgol_filter(ref_p[::, 4], 123, 1)
+
+savgol_ref = savgol_filter(ref_p[::, 4], 123, 1)
+savgol_tile = savgol_filter(tile_p[::, 4], 123, 1)
 
 
 plt.style.use('seaborn')
 
-plt.scatter(ref_t, ref_p[::, 4], color='#7da87b',marker='.', alpha=0.9)
-plt.plot(ref_t,savgol_sat, color='#ed6663', alpha=0.9)
+plt.scatter(ref_t, ref_p[::, 4], color='#abcb89',marker='.', alpha=0.7)
+plt.plot(ref_t,savgol_ref, color='#25a55f', alpha=0.9)
+
+
+plt.scatter(tile_t, tile_p[::, 4], color='#ea7362',marker='.', alpha=0.7)
+plt.plot(tile_t,savgol_tile, color='#a64942', alpha=0.9)
 
 #plt.imshow(savgol_sat)
 #plt.axis('auto')
