@@ -102,15 +102,22 @@ savgol_tile = savgol_filter(tile_p[::, 4], 123, 1)
 
 f = interpolate.interp1d(ref_t, savgol_ref, kind='cubic')
 freq = 10 #Hz
-number_pts = (ref_t[-1] - ref_t[0])/(1/freq)
-new_t = np.linspace(ref_t[0], ref_t[-1], number_pts)
-p_new = f(new_t)
+number_ref = (ref_t[-1] - ref_t[0])/(1/freq)
+ref_t_n = np.linspace(ref_t[0], ref_t[-1], number_ref)
+ref_p_n = f(ref_t_n)
+
+
+g = interpolate.interp1d(tile_t, savgol_tile, kind='cubic')
+number_tile = (tile_t[-1] - tile_t[0])/(1/freq)
+tile_t_n = np.linspace(tile_t[0], tile_t[-1], number_tile)
+tile_p_n = g(tile_t_n)
+
+print(f'ref: {len(ref_p_n)}, tile: {len(tile_p_n)}')
 
 plt.style.use('seaborn')
 
 plt.scatter(ref_t, ref_p[::, 4], color='#abcb89',marker='.', alpha=0.7, label='ref tile')
 plt.plot(ref_t,savgol_ref, color='#25a55f', alpha=0.9, label='ref savgol')
-plt.plot(new_t,p_new, color='blue', alpha=0.9, label='ref savgol')
 
 
 plt.scatter(tile_t, tile_p[::, 4], color='#ea7362',marker='.', alpha=0.7, label='aut tile')
