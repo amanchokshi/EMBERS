@@ -112,7 +112,12 @@ number_tile = (tile_t[-1] - tile_t[0])/(1/freq)
 tile_t_n = np.linspace(tile_t[0], tile_t[-1], number_tile)
 tile_p_n = g(tile_t_n)
 
-print(f'ref: {len(ref_p_n)}, tile: {len(tile_p_n)}')
+print(f'Number ref samples:  {len(ref_p_n)}')
+print(f'Number tile samples: {len(tile_p_n)}')
+
+#TODO There seems to be an extra value. check where this comes from.
+#TODO Maybe just use one time series at which to evaluate the interolated
+#TODO function. This way, the times are exactly the same.
 
 plt.style.use('seaborn')
 
