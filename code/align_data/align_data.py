@@ -1,3 +1,4 @@
+import math
 import numpy as np
 
 #TODO needed to add code dir to PYTHONPATH. Is this the best way?
@@ -89,35 +90,39 @@ def time_align(ref, tile):
     
 ref_t, ref_p, tile_t, tile_p = time_align('./../../data/rf0XX_2019-10-10-02:30.txt', './../../data/S10XX_2019-10-10-02:30.txt') 
 
-#print(f'△ T = {(ref_t[-1] - ref_t[0]) - (tile_t[-1] - tile_t[0])} seconds')
 #savgol_sat = savgol_filter(ref_p, 123, 2, axis=0)
 
 savgol_ref = savgol_filter(ref_p[::, 4], 123, 1)
 savgol_tile = savgol_filter(tile_p[::, 4], 123, 1)
 
 
+# Data is recorded at a range of frequencies, depending on the RF Explorer version
+# The Old models recoreded at 6-7Hz, while the new ones record at 8.5-9.2Hz.
+# To get around this, we interpolate the data to a desired freqeuncy.
+
+interp_freq = 10 #Hz
+
+# Using the start and stop times, we create an array of times at which to 
+# evaluate our interpolated data
+start_time = math.ceil(max(ref_t[0], tile_t[0]))
+stop_time = math.floor(min(ref_t[-1], tile_t[-1]))
+
+# Total length of observation in seconds
+time_seconds = stop_time - start_time
+
+# Array of times at which to evaluate the interpolated data
+time_steps = np.linspace(start_time, stop_time, (time_seconds * interp_freq))
+
+# Interp1d output functions
 f = interpolate.interp1d(ref_t, savgol_ref, kind='cubic')
-freq = 10 #Hz
-
-print(max(ref_t[0], tile_t[0]))
-
-number_ref = (ref_t[-1] - ref_t[0])/(1/freq)
-ref_t_n = np.linspace(ref_t[0], ref_t[-1], number_ref)
-ref_p_n = f(ref_t_n)
-
-
 g = interpolate.interp1d(tile_t, savgol_tile, kind='cubic')
-number_tile = (tile_t[-1] - tile_t[0])/(1/freq)
-tile_t_n = np.linspace(tile_t[0], tile_t[-1], number_tile)
-tile_p_n = g(tile_t_n)
 
-print(f'Number ref samples:  {len(ref_p_n)}')
-print(f'Number tile samples: {len(tile_p_n)}')
+# New power array, evaluated at the desired frequency
+ref_p_n = f(time_steps)
+tile_p_n = g(time_steps)
 
-#TODO There seems to be an extra value. check where this comes from.
-#TODO Maybe just use one time series at which to evaluate the interolated
-#TODO function. This way, the times are exactly the same.
 
+# Plots 
 plt.style.use('seaborn')
 
 plt.scatter(ref_t, ref_p[::, 4], color='#abcb89',marker='.', alpha=0.7, label='ref tile')
