@@ -1,8 +1,7 @@
-import sys
-sys.path.append('../decode_rf_data')
-
 import numpy as np
-from rf_data import read_data
+
+#TODO needed to add code dir to PYTHONPATH. Is this the best way?
+from decode_rf_data.rf_data import read_data
 
 import matplotlib
 # Enable x-window
@@ -11,8 +10,6 @@ import matplotlib.pyplot as plt
 
 from scipy import interpolate
 from scipy.signal import savgol_filter
-
-
 
 
 #tile_list = rf.tile_names()
@@ -93,7 +90,6 @@ def time_align(ref, tile):
 ref_t, ref_p, tile_t, tile_p = time_align('./../../data/rf0XX_2019-10-10-02:30.txt', './../../data/S10XX_2019-10-10-02:30.txt') 
 
 #print(f'△ T = {(ref_t[-1] - ref_t[0]) - (tile_t[-1] - tile_t[0])} seconds')
-
 #savgol_sat = savgol_filter(ref_p, 123, 2, axis=0)
 
 savgol_ref = savgol_filter(ref_p[::, 4], 123, 1)
@@ -102,6 +98,9 @@ savgol_tile = savgol_filter(tile_p[::, 4], 123, 1)
 
 f = interpolate.interp1d(ref_t, savgol_ref, kind='cubic')
 freq = 10 #Hz
+
+print(max(ref_t[0], tile_t[0]))
+
 number_ref = (ref_t[-1] - ref_t[0])/(1/freq)
 ref_t_n = np.linspace(ref_t[0], ref_t[-1], number_ref)
 ref_p_n = f(ref_t_n)
