@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser(description="""
         grid-pointing number.
         """)
 
-parser.add_argument('--meta_dir', metavar='\b', default='./../../outputs/beam-pointings/', help='Directory where json metadata files live. Default=./../../outputs/beam-pointings/')
+parser.add_argument('--meta_dir', metavar='\b', default='./../../outputs/beam_pointings/', help='Directory where json metadata files live. Default=./../../outputs/beam_pointings/')
 
 args = parser.parse_args()
 meta_dir = args.meta_dir
