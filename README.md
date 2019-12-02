@@ -119,10 +119,10 @@ let us download date between `2019-09-11 00:00:00` and `2019-11-02 00:00:00`.
 First, we need to convert these dates to gps-seconds.
 
 ```
-python date-gps.py --date='2019-09-11 00:00:00'
+python date_gps.py --date='2019-09-11 00:00:00'
 gps: 1252195218
 
-python date-gps.py --date='2019-11-02 00:00:00'
+python date_gps.py --date='2019-11-02 00:00:00'
 gps: 1256688018
 ```
 
@@ -146,7 +146,7 @@ Using this information we can download the required metadata using `download_poi
 source download_pointings.sh 74 1252195218 1256688018
 ```
 
-The results of each page are downloaded to a json file in the `./../../ouputs/beam-pointings/` directory. The download script sleeps for 66s between each download, so as not to overload the MWA data servers.
+The results of each page are downloaded to a json file in the `./../../ouputs/beam_pointings/` directory. The download script sleeps for 66s between each download, so as not to overload the MWA data servers.
 
 
 The next step is to collate the data in all these discrete json metadata files into and `ultimate_pointing_times.json` list. This is slightly tricky, as there are a days when the MWA is idle as a whole, but the MWA Satellite experiment is recording data. This means that the metadata we downloaded will not contain any info on these times, and we must infer the pointing of the telescope from the last pointing the tiles were in. Luckily, the operators of the MWA run a set of 20 dipole test observations in the morning, the last of which resets the telescope to zenith. 
