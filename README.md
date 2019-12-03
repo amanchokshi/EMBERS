@@ -23,6 +23,8 @@ When running code in this repository, ensure that `sat-env`is active.
 The RF Explorers saves a single line of data, per time step, to a text file. This contains a timestamp, in UNIX time, and a binary string of power data, corresponding to power in dB per frequency channel. `rf_data.py` has two functions. The first, decodes the rf data files and returns a list of times, and a 2D array of powers. The second function used the time and power arrays to create a waterfall plot. This is an extremely useful diagnostic tool, displaying satellite passes at bright vertical streaks. 
 
 ```
+cd ./code/decode_rf_data/
+
 python plot_waterfall.py --help
 
 python plot_waterfall.py --rf_name=rf0XX_2019-10-10-02:30
@@ -41,6 +43,24 @@ To plot a large batch of waterfall plots, use `batch_waterfall.py`. Using a star
 ```
 python batch_waterfall.py --help
 ```
+
+### Align Data
+
+The RF Explorers do not record data at exactly the same frequency and do not start recording at exactly the same time. In fact, the older models record at approximately 6 Hz, while the newer ones are capable of a sampling rate of nearly 9 Hz. This discrepency in sampling rates makes it difficult to compare any two data samples. This issue is overcome by smoothing the data, along the time axis, with a Savitzky-Golay filter. Interpolating the smoothed data and resampling it at a constant frequency gives us a easier data set to work with. The starting times of the power arrays are also synchronized.
+
+```
+cd ../align_data
+
+python align_data.py
+```
+
+<p float="left">
+  <img src="./documentation/align_data.png" width="110%" /> 
+</p>
+
+This illustrates how `align_data.py` smoothes the noisy power data. The image displayed above represents only one frequency channel  [59] from the 2D power array. This channel was chosen to best show the spectral features of satellite passes as seen by the reference and mwa tiles. 
+
+In practince, savgol smoothing and interpolation are applied to the 2D power arrays, along the time axis.
 
 ### Satellite Ephemeris  
 
