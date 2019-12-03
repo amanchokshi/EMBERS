@@ -191,7 +191,7 @@ With the default setting, a plot called `pointing_integration.png`will be create
 
 
 <p float="left">
-  <img src="./documentation/pointing_integration.png" width="1200" />
+  <img src="./documentation/pointing_integration.png" width="100%" />
 </p>
 
 The `X` bar to the left of the plot represents time when the telescope was under maintainance, and had no definite pointing.
