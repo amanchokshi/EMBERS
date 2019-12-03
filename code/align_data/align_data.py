@@ -95,7 +95,7 @@ def time_align(ref, tile):
     
     
 
-def savgol_interp(ref_t, ref_p, tile_t, tile_p, savgol_window =151, polyorder=1, interp_type='cubic'):
+def savgol_interp(ref_t, ref_p, tile_t, tile_p, savgol_window =151, polyorder=1, interp_type='cubic', interp_freq=6):
     """Smooth and interpolate the power array
 
     Smooth the power arrays with a savgol filter
@@ -111,9 +111,10 @@ def savgol_interp(ref_t, ref_p, tile_t, tile_p, savgol_window =151, polyorder=1,
         ref_p:          Reference power array
         tile_t:         Tile time array
         tile_p:         Tile power array
-        savgol_window:  Window size of savgol filer. Must be odd
-        polyorder:      Order of polynomial to fit to savgol_window
-        interp_type:    Type of interpolation. Ex: 'cubic', 'linear'
+        savgol_window:  Window size of savgol filer. Must be odd. Default = 151
+        polyorder:      Order of polynomial to fit to savgol_window. Default = 1
+        interp_type:    Type of interpolation. Ex: 'cubic', 'linear'. Default = cubic
+        interp_freq:    The freqency to which power array is interpolated. Default = 6 Hz
 
     Returns:
         ref_p_aligned:  Aligned reference power array
@@ -131,7 +132,7 @@ def savgol_interp(ref_t, ref_p, tile_t, tile_p, savgol_window =151, polyorder=1,
     # The Old models recoreded at 6-7Hz, while the new ones record at 8.5-9.2Hz.
     # To get around this, we interpolate the data to a desired freqeuncy.
     
-    interp_freq = 6 #Hz
+    interp_freq = interp_freq #Hz
     
     # Using the start and stop times, we create an array of times at which to 
     # evaluate our interpolated data
@@ -156,6 +157,11 @@ def savgol_interp(ref_t, ref_p, tile_t, tile_p, savgol_window =151, polyorder=1,
 
 
 if __name__ == '__main__':
+    '''Plot a single channel to illustrate the savgol + interpolation
+    
+    Plots channel 59 of the sample date. This is the center 
+    channel of the bright weather satellite seen in the bottom 
+    right corner of the sample waterfall plots.'''
     
     import matplotlib
     # Enable x-window
@@ -173,7 +179,6 @@ if __name__ == '__main__':
             tile_t,
             tile_p
             )
-
 
 
     # Plots 
@@ -194,3 +199,5 @@ if __name__ == '__main__':
     plt.ylabel('Power')
     plt.tight_layout()
     plt.show()
+
+
