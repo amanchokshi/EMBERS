@@ -9,8 +9,6 @@ import matplotlib
 # Enable x-window
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
-#plt.rcParams.update({'font.size': 32})
-from matplotlib.pyplot import figure
 
 from scipy import interpolate
 from scipy.signal import savgol_filter
