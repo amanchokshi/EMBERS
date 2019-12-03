@@ -95,7 +95,7 @@ def time_align(ref, tile):
     
     
 
-def savgol_interp(ref_t, ref_p, tile_t, tile_p):
+def savgol_interp(ref_t, ref_p, tile_t, tile_p, savgol_window =151, polyorder=1, interp_type='cubic'):
     """Smooth and interpolate the power array
 
     Smooth the power arrays with a savgol filter
@@ -107,16 +107,24 @@ def savgol_interp(ref_t, ref_p, tile_t, tile_p):
 
     
     Args:
-        ref_t:      Reference time array
-        ref_p:      Reference power array
-        tile_t:     Tile time array
-        tile_p:     Tile power array
+        ref_t:          Reference time array
+        ref_p:          Reference power array
+        tile_t:         Tile time array
+        tile_p:         Tile power array
+        savgol_window:  Window size of savgol filer. Must be odd
+        polyorder:      Order of polynomial to fit to savgol_window
+        interp_type:    Type of interpolation. Ex: 'cubic', 'linear'
+
+    Returns:
+        ref_p_aligned:  Aligned reference power array
+        tile_p_aligned: Aligned tile power array
+        time_array:     Time array corresponding to power arrays
     """
 
 
 
-    savgol_ref = savgol_filter(ref_p, 151, 1, axis=0)
-    savgol_tile = savgol_filter(tile_p, 151, 1, axis=0)
+    savgol_ref = savgol_filter(ref_p, savgol_window, polyorder, axis=0)
+    savgol_tile = savgol_filter(tile_p, savgol_window, polyorder, axis=0)
     
     
     # Data is recorded at a range of frequencies, depending on the RF Explorer version
@@ -137,8 +145,8 @@ def savgol_interp(ref_t, ref_p, tile_t, tile_p):
     time_array = np.linspace(start_time, stop_time, (time_seconds * interp_freq))
     
     # Interp1d output functions
-    f = interpolate.interp1d(ref_t, savgol_ref, axis=0, kind='cubic')
-    g = interpolate.interp1d(tile_t, savgol_tile, axis=0, kind='cubic')
+    f = interpolate.interp1d(ref_t, savgol_ref, axis=0, kind=interp_type)
+    g = interpolate.interp1d(tile_t, savgol_tile, axis=0, kind=interp_type)
     
     # New power array, evaluated at the desired frequency
     ref_p_aligned = f(time_array)
