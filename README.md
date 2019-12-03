@@ -34,8 +34,8 @@ python plot_waterfall.py --rf_name=S10XX_2019-10-10-02:30
 Can be used to plot a waterfall from a single rf data file. The above code creates waterfall plots from the two sample data files provided in the `data` directory. On the left is the waterfall plot of the reference antenna, with an obvious broadband weather satellite pass visible at the bottom right. The narrower vertical lines are ORBCOMM satellites. The plot on the right shows the same satellites as seen by an MWA tile. The nulls in the primary beam are clearly visible. 
 
 <p float="left">
-  <img src="./documentation/rf0XX_2019-10-10-02:30.png" width="400" />
-  <img src="./documentation/S10XX_2019-10-10-02:30.png" width="400" /> 
+  <img src="./documentation/rf0XX_2019-10-10-02:30.png" width="49%" />
+  <img src="./documentation/S10XX_2019-10-10-02:30.png" width="49%" /> 
 </p>
 
 To plot a large batch of waterfall plots, use `batch_waterfall.py`. Using a start date, and stop date, it plots waterfall plots of all data found between them.
@@ -104,14 +104,14 @@ python plot_ephemeris.py --sat=XXXXX
 &nbsp;
 
 <p float="left">
-  <img src="./documentation/21576.png" width="400" />
-  <img src="./documentation/23545.png" width="400" /> 
+  <img src="./documentation/21576.png" width="50%" />
+  <img src="./documentation/23545.png" width="50%" /> 
 </p>
 
 
 <p float="left">
-  <img src="./documentation/25981.png" width="400" />
-  <img src="./documentation/25982.png" width="400" /> 
+  <img src="./documentation/25981.png" width="50%" />
+  <img src="./documentation/25982.png" width="50%" /> 
 </p>
 
 
