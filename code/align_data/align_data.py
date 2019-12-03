@@ -1,5 +1,4 @@
 import math
-import h5py
 import numpy as np
 
 #TODO needed to add code dir to PYTHONPATH. Is this the best way?
@@ -109,6 +108,7 @@ def savgol_interp(ref_t, ref_p, tile_t, tile_p):
     from thr reference antenna and the tile equal,
     allowing a one to one comparison at 
     corresponding times.
+
     
     Args:
         ref_t:      Reference time array
@@ -148,10 +148,7 @@ def savgol_interp(ref_t, ref_p, tile_t, tile_p):
     ref_p_aligned = f(time_array)
     tile_p_aligned = g(time_array)
 
-    with h5py.File('test.hdf5', 'w') as f:
-        f.create_dataset('ref_p_aligned', data=ref_p_aligned)
-        f.create_dataset('tile_p_aligned', data=tile_p_aligned)
-        f.create_dataset('time_array', data=time_array)
+    return (ref_p_aligned, tile_p_aligned, time_array)
 
 
     
