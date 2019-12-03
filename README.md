@@ -104,14 +104,14 @@ python plot_ephemeris.py --sat=XXXXX
 &nbsp;
 
 <p float="left">
-  <img src="./documentation/21576.png" width="50%" />
-  <img src="./documentation/23545.png" width="50%" /> 
+  <img src="./documentation/21576.png" width="49%" />
+  <img src="./documentation/23545.png" width="49%" /> 
 </p>
 
 
 <p float="left">
-  <img src="./documentation/25981.png" width="50%" />
-  <img src="./documentation/25982.png" width="50%" /> 
+  <img src="./documentation/25981.png" width="49%" />
+  <img src="./documentation/25982.png" width="49%" /> 
 </p>
 
 
