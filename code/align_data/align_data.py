@@ -24,6 +24,16 @@ def time_align(ref, tile):
     minimising the difference between the start/stop times.
     It basically crops the array to only include
     overlapping times.
+
+    Args:
+        ref: path to reference data file
+        tile: path to tile data file
+
+    Returns:
+        ref_t:      Reference time array
+        ref_p:      Reference power array
+        tile_t:     Tile time array
+        tile_p:     Tile power array
     '''
 
     ref_p, ref_t = read_data(ref)
@@ -91,8 +101,6 @@ def time_align(ref, tile):
     return(ref_t, ref_p, tile_t, tile_p)
     
     
-ref_t, ref_p, tile_t, tile_p = time_align('./../../data/rf0XX_2019-10-10-02:30.txt', './../../data/S10XX_2019-10-10-02:30.txt') 
-
 
 def savgol_interp(ref_t, ref_p, tile_t, tile_p):
     """Smooth and interpolate the power array
@@ -103,7 +111,12 @@ def savgol_interp(ref_t, ref_p, tile_t, tile_p):
     from thr reference antenna and the tile equal,
     allowing a one to one comparison at 
     corresponding times.
-
+    
+    Args:
+        ref_t:      Reference time array
+        ref_p:      Reference power array
+        tile_t:     Tile time array
+        tile_p:     Tile power array
     """
 
 
@@ -143,8 +156,8 @@ def savgol_interp(ref_t, ref_p, tile_t, tile_p):
         f.create_dataset('time_array', data=time_array)
 
 
-
     
+ref_t, ref_p, tile_t, tile_p = time_align('./../../data/rf0XX_2019-10-10-02:30.txt', './../../data/S10XX_2019-10-10-02:30.txt') 
 savgol_interp(ref_t, ref_p, tile_t, tile_p)
 
 
