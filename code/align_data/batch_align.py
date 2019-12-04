@@ -110,6 +110,9 @@ out_dir = Path(out_dir)
 #        return f'{ref_name}.txt or {aut_name}.txt file missing'
 
 
+#TODO Need proper exeptions to check whether data files exists!
+
+
 for pair in align_pairs:
     for d in range(len(dates)):
         ref = pair[0]
