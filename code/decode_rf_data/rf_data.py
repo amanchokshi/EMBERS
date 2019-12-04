@@ -36,7 +36,7 @@ def read_data(filename):
             
             return (power, times)
     except Exception:
-        print(f'{filename} not found :(')
+        print(f'Missing {filename}, moving on...')
 
 
 def tile_names():
