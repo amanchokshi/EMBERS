@@ -40,18 +40,27 @@ def time_align(ref, tile):
     
     # Align the top of the time and power arrays
     delta_t = []
+    
+    # Find out which time array starts later
     if ref_t[0] >= tile_t[0]:
         for i in range(len(tile_t)):
             dt = (ref_t[0] - tile_t[i])
             delta_t.append(dt)
+
+            # Stop the for loop when we have a time sample
+            # on either side of the shorter time array
             if (dt <= 0 and abs(dt) >= delta_t[-1]):
                 break
-    
+        
+        # Find the index of the sample with the smallest △ t 
         abs_dt = np.absolute(delta_t)
         min_idx = (list(abs_dt).index(min(abs_dt)))
         
-        tile_t = tile_t[min_idx:]
-        tile_p = tile_p[min_idx:]
+        # Use the minimum index to crop the longer 
+        # array down such that △ t is minimised
+        if min_idx != 0:
+            tile_t = tile_t[min_idx:]
+            tile_p = tile_p[min_idx:]
     
     else:
         for i in range(len(ref_t)):
@@ -63,10 +72,12 @@ def time_align(ref, tile):
         abs_dt = np.absolute(delta_t)
         min_idx = (list(abs_dt).index(min(abs_dt)))
         
-        ref_t = ref_t[min_idx:]
-        ref_p = ref_p[min_idx:]
+        if min_idx != 0:
+            ref_t = ref_t[min_idx:]
+            ref_p = ref_p[min_idx:]
+
     
-    
+    # Now repeat the same procedure on the bottom of the arrays
     delta_t = []
     if ref_t[-1] >= tile_t[-1]:
         for i in range(len(ref_t)):
@@ -78,8 +89,9 @@ def time_align(ref, tile):
         abs_dt = np.absolute(delta_t)
         min_idx = (list(abs_dt).index(min(abs_dt)))
         
-        ref_t = ref_t[:-min_idx]
-        ref_p = ref_p[:-min_idx]
+        if min_idx != 0:
+            ref_t = ref_t[:-min_idx]
+            ref_p = ref_p[:-min_idx]
     
     else:
         for i in range(len(tile_t)):
@@ -91,8 +103,9 @@ def time_align(ref, tile):
         abs_dt = np.absolute(delta_t)
         min_idx = (list(abs_dt).index(min(abs_dt)))
         
-        tile_t = tile_t[:-min_idx]
-        tile_p = tile_p[:-min_idx]
+        if min_idx != 0:
+            tile_t = tile_t[:-min_idx]
+            tile_p = tile_p[:-min_idx]
     
     return(ref_t, ref_p, tile_t, tile_p)
     
@@ -124,7 +137,6 @@ def savgol_interp(ref_t, ref_p, tile_t, tile_p, savgol_window =151, polyorder=1,
         tile_p_aligned: Aligned tile power array
         time_array:     Time array corresponding to power arrays
     """
-
 
     savgol_ref = savgol_filter(ref_p, savgol_window, polyorder, axis=0)
     savgol_tile = savgol_filter(tile_p, savgol_window, polyorder, axis=0)
