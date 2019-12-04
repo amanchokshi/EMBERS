@@ -1,3 +1,4 @@
+import sys
 import argparse
 import rf_data as rf
 from pathlib import Path
@@ -21,6 +22,10 @@ data_dir = args.data_dir
 start_date = args.start_date
 stop_date = args.stop_date
 out_dir = args.out_dir
+
+# Save logs 
+Path(out_dir).mkdir(parents=True, exist_ok=True)
+sys.stdout = open(f'{out_dir}/logs.txt', 'a')
 
 # Import list of tile names from rf_data.py
 tiles = rf.tile_names()
