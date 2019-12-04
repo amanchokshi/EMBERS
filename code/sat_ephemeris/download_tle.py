@@ -30,10 +30,10 @@ if os.environ.get('ST_USER') != None:
     
     for sat_name, sat_id in norad_ids.items():
         data = st.tle(iter_lines=True, norad_cat_id=sat_id, orderby='epoch desc', epoch='{}--{}'.format(start_date,stop_date), format='tle')
-        print('downloading tle for {} satellite [{}] from space-tracks.org'.format(sat_name,sat_id))
+        print(f'downloading tle for {sat_name} satellite [{sat_id}] from space-tracks.org')
         #Sleep to limit downloads to 20 TLEs per minute
         time.sleep(3)
-        with open('{}/{}.txt'.format(out_dir,sat_id), 'w') as fp:
+        with open(f'{out_dir}/{sat_id}.txt', 'w') as fp:
             for line in data:
                 fp.write(line + '\n')
     
