@@ -4,6 +4,7 @@ import align_data as ali
 import concurrent.futures
 
 from pathlib import Path
+from itertools import product
 from datetime import datetime, timedelta
 
 #TODO needed to add code dir to PYTHONPATH for this import to work. 
@@ -43,7 +44,17 @@ AUTS_XX = AUTS[::2]
 AUTS_YY = AUTS[1::2]
 
 
+# Create a list of pairs of tiles to be aligned. 
+# Essentially all possible combinations of Refs, AUTS
+align_pairs = []
+for pair in list(product(refs_XX, AUTS_XX)):
+    align_pairs.append(pair)
 
+for pair in list(product(refs_YY, AUTS_YY)):
+    align_pairs.append(pair)
+
+
+# Time stuff to help traverse data dir tree.
 t_start = datetime.strptime(start_date, '%Y-%m-%d')
 t_stop = datetime.strptime(stop_date, '%Y-%m-%d')
 n_days = (t_stop - t_start).days
@@ -68,8 +79,13 @@ for i in range(n_days+1):
 data_dir = Path(data_dir)
 out_dir = Path(out_dir)
 
-print(dates)
-print(date_time)
+
+def save_align_data():
+    ref_name = f'{ref}_{time_stamp}'
+    aut_name = f'{aut}_{time_stamp}'
+
+#for R
+
 
 #with h5py.File('test.hdf5', 'w') as f:
 #    f.create_dataset('ref_p_aligned', data=ref_p_aligned)
