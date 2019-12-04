@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser(description="""
 parser.add_argument('--data_dir', metavar='\b', help='Dir where date is saved')
 parser.add_argument('--start_date', metavar='\b', help='Date from which to start plotting waterfalls. Ex: 2019-10-10')
 parser.add_argument('--stop_date', metavar='\b', help='Date until which to plot waterfalls. Ex: 2019-10-11')
-parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/decode-rf-data',help='Output directory. Default=./../../outputs/decode-rf-data/')
+parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/decode_rf_data',help='Output directory. Default=./../../outputs/decode_rf_data/')
 
 args = parser.parse_args()
 data_dir = args.data_dir

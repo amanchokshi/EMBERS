@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser(description="""
 
 parser.add_argument('--rf_dir', metavar='\b', default='./../../data/', help='Path to rf data directory. Default=./../../data/')
 parser.add_argument('--rf_name', metavar='\b', default='rf0XX_2019-10-10-02:30', help='Name of rf data file. Default=rf0XX_2019-10-10-02:30')
-parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/decode-rf-data/', help='Output dir. Default=./../../outputs/decode-rf_dir/')
+parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/decode_rf_data/', help='Output dir. Default=./../../outputs/decode_rf_dir/')
 
 args = parser.parse_args()
 rf_dir = args.rf_dir
