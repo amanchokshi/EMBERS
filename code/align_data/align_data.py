@@ -126,7 +126,7 @@ def savgol_interp(ref_t, ref_p, tile_t, tile_p, savgol_window =151, polyorder=1,
     """
 
 
-
+    print(len(tile_p[::, 1]))
     savgol_ref = savgol_filter(ref_p, savgol_window, polyorder, axis=0)
     savgol_tile = savgol_filter(tile_p, savgol_window, polyorder, axis=0)
     
