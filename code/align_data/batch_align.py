@@ -80,15 +80,47 @@ data_dir = Path(data_dir)
 out_dir = Path(out_dir)
 
 
-def save_align_data():
-    ref_name = f'{ref}_{time_stamp}'
-    aut_name = f'{aut}_{time_stamp}'
+def save_align_data(time_stamp):
+    try:
+        ref_name = f'{ref}_{time_stamp}'
+        aut_name = f'{aut}_{time_stamp}'
+    
+        ref_t, ref_p, tile_t, tile_p = ali.time_align(
+                f'{ref_path}/{ref_name}.txt',
+                f'{aut_path}/{aut_name}.txt'
+                )
+    
+        ref_p_aligned, tile_p_aligned, time_array = ali.savgol_interp(
+                ref_t,
+                ref_p,
+                tile_t,
+                tile_p
+                )
+    
+        save_dir = out_dir/dates[d]/time_stamp
+        save_dir.mkdir(parents=True, exists_ok=True)
+    
+        with h5py.File(f'{save_dir}/{ref}_{aut}_{time_stamp}_aligned.hdf5', 'w') as f:
+            f.create_dataset('ref_p_aligned', data=ref_p_aligned)
+            f.create_dataset('tile_p_aligned', data=tile_p_aligned)
+            f.create_dataset('time_array', data=time_array)
+        return f'{ref}_{aut}_{time_stamp}_aligned.hdf5 saved'
+    except Exception:
+        return f'{ref_name}.txt or {aut_name}.txt file missing'
 
-#for R
+for pair in align_pairs:
+    for d in range(len(dates)):
+        ref = pair[0]
+        aut = pair[1]
+    
+        ref_path = data_dir/ref/dates[d]
+        aut_path = data_dir/aut/dates[d]
+
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            results = executor.map(save_align_data, date_time[d])
+           
+        for result in results:
+            print(result)
 
 
-#with h5py.File('test.hdf5', 'w') as f:
-#    f.create_dataset('ref_p_aligned', data=ref_p_aligned)
-#    f.create_dataset('tile_p_aligned', data=tile_p_aligned)
-#    f.create_dataset('time_array', data=time_array)
 
