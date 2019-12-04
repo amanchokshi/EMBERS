@@ -29,6 +29,11 @@ start_date = args.start_date
 stop_date = args.stop_date
 out_dir = args.out_dir
 
+
+# Save logs 
+Path(out_dir).mkdir(parents=True, exist_ok=True)
+sys.stdout = open(f'{out_dir}/logs.txt', 'a')
+
 # Import list of tile names from rf_data.py
 tiles = rf.tile_names()
 
@@ -106,43 +111,13 @@ def save_aligned(time_stamp):
          
         return f'Saving {ref}_{aut}_{time_stamp}_aligned.hdf5'
     except Exception:
-        pass
+        return f'Cound not save {ref}_{aut}_{time_stamp}_aligned.hdf5. Missing file'
         # This exception should only be raised if both files don't exist
         # In that case, the exception from rf_data.read_data() will be 
         # displayed here.
 
 
-        #return 'Both files didn\'t exist, moving on...'
-#    try:
-#        ref_name = f'{ref}_{time_stamp}'
-#        aut_name = f'{aut}_{time_stamp}'
-#    
-#        ref_t, ref_p, tile_t, tile_p = al.time_align(
-#                f'{ref_path}/{ref_name}.txt',
-#                f'{aut_path}/{aut_name}.txt'
-#                )
-#    
-#        ref_p_aligned, tile_p_aligned, time_array = al.savgol_interp(
-#                ref_t,
-#                ref_p,
-#                tile_t,
-#                tile_p
-#                )
-#    
-#        save_dir = out_dir/dates[d]/time_stamp
-#        save_dir.mkdir(parents=True, exists_ok=True)
-#    
-#        print(f'{save_dir}/{ref}_{aut}_{time_stamp}_aligned.hdf5')
-#        with h5py.File(f'{save_dir}/{ref}_{aut}_{time_stamp}_aligned.hdf5', 'w') as f:
-#            f.create_dataset('ref_p_aligned', data=ref_p_aligned)
-#            f.create_dataset('tile_p_aligned', data=tile_p_aligned)
-#            f.create_dataset('time_array', data=time_array)
-#        return f'{ref}_{aut}_{time_stamp}_aligned.hdf5 saved'
-#    except Exception:
-#        return f'{ref_name}.txt or {aut_name}.txt file missing'
 
-
-#TODO Need proper exeptions to check whether data files exists!
 for pair in align_pairs:
     for d in range(len(dates)):
         ref = pair[0]
@@ -156,36 +131,11 @@ for pair in align_pairs:
 
         with concurrent.futures.ProcessPoolExecutor() as executor:
             results = executor.map(save_aligned, date_time[d])
-           
+
+
         for result in results:
             print(result)
-            #try:
-            #    ref_file = ref_path/f'{ref}_{time_stamp}.txt'
-            #    aut_file = aut_path/f'{aut}_{time_stamp}.txt'
 
-            #    ref_t, ref_p, tile_t, tile_p = al.time_align(
-            #            ref_file,
-            #            aut_file
-            #            )
-        
-            #    ref_p_aligned, tile_p_aligned, time_array = al.savgol_interp(
-            #            ref_t,
-            #            ref_p,
-            #            tile_t,
-            #            tile_p
-            #            )
-
-            #    save_dir = out_dir/dates[d]/time_stamp
-            #    save_dir.mkdir(parents=True, exist_ok=True)
-        
-            #    with h5py.File(f'{save_dir}/{ref}_{aut}_{time_stamp}_aligned.hdf5', 'w') as f:
-            #        f.create_dataset('ref_p_aligned', data=ref_p_aligned)
-            #        f.create_dataset('tile_p_aligned', data=tile_p_aligned)
-            #        f.create_dataset('time_array', data=time_array)
-            #     
-            #    print(f'Saving {ref}_{aut}_{time_stamp}_aligned.hdf5')
-            #except Exception:
-            #    print('Both files didn\'t exist, moving on...')
 
 
 
