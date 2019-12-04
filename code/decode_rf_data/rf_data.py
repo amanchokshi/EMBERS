@@ -81,7 +81,7 @@ def plot_waterfall(power, times, name, n_axes=True):
     cax = fig.add_axes([0.88, 0.1, 0.03, 0.85])
     fig.colorbar(im, cax=cax)
     ax.set_aspect('auto')
-    ax.set_title('Waterfall Plot: {}'.format(name))
+    ax.set_title(f'Waterfall Plot: {name}')
 
     if n_axes == True:
     

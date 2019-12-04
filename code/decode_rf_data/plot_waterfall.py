@@ -17,11 +17,11 @@ rf_name = args.rf_name
 out_dir = args.out_dir
 
 
-power, times = rf.read_data('{}/{}.txt'.format(rf_dir,rf_name))
+power, times = rf.read_data(f'{rf_dir}/{rf_name}.txt')
 plt = rf.plot_waterfall(power, times, rf_name)
 
 # Make output dir if it doesn't exist
 os.makedirs(os.path.dirname(out_dir), exist_ok=True)
 
-plt.savefig('{}/{}.png'.format(out_dir,rf_name))
+plt.savefig('{out_dir}/{rf_name}.png')
 
