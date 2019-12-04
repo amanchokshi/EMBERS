@@ -79,7 +79,40 @@ data_dir = Path(data_dir)
 out_dir = Path(out_dir)
 
 
-#def save_align_data(time_stamp):
+def save_aligned(time_stamp):
+    try:
+        ref_file = ref_path/f'{ref}_{time_stamp}.txt'
+        aut_file = aut_path/f'{aut}_{time_stamp}.txt'
+
+        ref_t, ref_p, tile_t, tile_p = al.time_align(
+                ref_file,
+                aut_file
+                )
+  
+        ref_p_aligned, tile_p_aligned, time_array = al.savgol_interp(
+                ref_t,
+                ref_p,
+                tile_t,
+                tile_p
+                )
+
+        save_dir = out_dir/dates[d]/time_stamp
+        save_dir.mkdir(parents=True, exist_ok=True)
+  
+        with h5py.File(f'{save_dir}/{ref}_{aut}_{time_stamp}_aligned.hdf5', 'w') as f:
+            f.create_dataset('ref_p_aligned', data=ref_p_aligned)
+            f.create_dataset('tile_p_aligned', data=tile_p_aligned)
+            f.create_dataset('time_array', data=time_array)
+         
+        return f'Saving {ref}_{aut}_{time_stamp}_aligned.hdf5'
+    except Exception:
+        pass
+        # This exception should only be raised if both files don't exist
+        # In that case, the exception from rf_data.read_data() will be 
+        # displayed here.
+
+
+        #return 'Both files didn\'t exist, moving on...'
 #    try:
 #        ref_name = f'{ref}_{time_stamp}'
 #        aut_name = f'{aut}_{time_stamp}'
@@ -119,36 +152,41 @@ for pair in align_pairs:
         ref_path = data_dir/ref/dates[d]
         aut_path = data_dir/aut/dates[d]
         
-        for time_stamp in date_time[d]:
-            
-            ref_file = ref_path/f'{ref}_{time_stamp}.txt'
-            aut_file = aut_path/f'{aut}_{time_stamp}.txt'
+        #for time_stamp in date_time[d]:
 
-            ref_t, ref_p, tile_t, tile_p = al.time_align(
-                    ref_file,
-                    aut_file
-                    )
-        
-            ref_p_aligned, tile_p_aligned, time_array = al.savgol_interp(
-                    ref_t,
-                    ref_p,
-                    tile_t,
-                    tile_p
-                    )
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            results = executor.map(save_aligned, date_time[d])
+           
+        for result in results:
+            print(result)
+            #try:
+            #    ref_file = ref_path/f'{ref}_{time_stamp}.txt'
+            #    aut_file = aut_path/f'{aut}_{time_stamp}.txt'
 
-            save_dir = out_dir/dates[d]/time_stamp
-            save_dir.mkdir(parents=True, exist_ok=True)
+            #    ref_t, ref_p, tile_t, tile_p = al.time_align(
+            #            ref_file,
+            #            aut_file
+            #            )
         
-            with h5py.File(f'{save_dir}/{ref}_{aut}_{time_stamp}_aligned.hdf5', 'w') as f:
-                f.create_dataset('ref_p_aligned', data=ref_p_aligned)
-                f.create_dataset('tile_p_aligned', data=tile_p_aligned)
-                f.create_dataset('time_array', data=time_array)
+            #    ref_p_aligned, tile_p_aligned, time_array = al.savgol_interp(
+            #            ref_t,
+            #            ref_p,
+            #            tile_t,
+            #            tile_p
+            #            )
+
+            #    save_dir = out_dir/dates[d]/time_stamp
+            #    save_dir.mkdir(parents=True, exist_ok=True)
         
-        #with concurrent.futures.ProcessPoolExecutor() as executor:
-        #    results = executor.map(save_align_data, date_time[d])
-        #   
-        #for result in results:
-        #    print(result)
+            #    with h5py.File(f'{save_dir}/{ref}_{aut}_{time_stamp}_aligned.hdf5', 'w') as f:
+            #        f.create_dataset('ref_p_aligned', data=ref_p_aligned)
+            #        f.create_dataset('tile_p_aligned', data=tile_p_aligned)
+            #        f.create_dataset('time_array', data=time_array)
+            #     
+            #    print(f'Saving {ref}_{aut}_{time_stamp}_aligned.hdf5')
+            #except Exception:
+            #    print('Both files didn\'t exist, moving on...')
+
 
 
 
