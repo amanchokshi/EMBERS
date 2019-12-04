@@ -64,6 +64,14 @@ This illustrates how `align_data.py` smoothes the noisy power data. The image di
 
 In practince, savgol smoothing and interpolation are applied to the 2D power arrays, along the time axis.
 
+Aligned pairs of data sets are saved using `batch_align.py`. Using a start date, and stop date, it saves aligned data sets as hdf5 files, for all raw data found in the time interval.
+
+```
+python batch_align.py --help
+```
+
+A `logs.txt` file is saved to the output directory. This shows which data sets were saved by `batch_align.py`, and also which data files were missing.
+
 ### Satellite Ephemeris  
 
 72 satellites have been identified, which actively emit between 137.150 and 138.550 MHz. These satellites are identified by their unique NORAD Catalogue Number, which are hard-coded into `sat_ids.py`. The satellites of interest are ORBCOMM communication Satellites, NOAA and Meteor weather satellites. 
