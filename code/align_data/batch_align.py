@@ -7,10 +7,9 @@ from pathlib import Path
 from itertools import product
 from datetime import datetime, timedelta
 
-#TODO needed to add code dir to PYTHONPATH for this import to work. 
-#TODO Is this the best way?
-from decode_rf_data import rf_data as rf
-
+import sys
+sys.path.append('../decode_rf_data')
+import rf_data as rf
 
 parser = argparse.ArgumentParser(description="""
     Time alignes and smoothes all data 
@@ -111,8 +110,6 @@ out_dir = Path(out_dir)
 
 
 #TODO Need proper exeptions to check whether data files exists!
-
-
 for pair in align_pairs:
     for d in range(len(dates)):
         ref = pair[0]
@@ -124,15 +121,12 @@ for pair in align_pairs:
         
         for time_stamp in date_time[d]:
             
-            ref_name = f'{ref}_{time_stamp}'
-            aut_name = f'{aut}_{time_stamp}'
+            ref_file = ref_path/f'{ref}_{time_stamp}.txt'
+            aut_file = aut_path/f'{aut}_{time_stamp}.txt'
 
-            print(f'{ref_path}/{ref_name}.txt')
-            print(f'{aut_path}/{aut_name}.txt')
-            
             ref_t, ref_p, tile_t, tile_p = al.time_align(
-                    f'{ref_path}/{ref_name}.txt',
-                    f'{aut_path}/{aut_name}.txt'
+                    ref_file,
+                    aut_file
                     )
         
             ref_p_aligned, tile_p_aligned, time_array = al.savgol_interp(
