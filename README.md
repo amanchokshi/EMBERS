@@ -68,15 +68,15 @@ In practince, savgol smoothing and interpolation are applied to the 2D power arr
 
 In this section of code we determine the trajectories of our satellites of interest.
 
-`cd ./code/sat-ephemeris`
+`cd ./code/sat_ephemeris`
 
 #### 1. Download Two Line Elements [ TLEs ]
 Two Line Elements contain information about the orbital elements of Earth-orbiting objects. They can be used to determine the ephemeris of satellites. Relevant TLEs are downloaded from [Space-Track.org](https://www.space-track.org/) using the [spacetrack](https://pypi.org/project/spacetrack/) Python module. An account on space-track.org is required to download TLEs. 
 
 
-`python download-tle.py --help` gives all options.  
+`python download_tle.py --help` gives all options.  
 
-`python download-tle.py --start_date=YYYY-MM-DD --stop_date=YYYY-MM-DD`   
+`python download_tle.py --start_date=YYYY-MM-DD --stop_date=YYYY-MM-DD`   
 
 #### 2. Satellite Ephemeris
 
