@@ -140,7 +140,7 @@ for pair in align_pairs:
                     )
 
             save_dir = out_dir/dates[d]/time_stamp
-            save_dir.mkdir(parents=True, exists_ok=True)
+            save_dir.mkdir(parents=True, exist_ok=True)
         
             with h5py.File(f'{save_dir}/{ref}_{aut}_{time_stamp}_aligned.hdf5', 'w') as f:
                 f.create_dataset('ref_p_aligned', data=ref_p_aligned)
