@@ -29,13 +29,16 @@ def time_align(ref, tile):
         tile_p:     Tile power array
     '''
 
+    # Read time and power arrays from data files
     ref_p, ref_t = read_data(ref)
     tile_p, tile_t = read_data(tile)
     
+    # Convert time arrays to numpy float arrays
     ref_t = np.asarray(ref_t).astype(float)
     tile_t = np.asarray(tile_t).astype(float)
     
     
+    # Align the top of the time and power arrays
     delta_t = []
     if ref_t[0] >= tile_t[0]:
         for i in range(len(tile_t)):
@@ -45,7 +48,7 @@ def time_align(ref, tile):
                 break
     
         abs_dt = np.absolute(delta_t)
-        min_idx = (delta_t.index(min(abs_dt)))
+        min_idx = (list(abs_dt).index(min(abs_dt)))
         
         tile_t = tile_t[min_idx:]
         tile_p = tile_p[min_idx:]
@@ -58,7 +61,7 @@ def time_align(ref, tile):
                 break
     
         abs_dt = np.absolute(delta_t)
-        min_idx = (delta_t.index(min(abs_dt)))
+        min_idx = (list(abs_dt).index(min(abs_dt)))
         
         ref_t = ref_t[min_idx:]
         ref_p = ref_p[min_idx:]
@@ -73,7 +76,7 @@ def time_align(ref, tile):
                 break
     
         abs_dt = np.absolute(delta_t)
-        min_idx = (delta_t.index(min(abs_dt)))
+        min_idx = (list(abs_dt).index(min(abs_dt)))
         
         ref_t = ref_t[:-min_idx]
         ref_p = ref_p[:-min_idx]
@@ -86,7 +89,7 @@ def time_align(ref, tile):
                 break
     
         abs_dt = np.absolute(delta_t)
-        min_idx = (delta_t.index(min(abs_dt)))
+        min_idx = (list(abs_dt).index(min(abs_dt)))
         
         tile_t = tile_t[:-min_idx]
         tile_p = tile_p[:-min_idx]
