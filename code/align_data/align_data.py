@@ -1,9 +1,9 @@
 import math
 import numpy as np
 
-#TODO needed to add code dir to PYTHONPATH. Is this the best way?
-from decode_rf_data.rf_data import read_data
-
+import sys
+sys.path.append('../decode_rf_data')
+from rf_data import read_data
 
 from scipy import interpolate
 from scipy.signal import savgol_filter
