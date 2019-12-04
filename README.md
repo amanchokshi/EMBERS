@@ -44,6 +44,8 @@ To plot a large batch of waterfall plots, use `batch_waterfall.py`. Using a star
 python batch_waterfall.py --help
 ```
 
+A `logs.txt` file is saved to the output directory. This shows what plots were saved by `batch_waterfall.py`, and also which data files were missing.
+
 ### Align Data
 
 The RF Explorers do not record data at exactly the same frequency and do not start recording at exactly the same time. In fact, the older models record at approximately 6 Hz, while the newer ones are capable of a sampling rate of nearly 9 Hz. This discrepency in sampling rates makes it difficult to compare any two data samples. This issue is overcome by smoothing the data, along the time axis, with a Savitzky-Golay filter. Interpolating the smoothed data and resampling it at a constant frequency gives us a easier data set to work with. The starting times of the power arrays are also synchronized.
