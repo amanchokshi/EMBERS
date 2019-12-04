@@ -43,7 +43,7 @@ chrono_ephem['sat_alt'] = list(alt)
 chrono_ephem['sat_az'] = list(az)
 
 
-with open('{}/ultimate_ephem_list.json'.format(json_dir), 'w') as outfile:
+with open(f'{json_dir}/ultimate_ephem_list.json', 'w') as outfile:
     json.dump(chrono_ephem, outfile)
 
 

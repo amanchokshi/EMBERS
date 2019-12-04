@@ -203,7 +203,7 @@ def sat_plot(sat_id, alt, az, num_passes, alpha=0.4):
     ax.set_rgrids([0,10,20,30,40,50,60,70,80,90], angle=22)
     ax.set_theta_zero_location('N')
     ax.set_theta_direction(-1)
-    ax.set_title('Satellite {} Sky Coverage: {} Passes'.format(sat_id,num_passes), y=1.08)
+    ax.set_title(f'Satellite {sat_id} Sky Coverage: {num_passes} Passes', y=1.08)
     ax.grid(color='#071011', linewidth=1.4, alpha=alpha)
     plt.tight_layout()
     
@@ -238,7 +238,7 @@ if __name__ == '__main__':
     cadence = int(args.cadence)
     out_dir = args.out_dir
     
-    tle_path = '{}/{}.txt'.format(tle_dir, sat_name)
+    tle_path = '{tle_dir}/{sat_name}.txt'
     
     
     os.makedirs(os.path.dirname(out_dir), exist_ok=True)
@@ -265,7 +265,7 @@ if __name__ == '__main__':
             sat_ephem['sat_alt'].append(sat_alt)
             sat_ephem['sat_az'].append(sat_az)
     
-    with open('{}/{}.json'.format(out_dir,sat_name), 'w') as outfile:
+    with open(f'{out_dir}/{sat_name}.json', 'w') as outfile:
         json.dump(sat_ephem, outfile)    
 
 

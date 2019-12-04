@@ -21,14 +21,14 @@ json_dir = args.json_dir
 os.makedirs(os.path.dirname(out_dir), exist_ok=True) 
 
 
-with open('{}/{}.json'.format(json_dir,sat_id), 'r') as ephem:
+with open(f'{json_dir}/{sat_id}.json', 'r') as ephem:
     sat_ephem = json.load(ephem)
     altitude = sat_ephem['sat_alt']
     azimuth = sat_ephem['sat_az']
     num_passes = len(sat_ephem['t_rise'])
     
     plt = sat_plot(sat_id, altitude, azimuth, num_passes)
-    plt.savefig('{}/{}'.format(out_dir,sat_id))
+    plt.savefig('{out_dir}/{sat_id}')
 
 
 
