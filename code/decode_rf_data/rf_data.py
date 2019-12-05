@@ -32,7 +32,7 @@ def read_data(filename):
             # I have no idea where the (-1/2) factor comes from
             # Remenant of Jared Rasti's code. Seems to work
             # Must be something to do with how data is written from RF
-            power = np.half(np.asarray(data_lines) * (-1 / 2))
+            power = np.single(np.asarray(data_lines) * (-1 / 2))
             times = np.double(np.asarray(times))
             
             return (power, times)
@@ -89,6 +89,7 @@ def plot_waterfall(power, times, name, n_axes=True):
         # Number of time steps on y-axis
         number_t = 5
         t_step = int(len(times)/(number_t-1))
+        times = list(times)
         times = times[::t_step]
         
         t_tz = []
