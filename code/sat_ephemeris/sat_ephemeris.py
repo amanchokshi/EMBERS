@@ -69,7 +69,7 @@ def epoch_ranges(epochs):
     return epoch_range
 
 
-def epoch_time_array(index_epoch, cadence):
+def epoch_time_array(epoch_range, index_epoch, cadence):
     '''Create a time array.
     
     Skyfield time object [time vector] at which
@@ -238,7 +238,7 @@ if __name__ == '__main__':
     cadence = int(args.cadence)
     out_dir = args.out_dir
     
-    tle_path = '{tle_dir}/{sat_name}.txt'
+    tle_path = f'{tle_dir}/{sat_name}.txt'
     
     
     os.makedirs(os.path.dirname(out_dir), exist_ok=True)
@@ -254,7 +254,7 @@ if __name__ == '__main__':
  #   print(sats)
     epoch_range = epoch_ranges(epochs)
     for i in range(len(epoch_range) - 1):   
-        t_arr, index_epoch = epoch_time_array(i, cadence)
+        t_arr, index_epoch = epoch_time_array(epoch_range, i, cadence)
         passes, alt, az = sat_pass(sats, t_arr, index_epoch) 
 #        print(passes)
         for pass_index in passes:
