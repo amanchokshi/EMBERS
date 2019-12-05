@@ -105,16 +105,16 @@ def save_aligned(time_stamp):
         save_dir = out_dir/dates[d]/time_stamp
         save_dir.mkdir(parents=True, exist_ok=True)
         
-        np.savez(f'{save_dir}/{ref}_{aut}_{time_stamp}_aligned.npz',
-                ref_p_aligned=ref_p_aligned,
-                tile_p_aligned=tile_p_aligned,
-                time_array=time_array
-                )
+        #np.savez(f'{save_dir}/{ref}_{aut}_{time_stamp}_aligned.npz',
+        #        ref_p_aligned=ref_p_aligned,
+        #        tile_p_aligned=tile_p_aligned,
+        #        time_array=time_array
+        #        )
 
-        #with h5py.File(f'{save_dir}/{ref}_{aut}_{time_stamp}_aligned.hdf5', 'w') as f:
-        #    f.create_dataset('ref_p_aligned', data=ref_p_aligned)
-        #    f.create_dataset('tile_p_aligned', data=tile_p_aligned)
-        #    f.create_dataset('time_array', data=time_array)
+        with h5py.File(f'{save_dir}/{ref}_{aut}_{time_stamp}_aligned.hdf5', 'w') as f:
+            f.create_dataset('ref_p_aligned', data=np.half(ref_p_aligned))
+            f.create_dataset('tile_p_aligned', data=np.half(tile_p_aligned))
+            f.create_dataset('time_array', data=np.double(time_array))
          
         return f'Saving {ref}_{aut}_{time_stamp}_aligned.hdf5'
     except Exception:
