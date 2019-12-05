@@ -111,7 +111,7 @@ def time_align(ref, tile):
     
     
 
-def savgol_interp(ref_t, ref_p, tile_t, tile_p, savgol_window =151, polyorder=1, interp_type='cubic', interp_freq=6):
+def savgol_interp(ref_t, ref_p, tile_t, tile_p, savgol_window =None, polyorder=None, interp_type=None, interp_freq=None):
     """Smooth and interpolate the power array
 
     Smooth the power arrays with a savgol filter
@@ -191,7 +191,11 @@ if __name__ == '__main__':
             ref_t,
             ref_p,
             tile_t,
-            tile_p
+            tile_p,
+            savgol_window =151,
+            polyorder=1,
+            interp_type='cubic',
+            interp_freq=6
             )
 
 
