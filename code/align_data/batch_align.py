@@ -23,6 +23,11 @@ parser.add_argument('--data_dir', metavar='\b', help='Dir where date is saved')
 parser.add_argument('--start_date', metavar='\b', help='Date from which to start aligning data. Ex: 2019-10-10')
 parser.add_argument('--stop_date', metavar='\b', help='Date until which to align data. Ex: 2019-10-11')
 parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/align_data/',help='Output directory. Default=./../../outputs/align_data/')
+parser.add_argument('--savgol_window', metavar='\b', default=151,help='Length of savgol window. Must be odd. Default=151')
+parser.add_argument('--polyorder', metavar='\b', default=1,help='Order of polynomial to fit to savgol window. Default=1')
+parser.add_argument('--interp_type', metavar='\b', default='cubic',help='Type of interpolation. Ex: cubic, linear, etc. Default=cubic')
+parser.add_argument('--interp_freq', metavar='\b', default='2',help='Frequency at which to resample smoothed data, in Hertz. Default=2')
+
 
 args = parser.parse_args()
 data_dir = args.data_dir
@@ -105,18 +110,13 @@ def save_aligned(time_stamp):
         save_dir = out_dir/dates[d]/time_stamp
         save_dir.mkdir(parents=True, exist_ok=True)
         
-        #np.savez(f'{save_dir}/{ref}_{aut}_{time_stamp}_aligned.npz',
-        #        ref_p_aligned=ref_p_aligned,
-        #        tile_p_aligned=tile_p_aligned,
-        #        time_array=time_array
-        #        )
+        np.savez_compressed(f'{save_dir}/{ref}_{aut}_{time_stamp}_aligned.npz',
+                ref_p_aligned=np.single(ref_p_aligned),
+                tile_p_aligned=np.single(tile_p_aligned),
+                time_array=np.double(time_array)
+                )
 
-        with h5py.File(f'{save_dir}/{ref}_{aut}_{time_stamp}_aligned.hdf5', 'w') as f:
-            f.create_dataset('ref_p_aligned', data=np.half(ref_p_aligned))
-            f.create_dataset('tile_p_aligned', data=np.half(tile_p_aligned))
-            f.create_dataset('time_array', data=np.double(time_array))
-         
-        return f'Saving {ref}_{aut}_{time_stamp}_aligned.hdf5'
+        return f'Saving {ref}_{aut}_{time_stamp}_aligned.npz'
     except Exception:
         return f'Cound not save {ref}_{aut}_{time_stamp}_aligned.hdf5. Missing file'
         # This exception should only be raised if both files don't exist
