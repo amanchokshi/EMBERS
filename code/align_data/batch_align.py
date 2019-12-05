@@ -107,9 +107,13 @@ def save_aligned(time_stamp):
                 tile_p
                 )
 
+        # creates outpud directory if it doesn't exist
         save_dir = out_dir/dates[d]/time_stamp
         save_dir.mkdir(parents=True, exist_ok=True)
         
+        # Convert the power array to float32
+        # Convert list of times to float64 (double)
+        # Save as compressed npz file. Seems to drastically reduce size
         np.savez_compressed(f'{save_dir}/{ref}_{aut}_{time_stamp}_aligned.npz',
                 ref_p_aligned=np.single(ref_p_aligned),
                 tile_p_aligned=np.single(tile_p_aligned),
@@ -117,6 +121,7 @@ def save_aligned(time_stamp):
                 )
 
         return f'Saving {ref}_{aut}_{time_stamp}_aligned.npz'
+
     except Exception:
         return f'Cound not save {ref}_{aut}_{time_stamp}_aligned.hdf5. Missing file'
         # This exception should only be raised if both files don't exist
@@ -130,20 +135,15 @@ for pair in align_pairs:
         ref = pair[0]
         aut = pair[1]
     
-        
         ref_path = data_dir/ref/dates[d]
         aut_path = data_dir/aut/dates[d]
-        
-        #for time_stamp in date_time[d]:
-
+       
+        # Parallization magic happens here
         with concurrent.futures.ProcessPoolExecutor() as executor:
             results = executor.map(save_aligned, date_time[d])
 
 
         for result in results:
             print(result)
-
-
-
 
 
