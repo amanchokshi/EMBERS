@@ -30,15 +30,20 @@ parser.add_argument('--interp_freq', metavar='\b', default='2',help='Frequency a
 
 
 args = parser.parse_args()
-data_dir = args.data_dir
-start_date = args.start_date
-stop_date = args.stop_date
-out_dir = args.out_dir
+
+data_dir =          args.data_dir
+start_date =        args.start_date
+stop_date =         args.stop_date
+out_dir =           args.out_dir
+savgol_window =     args.savgol_window
+polyorder =         args.polyorder
+interp_type =       args.interp_type
+interp_freq =       args.interp_freq
 
 
 # Save logs 
 Path(out_dir).mkdir(parents=True, exist_ok=True)
-sys.stdout = open(f'{out_dir}/logs.txt', 'a')
+sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
 
 # Import list of tile names from rf_data.py
 tiles = rf.tile_names()
@@ -104,7 +109,11 @@ def save_aligned(time_stamp):
                 ref_t,
                 ref_p,
                 tile_t,
-                tile_p
+                tile_p,
+                savgol_window=savgol_window,
+                polyorder=polyorder,
+                interp_type=interp_type,
+                interp_freq=interp_freq
                 )
 
         # creates outpud directory if it doesn't exist
