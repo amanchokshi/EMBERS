@@ -1,10 +1,13 @@
 import os
+import sys
 import json
 import argparse
 import sat_ephemeris as se
+import sat_ids
 
 import numpy as np
 import skyfield as sf
+import concurrent.futures
 from astropy.time import Time
 from skyfield.api import Topos, load
 
@@ -36,33 +39,49 @@ out_dir = args.out_dir
 
 tle_path = f'{tle_dir}/{sat_name}.txt'
 
+sat_list = list(sat_ids.norad_ids.values())
+
+
+# Save logs 
+Path(out_dir).mkdir(parents=True, exist_ok=True)
+sys.stdout = open(f'{out_dir}/sat_ephem_logs.txt', 'a')
 
 os.makedirs(os.path.dirname(out_dir), exist_ok=True)
 
-sat_ephem = {}
-sat_ephem['sat_id'] = [sat_name]
-sat_ephem['t_rise'] = []
-sat_ephem['t_set'] = []
-sat_ephem['sat_alt'] = []
-sat_ephem['sat_az'] = []
+def sat_json(sat_id):
+    try:
+        sat_ephem = {}
+        sat_ephem['sat_id'] = [sat_name]
+        sat_ephem['t_rise'] = []
+        sat_ephem['t_set'] = []
+        sat_ephem['sat_alt'] = []
+        sat_ephem['sat_az'] = []
+        
+        sats, epochs = se.load_tle(tle_path)
+        epoch_range = se.epoch_ranges(epochs)
+        
+        for i in range(len(epoch_range) - 1):   
+            t_arr, index_epoch = se.epoch_time_array(epoch_range, i, cadence)
+            passes, alt, az = se.sat_pass(sats, t_arr, index_epoch) 
+            print(passes)
+            for pass_index in passes:
+                t_rise, t_set, sat_alt, sat_az = se.ephem_data(t_arr, pass_index, alt, az)
+        
+                sat_ephem['t_rise'].append(t_rise)
+                sat_ephem['t_set'].append(t_set)
+                sat_ephem['sat_alt'].append(sat_alt)
+                sat_ephem['sat_az'].append(sat_az)
+        
+        with open(f'{out_dir}/{sat_name}.json', 'w') as outfile:
+            json.dump(sat_ephem, outfile) 
+        
+        return f'Saved {sat_name}.json'
+    except Exception:
+        return f'ERROR! Couldn\'t save {sat_name}.json.'
 
-sats, epochs = se.load_tle(tle_path)
-epoch_range = se.epoch_ranges(epochs)
+with concurrent.futures.ProcessPoolExecutor() as executor:
+    results = executor.map(sat_json, sat_list)
 
-for i in range(len(epoch_range) - 1):   
-    t_arr, index_epoch = se.epoch_time_array(epoch_range, i, cadence)
-    passes, alt, az = se.sat_pass(sats, t_arr, index_epoch) 
-    print(passes)
-    for pass_index in passes:
-        t_rise, t_set, sat_alt, sat_az = se.ephem_data(t_arr, pass_index, alt, az)
-
-        sat_ephem['t_rise'].append(t_rise)
-        sat_ephem['t_set'].append(t_set)
-        sat_ephem['sat_alt'].append(sat_alt)
-        sat_ephem['sat_az'].append(sat_az)
-
-with open(f'{out_dir}/{sat_name}.json', 'w') as outfile:
-    json.dump(sat_ephem, outfile)    
-
-
+for result in results:
+    print(result)
 
