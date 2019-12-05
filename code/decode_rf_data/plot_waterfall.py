@@ -23,5 +23,5 @@ plt = rf.plot_waterfall(power, times, rf_name)
 # Make output dir if it doesn't exist
 os.makedirs(os.path.dirname(out_dir), exist_ok=True)
 
-plt.savefig('{out_dir}/{rf_name}.png')
+plt.savefig(f'{out_dir}/{rf_name}.png')
 
