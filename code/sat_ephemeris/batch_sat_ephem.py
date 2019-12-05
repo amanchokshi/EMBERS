@@ -26,28 +26,24 @@ parser = argparse.ArgumentParser(description="""
         be used to plot the satellite passes.
         """)
         
-#parser.add_argument('--sat', metavar='\b', help='The Norad cat ID of satellite. Example: 21576')
 parser.add_argument('--tle_dir', metavar='\b', default='./../../outputs/sat_ephemeris/TLE', help='Directory where TLE files are saved. Default=./../../outputs/sat_ephemeris/TLE')
 parser.add_argument('--cadence', metavar='\b', default=20, help='Rate at which sat alt/az is computed. Expensive! Default=20s')
 parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/sat_ephemeris/ephem_json/', help='Path to output directory. Default=./../../outputs/sat_ephemeris/ephem_json/')
 
-
 args = parser.parse_args()
-#sat_name = args.sat
+
 tle_dir = args.tle_dir
 cadence = int(args.cadence)
 out_dir = args.out_dir
 
-
+# Load list of satellites (Nodar ids)
 sat_list = list(sat_ids.norad_ids.values())
-
 
 # Save logs 
 Path(out_dir).mkdir(parents=True, exist_ok=True)
 sys.stdout = open(f'{out_dir}/sat_ephem_logs.txt', 'a')
 
-#os.makedirs(os.path.dirname(out_dir), exist_ok=True)
-
+# Save ephem date for one satellite
 def sat_json(sat_id):
     try:
         sat_ephem = {}
@@ -80,6 +76,8 @@ def sat_json(sat_id):
     except Exception:
         return f'ERROR! Couldn\'t save {sat_id}.json.'
 
+
+# Parellization Magic Here!
 with concurrent.futures.ProcessPoolExecutor() as executor:
     results = executor.map(sat_json, sat_list)
 
