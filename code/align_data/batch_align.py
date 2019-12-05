@@ -1,4 +1,3 @@
-import h5py
 import argparse
 import numpy as np
 import align_data as al
@@ -26,7 +25,7 @@ parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/align_da
 parser.add_argument('--savgol_window', metavar='\b', default=151,help='Length of savgol window. Must be odd. Default=151')
 parser.add_argument('--polyorder', metavar='\b', default=1,help='Order of polynomial to fit to savgol window. Default=1')
 parser.add_argument('--interp_type', metavar='\b', default='cubic',help='Type of interpolation. Ex: cubic, linear, etc. Default=cubic')
-parser.add_argument('--interp_freq', metavar='\b', default='2',help='Frequency at which to resample smoothed data, in Hertz. Default=2')
+parser.add_argument('--interp_freq', metavar='\b', default=2,help='Frequency at which to resample smoothed data, in Hertz. Default=2')
 
 
 args = parser.parse_args()
@@ -132,7 +131,7 @@ def save_aligned(time_stamp):
         return f'Saving {ref}_{aut}_{time_stamp}_aligned.npz'
 
     except Exception:
-        return f'Cound not save {ref}_{aut}_{time_stamp}_aligned.hdf5. Missing file'
+        return f'Cound not save {ref}_{aut}_{time_stamp}_aligned.npz. Missing file'
         # This exception should only be raised if both files don't exist
         # In that case, the exception from rf_data.read_data() will be 
         # displayed here.
