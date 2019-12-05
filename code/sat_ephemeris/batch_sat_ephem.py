@@ -7,6 +7,7 @@ import sat_ids
 
 import numpy as np
 import skyfield as sf
+from pathlib import Path
 import concurrent.futures
 from astropy.time import Time
 from skyfield.api import Topos, load
@@ -25,19 +26,18 @@ parser = argparse.ArgumentParser(description="""
         be used to plot the satellite passes.
         """)
         
-parser.add_argument('--sat', metavar='\b', help='The Norad cat ID of satellite. Example: 21576')
+#parser.add_argument('--sat', metavar='\b', help='The Norad cat ID of satellite. Example: 21576')
 parser.add_argument('--tle_dir', metavar='\b', default='./../../outputs/sat_ephemeris/TLE', help='Directory where TLE files are saved. Default=./../../outputs/sat_ephemeris/TLE')
 parser.add_argument('--cadence', metavar='\b', default=20, help='Rate at which sat alt/az is computed. Expensive! Default=20s')
 parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/sat_ephemeris/ephem_json/', help='Path to output directory. Default=./../../outputs/sat_ephemeris/ephem_json/')
 
 
 args = parser.parse_args()
-sat_name = args.sat
+#sat_name = args.sat
 tle_dir = args.tle_dir
 cadence = int(args.cadence)
 out_dir = args.out_dir
 
-tle_path = f'{tle_dir}/{sat_name}.txt'
 
 sat_list = list(sat_ids.norad_ids.values())
 
@@ -46,17 +46,18 @@ sat_list = list(sat_ids.norad_ids.values())
 Path(out_dir).mkdir(parents=True, exist_ok=True)
 sys.stdout = open(f'{out_dir}/sat_ephem_logs.txt', 'a')
 
-os.makedirs(os.path.dirname(out_dir), exist_ok=True)
+#os.makedirs(os.path.dirname(out_dir), exist_ok=True)
 
 def sat_json(sat_id):
     try:
         sat_ephem = {}
-        sat_ephem['sat_id'] = [sat_name]
+        sat_ephem['sat_id'] = [sat_id]
         sat_ephem['t_rise'] = []
         sat_ephem['t_set'] = []
         sat_ephem['sat_alt'] = []
         sat_ephem['sat_az'] = []
         
+        tle_path = f'{tle_dir}/{sat_id}.txt'
         sats, epochs = se.load_tle(tle_path)
         epoch_range = se.epoch_ranges(epochs)
         
@@ -72,12 +73,12 @@ def sat_json(sat_id):
                 sat_ephem['sat_alt'].append(sat_alt)
                 sat_ephem['sat_az'].append(sat_az)
         
-        with open(f'{out_dir}/{sat_name}.json', 'w') as outfile:
+        with open(f'{out_dir}/{sat_id}.json', 'w') as outfile:
             json.dump(sat_ephem, outfile) 
         
-        return f'Saved {sat_name}.json'
+        return f'Saved {sat_id}.json'
     except Exception:
-        return f'ERROR! Couldn\'t save {sat_name}.json.'
+        return f'ERROR! Couldn\'t save {sat_id}.json.'
 
 with concurrent.futures.ProcessPoolExecutor() as executor:
     results = executor.map(sat_json, sat_list)
