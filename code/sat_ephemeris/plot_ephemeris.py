@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser(description="""
 
 parser.add_argument('--sat', metavar='\b', help='Norad cat ID of satellite. Ex:23545')
 parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/sat_ephemeris/ephem_plots/', help='Path to output directory. Default=./../../outputs/sat_ephemeris/ephem_plots/')
-parser.add_argument('--json_dir', metavar='\b', default='./../../outputs/sat_ephemeris/phem_json/', help='Path to ephem_json directory. Default=./../../outputs/sat_ephemeris/ephem_json/')
+parser.add_argument('--json_dir', metavar='\b', default='./../../outputs/sat_ephemeris/ephem_json/', help='Path to ephem_json directory. Default=./../../outputs/sat_ephemeris/ephem_json/')
 
 args = parser.parse_args()
 sat_id = args.sat
@@ -28,7 +28,7 @@ with open(f'{json_dir}/{sat_id}.json', 'r') as ephem:
     num_passes = len(sat_ephem['t_rise'])
     
     plt = sat_plot(sat_id, altitude, azimuth, num_passes)
-    plt.savefig('{out_dir}/{sat_id}')
+    plt.savefig(f'{out_dir}/{sat_id}')
 
 
 
