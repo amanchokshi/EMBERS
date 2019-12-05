@@ -1,5 +1,6 @@
 import h5py
 import argparse
+import numpy as np
 import align_data as al
 import concurrent.futures
 
@@ -105,9 +106,9 @@ def save_aligned(time_stamp):
         save_dir.mkdir(parents=True, exist_ok=True)
         
         np.savez(f'{save_dir}/{ref}_{aut}_{time_stamp}_aligned.npz',
-                ref_p_aligned,
-                tile_p_aligned,
-                time_array
+                ref_p_aligned=ref_p_aligned,
+                tile_p_aligned=tile_p_aligned,
+                time_array=time_array
                 )
 
         #with h5py.File(f'{save_dir}/{ref}_{aut}_{time_stamp}_aligned.hdf5', 'w') as f:
