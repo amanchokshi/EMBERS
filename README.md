@@ -115,8 +115,10 @@ Using the json files created in the previous section, we can now plot satellite 
 ```
 python plot_ephemeris.py --help
 
-python plot_ephemeris.py --sat=XXXXX
+python plot_ephemeris.py
 ```
+This will plot all the json ephemeris files that were generated in the previous section, and will save them to `../../outputs/sat_ephemeris/ephem_plots/`
+
 &nbsp;
 
 <p float="left">
