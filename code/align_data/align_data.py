@@ -33,10 +33,6 @@ def time_align(ref, tile):
     ref_p, ref_t = read_data(ref)
     tile_p, tile_t = read_data(tile)
     
-    # Convert time arrays to numpy float arrays
-    ref_t = np.asarray(ref_t).astype(float)
-    tile_t = np.asarray(tile_t).astype(float)
-    
     
     # Align the top of the time and power arrays
     delta_t = []
