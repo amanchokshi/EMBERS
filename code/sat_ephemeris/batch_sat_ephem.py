@@ -48,8 +48,7 @@ def sat_json(sat_id):
     try:
         sat_ephem = {}
         sat_ephem['sat_id'] = [sat_id]
-        sat_ephem['t_rise'] = []
-        sat_ephem['t_set'] = []
+        sat_ephem['time_array'] = []
         sat_ephem['sat_alt'] = []
         sat_ephem['sat_az'] = []
         
@@ -62,10 +61,9 @@ def sat_json(sat_id):
             passes, alt, az = se.sat_pass(sats, t_arr, index_epoch) 
             print(passes)
             for pass_index in passes:
-                t_rise, t_set, sat_alt, sat_az = se.ephem_data(t_arr, pass_index, alt, az)
+                time_array, sat_alt, sat_az = se.ephem_data(t_arr, pass_index, alt, az)
         
-                sat_ephem['t_rise'].append(t_rise)
-                sat_ephem['t_set'].append(t_set)
+                sat_ephem['time_array'].append(t_set)
                 sat_ephem['sat_alt'].append(sat_alt)
                 sat_ephem['sat_az'].append(sat_az)
         
