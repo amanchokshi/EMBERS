@@ -95,7 +95,7 @@ def epoch_time_array(epoch_range, index_epoch, cadence):
     year, month, day = date.split('-')
     hour, minute,_ = time.split(':')
     
-    # Create a time array, every 20 seconds, starting at the first epoch, approximately
+    # Create a time array, every 20[cadence] seconds, starting at the first epoch, approximately
     seconds = np.arange(0,dt,cadence)
     t_arr = ts.utc(int(year), int(month), int(day), int(hour), int(minute), seconds)
 
@@ -169,8 +169,11 @@ def ephem_data(t_arr, pass_index, alt, az):
     '''
 
     i, j = pass_index
-    t_rise = Time(t_arr[i].tt, format='jd').gps
-    t_set = Time(t_arr[j].tt, format='jd').gps
+    #t_rise = Time(t_arr[i].tt, format='jd').gps
+    #t_set = Time(t_arr[j].tt, format='jd').gps
+
+    # A list of times at which alt/az were calculated
+    time_array=Time(t_arr[i:j+1].tt, format='jd').gps
 
     theta = list(az.radians)
     r = list(alt.degrees)
@@ -178,7 +181,7 @@ def ephem_data(t_arr, pass_index, alt, az):
     sat_az = theta[i:j+1]
     sat_alt = r[i:j+1]
     
-    return (t_rise, t_set, sat_alt, sat_az)
+    return (time_array, sat_alt, sat_az)
 
 
 def sat_plot(sat_id, alt, az, num_passes, alpha=0.3):
@@ -245,8 +248,7 @@ if __name__ == '__main__':
     
     sat_ephem = {}
     sat_ephem['sat_id'] = [sat_name]
-    sat_ephem['t_rise'] = []
-    sat_ephem['t_set'] = []
+    sat_ephem['time_array'] = []
     sat_ephem['sat_alt'] = []
     sat_ephem['sat_az'] = []
     
@@ -256,12 +258,13 @@ if __name__ == '__main__':
     for i in range(len(epoch_range) - 1):   
         t_arr, index_epoch = epoch_time_array(epoch_range, i, cadence)
         passes, alt, az = sat_pass(sats, t_arr, index_epoch) 
-#        print(passes)
+        
         for pass_index in passes:
-            t_rise, t_set, sat_alt, sat_az = ephem_data(t_arr, pass_index, alt, az)
-    
-            sat_ephem['t_rise'].append(t_rise)
-            sat_ephem['t_set'].append(t_set)
+            time_array, sat_alt, sat_az = ephem_data(t_arr, pass_index, alt, az)
+            
+            time_array = list(time_array)
+
+            sat_ephem['time_array'].append(time_array)
             sat_ephem['sat_alt'].append(sat_alt)
             sat_ephem['sat_az'].append(sat_az)
     
