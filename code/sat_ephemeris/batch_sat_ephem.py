@@ -39,6 +39,7 @@ out_dir = args.out_dir
 # Load list of satellites (Nodar ids)
 sat_list = list(sat_ids.norad_ids.values())
 
+
 # Save logs 
 Path(out_dir).mkdir(parents=True, exist_ok=True)
 sys.stdout = open(f'{out_dir}/sat_ephem_logs.txt', 'a')
@@ -59,11 +60,13 @@ def sat_json(sat_id):
         for i in range(len(epoch_range) - 1):   
             t_arr, index_epoch = se.epoch_time_array(epoch_range, i, cadence)
             passes, alt, az = se.sat_pass(sats, t_arr, index_epoch) 
-            print(passes)
+#            print(passes)
             for pass_index in passes:
                 time_array, sat_alt, sat_az = se.ephem_data(t_arr, pass_index, alt, az)
-        
-                sat_ephem['time_array'].append(t_set)
+       
+                time_array = list(time_array)
+
+                sat_ephem['time_array'].append(time_array)
                 sat_ephem['sat_alt'].append(sat_alt)
                 sat_ephem['sat_az'].append(sat_az)
         
@@ -74,11 +77,12 @@ def sat_json(sat_id):
     except Exception:
         return f'ERROR! Couldn\'t save {sat_id}.json.'
 
+sat_json(21576)
 
 # Parellization Magic Here!
-with concurrent.futures.ProcessPoolExecutor() as executor:
-    results = executor.map(sat_json, sat_list)
+#with concurrent.futures.ProcessPoolExecutor() as executor:
+#    results = executor.map(sat_json, sat_list)
 
-for result in results:
-    print(result)
+#for result in results:
+#    print(result)
 
