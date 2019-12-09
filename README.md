@@ -190,7 +190,7 @@ python pointing_list
 
 This creates an `ultimate_pointing_times.json` file in the metadata directory. `pointing_list.py` has condensed observations with the same pointing into blocks of observation. Each entry in `ultimate_pointing_times.json` contains the `grid_pt` number, `start_gps`, `stop_gps` time and `obs_length` in seconds.
 
-A good way to visualise the amount of data collected so far is to use `plot_pointings.py`. This computes total integration over each pointing, and converts it into hours. A threshold value can be set, which difines a time below which a pointing is not plotted. The default is 15 hours.
+A good way to visualise the amount of data collected so far is to use `plot_pointings.py`. This computes total integration over each pointing, and converts it into hours. A threshold value can be set, which difines a time below which a pointing is not plotted. The default is 30 hours.
 
 ```
 python plot_pointings.py --help
