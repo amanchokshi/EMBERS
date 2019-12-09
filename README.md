@@ -128,7 +128,7 @@ This will plot all the json ephemeris files that were generated in the previous 
 
 #### 4. Chronological Ephemeris
 
-In later stages of this pipeline, we will need satellite ephemeris in chronological order. `chrono_ephem.py` collates data in all the json files produced by `sat_ephemeris.py`. Satellite passes are sorted by rise time, and saved to a new file `ultimate_ephem_list.json`.
+In later stages of this pipeline, we will need satellite ephemeris in chronological order. `chrono_ephem.py` collates data in all the json files produced by `sat_ephemeris.py`. As a first step, the gps timestamps used by `skyfield`, are converted to unix timestamps, to match the format used in the rf explorer data. Next, the satellite alt/az ephemeris are interpolated, to match the time cadence of `align_data.py`. It is crutial to remember to set `--interp_freq` to be the same as that used in `align_data.py`, or just use the default of 2 Hz. Satellite passes are then sorted by rise time, and saved to a new file `ultimate_ephem_list.json`. 
 
 ```
 python chrono_ephem.py --help
