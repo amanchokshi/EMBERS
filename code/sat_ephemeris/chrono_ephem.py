@@ -1,6 +1,10 @@
 import os
+import math
 import json
 import argparse
+import numpy as np
+
+from scipy import interpolate
 
 parser = argparse.ArgumentParser(description="""
         Collates satellite pass data from all ephem json files.
@@ -21,15 +25,42 @@ az          = []
 for file in os.listdir(json_dir):
     if file.endswith('.json'):
         f_path = os.path.join(json_dir, file)
-
+        
         with open(f_path) as ephem:
             sat_ephem = json.load(ephem)
-            az.extend(sat_ephem['sat_az'])
-            alt.extend(sat_ephem['sat_alt'])
-            time_array.extend(sat_ephem['time_array'])
-            sat_id.extend([sat_ephem['sat_id'][0] for i in range(len(sat_ephem['time_array']))])
 
 
+            t_array  = sat_ephem['time_array']
+            s_alt     = sat_ephem['sat_alt']
+            s_az      = sat_ephem['sat_az']
+           
+            
+            for p in range(len(t_array)):
+
+                # Don't consider passes with less than 4 samples (~ 1 min)
+                if len(t_array[p]) > 3:
+                    
+                    alt_interp = interpolate.interp1d(t_array[p], s_alt[p], kind='cubic')
+                    az_interp  = interpolate.interp1d(t_array[p], s_az[p], kind='cubic')
+           
+                    t_start = math.ceil(t_array[p][0])
+                    t_stop  = math.floor(t_array[p][-1])
+
+                    time_interp = list(np.arange(t_start, t_stop, (1/2)))
+
+                    sat_alt = alt_interp(time_interp)
+                    sat_az = az_interp(time_interp)
+
+                    az.extend(sat_az)
+                    alt.extend(sat_alt)
+                    time_array.extend(time_interp)
+                    sat_id.extend(sat_ephem['sat_id'])
+                else:
+                    pass
+
+#    break
+
+#TODO Firgure out sorting these lists and better argparse for interp freq, etc
 # sort all the lists based on time_array
 time_array, alt, az, sat_id = zip(*sorted(zip(time_array, alt, az, sat_id)))
 
