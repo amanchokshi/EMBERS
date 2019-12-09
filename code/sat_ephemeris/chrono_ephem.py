@@ -13,11 +13,16 @@ parser = argparse.ArgumentParser(description="""
         """)
 
 parser.add_argument('--json_dir', metavar='\b', default='./../../outputs/sat_ephemeris/ephem_json/', help='Directory where ephem json files live. Default=./../../outputs/sat_ephemeris/ephem_json/')
+parser.add_argument('--interp_type', metavar='\b', default='cubic', help='Type of interpolation. Ex: Cubic,Linear. Default=Cubic')
+parser.add_argument('--interp_freq', metavar='\b', default=2, help='Frequency at which to interpolate, in Hertz. Must be the same as used in align_data.py. Default=2')
 
 args = parser.parse_args()
 json_dir = args.json_dir
+interp_type = args.interp_type
+interp_freq = args.interp_freq
 
 time_array  = []
+t_rise      = []
 sat_id      = []
 alt         = []
 az          = []
@@ -40,13 +45,13 @@ for file in os.listdir(json_dir):
                 # Don't consider passes with less than 4 samples (~ 1 min)
                 if len(t_array[p]) > 3:
                     
-                    alt_interp = interpolate.interp1d(t_array[p], s_alt[p], kind='cubic')
-                    az_interp  = interpolate.interp1d(t_array[p], s_az[p], kind='cubic')
+                    alt_interp = interpolate.interp1d(t_array[p], s_alt[p], kind=interp_type)
+                    az_interp  = interpolate.interp1d(t_array[p], s_az[p], kind=interp_type)
            
                     t_start = math.ceil(t_array[p][0])
                     t_stop  = math.floor(t_array[p][-1])
 
-                    time_interp = list(np.arange(t_start, t_stop, (1/2)))
+                    time_interp = list(np.arange(t_start, t_stop, (1/interp_freq)))
 
                     sat_alt = alt_interp(time_interp)
                     sat_az = az_interp(time_interp)
@@ -54,15 +59,12 @@ for file in os.listdir(json_dir):
                     az.extend(sat_az)
                     alt.extend(sat_alt)
                     time_array.extend(time_interp)
+                    t_rise.append(t_start)
                     sat_id.extend(sat_ephem['sat_id'])
                 else:
                     pass
 
-#    break
-
-#TODO Firgure out sorting these lists and better argparse for interp freq, etc
-# sort all the lists based on time_array
-time_array, alt, az, sat_id = zip(*sorted(zip(time_array, alt, az, sat_id)))
+_, time_array, alt, az, sat_id = zip(*sorted(zip(t_rise, time_array, alt, az, sat_id)))
 
 chrono_ephem = {}
 chrono_ephem['sat_id']      = list(sat_id)
