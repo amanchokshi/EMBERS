@@ -99,16 +99,10 @@ def save_aligned(time_stamp):
         ref_file = ref_path/f'{ref}_{time_stamp}.txt'
         aut_file = aut_path/f'{aut}_{time_stamp}.txt'
 
-        ref_t, ref_p, tile_t, tile_p = al.time_align(
+        
+        _, _, _, _, ref_p_aligned, tile_p_aligned, time_array = al.savgol_interp(
                 ref_file,
-                aut_file
-                )
-  
-        ref_p_aligned, tile_p_aligned, time_array = al.savgol_interp(
-                ref_t,
-                ref_p,
-                tile_t,
-                tile_p,
+                aut_file,
                 savgol_window=savgol_window,
                 polyorder=polyorder,
                 interp_type=interp_type,
