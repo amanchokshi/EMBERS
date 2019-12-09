@@ -78,7 +78,7 @@ A `logs.txt` file is saved to the output directory. This shows which data sets w
 
 In this section of code we determine the trajectories of our satellites of interest.
 
-`cd ./code/sat_ephemeris`
+`cd ../sat_ephemeris`
 
 #### 1. Download Two Line Elements [ TLEs ]
 Two Line Elements contain information about the orbital elements of Earth-orbiting objects. They can be used to determine the ephemeris of satellites. Relevant TLEs are downloaded from [Space-Track.org](https://www.space-track.org/) using the [spacetrack](https://pypi.org/project/spacetrack/) Python module. An account on space-track.org is required to download TLEs. 
@@ -143,7 +143,7 @@ The MWA Telescope points its beam in different directions by giving each of its 
 It is important to know where the telescope is pointing at all times, because we will be making individual beam maps for each pointing. This metadata is available at [http://ws.mwatelescope.org](http://ws.mwatelescope.org/metadata/find). Metadata form the MWA telescope can be downloaded by following these steps.
 
 ```
-cd ./code/beam-pointings/
+cd ../beam-pointings/
 ```
 
 let us download date between `2019-09-11 00:00:00` and `2019-11-02 00:00:00`. 
