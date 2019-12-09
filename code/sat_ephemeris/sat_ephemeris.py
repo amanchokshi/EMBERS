@@ -253,8 +253,8 @@ if __name__ == '__main__':
     sat_ephem['sat_az'] = []
     
     sats, epochs = load_tle(tle_path)
- #   print(sats)
     epoch_range = epoch_ranges(epochs)
+    
     for i in range(len(epoch_range) - 1):   
         t_arr, index_epoch = epoch_time_array(epoch_range, i, cadence)
         passes, alt, az = sat_pass(sats, t_arr, index_epoch) 
@@ -269,6 +269,6 @@ if __name__ == '__main__':
             sat_ephem['sat_az'].append(sat_az)
     
     with open(f'{out_dir}/{sat_name}.json', 'w') as outfile:
-        json.dump(sat_ephem, outfile)    
+        json.dump(sat_ephem, outfile, indent=4)    
 
 

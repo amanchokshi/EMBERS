@@ -29,7 +29,7 @@ for sat_id in sat_list:
             sat_ephem = json.load(ephem)
             altitude = sat_ephem['sat_alt']
             azimuth = sat_ephem['sat_az']
-            num_passes = len(sat_ephem['t_rise'])
+            num_passes = len(sat_ephem['time_array'])
             
             plt = sat_plot(sat_id, altitude, azimuth, num_passes)
             plt.savefig(f'{out_dir}/{sat_id}.png')

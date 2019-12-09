@@ -13,11 +13,10 @@ parser.add_argument('--json_dir', metavar='\b', default='./../../outputs/sat_eph
 args = parser.parse_args()
 json_dir = args.json_dir
 
-sat_id = []
-t_rise = []
-t_set = []
-alt = []
-az = []
+time_array  = []
+sat_id      = []
+alt         = []
+az          = []
 
 for file in os.listdir(json_dir):
     if file.endswith('.json'):
@@ -27,24 +26,22 @@ for file in os.listdir(json_dir):
             sat_ephem = json.load(ephem)
             az.extend(sat_ephem['sat_az'])
             alt.extend(sat_ephem['sat_alt'])
-            t_set.extend(sat_ephem['t_set'])
-            t_rise.extend(sat_ephem['t_rise'])
-            sat_id.extend([sat_ephem['sat_id'][0] for i in range(len(sat_ephem['t_rise']))])
+            time_array.extend(sat_ephem['time_array'])
+            sat_id.extend([sat_ephem['sat_id'][0] for i in range(len(sat_ephem['time_array']))])
 
 
-# sort all the lists based on t_rise
-t_rise, t_set, alt, az, sat_id = zip(*sorted(zip(t_rise, t_set, alt, az, sat_id)))
+# sort all the lists based on time_array
+time_array, alt, az, sat_id = zip(*sorted(zip(time_array, alt, az, sat_id)))
 
 chrono_ephem = {}
-chrono_ephem['sat_id'] = list(sat_id)
-chrono_ephem['t_rise'] = list(t_rise)
-chrono_ephem['t_set'] = list(t_set)
-chrono_ephem['sat_alt'] = list(alt)
-chrono_ephem['sat_az'] = list(az)
+chrono_ephem['sat_id']      = list(sat_id)
+chrono_ephem['time_array']  = list(time_array)
+chrono_ephem['sat_alt']     = list(alt)
+chrono_ephem['sat_az']      = list(az)
 
 
 with open(f'{json_dir}/ultimate_ephem_list.json', 'w') as outfile:
-    json.dump(chrono_ephem, outfile)
+    json.dump(chrono_ephem, outfile, indent=4)
 
 
 
