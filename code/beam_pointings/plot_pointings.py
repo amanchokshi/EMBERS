@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser(description="""
 
 parser.add_argument('--meta_dir', metavar='\b', default='./../../outputs/beam_pointings/', help='Directory where json metadata files live. Default=./../../outputs/beam_pointings/')
 parser.add_argument('--f_name', metavar='\b', default='ultimate_pointing_times.json', help='File name of json to be plotted. Default=ultimate_pointing_times.json')
-parser.add_argument('--threshold', metavar='\b', default=15, help='Plot if integration at pointing is > threshold. Default=15')
+parser.add_argument('--threshold', metavar='\b', default=30, help='Plot if integration at pointing is > threshold. Default=30')
 parser.add_argument('--plt_name', metavar='\b', default='pointing_integration', help='Name of plot to be save, default=pointing_integration')
 
 args = parser.parse_args()
@@ -68,7 +68,7 @@ leg = [int(i) for i in time_point]
 
 plt.style.use('seaborn')
 fig, ax = plt.subplots(figsize=(12,6))
-barplot = plt.bar(x, time_point, color=sns.color_palette("rocket", len(time_point)))
+barplot = plt.bar(x, time_point, color=sns.color_palette("GnBu_d", len(time_point)))
 
 def autolabel(rects):
     for idx,rect in enumerate(barplot):
