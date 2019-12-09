@@ -97,4 +97,4 @@ pointing_list['obs_length'] = t_length
 
 
 with open('{}/ultimate_pointing_times.json'.format(meta_dir), 'w') as outfile:
-    json.dump(pointing_list, outfile)
+    json.dump(pointing_list, outfile, indent=4)
