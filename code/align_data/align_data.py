@@ -9,105 +9,7 @@ from scipy import interpolate
 from scipy.signal import savgol_filter
 
 
-#tile_list = rf.tile_names()
-def time_align(ref, tile):
-    '''Time align power and timing arrays.
-    
-    This alignes the beginning and end of the time arrays by 
-    minimising the difference between the start/stop times.
-    It basically crops the array to only include
-    overlapping times.
-
-    Args:
-        ref: path to reference data file
-        tile: path to tile data file
-
-    Returns:
-        ref_t:      Reference time array
-        ref_p:      Reference power array
-        tile_t:     Tile time array
-        tile_p:     Tile power array
-    '''
-
-    # Read time and power arrays from data files
-    ref_p, ref_t = read_data(ref)
-    tile_p, tile_t = read_data(tile)
-    
-    
-    # Align the top of the time and power arrays
-    delta_t = []
-    
-    # Find out which time array starts later
-    if ref_t[0] >= tile_t[0]:
-        for i in range(len(tile_t)):
-            dt = (ref_t[0] - tile_t[i])
-            delta_t.append(dt)
-
-            # Stop the for loop when we have a time sample
-            # on either side of the shorter time array
-            if (dt <= 0 and abs(dt) >= delta_t[-1]):
-                break
-        
-        # Find the index of the sample with the smallest △ t 
-        abs_dt = np.absolute(delta_t)
-        min_idx = (list(abs_dt).index(min(abs_dt)))
-        
-        # Use the minimum index to crop the longer 
-        # array down such that △ t is minimised
-        if min_idx != 0:
-            tile_t = tile_t[min_idx:]
-            tile_p = tile_p[min_idx:]
-    
-    else:
-        for i in range(len(ref_t)):
-            dt = (tile_t[0] - ref_t[i])
-            delta_t.append(dt)
-            if (dt <= 0 and abs(dt) >= delta_t[-1]):
-                break
-    
-        abs_dt = np.absolute(delta_t)
-        min_idx = (list(abs_dt).index(min(abs_dt)))
-        
-        if min_idx != 0:
-            ref_t = ref_t[min_idx:]
-            ref_p = ref_p[min_idx:]
-
-    
-    # Now repeat the same procedure on the bottom of the arrays
-    delta_t = []
-    if ref_t[-1] >= tile_t[-1]:
-        for i in range(len(ref_t)):
-            dt = (ref_t[-1 - i] - tile_t[-1])
-            delta_t.append(dt)
-            if (dt <= 0 and abs(dt) >= delta_t[-1]):
-                break
-    
-        abs_dt = np.absolute(delta_t)
-        min_idx = (list(abs_dt).index(min(abs_dt)))
-        
-        if min_idx != 0:
-            ref_t = ref_t[:-min_idx]
-            ref_p = ref_p[:-min_idx]
-    
-    else:
-        for i in range(len(tile_t)):
-            dt = (tile_t[-1 - i] - ref_t[-1])
-            delta_t.append(dt)
-            if (dt <= 0 and abs(dt) >= delta_t[-1]):
-                break
-    
-        abs_dt = np.absolute(delta_t)
-        min_idx = (list(abs_dt).index(min(abs_dt)))
-        
-        if min_idx != 0:
-            tile_t = tile_t[:-min_idx]
-            tile_p = tile_p[:-min_idx]
-    
-    return(ref_t, ref_p, tile_t, tile_p)
-    
-    
-
-def savgol_interp(ref_t, ref_p, tile_t, tile_p, savgol_window =None, polyorder=None, interp_type=None, interp_freq=None):
+def savgol_interp(ref, tile, savgol_window =None, polyorder=None, interp_type=None, interp_freq=None):
     """Smooth and interpolate the power array
 
     Smooth the power arrays with a savgol filter
@@ -119,10 +21,8 @@ def savgol_interp(ref_t, ref_p, tile_t, tile_p, savgol_window =None, polyorder=N
 
     
     Args:
-        ref_t:          Reference time array
-        ref_p:          Reference power array
-        tile_t:         Tile time array
-        tile_p:         Tile power array
+        ref:            Path to reference data file
+        tile:           Path to tile data file
         savgol_window:  Window size of savgol filer. Must be odd. Default = 151
         polyorder:      Order of polynomial to fit to savgol_window. Default = 1
         interp_type:    Type of interpolation. Ex: 'cubic', 'linear'. Default = cubic
@@ -133,6 +33,10 @@ def savgol_interp(ref_t, ref_p, tile_t, tile_p, savgol_window =None, polyorder=N
         tile_p_aligned: Aligned tile power array
         time_array:     Time array corresponding to power arrays
     """
+    
+    # Read time and power arrays from data files
+    ref_p, ref_t = read_data(ref)
+    tile_p, tile_t = read_data(tile)
 
     savgol_ref = savgol_filter(ref_p, savgol_window, polyorder, axis=0)
     savgol_tile = savgol_filter(tile_p, savgol_window, polyorder, axis=0)
@@ -146,14 +50,12 @@ def savgol_interp(ref_t, ref_p, tile_t, tile_p, savgol_window =None, polyorder=N
     
     # Using the start and stop times, we create an array of times at which to 
     # evaluate our interpolated data
+    # Round up/down to nearest integer of time
     start_time = math.ceil(max(ref_t[0], tile_t[0]))
     stop_time = math.floor(min(ref_t[-1], tile_t[-1]))
     
-    # Total length of observation in seconds
-    time_seconds = stop_time - start_time
-    
     # Array of times at which to evaluate the interpolated data
-    time_array = np.linspace(start_time, stop_time, (time_seconds * interp_freq))
+    time_array = np.arange(start_time, stop_time, (1 / interp_freq))
     
     # Interp1d output functions
     f = interpolate.interp1d(ref_t, savgol_ref, axis=0, kind=interp_type)
@@ -163,7 +65,7 @@ def savgol_interp(ref_t, ref_p, tile_t, tile_p, savgol_window =None, polyorder=N
     ref_p_aligned = f(time_array)
     tile_p_aligned = g(time_array)
 
-    return (ref_p_aligned, tile_p_aligned, time_array)
+    return (ref_t, ref_p, tile_t, tile_p, ref_p_aligned, tile_p_aligned, time_array)
 
 
 if __name__ == '__main__':
@@ -178,22 +80,15 @@ if __name__ == '__main__':
     matplotlib.use('TkAgg')
     import matplotlib.pyplot as plt
     
-    ref_t, ref_p, tile_t, tile_p = time_align(
-            './../../data/rf0XX_2019-10-10-02:30.txt',
-            './../../data/S10XX_2019-10-10-02:30.txt'
-            ) 
 
-    ref_p_aligned, tile_p_aligned, time_array = savgol_interp(
-            ref_t,
-            ref_p,
-            tile_t,
-            tile_p,
+    ref_t, ref_p, tile_t, tile_p, ref_p_aligned, tile_p_aligned, time_array = savgol_interp(
+            './../../data/rf0XX_2019-10-10-02:30.txt',
+            './../../data/S10XX_2019-10-10-02:30.txt',
             savgol_window =151,
             polyorder=1,
             interp_type='cubic',
-            interp_freq=6
+            interp_freq=2
             )
-
 
     # Plots 
     plt.style.use('seaborn')
