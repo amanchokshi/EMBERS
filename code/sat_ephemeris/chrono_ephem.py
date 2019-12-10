@@ -112,6 +112,7 @@ t_start = datetime.strptime(start_date, '%Y-%m-%d')
 t_stop = datetime.strptime(stop_date, '%Y-%m-%d')
 n_days = (t_stop - t_start).days
 
+obs_times = []
 
 for i in range(n_days+1):
     day = t_start + timedelta(days=i)
@@ -126,7 +127,9 @@ for i in range(n_days+1):
         
         # convert to a unix timestamp, used within rf explorer data files
         utc_unix = utc_delta.timestamp()
+        # time at end of half hour window
+        utc_plus = utc_unix + (30 * 60)
         
-        print(d_time, utc_unix)
-
+        tm = [d_time, utc_unix, utc_plus]
+        obs_times.append(tm)
 
