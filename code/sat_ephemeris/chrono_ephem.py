@@ -85,6 +85,9 @@ def interp_ephem(start, stop, pass_idx, t_array, s_alt, s_az, interp_type, inter
         alt_interp = interpolate.interp1d(times_unix, s_alt[pass_idx], kind=interp_type)
         az_interp  = interpolate.interp1d(times_unix, s_az[pass_idx], kind=interp_type)
         
+        start = math.ceil(start)
+        stop = math.floor(stop)
+
         # Determine a integer interval between which to interpolate
         # Times array, at which to determine alt/az of sat
         time_interp = list(np.double(np.arange(start, stop, (1/interp_freq))))
