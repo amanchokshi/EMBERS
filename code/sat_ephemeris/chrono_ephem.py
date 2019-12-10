@@ -178,6 +178,7 @@ for file in os.listdir(json_dir):
                     with open(f'{out_dir}/{obs_time[t]}.json', 'w') as outfile:
                         json.dump(s_ephem, outfile, indent=4)
 
+        # TODO figure out how to loop over sats, and save to same file
         break
            
            
