@@ -133,3 +133,5 @@ for i in range(n_days+1):
         tm = [d_time, utc_unix, utc_plus]
         obs_times.append(tm)
 
+for obs in obs_times:
+    print(f'Date: {obs[0]}, unix_start: {obs[1]}, unix_stop: {obs[2]}')
