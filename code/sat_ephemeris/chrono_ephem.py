@@ -120,10 +120,13 @@ for i in range(n_days+1):
     for j in range(48):
         t_delta = datetime.strptime(date,'%Y-%m-%d') + timedelta(minutes=30*j)
         d_time = t_delta.strftime('%Y-%m-%d-%H:%M')
+        
+        # Convert from naive local time to utc aware time
         utc_delta = local.localize(t_delta, is_dst=None).astimezone(pytz.utc)
-        utc_time = utc_delta.strftime('%Y-%m-%d-%H:%M')
+        
+        # convert to a unix timestamp, used within rf explorer data files
         utc_unix = utc_delta.timestamp()
         
-        print(d_time, utc_time, utc_unix)
+        print(d_time, utc_unix)
 
 
