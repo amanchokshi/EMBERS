@@ -5,6 +5,7 @@ import pytz
 import argparse
 import numpy as np
 
+from pathlib import Path
 from scipy import interpolate
 from astropy.time import Time
 from itertools import compress
@@ -20,6 +21,7 @@ parser = argparse.ArgumentParser(description="""
         """)
 
 parser.add_argument('--json_dir', metavar='\b', default='./../../outputs/sat_ephemeris/ephem_json/', help='Directory where ephem json files live. Default=./../../outputs/sat_ephemeris/ephem_json/')
+parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/sat_ephemeris/ephem_chrono_json/', help='Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/')
 parser.add_argument('--interp_type', metavar='\b', default='cubic', help='Type of interpolation. Ex: Cubic,Linear. Default=Cubic')
 parser.add_argument('--interp_freq', metavar='\b', default=2, help='Frequency at which to interpolate, in Hertz. Must be the same as used in align_data.py. Default=2')
 parser.add_argument('--start_date', metavar='\b', help='Date from which to determine sat ephemeris. Ex: 2019-10-10')
@@ -29,6 +31,7 @@ parser.add_argument('--time_zone', metavar='\b', default='Australia/Perth', help
 args = parser.parse_args()
 
 json_dir    = args.json_dir
+out_dir    = args.out_dir
 interp_type = args.interp_type
 interp_freq = args.interp_freq
 start_date  = args.start_date
@@ -70,10 +73,10 @@ for i in range(n_days+1):
 
 
 
-def interp_ephem(pass_idx, t_array, s_alt, s_az, interp_type)
+def interp_ephem(start, stop, pass_idx, t_array, s_alt, s_az, interp_type, interp_freq):
     # Don't consider passes with less than 4 samples (~ 1 min)
     if len(t_array[pass_idx]) > 3:
-            
+        
         # Convert gps time from Skyfield to unix time
         # Because rf explorers record data with unix timestamp
         times_unix = Time(t_array[pass_idx], format='gps').unix
@@ -83,14 +86,11 @@ def interp_ephem(pass_idx, t_array, s_alt, s_az, interp_type)
         az_interp  = interpolate.interp1d(times_unix, s_az[pass_idx], kind=interp_type)
         
         # Determine a integer interval between which to interpolate
-        t_start = math.ceil(times_unix[0])
-        t_stop = math.floor(times_unix[-1])
-    
         # Times array, at which to determine alt/az of sat
-        time_interp = list(np.double(np.arange(t_start, t_stop, (1/interp_freq))))
+        time_interp = list(np.double(np.arange(start, stop, (1/interp_freq))))
     
         sat_alt = list(alt_interp(time_interp))
-        sat_alt = list(alt_interp(time_interp))
+        sat_az = list(az_interp(time_interp))
 
         return(time_interp, sat_alt, sat_az)
     
@@ -127,89 +127,52 @@ for file in os.listdir(json_dir):
                 time_array = []
                 sat_alt = []
                 sat_az = []
-                
-                # Iterate over all the sat rise times (unix_rise)
-                for r in range(len(unix_rise)):
+             
+                # iterate over passes?
+                for idx in range(len(unix_rise)):
+                    if unix_rise[idx] <= obs_unix[t] and unix_set[idx] <= obs_plus[t] and unix_set[idx] > obs_unix[t]:
+                        tm_start = obs_unix[t]
+                        tm_stop = unix_set[idx]
+
+
+                    elif unix_rise[idx] >= obs_unix[t] and unix_set[idx] <= obs_plus[t]:
+                        tm_start = unix_rise[idx]
+                        tm_stop = unix_set[idx]
                     
-                    # if the sat rises within a particular half hour obs, proceed
-                    if unix_rise[r] > obs_unix[t] and unix_rise[r] < obs_plus[t]:
-                        print('Rises within obs'obs_time[t], r)
+                    elif unix_rise[idx] >= obs_unix[t] and unix_rise[idx] < obs_plus[t] and unix_set[idx] >= obs_plus[t]:
+                        tm_start = unix_rise[idx]
+                        tm_stop = obs_plus[t]
                     
-                        # Don't consider passes with less than 4 samples (~ 1 min)
-                        if len(t_array[r]) > 3:
-                                
-                            # Convert gps time from Skyfield to unix time
-                            # Because rf explorers record data with unix timestamp
-                            times_unix = Time(t_array[r], format='gps').unix
-                            
-                            # Create interpolation functions
-                            alt_interp = interpolate.interp1d(times_unix, s_alt[r], kind=interp_type)
-                            az_interp  = interpolate.interp1d(times_unix, s_az[r], kind=interp_type)
-                            
-                            # Determine a integer interval between which to interpolate
-                            t_start = math.ceil(times_unix[0])
-                            if times_unix[-1] <= obs_plus[t]:
-                                t_stop = math.floor(times_unix[-1])
-                            else:
-                                t_stop = math.floor(obs_plus[t])
 
-                            # Times array, at which to determine alt/az of sat
-                            time_interp = list(np.double(np.arange(t_start, t_stop, (1/interp_freq))))
-                            time_array.append(time_interp)
+                        tm_interp, st_alt, st_az = interp_ephem(
+                                tm_start,
+                                tm_stop,
+                                idx,
+                                t_array,
+                                s_alt,
+                                s_az,
+                                interp_type,
+                                interp_freq)
+                        
+                        print(tm_interp)
+                        time_array.append(tm_interp)    
+                        sat_alt.append(st_alt)
+                        sat_alt.append(st_az)
 
-                            sat_alt.append(list(alt_interp(time_interp)))
-                            sat_alt.append(list(alt_interp(time_interp)))
+                    else:
+                        pass
 
-                        else:
-                            pass
-
-
-                # Iterate over all the sat set times (unix_set)
-                for s in range(len(unix_set)):
-                    
-                    # if the sat sets within a particular half hour obs, proceed
-                    if unix_set[s] > obs_unix[t] and unix_set[s] < obs_plus[t]:
-                        print('Sets', obs_time[t], s)
-                    
-                        # Don't consider passes with less than 4 samples (~ 1 min)
-                        if len(t_array[r]) > 3:
-                                
-                            # Convert gps time from Skyfield to unix time
-                            # Because rf explorers record data with unix timestamp
-                            times_unix = Time(t_array[r], format='gps').unix
-                            
-                            # Create interpolation functions
-                            alt_interp = interpolate.interp1d(times_unix, s_alt[r], kind=interp_type)
-                            az_interp  = interpolate.interp1d(times_unix, s_az[r], kind=interp_type)
-                            
-                            # Determine a integer interval between which to interpolate
-                            t_start = math.ceil(times_unix[0])
-                            if times_unix[-1] <= obs_plus[t]:
-                                t_stop = math.floor(times_unix[-1])
-                            else:
-                                t_stop = math.floor(obs_plus[t])
-
-                            # Times array, at which to determine alt/az of sat
-                            time_interp = list(np.double(np.arange(t_start, t_stop, (1/interp_freq))))
-                            time_array.append(time_interp)
-
-                            sat_alt.append(list(alt_interp(time_interp)))
-                            sat_alt.append(list(alt_interp(time_interp)))
-
-                        else:
-                            pass
-                       
                         s_ephem = {}
                         s_ephem['sat_id'] = sat_id
                         s_ephem['time_array'] = time_array
                         s_ephem['sat_alt'] = sat_alt
                         s_ephem['sat_az'] = sat_az
 
-                        with open(f'{json_dir}/{obs_time[t]}.json', 'w') as outfile:
+                        Path(out_dir).mkdir(parents=True, exist_ok=True)
+                        with open(f'{out_dir}/{obs_time[t]}.json', 'w') as outfile:
                             json.dump(s_ephem, outfile, indent=4)
 
         break
-            
            
             
 #for file in os.listdir(json_dir):
