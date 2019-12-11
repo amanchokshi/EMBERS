@@ -7,7 +7,6 @@ import numpy as np
 
 from pathlib import Path
 from scipy import interpolate
-from astropy.time import Time
 from itertools import compress
 from datetime import datetime, timedelta
 
@@ -77,13 +76,10 @@ def interp_ephem(start, stop, pass_idx, t_array, s_alt, s_az, interp_type, inter
     # Don't consider passes with less than 4 samples (~ 1 min)
     if len(t_array[pass_idx]) > 3:
         
-        # Convert gps time from Skyfield to unix time
-        # Because rf explorers record data with unix timestamp
-        times_unix = Time(t_array[pass_idx], format='gps').unix
         
         # Create interpolation functions
-        alt_interp = interpolate.interp1d(times_unix, s_alt[pass_idx], kind=interp_type)
-        az_interp  = interpolate.interp1d(times_unix, s_az[pass_idx], kind=interp_type)
+        alt_interp = interpolate.interp1d(t_array[pass_idx], s_alt[pass_idx], kind=interp_type)
+        az_interp  = interpolate.interp1d(t_array[pass_idx], s_az[pass_idx], kind=interp_type)
         
         start = math.ceil(start)
         stop = math.floor(stop)
@@ -120,8 +116,6 @@ for file in os.listdir(json_dir):
             # Get start times of all passes
             t_rise = [i[0] for i in t_array]
             t_set = [i[-1] for i in t_array]
-            unix_rise = Time(t_rise, format='gps').unix
-            unix_set = Time(t_set, format='gps').unix
 
 
             # iterate over all the half hour observations 
@@ -132,18 +126,18 @@ for file in os.listdir(json_dir):
                 sat_az = []
              
                 # iterate over passes?
-                for idx in range(len(unix_rise)):
-                    if unix_rise[idx] <= obs_unix[t] and unix_set[idx] <= obs_plus[t] and unix_set[idx] > obs_unix[t]:
+                for idx in range(len(t_rise)):
+                    if t_rise[idx] <= obs_unix[t] and t_set[idx] <= obs_plus[t] and t_set[idx] > obs_unix[t]:
                         tm_start = obs_unix[t]
-                        tm_stop = unix_set[idx]
+                        tm_stop = t_set[idx]
 
 
-                    elif unix_rise[idx] >= obs_unix[t] and unix_set[idx] <= obs_plus[t]:
-                        tm_start = unix_rise[idx]
-                        tm_stop = unix_set[idx]
+                    elif t_rise[idx] >= obs_unix[t] and t_set[idx] <= obs_plus[t]:
+                        tm_start = t_rise[idx]
+                        tm_stop = t_set[idx]
                     
-                    elif unix_rise[idx] >= obs_unix[t] and unix_rise[idx] < obs_plus[t] and unix_set[idx] >= obs_plus[t]:
-                        tm_start = unix_rise[idx]
+                    elif t_rise[idx] >= obs_unix[t] and t_rise[idx] < obs_plus[t] and t_set[idx] >= obs_plus[t]:
+                        tm_start = t_rise[idx]
                         tm_stop = obs_plus[t]
                     
 
