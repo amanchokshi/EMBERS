@@ -173,7 +173,8 @@ def ephem_data(t_arr, pass_index, alt, az):
     #t_set = Time(t_arr[j].tt, format='jd').gps
 
     # A list of times at which alt/az were calculated
-    time_array=Time(t_arr[i:j+1].tt, format='jd').gps
+    # Convert to unix time to match the rf explorer timestamps
+    time_array=Time(t_arr[i:j+1].tt, format='jd').unix
 
     theta = list(az.radians)
     r = list(alt.degrees)
