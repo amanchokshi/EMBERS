@@ -127,8 +127,8 @@ def sat_pass(sats, t_arr, index_epoch):
     orbit = (satellite - MWA).at(t_arr)
     alt, az, _ = orbit.altaz()
     
-    # Check if sat is above the horizon, return boolean array
-    above_horizon = alt.degrees >= 0
+    # Check if sat is above the horizon (above -1 degrees), return boolean array
+    above_horizon = alt.degrees >= -1
     
     # Indicies of rare times that sats are above the horizon
     indicies, = above_horizon.nonzero()
