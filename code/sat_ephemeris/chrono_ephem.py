@@ -101,9 +101,20 @@ def interp_ephem(start, stop, pass_idx, t_array, s_alt, s_az, interp_type, inter
         pass
 
 
+
+
+s_ephem = {}
+
+s_ephem['sat_id'] = []
+s_ephem['time_array'] = []
+s_ephem['sat_alt'] = []
+s_ephem['sat_az'] = []
+
+
 # loop through sat ephem json files
 for file in os.listdir(json_dir):
     if file.endswith('.json'):
+        print(f'Chewing on {file}')
         f_path = os.path.join(json_dir, file)
        
         # Work with one sat at a time
@@ -130,12 +141,6 @@ for file in os.listdir(json_dir):
                 sat_alt = []
                 sat_az = []
                 
-                s_ephem = {}
-                
-                s_ephem['sat_id'] = []
-                s_ephem['time_array'] = []
-                s_ephem['sat_alt'] = []
-                s_ephem['sat_az'] = []
              
                 # iterate over all passes, and see whether any intersect with particular half hour obs
                 for idx in range(len(t_rise)):
@@ -189,5 +194,3 @@ for file in os.listdir(json_dir):
         #break
            
            
-
-
