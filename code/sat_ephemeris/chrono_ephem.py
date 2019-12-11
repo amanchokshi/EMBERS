@@ -103,12 +103,12 @@ def interp_ephem(start, stop, pass_idx, t_array, s_alt, s_az, interp_type, inter
 
 
 
-s_ephem = {}
-
-s_ephem['sat_id'] = []
-s_ephem['time_array'] = []
-s_ephem['sat_alt'] = []
-s_ephem['sat_az'] = []
+#s_ephem = {}
+#
+#s_ephem['sat_id'] = []
+#s_ephem['time_array'] = []
+#s_ephem['sat_alt'] = []
+#s_ephem['sat_az'] = []
 
 
 # loop through sat ephem json files
@@ -125,7 +125,7 @@ for file in os.listdir(json_dir):
             t_array = sat_ephem['time_array']
             s_alt   = sat_ephem['sat_alt']
             s_az    = sat_ephem['sat_az']
-            sat_id  = sat_ephem['sat_id']
+            s_id  = sat_ephem['sat_id']
             
             
             # Get rise and set times of all passes
@@ -140,6 +140,7 @@ for file in os.listdir(json_dir):
                 time_array = []
                 sat_alt = []
                 sat_az = []
+                sat_id = []
                 
              
                 # iterate over all passes, and see whether any intersect with particular half hour obs
@@ -171,24 +172,42 @@ for file in os.listdir(json_dir):
                                 interp_freq)
                         
                         # append relevant interpolated data to lists
-                        time_array.append(tm_interp)    
-                        sat_alt.append(st_alt)
-                        sat_az.append(st_az)
+                        if len(st_alt) != 0:
+                            time_array.append(tm_interp)    
+                            sat_alt.append(st_alt)
+                            sat_az.append(st_az)
+                            sat_id.append(s_id)
+                        
+                    #s_ephem['sat_id'].append(sat_id)
+                    #s_ephem['time_array'].append(tm_interp)
+                    #s_ephem['sat_alt'].append(st_alt)
+                    #s_ephem['sat_az'].append(st_az)
+                            
+                    s_ephem = {}
+                    
+                    s_ephem['sat_id'] = sat_id
+                    s_ephem['time_array'] = time_array
+                    s_ephem['sat_alt'] = sat_alt
+                    s_ephem['sat_az'] = sat_az
 
-                    else:
-                        pass
+                    Path(out_dir).mkdir(parents=True, exist_ok=True)
+                    with open(f'{out_dir}/{obs_time[t]}.json', 'a') as outfile:
+                        json.dump(s_ephem, outfile, indent=4)
+
+                    #else:
+                    #    pass
 
                 
-                s_ephem['sat_id'].append(sat_id)
-                s_ephem['time_array'].append(time_array)
-                s_ephem['sat_alt'].append(sat_alt)
-                s_ephem['sat_az'].append(sat_az)
+                #s_ephem['sat_id'].append(sat_id)
+                #s_ephem['time_array'].append(time_array)
+                #s_ephem['sat_alt'].append(sat_alt)
+                #s_ephem['sat_az'].append(sat_az)
 
-                Path(out_dir).mkdir(parents=True, exist_ok=True)
+                #Path(out_dir).mkdir(parents=True, exist_ok=True)
 
-                if time_array != []:
-                    with open(f'{out_dir}/{obs_time[t]}.json', 'w') as outfile:
-                        json.dump(s_ephem, outfile, indent=4)
+                #if len(st_alt) != 0:
+                #    with open(f'{out_dir}/{obs_time[t]}.json', 'w') as outfile:
+                #        json.dump(s_ephem, outfile, indent=4)
 
         # TODO figure out how to loop over sats, and save to same file
         #break
