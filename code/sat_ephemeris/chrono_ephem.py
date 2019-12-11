@@ -73,6 +73,8 @@ for i in range(n_days+1):
 
 
 def interp_ephem(start, stop, pass_idx, t_array, s_alt, s_az, interp_type, interp_freq):
+    '''Interpolates satellite ephemeris - time, alt, az - to a given frequency'''
+
     # Don't consider passes with less than 4 samples (~ 1 min)
     if len(t_array[pass_idx]) > 3:
         
@@ -81,6 +83,8 @@ def interp_ephem(start, stop, pass_idx, t_array, s_alt, s_az, interp_type, inter
         alt_interp = interpolate.interp1d(t_array[pass_idx], s_alt[pass_idx], kind=interp_type)
         az_interp  = interpolate.interp1d(t_array[pass_idx], s_az[pass_idx], kind=interp_type)
         
+        # Makes start ann end times clean integers
+        # Also ensures that the interp range is inclusive of data points
         start = math.ceil(start)
         stop = math.floor(stop)
 
@@ -97,50 +101,54 @@ def interp_ephem(start, stop, pass_idx, t_array, s_alt, s_az, interp_type, inter
         pass
 
 
-
-
-
+# loop through sat ephem json files
 for file in os.listdir(json_dir):
     if file.endswith('.json'):
         f_path = os.path.join(json_dir, file)
-        
+       
+        # Work with one sat at a time
         with open(f_path) as ephem:
             sat_ephem = json.load(ephem)
-
+            
+            # Extract data from json dictionary
             t_array = sat_ephem['time_array']
             s_alt   = sat_ephem['sat_alt']
             s_az    = sat_ephem['sat_az']
             sat_id  = sat_ephem['sat_id']
             
             
-            # Get start times of all passes
+            # Get rise and set times of all passes
             t_rise = [i[0] for i in t_array]
             t_set = [i[-1] for i in t_array]
 
 
             # iterate over all the half hour observations 
             for t in range(len(obs_time)):
-
+                
+                # Empty lists to hold interpolated data
                 time_array = []
                 sat_alt = []
                 sat_az = []
              
-                # iterate over passes?
+                # iterate over all passes, and see whether any intersect with particular half hour obs
                 for idx in range(len(t_rise)):
+                    
+                    # Case I - pass starts before obs begins, but ends within the observation
                     if t_rise[idx] <= obs_unix[t] and t_set[idx] <= obs_plus[t] and t_set[idx] > obs_unix[t]:
                         tm_start = obs_unix[t]
                         tm_stop = t_set[idx]
 
-
+                    # Case II - pass starts and ends within the observation
                     elif t_rise[idx] >= obs_unix[t] and t_set[idx] <= obs_plus[t]:
                         tm_start = t_rise[idx]
                         tm_stop = t_set[idx]
                     
+                    # Case III - pass starts within obs, but ends after the observation ends
                     elif t_rise[idx] >= obs_unix[t] and t_rise[idx] < obs_plus[t] and t_set[idx] >= obs_plus[t]:
                         tm_start = t_rise[idx]
                         tm_stop = obs_plus[t]
-                    
-
+                   
+                        # call the interp_ephem function
                         tm_interp, st_alt, st_az = interp_ephem(
                                 tm_start,
                                 tm_stop,
@@ -150,9 +158,8 @@ for file in os.listdir(json_dir):
                                 s_az,
                                 interp_type,
                                 interp_freq)
-                        print(tm_interp[0], st_alt[0], st_az[0])
                         
-                        #print(tm_interp)
+                        # append relevant interpolated data to lists
                         time_array.append(tm_interp)    
                         sat_alt.append(st_alt)
                         sat_az.append(st_az)
@@ -160,6 +167,7 @@ for file in os.listdir(json_dir):
                     else:
                         pass
 
+                
                 s_ephem = {}
                 s_ephem['sat_id'] = sat_id
                 s_ephem['time_array'] = time_array
