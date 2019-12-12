@@ -185,7 +185,7 @@ The next step is to collate the data in all these discrete json metadata files i
 ```
 python pointing_list.py --help
 
-python pointing_list
+python pointing_list.py
 ```
 
 This creates an `ultimate_pointing_times.json` file in the metadata directory. `pointing_list.py` has condensed observations with the same pointing into blocks of observation. Each entry in `ultimate_pointing_times.json` contains the `grid_pt` number, `start_gps`, `stop_gps` time and `obs_length` in seconds.
