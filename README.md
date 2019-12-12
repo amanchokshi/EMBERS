@@ -102,7 +102,7 @@ python sat_ephemeris.py --sat=XXXXX --cadence=20
 This produces a rise time `t_rise`, set time `t_set`, in gps seconds, for each satellite pass. It also produces a corresponding list of altitudes and azimuths for each pass. These are saved to a json file, to be used later. The following can be used to create ephemeris json files for all satellite tle files.
 
 ```
-batch_sat_ephem.py --help
+python batch_sat_ephem.py --help
 ```
 
 A log file is also saved in the `./../../output/sat_ephemeris/ephem_json/sat_ephem_logs.txt` directory, showing if any errors occured.
