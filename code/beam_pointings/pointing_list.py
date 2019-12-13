@@ -1,6 +1,3 @@
-#TODO Andrew's alternating  sweetpoint 2,4 obs have gridpoint==None
-#TODO Fix this problem using the obs_name as a proxy for gridpoint?
-
 import os
 import json
 import argparse
@@ -19,6 +16,7 @@ meta_dir = args.meta_dir
 
 start = []
 stop = []
+obs_name = []
 pointings = []
 
 
@@ -31,6 +29,7 @@ for file in os.listdir(meta_dir):
             for i in range(len(data)):
                 start.append(data[i][0])
                 stop.append(data[i][1])
+                obs_name.append(data[i][2])
                 pointings.append(data[i][-1])
 
 # sort the lists based on start_gps, incase files weren't read in correct order.
@@ -38,7 +37,22 @@ start, stop, pointings = zip(*sorted(zip(start, stop, pointings)))
 
 start_gps = list(start)
 stop_gps = list(stop)
+obs_name = list(obs_name)
 pointings = list(pointings)
+
+# Andrew William's alternating sweetpoint 2,4 obs at 7:30 AM
+# have gridpoint=None, but obs_name=EOR_Point_4 or EOR_Point_2
+# Use this to modify the pointing list
+
+for i in range(len(pointings)):
+    if obs_name[i] == 'EOR_Point_2':
+        pointings[i] = 2
+    elif obs_name[i] == 'EOR_Point_4':
+        pointings[i] = 4
+    else:
+        pass
+
+
 
 # Every morning, tests are run on the recievers.
 # There are always 20 test observations of ~72 seconds
