@@ -1,3 +1,6 @@
+#TODO Andrew's alternating  sweetpoint 2,4 obs have gridpoint==None
+#TODO Fix this problem using the obs_name as a proxy for gridpoint?
+
 import os
 import json
 import argparse
@@ -31,7 +34,6 @@ for file in os.listdir(meta_dir):
                 pointings.append(data[i][-1])
 
 # sort the lists based on start_gps, incase files weren't read in correct order.
-
 start, stop, pointings = zip(*sorted(zip(start, stop, pointings)))
 
 start_gps = list(start)
