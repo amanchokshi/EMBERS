@@ -138,6 +138,8 @@ python chrono_ephem.py
 
 ### Beam Pointings
 
+##### TODO: Check this whole section. Needs to be perfect!
+
 The MWA Telescope points its beam in different directions by giving each of its 16 dipoles a different delay. These pointings are quantised, with 181 discrete pointings available, each of which is given a unique 'Grid-pointing' number.  
 
 It is important to know where the telescope is pointing at all times, because we will be making individual beam maps for each pointing. This metadata is available at [http://ws.mwatelescope.org](http://ws.mwatelescope.org/metadata/find). Metadata form the MWA telescope can be downloaded by following these steps.
@@ -181,8 +183,6 @@ The results of each page are downloaded to a json file in the `./../../ouputs/be
 
 
 The next step is to collate the data in all these discrete json metadata files into and `ultimate_pointing_times.json` list. This is slightly tricky, as there are a days when the MWA is idle as a whole, but the MWA Satellite experiment is recording data. This means that the metadata we downloaded will not contain any info on these times, and we must infer the pointing of the telescope from the last pointing the tiles were in. Luckily, the operators of the MWA run a set of 20 dipole test observations in the morning, the last of which resets the telescope to zenith. 
-
-#TODO: Figure out the alternating  sweetpoints 2,4. Gridpoint number=None?? 
 
 ```
 python pointing_list.py --help
