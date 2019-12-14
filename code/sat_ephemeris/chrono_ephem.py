@@ -235,6 +235,7 @@ for t in range(len(obs_time)):
         if file.endswith('.json'):
             #print(f'Chewing on {file}')
             print(f'{file}')
+            print('Are the times in descending order???')
             f_path = os.path.join(json_dir, file)
            
             # Work with one sat at a time
@@ -274,6 +275,8 @@ for t in range(len(obs_time)):
                         print('Case III')
                         tm_start = t_rise[idx]
                         tm_stop = obs_plus[t]
+                    else:
+                        pass
                         
 #                        # call the interp_ephem function
 #                        tm_interp, st_alt, st_az = interp_ephem(
@@ -309,6 +312,7 @@ for t in range(len(obs_time)):
 #    with open(f'{out_dir}/{obs_time[t]}.json', 'a') as outfile:
 #        json.dump(s_ephem, outfile, indent=4)
 #
+        break
     break    
 
     
