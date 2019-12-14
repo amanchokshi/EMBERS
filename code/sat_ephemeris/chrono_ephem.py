@@ -103,113 +103,213 @@ def interp_ephem(start, stop, pass_idx, t_array, s_alt, s_az, interp_type, inter
 
 
 
-#s_ephem = {}
+##s_ephem = {}
+##
+##s_ephem['sat_id'] = []
+##s_ephem['time_array'] = []
+##s_ephem['sat_alt'] = []
+##s_ephem['sat_az'] = []
 #
-#s_ephem['sat_id'] = []
-#s_ephem['time_array'] = []
-#s_ephem['sat_alt'] = []
-#s_ephem['sat_az'] = []
+#
+## loop through sat ephem json files
+#for file in os.listdir(json_dir):
+#    if file.endswith('.json'):
+#        print(f'Chewing on {file}')
+#        f_path = os.path.join(json_dir, file)
+#       
+#        # Work with one sat at a time
+#        with open(f_path) as ephem:
+#            sat_ephem = json.load(ephem)
+#            
+#            # Extract data from json dictionary
+#            t_array = sat_ephem['time_array']
+#            s_alt   = sat_ephem['sat_alt']
+#            s_az    = sat_ephem['sat_az']
+#            s_id  = sat_ephem['sat_id']
+#            
+#            
+#            # Get rise and set times of all passes
+#            t_rise = [i[0] for i in t_array]
+#            t_set = [i[-1] for i in t_array]
+#
+#
+#            # iterate over all the half hour observations 
+#            for t in range(len(obs_time)):
+#                
+#                # Empty lists to hold interpolated data
+#                time_array = []
+#                sat_alt = []
+#                sat_az = []
+#                sat_id = []
+#                
+#             
+#                # iterate over all passes, and see whether any intersect with particular half hour obs
+#                for idx in range(len(t_rise)):
+#                    # Case I - pass starts before obs begins, but ends within the observation
+#                    if t_rise[idx] <= obs_unix[t] and t_set[idx] <= obs_plus[t] and t_set[idx] > obs_unix[t]:
+#                        tm_start = obs_unix[t]
+#                        tm_stop = t_set[idx]
+#
+#                    # Case II - pass starts and ends within the observation
+#                    elif t_rise[idx] >= obs_unix[t] and t_set[idx] <= obs_plus[t]:
+#                        tm_start = t_rise[idx]
+#                        tm_stop = t_set[idx]
+#                    
+#                    # Case III - pass starts within obs, but ends after the observation ends
+#                    elif t_rise[idx] >= obs_unix[t] and t_rise[idx] < obs_plus[t] and t_set[idx] >= obs_plus[t]:
+#                        tm_start = t_rise[idx]
+#                        tm_stop = obs_plus[t]
+#                   
+#                        # call the interp_ephem function
+#                        tm_interp, st_alt, st_az = interp_ephem(
+#                                tm_start,
+#                                tm_stop,
+#                                idx,
+#                                t_array,
+#                                s_alt,
+#                                s_az,
+#                                interp_type,
+#                                interp_freq)
+#                        
+#                        # append relevant interpolated data to lists
+#                        if len(st_alt) != 0:
+#                            time_array.append(tm_interp)    
+#                            sat_alt.append(st_alt)
+#                            sat_az.append(st_az)
+#                            sat_id.append(s_id)
+#                        
+#                    #s_ephem['sat_id'].append(sat_id)
+#                    #s_ephem['time_array'].append(tm_interp)
+#                    #s_ephem['sat_alt'].append(st_alt)
+#                    #s_ephem['sat_az'].append(st_az)
+#                            
+#                    s_ephem = {}
+#                    
+#                    s_ephem['sat_id'] = sat_id
+#                    s_ephem['time_array'] = time_array
+#                    s_ephem['sat_alt'] = sat_alt
+#                    s_ephem['sat_az'] = sat_az
+#
+#                    Path(out_dir).mkdir(parents=True, exist_ok=True)
+#                    with open(f'{out_dir}/{obs_time[t]}.json', 'a') as outfile:
+#                        json.dump(s_ephem, outfile, indent=4)
+#
+#                    #else:
+#                    #    pass
+#
+#                
+#                #s_ephem['sat_id'].append(sat_id)
+#                #s_ephem['time_array'].append(time_array)
+#                #s_ephem['sat_alt'].append(sat_alt)
+#                #s_ephem['sat_az'].append(sat_az)
+#
+#                #Path(out_dir).mkdir(parents=True, exist_ok=True)
+#
+#                #if len(st_alt) != 0:
+#                #    with open(f'{out_dir}/{obs_time[t]}.json', 'w') as outfile:
+#                #        json.dump(s_ephem, outfile, indent=4)
+#
+#        # TODO figure out how to loop over sats, and save to same file
+#        #break
+    
+
+# Lets try something new. 
+# Reverse the order of loops. First loop through half hour obs
+# Then loop through all sat ephem files, and append relevant
+# data to half hour sat ephem file.
 
 
-# loop through sat ephem json files
-for file in os.listdir(json_dir):
-    if file.endswith('.json'):
-        print(f'Chewing on {file}')
-        f_path = os.path.join(json_dir, file)
-       
-        # Work with one sat at a time
-        with open(f_path) as ephem:
-            sat_ephem = json.load(ephem)
-            
-            # Extract data from json dictionary
-            t_array = sat_ephem['time_array']
-            s_alt   = sat_ephem['sat_alt']
-            s_az    = sat_ephem['sat_az']
-            s_id  = sat_ephem['sat_id']
-            
-            
-            # Get rise and set times of all passes
-            t_rise = [i[0] for i in t_array]
-            t_set = [i[-1] for i in t_array]
 
 
-            # iterate over all the half hour observations 
-            for t in range(len(obs_time)):
+# iterate over all the half hour observations 
+for t in range(len(obs_time)):
+    print(obs_time[t], obs_unix[t], obs_plus[t]) 
+    # Empty lists to hold interpolated data
+    time_array = []
+    sat_alt = []
+    sat_az = []
+    sat_id = []
+    
+    # loop through sat ephem json files
+    for file in os.listdir(json_dir):
+        if file.endswith('.json'):
+            #print(f'Chewing on {file}')
+            print(f'{file}')
+            f_path = os.path.join(json_dir, file)
+           
+            # Work with one sat at a time
+            with open(f_path) as ephem:
+                sat_ephem = json.load(ephem)
                 
-                # Empty lists to hold interpolated data
-                time_array = []
-                sat_alt = []
-                sat_az = []
-                sat_id = []
+                # Extract data from json dictionary
+                t_array = sat_ephem['time_array']
+                s_alt   = sat_ephem['sat_alt']
+                s_az    = sat_ephem['sat_az']
+                s_id  = sat_ephem['sat_id']
                 
-             
+                
+                # Get rise and set times of all passes
+                t_rise = [i[0] for i in t_array]
+                t_set = [i[-1] for i in t_array]
+                print(f'length of t_rise: {len(t_rise)}')
+     
                 # iterate over all passes, and see whether any intersect with particular half hour obs
+                # One pass at a time
                 for idx in range(len(t_rise)):
+                    print(t_rise[idx], t_set[idx])
                     # Case I - pass starts before obs begins, but ends within the observation
                     if t_rise[idx] <= obs_unix[t] and t_set[idx] <= obs_plus[t] and t_set[idx] > obs_unix[t]:
+                        print('Case I')
                         tm_start = obs_unix[t]
                         tm_stop = t_set[idx]
-
+    
                     # Case II - pass starts and ends within the observation
                     elif t_rise[idx] >= obs_unix[t] and t_set[idx] <= obs_plus[t]:
+                        print('Case II')
                         tm_start = t_rise[idx]
                         tm_stop = t_set[idx]
                     
                     # Case III - pass starts within obs, but ends after the observation ends
                     elif t_rise[idx] >= obs_unix[t] and t_rise[idx] < obs_plus[t] and t_set[idx] >= obs_plus[t]:
+                        print('Case III')
                         tm_start = t_rise[idx]
                         tm_stop = obs_plus[t]
-                   
-                        # call the interp_ephem function
-                        tm_interp, st_alt, st_az = interp_ephem(
-                                tm_start,
-                                tm_stop,
-                                idx,
-                                t_array,
-                                s_alt,
-                                s_az,
-                                interp_type,
-                                interp_freq)
                         
-                        # append relevant interpolated data to lists
-                        if len(st_alt) != 0:
-                            time_array.append(tm_interp)    
-                            sat_alt.append(st_alt)
-                            sat_az.append(st_az)
-                            sat_id.append(s_id)
-                        
-                    #s_ephem['sat_id'].append(sat_id)
-                    #s_ephem['time_array'].append(tm_interp)
-                    #s_ephem['sat_alt'].append(st_alt)
-                    #s_ephem['sat_az'].append(st_az)
-                            
-                    s_ephem = {}
-                    
-                    s_ephem['sat_id'] = sat_id
-                    s_ephem['time_array'] = time_array
-                    s_ephem['sat_alt'] = sat_alt
-                    s_ephem['sat_az'] = sat_az
+#                        # call the interp_ephem function
+#                        tm_interp, st_alt, st_az = interp_ephem(
+#                                tm_start,
+#                                tm_stop,
+#                                idx,
+#                                t_array,
+#                                s_alt,
+#                                s_az,
+#                                interp_type,
+#                                interp_freq)
+#                        
+#                        # append relevant interpolated data to lists
+#                        if len(st_alt) != 0:
+#                            time_array.append(tm_interp)    
+#                            sat_alt.append(st_alt)
+#                            sat_az.append(st_az)
+#                            sat_id.append(s_id)
+#                    
+#                    #s_ephem['sat_id'].append(sat_id)
+#                    #s_ephem['time_array'].append(tm_interp)
+#                    #s_ephem['sat_alt'].append(st_alt)
+#                    #s_ephem['sat_az'].append(st_az)
+#                            
+#    s_ephem = {}
+#    
+#    s_ephem['sat_id'] = sat_id
+#    s_ephem['time_array'] = time_array
+#    s_ephem['sat_alt'] = sat_alt
+#    s_ephem['sat_az'] = sat_az
+#    
+#    Path(out_dir).mkdir(parents=True, exist_ok=True)
+#    with open(f'{out_dir}/{obs_time[t]}.json', 'a') as outfile:
+#        json.dump(s_ephem, outfile, indent=4)
+#
+    break    
 
-                    Path(out_dir).mkdir(parents=True, exist_ok=True)
-                    with open(f'{out_dir}/{obs_time[t]}.json', 'a') as outfile:
-                        json.dump(s_ephem, outfile, indent=4)
-
-                    #else:
-                    #    pass
-
-                
-                #s_ephem['sat_id'].append(sat_id)
-                #s_ephem['time_array'].append(time_array)
-                #s_ephem['sat_alt'].append(sat_alt)
-                #s_ephem['sat_az'].append(sat_az)
-
-                #Path(out_dir).mkdir(parents=True, exist_ok=True)
-
-                #if len(st_alt) != 0:
-                #    with open(f'{out_dir}/{obs_time[t]}.json', 'w') as outfile:
-                #        json.dump(s_ephem, outfile, indent=4)
-
-        # TODO figure out how to loop over sats, and save to same file
-        #break
-           
+    
            
