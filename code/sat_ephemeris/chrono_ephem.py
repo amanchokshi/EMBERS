@@ -107,36 +107,34 @@ def interp_ephem(start, stop, pass_idx, t_array, s_alt, s_az, interp_type, inter
 
 
 def time_intersect(t_rise, t_set, obs_unix, obs_plus, idx):
-    # iterate over all passes, and see whether any intersect with particular half hour obs
-    # One pass at a time
-    
+    '''Checks if a satellite passes within a particular observation'''
+
+    # Case I - the satellite rises and sets before the obs
     if t_set[idx] < obs_unix[t]:
         print('No intersection. Pass was before half hour obs')
 
 
-    # Case I - pass starts before obs begins, but ends within the observation
+    # Case II - the satellite rises before obs begins, but sets within the observation
     elif t_rise[idx] <= obs_unix[t] and t_set[idx] <= obs_plus[t] and t_set[idx] > obs_unix[t]:
-        print('Case I')
         tm_start = obs_unix[t]
         tm_stop = t_set[idx]
         print(tm_start, tm_stop)
     
-    # Case II - pass starts and ends within the observation
+    # Case III - the satellite rises and sets within the observation
     elif t_rise[idx] >= obs_unix[t] and t_set[idx] <= obs_plus[t]:
-        print('Case II')
         tm_start = t_rise[idx]
         tm_stop = t_set[idx]
         print(tm_start, tm_stop)
     
-    # Case III - pass starts within obs, but ends after the observation ends
+    # Case IV - the satellite rises within obs, but sets after the observation ends
     elif t_rise[idx] >= obs_unix[t] and t_rise[idx] < obs_plus[t] and t_set[idx] >= obs_plus[t]:
-        print('Case III')
         tm_start = t_rise[idx]
         tm_stop = obs_plus[t]
         print(tm_start, tm_stop)
-
+    # Case V - the satellite rises and sets after the observation
     else:
         print('No intersection. Pass was after half hour obs')
+
     
 
 ##s_ephem = {}
