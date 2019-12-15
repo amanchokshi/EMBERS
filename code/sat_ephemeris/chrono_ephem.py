@@ -106,33 +106,38 @@ def interp_ephem(start, stop, pass_idx, t_array, s_alt, s_az, interp_type, inter
         pass
 
 
-def time_intersect(t_rise, t_set, obs_unix, obs_plus, index):
+def time_intersect(t_rise, t_set, obs_unix, obs_plus, idx):
     # iterate over all passes, and see whether any intersect with particular half hour obs
     # One pass at a time
-    for idx in range(len(t_rise)):
-        #print(t_rise[idx], t_set[idx])
-        # Case I - pass starts before obs begins, but ends within the observation
-        if t_rise[idx] <= obs_unix[t] and t_set[idx] <= obs_plus[t] and t_set[idx] > obs_unix[t]:
-            print('Case I')
-            tm_start = obs_unix[t]
-            tm_stop = t_set[idx]
     
-        # Case II - pass starts and ends within the observation
-        elif t_rise[idx] >= obs_unix[t] and t_set[idx] <= obs_plus[t]:
-            print('Case II')
-            tm_start = t_rise[idx]
-            tm_stop = t_set[idx]
-        
-        # Case III - pass starts within obs, but ends after the observation ends
-        elif t_rise[idx] >= obs_unix[t] and t_rise[idx] < obs_plus[t] and t_set[idx] >= obs_plus[t]:
-            print('Case III')
-            tm_start = t_rise[idx]
-            tm_stop = obs_plus[t]
-        else:
-            pass
-                        
+    if t_set[idx] < obs_unix[t]:
+        print('No intersection. Pass was before half hour obs')
 
 
+    # Case I - pass starts before obs begins, but ends within the observation
+    elif t_rise[idx] <= obs_unix[t] and t_set[idx] <= obs_plus[t] and t_set[idx] > obs_unix[t]:
+        print('Case I')
+        tm_start = obs_unix[t]
+        tm_stop = t_set[idx]
+        print(tm_start, tm_stop)
+    
+    # Case II - pass starts and ends within the observation
+    elif t_rise[idx] >= obs_unix[t] and t_set[idx] <= obs_plus[t]:
+        print('Case II')
+        tm_start = t_rise[idx]
+        tm_stop = t_set[idx]
+        print(tm_start, tm_stop)
+    
+    # Case III - pass starts within obs, but ends after the observation ends
+    elif t_rise[idx] >= obs_unix[t] and t_rise[idx] < obs_plus[t] and t_set[idx] >= obs_plus[t]:
+        print('Case III')
+        tm_start = t_rise[idx]
+        tm_stop = obs_plus[t]
+        print(tm_start, tm_stop)
+
+    else:
+        print('No intersection. Pass was after half hour obs')
+    
 
 ##s_ephem = {}
 ##
@@ -286,27 +291,9 @@ for t in range(len(obs_time)):
                 # iterate over all passes, and see whether any intersect with particular half hour obs
                 # One pass at a time
                 for idx in range(len(t_rise)):
-                    #print(t_rise[idx], t_set[idx])
-                    # Case I - pass starts before obs begins, but ends within the observation
-                    if t_rise[idx] <= obs_unix[t] and t_set[idx] <= obs_plus[t] and t_set[idx] > obs_unix[t]:
-                        print('Case I')
-                        tm_start = obs_unix[t]
-                        tm_stop = t_set[idx]
-    
-                    # Case II - pass starts and ends within the observation
-                    elif t_rise[idx] >= obs_unix[t] and t_set[idx] <= obs_plus[t]:
-                        print('Case II')
-                        tm_start = t_rise[idx]
-                        tm_stop = t_set[idx]
+                    time_intersect(t_rise, t_set, obs_unix, obs_plus, idx)
                     
-                    # Case III - pass starts within obs, but ends after the observation ends
-                    elif t_rise[idx] >= obs_unix[t] and t_rise[idx] < obs_plus[t] and t_set[idx] >= obs_plus[t]:
-                        print('Case III')
-                        tm_start = t_rise[idx]
-                        tm_stop = obs_plus[t]
-                    else:
-                        pass
-                        
+                    
 #                        # call the interp_ephem function
 #                        tm_interp, st_alt, st_az = interp_ephem(
 #                                tm_start,
