@@ -46,8 +46,13 @@ t_start = datetime.strptime(start_date, '%Y-%m-%d')
 t_stop = datetime.strptime(stop_date, '%Y-%m-%d')
 n_days = (t_stop - t_start).days
 
+# YYYY-MM-DD-HH:MM format
 obs_time = []
+
+# Start of half hour obs in unix time
 obs_unix = []
+
+# End of half hour obs in unix time
 obs_plus = []
 
 for i in range(n_days+1):
@@ -100,6 +105,32 @@ def interp_ephem(start, stop, pass_idx, t_array, s_alt, s_az, interp_type, inter
     else:
         pass
 
+
+def time_intersect(t_rise, t_set, obs_unix, obs_plus, index):
+    # iterate over all passes, and see whether any intersect with particular half hour obs
+    # One pass at a time
+    for idx in range(len(t_rise)):
+        #print(t_rise[idx], t_set[idx])
+        # Case I - pass starts before obs begins, but ends within the observation
+        if t_rise[idx] <= obs_unix[t] and t_set[idx] <= obs_plus[t] and t_set[idx] > obs_unix[t]:
+            print('Case I')
+            tm_start = obs_unix[t]
+            tm_stop = t_set[idx]
+    
+        # Case II - pass starts and ends within the observation
+        elif t_rise[idx] >= obs_unix[t] and t_set[idx] <= obs_plus[t]:
+            print('Case II')
+            tm_start = t_rise[idx]
+            tm_stop = t_set[idx]
+        
+        # Case III - pass starts within obs, but ends after the observation ends
+        elif t_rise[idx] >= obs_unix[t] and t_rise[idx] < obs_plus[t] and t_set[idx] >= obs_plus[t]:
+            print('Case III')
+            tm_start = t_rise[idx]
+            tm_stop = obs_plus[t]
+        else:
+            pass
+                        
 
 
 
@@ -223,7 +254,6 @@ def interp_ephem(start, stop, pass_idx, t_array, s_alt, s_az, interp_type, inter
 
 # iterate over all the half hour observations 
 for t in range(len(obs_time)):
-    print(obs_time[t], obs_unix[t], obs_plus[t]) 
     # Empty lists to hold interpolated data
     time_array = []
     sat_alt = []
@@ -234,11 +264,11 @@ for t in range(len(obs_time)):
     for file in os.listdir(json_dir):
         if file.endswith('.json'):
             #print(f'Chewing on {file}')
-            print(f'{file}')
-            print('Are the times in descending order???')
             f_path = os.path.join(json_dir, file)
            
             # Work with one sat at a time
+            # Each json file has all the passes for one particular satellite 
+            # within a certain interval
             with open(f_path) as ephem:
                 sat_ephem = json.load(ephem)
                 
@@ -252,12 +282,11 @@ for t in range(len(obs_time)):
                 # Get rise and set times of all passes
                 t_rise = [i[0] for i in t_array]
                 t_set = [i[-1] for i in t_array]
-                print(f'length of t_rise: {len(t_rise)}')
      
                 # iterate over all passes, and see whether any intersect with particular half hour obs
                 # One pass at a time
                 for idx in range(len(t_rise)):
-                    print(t_rise[idx], t_set[idx])
+                    #print(t_rise[idx], t_set[idx])
                     # Case I - pass starts before obs begins, but ends within the observation
                     if t_rise[idx] <= obs_unix[t] and t_set[idx] <= obs_plus[t] and t_set[idx] > obs_unix[t]:
                         print('Case I')
