@@ -111,7 +111,8 @@ def time_intersect(t_rise, t_set, obs_unix, obs_plus, idx):
 
     # Case I - the satellite rises and sets before the obs
     if t_set[idx] < obs_unix[t]:
-        print('No intersection. Pass was before half hour obs')
+        pass
+        #print('No intersection. Pass was before half hour obs')
 
 
     # Case II - the satellite rises before obs begins, but sets within the observation
@@ -133,7 +134,8 @@ def time_intersect(t_rise, t_set, obs_unix, obs_plus, idx):
         print(tm_start, tm_stop)
     # Case V - the satellite rises and sets after the observation
     else:
-        print('No intersection. Pass was after half hour obs')
+        pass
+        #print('No intersection. Pass was after half hour obs')
 
     
 
@@ -326,8 +328,8 @@ for t in range(len(obs_time)):
 #    with open(f'{out_dir}/{obs_time[t]}.json', 'a') as outfile:
 #        json.dump(s_ephem, outfile, indent=4)
 #
-        break
-    break    
+        #break
+                break    
 
     
            
