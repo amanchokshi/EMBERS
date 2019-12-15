@@ -111,30 +111,37 @@ def time_intersect(t_rise, t_set, obs_unix, obs_plus, idx):
 
     # Case I - the satellite rises and sets before the obs
     if t_set[idx] < obs_unix[t]:
-        pass
+        return None
         #print('No intersection. Pass was before half hour obs')
 
 
     # Case II - the satellite rises before obs begins, but sets within the observation
-    elif t_rise[idx] <= obs_unix[t] and t_set[idx] <= obs_plus[t] and t_set[idx] > obs_unix[t]:
+    elif t_rise[idx] < obs_unix[t] and t_set[idx] <= obs_plus[t] and t_set[idx] > obs_unix[t]:
         tm_start = obs_unix[t]
         tm_stop = t_set[idx]
-        print(tm_start, tm_stop)
+        return (tm_start, tm_stop)
     
     # Case III - the satellite rises and sets within the observation
     elif t_rise[idx] >= obs_unix[t] and t_set[idx] <= obs_plus[t]:
         tm_start = t_rise[idx]
         tm_stop = t_set[idx]
-        print(tm_start, tm_stop)
+        return (tm_start, tm_stop)
     
     # Case IV - the satellite rises within obs, but sets after the observation ends
     elif t_rise[idx] >= obs_unix[t] and t_rise[idx] < obs_plus[t] and t_set[idx] >= obs_plus[t]:
         tm_start = t_rise[idx]
         tm_stop = obs_plus[t]
-        print(tm_start, tm_stop)
-    # Case V - the satellite rises and sets after the observation
+        return (tm_start, tm_stop)
+
+    # Case V - the satellite rises before obs, and sets after the observation ends
+    elif t_rise[idx] < obs_unix[t] and t_set[idx] > obs_plus[t]:
+        tm_start = obs_unix[t]
+        tm_stop = obs_plus[t]
+        return (tm_start, tm_stop)
+    
+    # Case VI - the satellite rises and sets after the observation
     else:
-        pass
+        return None
         #print('No intersection. Pass was after half hour obs')
 
     
@@ -291,7 +298,9 @@ for t in range(len(obs_time)):
                 # iterate over all passes, and see whether any intersect with particular half hour obs
                 # One pass at a time
                 for idx in range(len(t_rise)):
-                    time_intersect(t_rise, t_set, obs_unix, obs_plus, idx)
+                    intersect = time_intersect(t_rise, t_set, obs_unix, obs_plus, idx)
+                    if intersect != None:
+                        print(idx, intersect[0], intersect[1])
                     
                     
 #                        # call the interp_ephem function
