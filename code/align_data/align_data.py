@@ -1,4 +1,5 @@
 import math
+import time
 import numpy as np
 
 import sys
@@ -90,23 +91,66 @@ if __name__ == '__main__':
             interp_freq=2
             )
 
-    # Plots 
+
+
+# Plots 
     plt.style.use('seaborn')
+#    plt.rcParams["figure.figsize"] = (6,9)
+#    plt.rcParams.update({
+#    "lines.color": "white",
+#    "text.color": "black",
+#    "axes.facecolor": "#b3b3b3",
+#    "axes.edgecolor": "lightgray",
+#    "axes.labelcolor": "white",
+#    "xtick.color": "white",
+#    "ytick.color": "white",
+#    "grid.color": "lightgray",
+#    "figure.facecolor": "#2F1543",
+#    "figure.edgecolor": "black",
+#    "savefig.facecolor": "#2F1543",
+#    "savefig.edgecolor": "black"})
 
     plt.scatter(ref_t, ref_p[::, 59], color='#abcb89',marker='.', alpha=0.7, label='ref tile')
     plt.plot(time_array,ref_p_aligned[::, 59], color='#25a55f', alpha=0.9, label='ref savgol')	
 
     plt.scatter(tile_t, tile_p[::, 59], color='#ea7362',marker='.', alpha=0.7, label='aut tile')
     plt.plot(time_array,tile_p_aligned[::, 59], color='#a64942', alpha=0.9, label='aut savgol')
+    
+#    plt.scatter(ref_t, ref_p[::, 59], color='#fe6845',marker='.', alpha=0.7)
+#    plt.plot(time_array,ref_p_aligned[::, 59], color='#ec9b3b', alpha=0.9, label='Ref Tile')	
+#
+#    plt.scatter(tile_t, tile_p[::, 59], color='#3a1f5d',marker='.', alpha=0.7)
+#    plt.plot(time_array,tile_p_aligned[::, 59], color='#916dd5', alpha=0.9, label='MWA Tile')
 
     leg = plt.legend(loc="upper left", frameon=True)
     leg.get_frame().set_facecolor('white')
     for l in leg.legendHandles:
         l.set_alpha(1)
 
-    plt.xlabel('Time')
+   
+
+#    t_sta = 1570646700
+#    t_sto = 1570647550
+#    plt.xlim(t_sta, t_sto)
+#    
+#    times = np.linspace(t_sta, t_sto, 5)
+#    
+#    t_tz = []
+#    
+#    # Convert UNIX time to local HH:MM time
+#    for i in range(len(times)):
+#        
+#        perth_t = float(times[i])+28800 #28800=+8GMT @ PERTH
+#        hms = time.strftime('%H:%M', time.gmtime(perth_t))
+#        t_tz.append(hms)
+
+
+    
+    #plt.xlabel('Time [HH:MM]')
+    #plt.xticks(times, t_tz)
     plt.ylabel('Power')
     plt.tight_layout()
+    #plt.savefig('test2png.png', dpi=300)
     plt.show()
 
 
