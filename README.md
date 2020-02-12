@@ -64,7 +64,7 @@ This illustrates how `align_data.py` smoothes the noisy power data. The image di
 
 In practince, savgol smoothing and interpolation are applied to the 2D power arrays, along the time axis.
 
-Aligned pairs of data sets are saved using `batch_align.py`. Using a start date, and stop date, it saves aligned data sets as hdf5 files, for all raw data found in the time interval.
+Aligned pairs of data sets are saved using `batch_align.py`. Using a start date, and stop date, it saves aligned data sets as .npz files, for all raw data found in the time interval.
 
 ```
 python batch_align.py --help
