@@ -52,6 +52,8 @@ def epoch_ranges(epochs):
     
     Time array with intervals corresponding to epochs of 
     best accuracy from the TLE pair of lines in TLE file.
+    This is done to ensure that the most relevanrt TLE is
+    used in the analysis.
      
      Args:
         epochs: List of epochs derived from TLE file
@@ -61,10 +63,8 @@ def epoch_ranges(epochs):
     '''
     
     # Midpoints between epochs of successive TLEs
-    epoch_list = np.asarray(epochs)
-    midpoints = list((epoch_list[1:] + epoch_list[:-1]) / 2)
+    midpoints = list((epochs[1:] + epochs[:-1]) / 2)
     epoch_range = [epochs[0]] + midpoints + [epochs[-1]]
-    epoch_list = np.asarray(epoch_range)
     
     return epoch_range
 
