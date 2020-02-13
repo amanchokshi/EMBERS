@@ -77,72 +77,72 @@ for i in range(n_days+1):
 
 
 
-def interp_ephem(start, stop, pass_idx, t_array, s_alt, s_az, interp_type, interp_freq):
-    '''Interpolates satellite ephemeris - time, alt, az - to a given frequency'''
-
-    # Don't consider passes with less than 4 samples (~ 1 min)
-    if len(t_array[pass_idx]) > 3:
-        
-        
-        # Create interpolation functions
-        alt_interp = interpolate.interp1d(t_array[pass_idx], s_alt[pass_idx], kind=interp_type)
-        az_interp  = interpolate.interp1d(t_array[pass_idx], s_az[pass_idx], kind=interp_type)
-        
-        # Makes start ann end times clean integers
-        # Also ensures that the interp range is inclusive of data points
-        start = math.ceil(start)
-        stop = math.floor(stop)
-
-        # Determine a integer interval between which to interpolate
-        # Times array, at which to determine alt/az of sat
-        time_interp = list(np.double(np.arange(start, stop, (1/interp_freq))))
-    
-        sat_alt = list(alt_interp(time_interp))
-        sat_az = list(az_interp(time_interp))
-
-        return(time_interp, sat_alt, sat_az)
-    
-    else:
-        pass
-
-
-def time_intersect(t_rise, t_set, obs_unix, obs_plus, idx):
-    '''Checks if a satellite passes within a particular observation'''
-
-    # Case I - the satellite rises and sets before the obs
-    if t_set[idx] < obs_unix[t]:
-        return None
-        #print('No intersection. Pass was before half hour obs')
-
-
-    # Case II - the satellite rises before obs begins, but sets within the observation
-    elif t_rise[idx] < obs_unix[t] and t_set[idx] <= obs_plus[t] and t_set[idx] > obs_unix[t]:
-        tm_start = obs_unix[t]
-        tm_stop = t_set[idx]
-        return (tm_start, tm_stop)
-    
-    # Case III - the satellite rises and sets within the observation
-    elif t_rise[idx] >= obs_unix[t] and t_set[idx] <= obs_plus[t]:
-        tm_start = t_rise[idx]
-        tm_stop = t_set[idx]
-        return (tm_start, tm_stop)
-    
-    # Case IV - the satellite rises within obs, but sets after the observation ends
-    elif t_rise[idx] >= obs_unix[t] and t_rise[idx] < obs_plus[t] and t_set[idx] >= obs_plus[t]:
-        tm_start = t_rise[idx]
-        tm_stop = obs_plus[t]
-        return (tm_start, tm_stop)
-
-    # Case V - the satellite rises before obs, and sets after the observation ends
-    elif t_rise[idx] < obs_unix[t] and t_set[idx] > obs_plus[t]:
-        tm_start = obs_unix[t]
-        tm_stop = obs_plus[t]
-        return (tm_start, tm_stop)
-    
-    # Case VI - the satellite rises and sets after the observation
-    else:
-        return None
-        #print('No intersection. Pass was after half hour obs')
+#def interp_ephem(start, stop, pass_idx, t_array, s_alt, s_az, interp_type, interp_freq):
+#    '''Interpolates satellite ephemeris - time, alt, az - to a given frequency'''
+#
+#    # Don't consider passes with less than 4 samples (~ 1 min)
+#    if len(t_array[pass_idx]) > 3:
+#        
+#        
+#        # Create interpolation functions
+#        alt_interp = interpolate.interp1d(t_array[pass_idx], s_alt[pass_idx], kind=interp_type)
+#        az_interp  = interpolate.interp1d(t_array[pass_idx], s_az[pass_idx], kind=interp_type)
+#        
+#        # Makes start ann end times clean integers
+#        # Also ensures that the interp range is inclusive of data points
+#        start = math.ceil(start)
+#        stop = math.floor(stop)
+#
+#        # Determine a integer interval between which to interpolate
+#        # Times array, at which to determine alt/az of sat
+#        time_interp = list(np.double(np.arange(start, stop, (1/interp_freq))))
+#    
+#        sat_alt = list(alt_interp(time_interp))
+#        sat_az = list(az_interp(time_interp))
+#
+#        return(time_interp, sat_alt, sat_az)
+#    
+#    else:
+#        pass
+#
+#
+#def time_intersect(t_rise, t_set, obs_unix, obs_plus, idx):
+#    '''Checks if a satellite passes within a particular observation'''
+#
+#    # Case I - the satellite rises and sets before the obs
+#    if t_set[idx] < obs_unix[t]:
+#        return None
+#        #print('No intersection. Pass was before half hour obs')
+#
+#
+#    # Case II - the satellite rises before obs begins, but sets within the observation
+#    elif t_rise[idx] < obs_unix[t] and t_set[idx] <= obs_plus[t] and t_set[idx] > obs_unix[t]:
+#        tm_start = obs_unix[t]
+#        tm_stop = t_set[idx]
+#        return (tm_start, tm_stop)
+#    
+#    # Case III - the satellite rises and sets within the observation
+#    elif t_rise[idx] >= obs_unix[t] and t_set[idx] <= obs_plus[t]:
+#        tm_start = t_rise[idx]
+#        tm_stop = t_set[idx]
+#        return (tm_start, tm_stop)
+#    
+#    # Case IV - the satellite rises within obs, but sets after the observation ends
+#    elif t_rise[idx] >= obs_unix[t] and t_rise[idx] < obs_plus[t] and t_set[idx] >= obs_plus[t]:
+#        tm_start = t_rise[idx]
+#        tm_stop = obs_plus[t]
+#        return (tm_start, tm_stop)
+#
+#    # Case V - the satellite rises before obs, and sets after the observation ends
+#    elif t_rise[idx] < obs_unix[t] and t_set[idx] > obs_plus[t]:
+#        tm_start = obs_unix[t]
+#        tm_stop = obs_plus[t]
+#        return (tm_start, tm_stop)
+#    
+#    # Case VI - the satellite rises and sets after the observation
+#    else:
+#        return None
+#        #print('No intersection. Pass was after half hour obs')
 
     
 
@@ -265,42 +265,42 @@ def time_intersect(t_rise, t_set, obs_unix, obs_plus, idx):
 
 
 # iterate over all the half hour observations 
-for t in range(len(obs_time)):
-    # Empty lists to hold interpolated data
-    time_array = []
-    sat_alt = []
-    sat_az = []
-    sat_id = []
-    
-    # loop through sat ephem json files
-    for file in os.listdir(json_dir):
-        if file.endswith('.json'):
-            #print(f'Chewing on {file}')
-            f_path = os.path.join(json_dir, file)
-           
-            # Work with one sat at a time
-            # Each json file has all the passes for one particular satellite 
-            # within a certain interval
-            with open(f_path) as ephem:
-                sat_ephem = json.load(ephem)
-                
-                # Extract data from json dictionary
-                t_array = sat_ephem['time_array']
-                s_alt   = sat_ephem['sat_alt']
-                s_az    = sat_ephem['sat_az']
-                s_id  = sat_ephem['sat_id']
-                
-                
-                # Get rise and set times of all passes
-                t_rise = [i[0] for i in t_array]
-                t_set = [i[-1] for i in t_array]
-     
-                # iterate over all passes, and see whether any intersect with particular half hour obs
-                # One pass at a time
-                for idx in range(len(t_rise)):
-                    intersect = time_intersect(t_rise, t_set, obs_unix, obs_plus, idx)
-                    if intersect != None:
-                        print(idx, intersect[0], intersect[1])
+#for t in range(len(obs_time)):
+#    # Empty lists to hold interpolated data
+#    time_array = []
+#    sat_alt = []
+#    sat_az = []
+#    sat_id = []
+#    
+#    # loop through sat ephem json files
+#    for file in os.listdir(json_dir):
+#        if file.endswith('.json'):
+#            #print(f'Chewing on {file}')
+#            f_path = os.path.join(json_dir, file)
+#           
+#            # Work with one sat at a time
+#            # Each json file has all the passes for one particular satellite 
+#            # within a certain interval
+#            with open(f_path) as ephem:
+#                sat_ephem = json.load(ephem)
+#                
+#                # Extract data from json dictionary
+#                t_array = sat_ephem['time_array']
+#                s_alt   = sat_ephem['sat_alt']
+#                s_az    = sat_ephem['sat_az']
+#                s_id  = sat_ephem['sat_id']
+#                
+#                
+#                # Get rise and set times of all passes
+#                t_rise = [i[0] for i in t_array]
+#                t_set = [i[-1] for i in t_array]
+#     
+#                # iterate over all passes, and see whether any intersect with particular half hour obs
+#                # One pass at a time
+#                for idx in range(len(t_rise)):
+#                    intersect = time_intersect(t_rise, t_set, obs_unix, obs_plus, idx)
+#                    if intersect != None:
+#                        print(idx, intersect[0], intersect[1])
                     
                     
 #                        # call the interp_ephem function
@@ -338,7 +338,7 @@ for t in range(len(obs_time)):
 #        json.dump(s_ephem, outfile, indent=4)
 #
         #break
-                break    
+#                break    
 
     
            
