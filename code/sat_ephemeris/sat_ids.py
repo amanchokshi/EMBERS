@@ -20,6 +20,7 @@ norad_ids = {
         'ORBCOMM FM 18': 25414,
         'ORBCOMM FM 19': 25415,
         'ORBCOMM FM 20': 25416,
+        'ORBCOMM FM 16': 25417,
         'ORBCOMM FM 15': 25418,
         'ORBCOMM FM 14': 25419,
         'ORBCOMM FM 13': 25420,
@@ -74,8 +75,7 @@ norad_ids = {
         'NOAA 18': 28654,
         'NOAA 15': 25338,
         'Meteor M2': 40069,
-        'Meteor M2-2': 44387,
-        'ORBCOMM FM 16': 25417
+        'Meteor M2-2': 44387
         }
     
 if __name__ == '__main__':
