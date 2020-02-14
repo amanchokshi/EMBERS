@@ -80,6 +80,7 @@ for i in range(n_days+1):
         obs_unix.append(utc_unix)
         obs_unix_end.append(utc_unix_end)
 
+print(obs_unix)
 
 def interp_ephem(t_array, s_alt, s_az, interp_type, interp_freq):
     '''Interpolates satellite ephemeris - time, alt, az
@@ -143,9 +144,13 @@ for pass_idx in range(len(t_array)):
             interp_type,
             interp_freq)
     
-    print(time_interp)
-
-    break
+    print(time_interp[0])
+    print(time_interp[-1])
+    #for i in range(len(time_interp)):
+    #    print(f'{i}. {time_interp[i]} {sat_alt[i]}, {sat_az[i]}')
+    #print(f'Pass cound: {pass_idx}')
+    
+#    break # breaks loop after first pass in ephem.json
   
     
 
