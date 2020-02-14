@@ -88,7 +88,7 @@ def epoch_time_array(epoch_range, index_epoch, cadence):
     # find time between epochs/ midpoints in seconds, using Astropy Time
     t1 = Time(epoch_range[index_epoch], format='jd').gps
     t2 = Time(epoch_range[index_epoch+1], format='jd').gps
-    dt = round(t1 - t2)
+    dt = round(t2 - t1)
     
     t3 = Time(epoch_range[index_epoch], format='jd').iso
     date, time = t3.split()
