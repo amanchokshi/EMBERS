@@ -80,7 +80,7 @@ def sat_json(sat_id):
         
         return f'Saved {sat_id}.json'
     except Exception:
-        return f'ERROR! Couldn\'t save {sat_id}.json.'
+        return f'ERROR! Couldn\'t save {sat_id}.json. TLE was empty!'
 
 
 # Parellization Magic Here!
