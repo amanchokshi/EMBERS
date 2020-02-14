@@ -129,7 +129,8 @@ def interp_ephem(t_array, s_alt, s_az, interp_type, interp_freq):
 
 
 
-json_path = '../../outputs/sat_ephemeris/ephem_json/21576.json'
+#json_path = '../../outputs/sat_ephemeris/ephem_json/21576.json'
+json_path = '../../outputs/sat_ephemeris/ephem_json/25417.json'
 
 with open(json_path) as ephem:
     sat_ephem = json.load(ephem)
@@ -153,15 +154,15 @@ for pass_idx in range(len(t_array)):
     for obs_int in range(len(obs_unix)):
 
         # Case I: Satpass occurs completely within the 30min observation
-        if obs_unix[obs_int] <= time_interp[0] and obs_unix_end[obs_int] >= time_interp[-1]:
+        if obs_unix[obs_int] < time_interp[0] and obs_unix_end[obs_int] > time_interp[-1]:
             print(f'{pass_idx}: I {obs_time[obs_int]}')
 
         # Case II: Satpass begins before the obs, but ends within it
-        elif obs_unix[obs_int] >= time_interp[0] and obs_unix[obs_int] <= time_interp[-1] and obs_unix_end[obs_int] >= time_interp[-1]:
+        elif obs_unix[obs_int] > time_interp[0] and obs_unix[obs_int] < time_interp[-1] and obs_unix_end[obs_int] > time_interp[-1]:
             print(f'{pass_idx}: II {obs_time[obs_int]}')
 
         # Case III: Satpass begins within the obs, but ends after it
-        elif obs_unix_end[obs_int] >= time_interp[0] and obs_unix_end[obs_int] <= time_interp[-1] and obs_unix[obs_int] <= time_interp[0]:
+        elif obs_unix_end[obs_int] > time_interp[0] and obs_unix_end[obs_int] < time_interp[-1] and obs_unix[obs_int] < time_interp[0]:
             print(f'{pass_idx}: III {obs_time[obs_int]}')
     
     #break # breaks loop after first pass in ephem.json
