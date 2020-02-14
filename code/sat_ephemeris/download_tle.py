@@ -28,11 +28,13 @@ if os.environ.get('ST_USER') != None:
     #make a TLE directory
     os.makedirs(os.path.dirname(out_dir), exist_ok=True)
     
+    print('Starting TLE download')
+    
     for sat_name, sat_id in norad_ids.items():
-        data = st.tle(iter_lines=True, norad_cat_id=sat_id, orderby='epoch desc', epoch='{}--{}'.format(start_date,stop_date), format='tle')
-        print(f'downloading tle for {sat_name} satellite [{sat_id}] from space-tracks.org')
         #Sleep to limit downloads to 200 TLEs per hour
         time.sleep(20)
+        data = st.tle(iter_lines=True, norad_cat_id=sat_id, orderby='epoch asc', epoch=f'{start_date}--{stop_date}', format='tle')
+        print(f'downloading tle for {sat_name} satellite [{sat_id}] from space-tracks.org')
         with open(f'{out_dir}/{sat_id}.txt', 'w') as fp:
             for line in data:
                 fp.write(line + '\n')
