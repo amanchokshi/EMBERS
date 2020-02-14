@@ -81,35 +81,49 @@ for i in range(n_days+1):
         obs_unix_end.append(utc_unix_end)
 
 
-#def interp_ephem(start, stop, pass_idx, t_array, s_alt, s_az, interp_type, interp_freq):
-#    '''Interpolates satellite ephemeris - time, alt, az - to a given frequency'''
-#
-#    # Don't consider passes with less than 4 samples (~ 1 min)
-#    if len(t_array[pass_idx]) > 3:
-#        
-#        
-#        # Create interpolation functions
-#        alt_interp = interpolate.interp1d(t_array[pass_idx], s_alt[pass_idx], kind=interp_type)
-#        az_interp  = interpolate.interp1d(t_array[pass_idx], s_az[pass_idx], kind=interp_type)
-#        
-#        # Makes start ann end times clean integers
-#        # Also ensures that the interp range is inclusive of data points
-#        start = math.ceil(start)
-#        stop = math.floor(stop)
-#
-#        # Determine a integer interval between which to interpolate
-#        # Times array, at which to determine alt/az of sat
-#        time_interp = list(np.double(np.arange(start, stop, (1/interp_freq))))
-#    
-#        sat_alt = list(alt_interp(time_interp))
-#        sat_az = list(az_interp(time_interp))
-#
-#        return(time_interp, sat_alt, sat_az)
-#    
-#    else:
-#        pass
-#
-#
+def interp_ephem(t_array, s_alt, s_az, interp_type, interp_freq):
+    '''Interpolates satellite ephemeris - time, alt, az
+    
+    Interpolate sat ephem to same freq as align data. This ensures
+    that each point in the data, will have an corresponding ephem
+    point.
+
+    Args:
+        t_array:        Time array of on satellite pass
+        s_alt, s_az:    Satellite alt, az at the t_array
+        interp_type:    Type of interpolation. Ex: Cubic,Linear. Default=Cubic'
+        interp_freq:    Frequency at which to interpolate, in Hertz. 
+        
+    Returns:
+        time_interp:    Interpolated time array
+        sat_alt:        Interpolated alt array
+        sat_az:         Interpolated az array
+    '''
+
+    # Don't consider passes with less than 4 samples (~ 1 min = 3*20s) 
+    if len(t_array) > 3:
+        
+        # Create interpolation functions. Math functions, not Python!
+        alt_interp = interpolate.interp1d(t_array, s_alt, kind=interp_type)
+        az_interp  = interpolate.interp1d(t_array, s_az, kind=interp_type)
+        
+        # Makes start and end times clean integers
+        # Also ensures that the interp range is inclusive of data points
+        start = math.ceil(t_array[0])
+        stop = math.floor(t_array[-1])
+
+        # Create time array, at which to evaluate alt/az of sat
+        time_interp = list(np.double(np.arange(start, stop, (1/interp_freq))))
+    
+        sat_alt = list(alt_interp(time_interp))
+        sat_az = list(az_interp(time_interp))
+
+        return(time_interp, sat_alt, sat_az)
+    
+    else:
+        pass
+
+
 #def time_intersect(t_rise, t_set, obs_unix, obs_plus, idx):
 #    '''Checks if a satellite passes within a particular observation'''
 #
