@@ -57,19 +57,24 @@ def sat_json(sat_id):
         sats, epochs = se.load_tle(tle_path)
         epoch_range = se.epoch_ranges(epochs)
         
-        for i in range(len(epoch_range) - 1):   
-            t_arr, index_epoch = se.epoch_time_array(epoch_range, i, cadence)
-            passes, alt, az = se.sat_pass(sats, t_arr, index_epoch) 
-            
-            for pass_index in passes:
-                time_array, sat_alt, sat_az = se.ephem_data(t_arr, pass_index, alt, az)
+        for i in range(len(epoch_range) - 1):  
+            try:
+                t_arr, index_epoch = se.epoch_time_array(epoch_range, i, cadence)
+                passes, alt, az = se.sat_pass(sats, t_arr, index_epoch) 
+                
+                for pass_index in passes:
+                    time_array, sat_alt, sat_az = se.ephem_data(t_arr, pass_index, alt, az)
        
-                time_array = list(time_array)
+                    time_array = list(time_array)
 
-                sat_ephem['time_array'].append(time_array)
-                sat_ephem['sat_alt'].append(sat_alt)
-                sat_ephem['sat_az'].append(sat_az)
-        
+                    # We don't care about sat passes shorter than a minute (3*20sec)
+                    if len(time_array) >= 3:
+                        sat_ephem['time_array'].append(time_array)
+                        sat_ephem['sat_alt'].append(sat_alt)
+                        sat_ephem['sat_az'].append(sat_az)
+            except Exception:
+                pass
+
         with open(f'{out_dir}/{sat_id}.json', 'w') as outfile:
             json.dump(sat_ephem, outfile, indent=4) 
         
