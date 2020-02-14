@@ -271,10 +271,12 @@ if __name__ == '__main__':
                 time_array, sat_alt, sat_az = ephem_data(t_arr, pass_index, alt, az)
                 
                 time_array = list(time_array)
-
-                sat_ephem['time_array'].append(time_array)
-                sat_ephem['sat_alt'].append(sat_alt)
-                sat_ephem['sat_az'].append(sat_az)
+                
+                # We don't care about sat passes shorter than a minute (3*20sec)
+                if len(time_array) >= 3:
+                    sat_ephem['time_array'].append(time_array)
+                    sat_ephem['sat_alt'].append(sat_alt)
+                    sat_ephem['sat_az'].append(sat_az)
         except Exception:
             pass
 
