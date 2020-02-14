@@ -123,6 +123,40 @@ def interp_ephem(t_array, s_alt, s_az, interp_type, interp_freq):
     else:
         pass
 
+json_path = '../../outputs/sat_ephemeris/ephem_json/21576.json'
+
+with open(json_path) as ephem:
+    sat_ephem = json.load(ephem)
+    
+    # Extract data from json dictionary
+    t_array = sat_ephem['time_array']
+    s_alt   = sat_ephem['sat_alt']
+    s_az    = sat_ephem['sat_az']
+    s_id  = sat_ephem['sat_id']
+
+
+for pass_idx in range(len(t_array)):
+    time_interp, sat_alt, sat_az = interp_ephem(
+            t_array[pass_idx],
+            s_alt[pass_idx],
+            s_az[pass_idx],
+            interp_type,
+            interp_freq)
+    
+    print(time_interp)
+
+    break
+  
+    
+
+
+
+
+
+
+
+
+
 
 #def time_intersect(t_rise, t_set, obs_unix, obs_plus, idx):
 #    '''Checks if a satellite passes within a particular observation'''
