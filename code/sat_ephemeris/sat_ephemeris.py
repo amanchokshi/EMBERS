@@ -123,32 +123,38 @@ def sat_pass(sats, t_arr, index_epoch):
 
     # Define Satellite to be the first one in sats list
     # Find possition of sat at each timestep of time array
-    satellite = sats[index_epoch]
-    orbit = (satellite - MWA).at(t_arr)
-    alt, az, _ = orbit.altaz()
     
-    # Check if sat is above the horizon (above -1 degrees), return boolean array
-    above_horizon = alt.degrees >= -1
+    if len(t_arr) > 0:
     
-    # Indicies of rare times that sats are above the horizon
-    indicies, = above_horizon.nonzero()
+        satellite = sats[index_epoch]
+        orbit = (satellite - MWA).at(t_arr)
+        alt, az, _ = orbit.altaz()
     
-    # Boundary times at which the sat either rises or sets
-    boundaries, = np.diff(above_horizon).nonzero()
+        # Check if sat is above the horizon (above -1 degrees), return boolean array
+        above_horizon = alt.degrees >= -1
+        
+        # Indicies of rare times that sats are above the horizon
+        indicies, = above_horizon.nonzero()
+        
+        # Boundary times at which the sat either rises or sets
+        boundaries, = np.diff(above_horizon).nonzero()
+        
+        if above_horizon[0] == True:
+            boundaries = [indicies[0]] + list(boundaries)
+            boundaries = np.asarray(boundaries)
+        
+        if above_horizon[-1] == True:
+            boundaries = list(boundaries) + [indicies[-1]]
+            boundaries = np.asarray(boundaries)
     
-    if above_horizon[0] == True:
-        boundaries = [indicies[0]]+ list(boundaries)
-        boundaries = np.asarray(boundaries)
+        if above_horizon[-1] == True and above_horizon[0] == True:
+            boundaries = [indicies[0]] + list(boundaries) + [indicies[-1]]
+            boundaries = np.asarray(boundaries)
     
-    if above_horizon[-1] == True:
-        boundaries = list(boundaries) + [indicies[-1]]
-        boundaries = np.asarray(boundaries)
+        # Reshape into pairs rise & set indicies
+        passes = boundaries.reshape(len(boundaries) // 2, 2)
     
-    # Reshape into pairs rise & set indicies
-    passes = boundaries.reshape(len(boundaries) // 2, 2)
-
-    return (passes, alt, az)
-
+        return (passes, alt, az)
 
 def ephem_data(t_arr, pass_index, alt, az):
     '''Satellite Ephemeris Data.
@@ -255,19 +261,23 @@ if __name__ == '__main__':
     
     sats, epochs = load_tle(tle_path)
     epoch_range = epoch_ranges(epochs)
-    
-    for i in range(len(epoch_range) - 1):   
-        t_arr, index_epoch = epoch_time_array(epoch_range, i, cadence)
-        passes, alt, az = sat_pass(sats, t_arr, index_epoch) 
-        
-        for pass_index in passes:
-            time_array, sat_alt, sat_az = ephem_data(t_arr, pass_index, alt, az)
-            
-            time_array = list(time_array)
 
-            sat_ephem['time_array'].append(time_array)
-            sat_ephem['sat_alt'].append(sat_alt)
-            sat_ephem['sat_az'].append(sat_az)
+    for i in range(len(epoch_range) - 1):
+        try:
+            t_arr, index_epoch = epoch_time_array(epoch_range, i, cadence)
+            passes, alt, az = sat_pass(sats, t_arr, index_epoch) 
+            
+            for pass_index in passes:
+                time_array, sat_alt, sat_az = ephem_data(t_arr, pass_index, alt, az)
+                
+                time_array = list(time_array)
+
+                sat_ephem['time_array'].append(time_array)
+                sat_ephem['sat_alt'].append(sat_alt)
+                sat_ephem['sat_az'].append(sat_az)
+        except Exception:
+            pass
+
     
     with open(f'{out_dir}/{sat_name}.json', 'w') as outfile:
         json.dump(sat_ephem, outfile, indent=4)    
