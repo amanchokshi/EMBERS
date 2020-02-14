@@ -140,16 +140,16 @@ with open(json_path) as ephem:
     s_az    = sat_ephem['sat_az']
     s_id  = sat_ephem['sat_id']
 
-flat_list = [item for sublist in t_array for item in sublist]
-
-import matplotlib.pyplot as plt
-plt.plot(t_array[0], label='0')
-plt.plot(t_array[1], label='1')
-plt.plot(t_array[2], label='2')
-plt.plot(t_array[3], label='3')
-plt.plot(t_array[4], label='4')
-plt.legend()
-plt.show()
+#flat_list = [item for sublist in t_array for item in sublist]
+#import matplotlib.pyplot as plt
+#plt.plot(t_array[0], label='0')
+#plt.plot(t_array[1], label='1')
+#plt.plot(t_array[2], label='2')
+#plt.plot(t_array[3], label='3')
+#plt.plot(t_array[4], label='4')
+#plt.plot(flat_list)
+#plt.legend()
+#plt.show()
 
 
 #print([item[0] for item in t_array ])
