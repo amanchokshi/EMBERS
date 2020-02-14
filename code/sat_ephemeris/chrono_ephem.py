@@ -44,6 +44,8 @@ local = pytz.timezone(time_zone)
 
 t_start = datetime.strptime(start_date, '%Y-%m-%d')
 t_stop = datetime.strptime(stop_date, '%Y-%m-%d')
+
+# Number of days that the date range spans
 n_days = (t_stop - t_start).days
 
 # YYYY-MM-DD-HH:MM format
@@ -53,14 +55,17 @@ obs_time = []
 obs_unix = []
 
 # End of half hour obs in unix time
-obs_plus = []
+obs_unix_end = []
 
+# The +1 makes the date ranges inclusive
 for i in range(n_days+1):
     day = t_start + timedelta(days=i)
     date = day.strftime('%Y-%m-%d')
     
+    # loop over 48x30 minute obs in a day
     for j in range(48):
         t_delta = datetime.strptime(date,'%Y-%m-%d') + timedelta(minutes=30*j)
+        # convert t_delta to a readable string YYYY-MM-DD-HH:MM
         d_time = t_delta.strftime('%Y-%m-%d-%H:%M')
         
         # Convert from naive local time to utc aware time
@@ -69,12 +74,11 @@ for i in range(n_days+1):
         # convert to a unix timestamp, used within rf explorer data files
         utc_unix = utc_delta.timestamp()
         # time at end of half hour window
-        utc_plus = utc_unix + (30 * 60)
+        utc_unix_end = utc_unix + (30 * 60)
         
         obs_time.append(d_time)
         obs_unix.append(utc_unix)
-        obs_plus.append(utc_plus)
-
+        obs_unix_end.append(utc_unix_end)
 
 
 #def interp_ephem(start, stop, pass_idx, t_array, s_alt, s_az, interp_type, interp_freq):
