@@ -80,7 +80,6 @@ for i in range(n_days+1):
         obs_unix.append(utc_unix)
         obs_unix_end.append(utc_unix_end)
 
-print(obs_unix)
 
 def interp_ephem(t_array, s_alt, s_az, interp_type, interp_freq):
     '''Interpolates satellite ephemeris - time, alt, az
@@ -124,6 +123,12 @@ def interp_ephem(t_array, s_alt, s_az, interp_type, interp_freq):
     else:
         pass
 
+
+
+
+
+
+
 json_path = '../../outputs/sat_ephemeris/ephem_json/21576.json'
 
 with open(json_path) as ephem:
@@ -135,6 +140,19 @@ with open(json_path) as ephem:
     s_az    = sat_ephem['sat_az']
     s_id  = sat_ephem['sat_id']
 
+flat_list = [item for sublist in t_array for item in sublist]
+
+import matplotlib.pyplot as plt
+plt.plot(t_array[0], label='0')
+plt.plot(t_array[1], label='1')
+plt.plot(t_array[2], label='2')
+plt.plot(t_array[3], label='3')
+plt.plot(t_array[4], label='4')
+plt.legend()
+plt.show()
+
+
+#print([item[0] for item in t_array ])
 
 for pass_idx in range(len(t_array)):
     time_interp, sat_alt, sat_az = interp_ephem(
@@ -144,8 +162,6 @@ for pass_idx in range(len(t_array)):
             interp_type,
             interp_freq)
     
-    print(time_interp[0])
-    print(time_interp[-1])
     #for i in range(len(time_interp)):
     #    print(f'{i}. {time_interp[i]} {sat_alt[i]}, {sat_az[i]}')
     #print(f'Pass cound: {pass_idx}')
