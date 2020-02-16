@@ -195,9 +195,24 @@ with open(json_path) as ephem:
             elif (obs_unix_end[obs_int] > time_interp[0] and 
                     obs_unix_end[obs_int] < time_interp[-1] and 
                     obs_unix[obs_int] < time_interp[0]):
+                
+                # find index of time_interp == obs_unix_end
+                stop_idx = (np.where(np.asarray(time_interp) == obs_unix_end[obs_int]))[0][0]
+                
+                # append the end of the pass which is within the obs
+                sat_ephem['time_array'].append(time_interp[:stop_idx+1])
+                sat_ephem['sat_alt'].append(sat_alt[:stop_idx+1])
+                sat_ephem['sat_az'].append(sat_az[:stop_idx+1])
+                
                 print(f'{pass_idx}: III. {obs_time[obs_int]}')
+
+            if sat_ephem['time_array'] != []:
+                with open(f'test/{file_name}.json', 'w') as outfile:
+                    json.dump(sat_ephem, outfile, indent=4) 
         
-        break # breaks loop after first pass in ephem.json
+
+        
+        #break # breaks loop after first pass in ephem.json
     
         #TODO make an empty list at in the begining. For every observation identified, make a dictionary with sat_id, t_arr, alt, az
         #TODO append to the list with a new dictionary for each satellite
