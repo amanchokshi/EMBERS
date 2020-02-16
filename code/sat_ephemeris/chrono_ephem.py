@@ -143,29 +143,64 @@ with open(json_path) as ephem:
 
     print(len(t_array))
 
-for pass_idx in range(len(t_array)):
-    time_interp, sat_alt, sat_az = interp_ephem(
-            t_array[pass_idx],
-            s_alt[pass_idx],
-            s_az[pass_idx],
-            interp_type,
-            interp_freq)
-
-    for obs_int in range(len(obs_unix)):
-
-        # Case I: Satpass occurs completely within the 30min observation
-        if obs_unix[obs_int] < time_interp[0] and obs_unix_end[obs_int] > time_interp[-1]:
-            print(f'{pass_idx}: I {obs_time[obs_int]}')
-
-        # Case II: Satpass begins before the obs, but ends within it
-        elif obs_unix[obs_int] > time_interp[0] and obs_unix[obs_int] < time_interp[-1] and obs_unix_end[obs_int] > time_interp[-1]:
-            print(f'{pass_idx}: II {obs_time[obs_int]}')
-
-        # Case III: Satpass begins within the obs, but ends after it
-        elif obs_unix_end[obs_int] > time_interp[0] and obs_unix_end[obs_int] < time_interp[-1] and obs_unix[obs_int] < time_interp[0]:
-            print(f'{pass_idx}: III {obs_time[obs_int]}')
+    # here, we're looping over each satellite pass 
+    # to check which observation window it falls in
+    for pass_idx in range(len(t_array)):
+        time_interp, sat_alt, sat_az = interp_ephem(
+                t_array[pass_idx],
+                s_alt[pass_idx],
+                s_az[pass_idx],
+                interp_type,
+                interp_freq)
     
-    #break # breaks loop after first pass in ephem.json
+        # obs_int: observation_interval
+        for obs_int in range(len(obs_unix)):
+    
+            file_name = obs_time[obs_int]
+            pass_list = []
+    
+            sat_ephem = {}
+            sat_ephem['sat_id'] = [s_id]
+            sat_ephem['time_array'] = []
+            sat_ephem['sat_alt'] = []
+            sat_ephem['sat_az'] = []
+            
+            # Case I: Satpass occurs completely within the 30min observation
+            if (obs_unix[obs_int] < time_interp[0] and
+                    obs_unix_end[obs_int] > time_interp[-1]):
+                    
+                # append the whole pass to the dict
+                sat_ephem['time_array'].append(time_interp)
+                sat_ephem['sat_alt'].append(sat_alt)
+                sat_ephem['sat_az'].append(sat_az)
+                print(f'{pass_idx}: I.   {obs_time[obs_int]}')
+   
+
+            # Case II: Satpass begins before the obs, but ends within it
+            elif (obs_unix[obs_int] > time_interp[0] and
+                    obs_unix[obs_int] < time_interp[-1] and
+                    obs_unix_end[obs_int] > time_interp[-1]):
+                    
+                # find index of time_interp == obs_unix
+                start_idx = (np.where(np.asarray(time_interp) == obs_unix[obs_int]))[0][0]
+                
+                # append the end of the pass which is within the obs
+                sat_ephem['time_array'].append(time_interp[start_idx:])
+                sat_ephem['sat_alt'].append(sat_alt[start_idx:])
+                sat_ephem['sat_az'].append(sat_az[start_idx:])
+
+                print(f'{pass_idx}: II.  {obs_time[obs_int]}')
+    
+            # Case III: Satpass begins within the obs, but ends after it
+            elif (obs_unix_end[obs_int] > time_interp[0] and 
+                    obs_unix_end[obs_int] < time_interp[-1] and 
+                    obs_unix[obs_int] < time_interp[0]):
+                print(f'{pass_idx}: III. {obs_time[obs_int]}')
+        
+        break # breaks loop after first pass in ephem.json
+    
+        #TODO make an empty list at in the begining. For every observation identified, make a dictionary with sat_id, t_arr, alt, az
+        #TODO append to the list with a new dictionary for each satellite
   
     
 
