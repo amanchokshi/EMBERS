@@ -124,12 +124,6 @@ def interp_ephem(t_array, s_alt, s_az, interp_type, interp_freq):
         pass
 
 
-
-
-
-
-
-#json_path = '../../outputs/sat_ephemeris/ephem_json/21576.json'
 json_path = '../../outputs/sat_ephemeris/ephem_json/25417.json'
 
 with open(json_path) as ephem:
@@ -206,9 +200,11 @@ with open(json_path) as ephem:
                 
                 print(f'{pass_idx}: III. {obs_time[obs_int]}')
 
+            # doesn't create json if there are no satellite passes within it
             if sat_ephem['time_array'] != []:
+                pass_list.append(sat_ephem)
                 with open(f'test/{file_name}.json', 'w') as outfile:
-                    json.dump(sat_ephem, outfile, indent=4) 
+                    json.dump(pass_list, outfile, indent=4) 
         
 
         
@@ -216,6 +212,12 @@ with open(json_path) as ephem:
     
         #TODO make an empty list at in the begining. For every observation identified, make a dictionary with sat_id, t_arr, alt, az
         #TODO append to the list with a new dictionary for each satellite
+
+        #TODO what I'm thinking is that I should make a json file for every 30 min obs
+        #TODO This file will have an empty list in it []
+        #TODO as we loop through passes, the json list will be opened, if there is a pass, append it
+        #TODO parallelize at the obs level, so that satellites are ananlyzed sequentially. 
+        #TODO this will preserver some sense of order in the files
   
     
 
