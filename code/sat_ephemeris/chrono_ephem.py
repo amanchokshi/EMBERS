@@ -162,8 +162,8 @@ for json_path in list(Path(json_dir).glob('*.json')):
                 
 
                 #Non parallel version
-                #def obs_pass_match(obs_int):
-                for obs_int in range(len(obs_unix)):
+                def obs_pass_match(obs_int):
+                #for obs_int in range(len(obs_unix)):
                     
                     sat_ephem = {}
                     sat_ephem['sat_id'] = [s_id]
@@ -236,8 +236,8 @@ for json_path in list(Path(json_dir).glob('*.json')):
                 # For loops for different passes of one sat, and over all sats at a higher level
                 # obs_int: observation_interval
                 # Parellization Magic Here!
-#                with concurrent.futures.ThreadPoolExecutor() as executor:
-#                    results = executor.map(obs_pass_match, list(range(len(obs_unix))))
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    results = executor.map(obs_pass_match, list(range(len(obs_unix))))
                 
 #                for result in results:
 #                    if result != None:
