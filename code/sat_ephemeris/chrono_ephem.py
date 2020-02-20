@@ -161,7 +161,10 @@ with open(json_path) as ephem:
                 s_az[pass_idx],
                 interp_type,
                 interp_freq)
-    
+        
+        # Parallelize at this point!! Lowest level parallelization should cause no conflicts.
+        # We are parallelizing the matching of a sat pass with observational window
+        # For loops for different passes of one sat, and over all sats at a higher level
         # obs_int: observation_interval
         for obs_int in range(len(obs_unix)):
     
@@ -223,7 +226,7 @@ with open(json_path) as ephem:
             
             # doesn't create json if there are no satellite passes within it
             if sat_ephem['time_array'] != []:
-                print(obs_time[obs_int])
+                print(f'Satellite {s_id[0]} in {obs_time[obs_int]}')
                 
                 # open the relevant json file and loads contents to 'data_json'
                 with open(f'{out_dir}/{obs_time[obs_int]}.json') as json_file: 
