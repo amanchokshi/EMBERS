@@ -82,19 +82,11 @@ for i in range(n_days+1):
         obs_unix_end.append(utc_unix_end)
 
 
-# creates output dir, if it doesn't exist
-Path(out_dir).mkdir(parents=True, exist_ok=True)
+def write_json(data, filename='data.json', out_dir=out_dir):
+    '''writes data to json file in output dir'''
 
-
-# function to add to json
-def write_json(data, filename='data.json', out_dir=out_dir): 
     with open(f'{out_dir}/{filename}','w') as f: 
         json.dump(data, f, indent=4) 
-
-# Lets make the a json file for each 30 min observation, with an empty list
-data = []
-for i in range(len(obs_time)):
-    write_json(data, filename=f'{obs_time[i]}.json')
 
 
 def interp_ephem(t_array, s_alt, s_az, interp_type, interp_freq):
@@ -135,11 +127,10 @@ def interp_ephem(t_array, s_alt, s_az, interp_type, interp_freq):
         sat_az = list(az_interp(time_interp))
 
         return(time_interp, sat_alt, sat_az)
-    
-    else:
-        pass
+
 
 def obs_pass_match(obs_int):
+    '''Checks whether a sat pass occurs within a 30 min obs window'''
 
     sat_ephem = {}
     sat_ephem['sat_id'] = [s_id]
@@ -190,8 +181,9 @@ def obs_pass_match(obs_int):
 
     # doesn't create json if there are no satellite passes within it
     if sat_ephem['time_array'] != []:
-        print(f'Satellite {s_id[0]} in {obs_time[obs_int]}')
         
+        print(f'Satellite {s_id[0]} in {obs_time[obs_int]}')
+
         # open the relevant json file and loads contents to 'data_json'
         with open(f'{out_dir}/{obs_time[obs_int]}.json') as json_file: 
             data_json = json.load(json_file) 
@@ -201,8 +193,15 @@ def obs_pass_match(obs_int):
             
             # write the combined data back to the original file
             write_json(data_json, filename=f'{obs_time[obs_int]}.json')
-    #else:
-        #print(f'No pass of Satellite {s_id[0]} in {obs_time[obs_int]}')
+        return f'Satellite {s_id[0]} in {obs_time[obs_int]}'
+
+# creates output dir, if it doesn't exist
+Path(out_dir).mkdir(parents=True, exist_ok=True)
+
+# Lets make the a json file for each 30 min observation, with an empty list
+data = []
+for i in range(len(obs_time)):
+    write_json(data, filename=f'{obs_time[i]}.json')
 
 
 for json_path in list(Path(json_dir).glob('*.json')):
@@ -233,85 +232,13 @@ for json_path in list(Path(json_dir).glob('*.json')):
             # For loops for different passes of one sat, and over all sats at a higher level
             # obs_int: observation_interval
             # Parellization Magic Here!
-            with concurrent.futures.ProcessPoolExecutor() as executor:
-                results = executor.map(obs_pass_match, list(range(len(obs_unix))))
-            
-            for result in results:
-                if result != None:
-                    print(result)
-
-
-#        for obs_int in range(len(obs_unix)):
-#    
-#            file_name = obs_time[obs_int]
-#            pass_list = []
-#    
-#            sat_ephem = {}
-#            sat_ephem['sat_id'] = [s_id]
-#            sat_ephem['time_array'] = []
-#            sat_ephem['sat_alt'] = []
-#            sat_ephem['sat_az'] = []
+#            with concurrent.futures.ProcessPoolExecutor() as executor:
+#                results = executor.map(obs_pass_match, list(range(len(obs_unix))))
 #            
-#            # Case I: Satpass occurs completely within the 30min observation
-#            if (obs_unix[obs_int] < time_interp[0] and
-#                    obs_unix_end[obs_int] > time_interp[-1]):
-#                    
-#                # append the whole pass to the dict
-#                sat_ephem['time_array'].append(time_interp)
-#                sat_ephem['sat_alt'].append(sat_alt)
-#                sat_ephem['sat_az'].append(sat_az)
-#                #print(f'{pass_idx}: I.   {obs_time[obs_int]}')
-#   
-#
-#            # Case II: Satpass begins before the obs, but ends within it
-#            elif (obs_unix[obs_int] > time_interp[0] and
-#                    obs_unix[obs_int] < time_interp[-1] and
-#                    obs_unix_end[obs_int] > time_interp[-1]):
-#                    
-#                # find index of time_interp == obs_unix
-#                start_idx = (np.where(np.asarray(time_interp) == obs_unix[obs_int]))[0][0]
-#                
-#                # append the end of the pass which is within the obs
-#                sat_ephem['time_array'].append(time_interp[start_idx:])
-#                sat_ephem['sat_alt'].append(sat_alt[start_idx:])
-#                sat_ephem['sat_az'].append(sat_az[start_idx:])
-#
-#                #print(f'{pass_idx}: II.  {obs_time[obs_int]}')
-#    
-#            # Case III: Satpass begins within the obs, but ends after it
-#            elif (obs_unix_end[obs_int] > time_interp[0] and 
-#                    obs_unix_end[obs_int] < time_interp[-1] and 
-#                    obs_unix[obs_int] < time_interp[0]):
-#                
-#                # find index of time_interp == obs_unix_end
-#                stop_idx = (np.where(np.asarray(time_interp) == obs_unix_end[obs_int]))[0][0]
-#                
-#                # append the end of the pass which is within the obs
-#                sat_ephem['time_array'].append(time_interp[:stop_idx+1])
-#                sat_ephem['sat_alt'].append(sat_alt[:stop_idx+1])
-#                sat_ephem['sat_az'].append(sat_az[:stop_idx+1])
-#                
-#                #print(f'{pass_idx}: III. {obs_time[obs_int]}')
-#
-#           # # doesn't create json if there are no satellite passes within it
-#           # if sat_ephem['time_array'] != []:
-#           #     pass_list.append(sat_ephem)
-#           #     with open(f'test/{file_name}.json', 'w') as outfile:
-#           #         json.dump(pass_list, outfile, indent=4) 
-#            
-#            # doesn't create json if there are no satellite passes within it
-#            if sat_ephem['time_array'] != []:
-#                print(f'Satellite {s_id[0]} in {obs_time[obs_int]}')
-#                
-#                # open the relevant json file and loads contents to 'data_json'
-#                with open(f'{out_dir}/{obs_time[obs_int]}.json') as json_file: 
-#                    data_json = json.load(json_file) 
-#     
-#                    # append new satpass ephem data to data_json
-#                    data_json.append(sat_ephem)
-#                    
-#                    # write the combined data back to the original file
-#                    write_json(data_json, filename=f'{obs_time[obs_int]}.json')
-#        #break # breaks loop after first pass in ephem.json
- 
-    
+#            for result in results:
+#                if result != None:
+#                    print(result)
+
+            #Non parallel version
+            for obs_int in range(len(obs_unix)):
+                obs_pass_match(obs_int)
