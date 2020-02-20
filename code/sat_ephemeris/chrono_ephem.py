@@ -125,18 +125,6 @@ def interp_ephem(t_array, s_alt, s_az, interp_type, interp_freq):
 
         return(time_interp, sat_alt, sat_az)
             
-def interp_parallel(pass_idx):            
-    time_interp, sat_alt, sat_az = interp_ephem(
-            t_array[pass_idx],
-            s_alt[pass_idx],
-            s_az[pass_idx],
-            interp_type,
-            interp_freq)
-    
-    #Non parallel version
-    for obs_int in range(len(obs_unix)):
-        obs_pass_match(obs_int)
-
 
 def obs_pass_match(obs_int):
     '''Checks whether a sat pass occurs within a 30 min obs window'''
@@ -220,10 +208,9 @@ for i in range(len(obs_time)):
 
 
 for json_path in list(Path(json_dir).glob('*.json')):
-    print(json_path)
-
     try:
         with open(json_path) as ephem:
+            print(json_path)
             sat_ephem = json.load(ephem)
             
             # Extract data from json dictionary
@@ -259,13 +246,6 @@ for json_path in list(Path(json_dir).glob('*.json')):
                 #Non parallel version
                 for obs_int in range(len(obs_unix)):
                     obs_pass_match(obs_int)
-#            with concurrent.futures.ProcessPoolExecutor() as executor:
-#                results = executor.map(interp_parallel, list(range(len(t_array))))
-#
-#            for result in results:
-#                if result != None:
-#                    print(result)
-        
         
     except Exception:
         print('Fuccckkkkk!')
