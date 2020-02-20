@@ -148,6 +148,7 @@ for json_path in list(Path(json_dir).glob('*.json')):
     
         # here, we're looping over each satellite pass 
         # to check which observation window it falls in
+        
         for pass_idx in range(len(t_array)):
             
             # Don't consider passes with less than 4 samples (~ 1 min = 3*20s)
@@ -235,6 +236,7 @@ for json_path in list(Path(json_dir).glob('*.json')):
 
                             # write the combined data back to the original file
                             write_json(data_json, filename=f'{obs_time[obs_int]}.json')
+                            
                             # clear data_json
                             data_json = []
                             
