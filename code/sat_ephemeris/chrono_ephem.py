@@ -160,19 +160,9 @@ for json_path in list(Path(json_dir).glob('*.json')):
                         interp_type,
                         interp_freq)
                 
-#                # Parallelize at this point!! Lowest level parallelization should cause no conflicts.
-#                # We are parallelizing the matching of a sat pass with observational window
-#                # For loops for different passes of one sat, and over all sats at a higher level
-#                # obs_int: observation_interval
-#                # Parellization Magic Here!
-#                with concurrent.futures.ProcessPoolExecutor() as executor:
-#                    results = executor.map(obs_pass_match, list(range(len(obs_unix))))
-#                
-#                for result in results:
-#                    if result != None:
-#                        print(result)
 
                 #Non parallel version
+                #def obs_pass_match(obs_int):
                 for obs_int in range(len(obs_unix)):
                     
                     sat_ephem = {}
@@ -241,3 +231,14 @@ for json_path in list(Path(json_dir).glob('*.json')):
                             data_json = []
                             
             
+                # Parallelize at this point!! Lowest level parallelization should cause no conflicts.
+                # We are parallelizing the matching of a sat pass with observational window
+                # For loops for different passes of one sat, and over all sats at a higher level
+                # obs_int: observation_interval
+                # Parellization Magic Here!
+#                with concurrent.futures.ThreadPoolExecutor() as executor:
+#                    results = executor.map(obs_pass_match, list(range(len(obs_unix))))
+                
+#                for result in results:
+#                    if result != None:
+#                        print(result)
