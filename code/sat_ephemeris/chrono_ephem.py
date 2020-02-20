@@ -134,8 +134,7 @@ for i in range(len(obs_time)):
     write_json(data, filename=f'{obs_time[i]}.json')
 
 
-#for json_path in list(Path(json_dir).glob('*.json')):
-for json_path in list(Path(json_dir).glob('23546*.json')):
+for json_path in list(Path(json_dir).glob('*.json')):
     
     with open(json_path) as ephem:
         print(json_path)
