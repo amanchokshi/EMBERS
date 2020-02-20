@@ -81,157 +81,176 @@ for i in range(n_days+1):
         obs_unix_end.append(utc_unix_end)
 
 
-# Lets make the a json file for each 30 min observation, with an empty list
+# creates output dir, if it doesn't exist
+Path(out_dir).mkdir(parents=True, exist_ok=True)
+
 
 # function to add to json
-def write_json(data, filename='data.json'): 
-    with open(filename,'w') as f: 
+def write_json(data, filename='data.json', out_dir=out_dir): 
+    with open(f'{out_dir}/{filename}','w') as f: 
         json.dump(data, f, indent=4) 
 
+# Lets make the a json file for each 30 min observation, with an empty list
 data = []
 for i in range(len(obs_time)):
     write_json(data, filename=f'{obs_time[i]}.json')
 
 
-#def interp_ephem(t_array, s_alt, s_az, interp_type, interp_freq):
-#    '''Interpolates satellite ephemeris - time, alt, az
-#    
-#    Interpolate sat ephem to same freq as align data. This ensures
-#    that each point in the data, will have an corresponding ephem
-#    point.
-#
-#    Args:
-#        t_array:        Time array of on satellite pass
-#        s_alt, s_az:    Satellite alt, az at the t_array
-#        interp_type:    Type of interpolation. Ex: Cubic,Linear. Default=Cubic'
-#        interp_freq:    Frequency at which to interpolate, in Hertz. 
-#        
-#    Returns:
-#        time_interp:    Interpolated time array
-#        sat_alt:        Interpolated alt array
-#        sat_az:         Interpolated az array
-#    '''
-#
-#    # Don't consider passes with less than 4 samples (~ 1 min = 3*20s) 
-#    if len(t_array) > 3:
-#        
-#        # Create interpolation functions. Math functions, not Python!
-#        alt_interp = interpolate.interp1d(t_array, s_alt, kind=interp_type)
-#        az_interp  = interpolate.interp1d(t_array, s_az, kind=interp_type)
-#        
-#        # Makes start and end times clean integers
-#        # Also ensures that the interp range is inclusive of data points
-#        start = math.ceil(t_array[0])
-#        stop = math.floor(t_array[-1])
-#
-#        # Create time array, at which to evaluate alt/az of sat
-#        time_interp = list(np.double(np.arange(start, stop, (1/interp_freq))))
-#    
-#        sat_alt = list(alt_interp(time_interp))
-#        sat_az = list(az_interp(time_interp))
-#
-#        return(time_interp, sat_alt, sat_az)
-#    
-#    else:
-#        pass
-#
-#
-#json_path = '../../outputs/sat_ephemeris/ephem_json/25417.json'
-#
-#with open(json_path) as ephem:
-#    sat_ephem = json.load(ephem)
-#    
-#    # Extract data from json dictionary
-#    t_array = sat_ephem['time_array']
-#    s_alt   = sat_ephem['sat_alt']
-#    s_az    = sat_ephem['sat_az']
-#    s_id  = sat_ephem['sat_id']
-#
-#    print(len(t_array))
-#
-#    # here, we're looping over each satellite pass 
-#    # to check which observation window it falls in
-#    for pass_idx in range(len(t_array)):
-#        time_interp, sat_alt, sat_az = interp_ephem(
-#                t_array[pass_idx],
-#                s_alt[pass_idx],
-#                s_az[pass_idx],
-#                interp_type,
-#                interp_freq)
-#    
-#        # obs_int: observation_interval
-#        for obs_int in range(len(obs_unix)):
-#    
-#            file_name = obs_time[obs_int]
-#            pass_list = []
-#    
-#            sat_ephem = {}
-#            sat_ephem['sat_id'] = [s_id]
-#            sat_ephem['time_array'] = []
-#            sat_ephem['sat_alt'] = []
-#            sat_ephem['sat_az'] = []
-#            
-#            # Case I: Satpass occurs completely within the 30min observation
-#            if (obs_unix[obs_int] < time_interp[0] and
-#                    obs_unix_end[obs_int] > time_interp[-1]):
-#                    
-#                # append the whole pass to the dict
-#                sat_ephem['time_array'].append(time_interp)
-#                sat_ephem['sat_alt'].append(sat_alt)
-#                sat_ephem['sat_az'].append(sat_az)
-#                print(f'{pass_idx}: I.   {obs_time[obs_int]}')
-#   
-#
-#            # Case II: Satpass begins before the obs, but ends within it
-#            elif (obs_unix[obs_int] > time_interp[0] and
-#                    obs_unix[obs_int] < time_interp[-1] and
-#                    obs_unix_end[obs_int] > time_interp[-1]):
-#                    
-#                # find index of time_interp == obs_unix
-#                start_idx = (np.where(np.asarray(time_interp) == obs_unix[obs_int]))[0][0]
-#                
-#                # append the end of the pass which is within the obs
-#                sat_ephem['time_array'].append(time_interp[start_idx:])
-#                sat_ephem['sat_alt'].append(sat_alt[start_idx:])
-#                sat_ephem['sat_az'].append(sat_az[start_idx:])
-#
-#                print(f'{pass_idx}: II.  {obs_time[obs_int]}')
-#    
-#            # Case III: Satpass begins within the obs, but ends after it
-#            elif (obs_unix_end[obs_int] > time_interp[0] and 
-#                    obs_unix_end[obs_int] < time_interp[-1] and 
-#                    obs_unix[obs_int] < time_interp[0]):
-#                
-#                # find index of time_interp == obs_unix_end
-#                stop_idx = (np.where(np.asarray(time_interp) == obs_unix_end[obs_int]))[0][0]
-#                
-#                # append the end of the pass which is within the obs
-#                sat_ephem['time_array'].append(time_interp[:stop_idx+1])
-#                sat_ephem['sat_alt'].append(sat_alt[:stop_idx+1])
-#                sat_ephem['sat_az'].append(sat_az[:stop_idx+1])
-#                
-#                print(f'{pass_idx}: III. {obs_time[obs_int]}')
-#
-#            # doesn't create json if there are no satellite passes within it
-#            if sat_ephem['time_array'] != []:
-#                pass_list.append(sat_ephem)
-#                with open(f'test/{file_name}.json', 'w') as outfile:
-#                    json.dump(pass_list, outfile, indent=4) 
-#        
-#
-#        
-#        #break # breaks loop after first pass in ephem.json
-#    
-#        #TODO make an empty list at in the begining. For every observation identified, make a dictionary with sat_id, t_arr, alt, az
-#        #TODO append to the list with a new dictionary for each satellite
-#
-#        #TODO what I'm thinking is that I should make a json file for every 30 min obs
-#        #TODO This file will have an empty list in it []
-#        #TODO as we loop through passes, the json list will be opened, if there is a pass, append it
-#        #TODO parallelize at the obs level, so that satellites are ananlyzed sequentially. 
-#        #TODO this will preserver some sense of order in the files
-#  
-#    
-#
+def interp_ephem(t_array, s_alt, s_az, interp_type, interp_freq):
+    '''Interpolates satellite ephemeris - time, alt, az
+    
+    Interpolate sat ephem to same freq as align data. This ensures
+    that each point in the data, will have an corresponding ephem
+    point.
+
+    Args:
+        t_array:        Time array of on satellite pass
+        s_alt, s_az:    Satellite alt, az at the t_array
+        interp_type:    Type of interpolation. Ex: Cubic,Linear. Default=Cubic'
+        interp_freq:    Frequency at which to interpolate, in Hertz. 
+        
+    Returns:
+        time_interp:    Interpolated time array
+        sat_alt:        Interpolated alt array
+        sat_az:         Interpolated az array
+    '''
+
+    # Don't consider passes with less than 4 samples (~ 1 min = 3*20s) 
+    if len(t_array) > 3:
+        
+        # Create interpolation functions. Math functions, not Python!
+        alt_interp = interpolate.interp1d(t_array, s_alt, kind=interp_type)
+        az_interp  = interpolate.interp1d(t_array, s_az, kind=interp_type)
+        
+        # Makes start and end times clean integers
+        # Also ensures that the interp range is inclusive of data points
+        start = math.ceil(t_array[0])
+        stop = math.floor(t_array[-1])
+
+        # Create time array, at which to evaluate alt/az of sat
+        time_interp = list(np.double(np.arange(start, stop, (1/interp_freq))))
+    
+        sat_alt = list(alt_interp(time_interp))
+        sat_az = list(az_interp(time_interp))
+
+        return(time_interp, sat_alt, sat_az)
+    
+    else:
+        pass
+
+
+json_path = '../../outputs/sat_ephemeris/ephem_json/25417.json'
+
+with open(json_path) as ephem:
+    sat_ephem = json.load(ephem)
+    
+    # Extract data from json dictionary
+    t_array = sat_ephem['time_array']
+    s_alt   = sat_ephem['sat_alt']
+    s_az    = sat_ephem['sat_az']
+    s_id  = sat_ephem['sat_id']
+
+    #print(len(t_array))
+
+    # here, we're looping over each satellite pass 
+    # to check which observation window it falls in
+    for pass_idx in range(len(t_array)):
+        time_interp, sat_alt, sat_az = interp_ephem(
+                t_array[pass_idx],
+                s_alt[pass_idx],
+                s_az[pass_idx],
+                interp_type,
+                interp_freq)
+    
+        # obs_int: observation_interval
+        for obs_int in range(len(obs_unix)):
+    
+            file_name = obs_time[obs_int]
+            pass_list = []
+    
+            sat_ephem = {}
+            sat_ephem['sat_id'] = [s_id]
+            sat_ephem['time_array'] = []
+            sat_ephem['sat_alt'] = []
+            sat_ephem['sat_az'] = []
+            
+            # Case I: Satpass occurs completely within the 30min observation
+            if (obs_unix[obs_int] < time_interp[0] and
+                    obs_unix_end[obs_int] > time_interp[-1]):
+                    
+                # append the whole pass to the dict
+                sat_ephem['time_array'].append(time_interp)
+                sat_ephem['sat_alt'].append(sat_alt)
+                sat_ephem['sat_az'].append(sat_az)
+                #print(f'{pass_idx}: I.   {obs_time[obs_int]}')
+   
+
+            # Case II: Satpass begins before the obs, but ends within it
+            elif (obs_unix[obs_int] > time_interp[0] and
+                    obs_unix[obs_int] < time_interp[-1] and
+                    obs_unix_end[obs_int] > time_interp[-1]):
+                    
+                # find index of time_interp == obs_unix
+                start_idx = (np.where(np.asarray(time_interp) == obs_unix[obs_int]))[0][0]
+                
+                # append the end of the pass which is within the obs
+                sat_ephem['time_array'].append(time_interp[start_idx:])
+                sat_ephem['sat_alt'].append(sat_alt[start_idx:])
+                sat_ephem['sat_az'].append(sat_az[start_idx:])
+
+                #print(f'{pass_idx}: II.  {obs_time[obs_int]}')
+    
+            # Case III: Satpass begins within the obs, but ends after it
+            elif (obs_unix_end[obs_int] > time_interp[0] and 
+                    obs_unix_end[obs_int] < time_interp[-1] and 
+                    obs_unix[obs_int] < time_interp[0]):
+                
+                # find index of time_interp == obs_unix_end
+                stop_idx = (np.where(np.asarray(time_interp) == obs_unix_end[obs_int]))[0][0]
+                
+                # append the end of the pass which is within the obs
+                sat_ephem['time_array'].append(time_interp[:stop_idx+1])
+                sat_ephem['sat_alt'].append(sat_alt[:stop_idx+1])
+                sat_ephem['sat_az'].append(sat_az[:stop_idx+1])
+                
+                #print(f'{pass_idx}: III. {obs_time[obs_int]}')
+
+           # # doesn't create json if there are no satellite passes within it
+           # if sat_ephem['time_array'] != []:
+           #     pass_list.append(sat_ephem)
+           #     with open(f'test/{file_name}.json', 'w') as outfile:
+           #         json.dump(pass_list, outfile, indent=4) 
+            
+            # doesn't create json if there are no satellite passes within it
+            if sat_ephem['time_array'] != []:
+                print(obs_time[obs_int])
+
+                with open(f'{out_dir}/{obs_time[obs_int]}.json') as json_file: 
+                    data = json.load(json_file) 
+      
+                    data.append(sat_ephem)
+                    #print(data)
+
+                    write_json(data, filename=f'{obs_time[obs_int]}.json')
+                
+                #pass_list.append(sat_ephem)
+                #with open(f'test/{file_name}.json', 'w') as outfile:
+                #    json.dump(pass_list, outfile, indent=4) 
+        
+
+        
+        #break # breaks loop after first pass in ephem.json
+    
+        #TODO make an empty list at in the begining. For every observation identified, make a dictionary with sat_id, t_arr, alt, az
+        #TODO append to the list with a new dictionary for each satellite
+
+        #TODO what I'm thinking is that I should make a json file for every 30 min obs
+        #TODO This file will have an empty list in it []
+        #TODO as we loop through passes, the json list will be opened, if there is a pass, append it
+        #TODO parallelize at the obs level, so that satellites are ananlyzed sequentially. 
+        #TODO this will preserver some sense of order in the files
+  
+    
+
 
 
