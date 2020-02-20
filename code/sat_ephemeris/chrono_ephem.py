@@ -224,21 +224,17 @@ with open(json_path) as ephem:
             # doesn't create json if there are no satellite passes within it
             if sat_ephem['time_array'] != []:
                 print(obs_time[obs_int])
-
-                with open(f'{out_dir}/{obs_time[obs_int]}.json') as json_file: 
-                    data = json.load(json_file) 
-      
-                    data.append(sat_ephem)
-                    #print(data)
-
-                    write_json(data, filename=f'{obs_time[obs_int]}.json')
                 
-                #pass_list.append(sat_ephem)
-                #with open(f'test/{file_name}.json', 'w') as outfile:
-                #    json.dump(pass_list, outfile, indent=4) 
-        
-
-        
+                # open the relevant json file and loads contents to 'data_json'
+                with open(f'{out_dir}/{obs_time[obs_int]}.json') as json_file: 
+                    data_json = json.load(json_file) 
+     
+                    # append new satpass ephem data to data_json
+                    data_json.append(sat_ephem)
+                    
+                    # write the combined data back to the original file
+                    write_json(data_json, filename=f'{obs_time[obs_int]}.json')
+                
         #break # breaks loop after first pass in ephem.json
     
         #TODO make an empty list at in the begining. For every observation identified, make a dictionary with sat_id, t_arr, alt, az
