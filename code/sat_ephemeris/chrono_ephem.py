@@ -1,4 +1,3 @@
-import os
 import math
 import json
 import pytz
@@ -8,7 +7,6 @@ import numpy as np
 from pathlib import Path
 import concurrent.futures
 from scipy import interpolate
-from itertools import compress
 from datetime import datetime, timedelta
 
 parser = argparse.ArgumentParser(description="""
