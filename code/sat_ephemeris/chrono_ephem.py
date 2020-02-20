@@ -160,9 +160,11 @@ for json_path in list(Path(json_dir).glob('*.json')):
                         interp_type,
                         interp_freq)
                 
-
-                #Non parallel version
+                
+                # Parallel version
                 def obs_pass_match(obs_int):
+                
+                #Non parallel version
                 #for obs_int in range(len(obs_unix)):
                     
                     sat_ephem = {}
@@ -170,12 +172,12 @@ for json_path in list(Path(json_dir).glob('*.json')):
                     sat_ephem['time_array'] = []
                     sat_ephem['sat_alt'] = []
                     sat_ephem['sat_az'] = []
-                 
+                
 
                     # This is a filter to cut down on computation
                     # Only proceed iff pass is within 30 min of obs on either side
-                    if (time_interp[0] > (obs_unix[obs_int] - 1800) and
-                            time_interp[-1] < (obs_unix_end + 1800)):
+                    if (time_interp[0] > (obs_unix[obs_int] - 3600) and
+                            time_interp[-1] < (obs_unix_end[obs_int] + 3600)):
 
                         # Case I: Satpass occurs completely within the 30min observation
                         if (obs_unix[obs_int] < time_interp[0] and
