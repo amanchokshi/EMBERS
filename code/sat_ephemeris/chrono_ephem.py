@@ -161,11 +161,15 @@ for json_path in list(Path(json_dir).glob('*.json')):
                         interp_freq)
                 
                 
+                #TODO split obs_unix into 40 sections(40 cores on ucalegon)
+                #TODO paralellize at this level. 1/40th is serial (FAST!)
+
+
                 # Parallel version
-                def obs_pass_match(obs_int):
+                #def obs_pass_match(obs_int):
                 
                 #Non parallel version
-                #for obs_int in range(len(obs_unix)):
+                for obs_int in range(len(obs_unix)):
                     
                     sat_ephem = {}
                     sat_ephem['sat_id'] = [s_id]
@@ -176,8 +180,8 @@ for json_path in list(Path(json_dir).glob('*.json')):
 
                     # This is a filter to cut down on computation
                     # Only proceed iff pass is within 30 min of obs on either side
-                    if (time_interp[0] > (obs_unix[obs_int] - 3600) and
-                            time_interp[-1] < (obs_unix_end[obs_int] + 3600)):
+                    if (time_interp[0] > (obs_unix[obs_int] - 1800) and
+                            time_interp[-1] < (obs_unix_end[obs_int] + 1800)):
 
                         # Case I: Satpass occurs completely within the 30min observation
                         if (obs_unix[obs_int] < time_interp[0] and
@@ -244,8 +248,8 @@ for json_path in list(Path(json_dir).glob('*.json')):
                 # For loops for different passes of one sat, and over all sats at a higher level
                 # obs_int: observation_interval
                 # Parellization Magic Here!
-                with concurrent.futures.ThreadPoolExecutor() as executor:
-                    results = executor.map(obs_pass_match, list(range(len(obs_unix))))
+                #with concurrent.futures.ProcessPoolExecutor() as executor:
+                #    results = executor.map(obs_pass_match, list(range(len(obs_unix))))
                 
 #                for result in results:
 #                    if result != None:
