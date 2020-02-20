@@ -105,7 +105,6 @@ def interp_ephem(t_array, s_alt, s_az, interp_type, interp_freq):
         sat_alt:        Interpolated alt array
         sat_az:         Interpolated az array
     '''
-
     # Don't consider passes with less than 4 samples (~ 1 min = 3*20s) 
     if len(t_array) > 3:
         
@@ -125,6 +124,18 @@ def interp_ephem(t_array, s_alt, s_az, interp_type, interp_freq):
         sat_az = list(az_interp(time_interp))
 
         return(time_interp, sat_alt, sat_az)
+            
+def interp_parallel(pass_idx):            
+    time_interp, sat_alt, sat_az = interp_ephem(
+            t_array[pass_idx],
+            s_alt[pass_idx],
+            s_az[pass_idx],
+            interp_type,
+            interp_freq)
+    
+    #Non parallel version
+    for obs_int in range(len(obs_unix)):
+        obs_pass_match(obs_int)
 
 
 def obs_pass_match(obs_int):
@@ -135,7 +146,7 @@ def obs_pass_match(obs_int):
     sat_ephem['time_array'] = []
     sat_ephem['sat_alt'] = []
     sat_ephem['sat_az'] = []
-    
+   
     # Case I: Satpass occurs completely within the 30min observation
     if (obs_unix[obs_int] < time_interp[0] and
             obs_unix_end[obs_int] > time_interp[-1]):
@@ -180,7 +191,7 @@ def obs_pass_match(obs_int):
     # doesn't create json if there are no satellite passes within it
     if sat_ephem['time_array'] != []:
         
-        print(f'Satellite {s_id[0]} in {obs_time[obs_int]}')
+        #print(f'Satellite {s_id[0]} in {obs_time[obs_int]}')
 
         # open the relevant json file and loads contents to 'data_json'
         with open(f'{out_dir}/{obs_time[obs_int]}.json') as json_file: 
@@ -191,7 +202,13 @@ def obs_pass_match(obs_int):
             
             # write the combined data back to the original file
             write_json(data_json, filename=f'{obs_time[obs_int]}.json')
-        return f'Satellite {s_id[0]} in {obs_time[obs_int]}'
+            # clear data_json
+            data_json = []
+            
+            return f'Satellite {s_id[0]} in {obs_time[obs_int]}'
+            
+
+
 
 # creates output dir, if it doesn't exist
 Path(out_dir).mkdir(parents=True, exist_ok=True)
@@ -203,40 +220,53 @@ for i in range(len(obs_time)):
 
 
 for json_path in list(Path(json_dir).glob('*.json')):
+    print(json_path)
 
-    with open(json_path) as ephem:
-        sat_ephem = json.load(ephem)
-        
-        # Extract data from json dictionary
-        t_array = sat_ephem['time_array']
-        s_alt   = sat_ephem['sat_alt']
-        s_az    = sat_ephem['sat_az']
-        s_id  = sat_ephem['sat_id']
-    
-        #print(len(t_array))
-    
-        # here, we're looping over each satellite pass 
-        # to check which observation window it falls in
-        for pass_idx in range(len(t_array)):
-            time_interp, sat_alt, sat_az = interp_ephem(
-                    t_array[pass_idx],
-                    s_alt[pass_idx],
-                    s_az[pass_idx],
-                    interp_type,
-                    interp_freq)
+    try:
+        with open(json_path) as ephem:
+            sat_ephem = json.load(ephem)
             
-            # Parallelize at this point!! Lowest level parallelization should cause no conflicts.
-            # We are parallelizing the matching of a sat pass with observational window
-            # For loops for different passes of one sat, and over all sats at a higher level
-            # obs_int: observation_interval
-            # Parellization Magic Here!
+            # Extract data from json dictionary
+            t_array = sat_ephem['time_array']
+            s_alt   = sat_ephem['sat_alt']
+            s_az    = sat_ephem['sat_az']
+            s_id  = sat_ephem['sat_id']
+        
+            #print(len(t_array))
+        
+            # here, we're looping over each satellite pass 
+            # to check which observation window it falls in
+            for pass_idx in range(len(t_array)):
+                time_interp, sat_alt, sat_az = interp_ephem(
+                        t_array[pass_idx],
+                        s_alt[pass_idx],
+                        s_az[pass_idx],
+                        interp_type,
+                        interp_freq)
+                
+#                # Parallelize at this point!! Lowest level parallelization should cause no conflicts.
+#                # We are parallelizing the matching of a sat pass with observational window
+#                # For loops for different passes of one sat, and over all sats at a higher level
+#                # obs_int: observation_interval
+#                # Parellization Magic Here!
+#                with concurrent.futures.ProcessPoolExecutor() as executor:
+#                    results = executor.map(obs_pass_match, list(range(len(obs_unix))))
+#                
+#                for result in results:
+#                    if result != None:
+#                        print(result)
+
+                #Non parallel version
+                for obs_int in range(len(obs_unix)):
+                    obs_pass_match(obs_int)
 #            with concurrent.futures.ProcessPoolExecutor() as executor:
-#                results = executor.map(obs_pass_match, list(range(len(obs_unix))))
-#            
+#                results = executor.map(interp_parallel, list(range(len(t_array))))
+#
 #            for result in results:
 #                if result != None:
 #                    print(result)
+        
+        
+    except Exception:
+        print('Fuccckkkkk!')
 
-            #Non parallel version
-            for obs_int in range(len(obs_unix)):
-                obs_pass_match(obs_int)
