@@ -105,28 +105,23 @@ def interp_ephem(t_array, s_alt, s_az, interp_type, interp_freq):
         sat_alt:        Interpolated alt array
         sat_az:         Interpolated az array
     '''
-    # Don't consider passes with less than 4 samples (~ 1 min = 3*20s) 
-    try:
-        if len(t_array) > 3:
             
-            # Create interpolation functions. Math functions, not Python!
-            alt_interp = interpolate.interp1d(t_array, s_alt, kind=interp_type)
-            az_interp  = interpolate.interp1d(t_array, s_az, kind=interp_type)
-            
-            # Makes start and end times clean integers
-            # Also ensures that the interp range is inclusive of data points
-            start = math.ceil(t_array[0])
-            stop = math.floor(t_array[-1])
+    # Create interpolation functions. Math functions, not Python!
+    alt_interp = interpolate.interp1d(t_array, s_alt, kind=interp_type)
+    az_interp  = interpolate.interp1d(t_array, s_az, kind=interp_type)
     
-            # Create time array, at which to evaluate alt/az of sat
-            time_interp = list(np.double(np.arange(start, stop, (1/interp_freq))))
-        
-            sat_alt = list(alt_interp(time_interp))
-            sat_az = list(az_interp(time_interp))
+    # Makes start and end times clean integers
+    # Also ensures that the interp range is inclusive of data points
+    start = math.ceil(t_array[0])
+    stop = math.floor(t_array[-1])
     
-            return(time_interp, sat_alt, sat_az)
-    except Exception:
-        print('Sat pass was too short to consider')
+    # Create time array, at which to evaluate alt/az of sat
+    time_interp = list(np.double(np.arange(start, stop, (1/interp_freq))))
+    
+    sat_alt = list(alt_interp(time_interp))
+    sat_az = list(az_interp(time_interp))
+    
+    return(time_interp, sat_alt, sat_az)
 
 
 
@@ -139,23 +134,25 @@ for i in range(len(obs_time)):
     write_json(data, filename=f'{obs_time[i]}.json')
 
 
-for json_path in list(Path(json_dir).glob('*.json')):
-    try:
-        with open(json_path) as ephem:
-            print(json_path)
-            sat_ephem = json.load(ephem)
+#for json_path in list(Path(json_dir).glob('*.json')):
+for json_path in list(Path(json_dir).glob('23546*.json')):
+    
+    with open(json_path) as ephem:
+        print(json_path)
+        sat_ephem = json.load(ephem)
+        
+        # Extract data from json dictionary
+        t_array = sat_ephem['time_array']
+        s_alt   = sat_ephem['sat_alt']
+        s_az    = sat_ephem['sat_az']
+        s_id  = sat_ephem['sat_id']
+    
+        # here, we're looping over each satellite pass 
+        # to check which observation window it falls in
+        for pass_idx in range(len(t_array)):
             
-            # Extract data from json dictionary
-            t_array = sat_ephem['time_array']
-            s_alt   = sat_ephem['sat_alt']
-            s_az    = sat_ephem['sat_az']
-            s_id  = sat_ephem['sat_id']
-        
-            #print(len(t_array))
-        
-            # here, we're looping over each satellite pass 
-            # to check which observation window it falls in
-            for pass_idx in range(len(t_array)):
+            # Don't consider passes with less than 4 samples (~ 1 min = 3*20s)
+            if len(t_array[pass_idx]) > 3:
                 time_interp, sat_alt, sat_az = interp_ephem(
                         t_array[pass_idx],
                         s_alt[pass_idx],
@@ -229,21 +226,17 @@ for json_path in list(Path(json_dir).glob('*.json')):
                     if sat_ephem['time_array'] != []:
                         
                         print(f'Satellite {s_id[0]} in {obs_time[obs_int]}')
-                
+                         
                         # open the relevant json file and loads contents to 'data_json'
-                        with open(f'{out_dir}/{obs_time[obs_int]}.json') as json_file: 
-                            data_json = json.load(json_file) 
-                
+                        with open(f'{out_dir}/{obs_time[obs_int]}.json') as json_file:
+                            data_json = json.load(json_file)
+                            
                             # append new satpass ephem data to data_json
                             data_json.append(sat_ephem)
-                            
+
                             # write the combined data back to the original file
                             write_json(data_json, filename=f'{obs_time[obs_int]}.json')
                             # clear data_json
                             data_json = []
                             
             
-        
-    except Exception:
-        print('Fuccckkkkk!')
-
