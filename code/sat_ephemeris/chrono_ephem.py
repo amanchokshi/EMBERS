@@ -36,6 +36,10 @@ start_date  = args.start_date
 stop_date   = args.stop_date
 time_zone   = args.time_zone
 
+# number of time chunks that the obs is split into
+# 24 is convenient as we have 48 obs per day
+n_chunks = 24
+
 
 # Time stuff
 # The time input is in local time. As in Austraila/Perth
@@ -79,21 +83,6 @@ for i in range(n_days+1):
         obs_unix.append(utc_unix)
         obs_unix_end.append(utc_unix_end)
 
-################################################
-
-print(len(obs_unix)/24)
-pairs = np.linspace(0,336, 24+1).astype(int)
-print(pairs)
-
-for i in range(len(pairs)):
-    if pairs[i] != pairs[-1]:
-        print(pairs[i], pairs[i+1])
-        print(obs_unix[pairs[i]: pairs[i+1]])
-
-print(obs_unix[-1])
-
-
-#################################################
 
 def write_json(data, filename='data.json', out_dir=out_dir):
     '''writes data to json file in output dir'''
@@ -147,6 +136,25 @@ Path(out_dir).mkdir(parents=True, exist_ok=True)
 data = []
 for i in range(len(obs_time)):
     write_json(data, filename=f'{obs_time[i]}.json')
+
+
+################################################
+
+## time_chunks_intervals
+#t_chunks_ints = np.linspace(0,336, n_chunks+1).astype(int)
+#
+#for t_int in range(len(t_chunks_ints)):
+#    if t_chunks_ints[t_int] != t_chunks_ints[-1]:
+#
+#        # create new obs_time, obs_unix, obs_unix_end lists. Time chunks!
+#        obs_time = obs_time[t_chunks_ints[t_int]: t_chunks_ints[t_int+1]]
+#        obs_unix = obs_unix[t_chunks_ints[t_int]: t_chunks_ints[t_int+1]]
+#        obs_unix_end = obs_unix_end[t_chunks_ints[t_int]: t_chunks_ints[t_int+1]]
+
+
+
+#################################################
+
 
 
 # Finds all sat ephem json files, and loops over them
