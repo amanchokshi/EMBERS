@@ -191,7 +191,8 @@ for json_path in list(Path(json_dir).glob('*.json')):
                 # time_chunks_intervals
                 t_chunks_ints = np.linspace(0,336, n_chunks+1).astype(int)
                 
-                for t_int in range(len(t_chunks_ints)):
+                def chunks(t_int):
+                #for t_int in range(len(t_chunks_ints)):
                     if t_chunks_ints[t_int] != t_chunks_ints[-1]:
                 
                         # create new obs_time, obs_unix, obs_unix_end lists. Time chunks!
@@ -271,14 +272,15 @@ for json_path in list(Path(json_dir).glob('*.json')):
                                     # clear data_json
                                     data_json = []
                         
-            
+                
                 # Parallelize at this point!! Lowest level parallelization should cause no conflicts.
                 # We are parallelizing the matching of a sat pass with observational window
                 # For loops for different passes of one sat, and over all sats at a higher level
                 # obs_int: observation_interval
                 # Parellization Magic Here!
-                #with concurrent.futures.ProcessPoolExecutor() as executor:
-                #    results = executor.map(obs_pass_match, list(range(len(obs_unix))))
+                with concurrent.futures.ProcessPoolExecutor() as executor:
+                    results = executor.map(chunks, list(range(len(t_chunks_ints))))
+                    #results = executor.map(obs_pass_match, list(range(len(obs_unix))))
                 
 #                for result in results:
 #                    if result != None:
