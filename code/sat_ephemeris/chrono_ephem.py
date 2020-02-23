@@ -79,6 +79,21 @@ for i in range(n_days+1):
         obs_unix.append(utc_unix)
         obs_unix_end.append(utc_unix_end)
 
+################################################
+
+print(len(obs_unix)/24)
+pairs = np.linspace(0,336, 24+1).astype(int)
+print(pairs)
+
+for i in range(len(pairs)):
+    if pairs[i] != pairs[-1]:
+        print(pairs[i], pairs[i+1])
+        print(obs_unix[pairs[i]: pairs[i+1]])
+
+print(obs_unix[-1])
+
+
+#################################################
 
 def write_json(data, filename='data.json', out_dir=out_dir):
     '''writes data to json file in output dir'''
@@ -134,6 +149,7 @@ for i in range(len(obs_time)):
     write_json(data, filename=f'{obs_time[i]}.json')
 
 
+# Finds all sat ephem json files, and loops over them
 for json_path in list(Path(json_dir).glob('*.json')):
     
     with open(json_path) as ephem:
@@ -161,7 +177,7 @@ for json_path in list(Path(json_dir).glob('*.json')):
                         interp_freq)
                 
                 
-                #TODO split obs_unix into 40 sections(40 cores on ucalegon)
+                #TODO split obs_unix into 24 sections(40 cores on ucalegon)
                 #TODO paralellize at this level. 1/40th is serial (FAST!)
 
 
