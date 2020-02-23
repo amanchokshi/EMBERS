@@ -1,3 +1,4 @@
+import sys
 import math
 import json
 import pytz
@@ -35,10 +36,6 @@ interp_freq = args.interp_freq
 start_date  = args.start_date
 stop_date   = args.stop_date
 time_zone   = args.time_zone
-
-# number of time chunks that the obs is split into
-# 24 is convenient as we have 48 obs per day
-n_chunks = 24
 
 
 # Time stuff
@@ -132,29 +129,13 @@ def interp_ephem(t_array, s_alt, s_az, interp_type, interp_freq):
 # creates output dir, if it doesn't exist
 Path(out_dir).mkdir(parents=True, exist_ok=True)
 
+# Save log file 
+sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+
 # Lets make the a json file for each 30 min observation, with an empty list
 data = []
 for i in range(len(obs_time)):
     write_json(data, filename=f'{obs_time[i]}.json')
-
-
-################################################
-
-## time_chunks_intervals
-#t_chunks_ints = np.linspace(0,336, n_chunks+1).astype(int)
-#
-#for t_int in range(len(t_chunks_ints)):
-#    if t_chunks_ints[t_int] != t_chunks_ints[-1]:
-#
-#        # create new obs_time, obs_unix, obs_unix_end lists. Time chunks!
-#        obs_time = obs_time[t_chunks_ints[t_int]: t_chunks_ints[t_int+1]]
-#        obs_unix = obs_unix[t_chunks_ints[t_int]: t_chunks_ints[t_int+1]]
-#        obs_unix_end = obs_unix_end[t_chunks_ints[t_int]: t_chunks_ints[t_int+1]]
-
-
-
-#################################################
-
 
 
 # Finds all sat ephem json files, and loops over them
@@ -184,104 +165,73 @@ for json_path in list(Path(json_dir).glob('*.json')):
                         interp_type,
                         interp_freq)
                 
+                # Loop over every sat pass, within the sat ephem file
+                for obs_int in range(len(obs_unix)):
+                    
+                    sat_ephem = {}
+                    sat_ephem['sat_id'] = [s_id]
+                    sat_ephem['time_array'] = []
+                    sat_ephem['sat_alt'] = []
+                    sat_ephem['sat_az'] = []
                 
-                #TODO split obs_unix into 24 sections(40 cores on ucalegon)
-                #TODO paralellize at this level. 1/40th is serial (FAST!)
 
-                # time_chunks_intervals
-                t_chunks_ints = np.linspace(0,336, n_chunks+1).astype(int)
-                
-                def chunks(t_int):
-                #for t_int in range(len(t_chunks_ints)):
-                    if t_chunks_ints[t_int] != t_chunks_ints[-1]:
-                
-                        # create new obs_time, obs_unix, obs_unix_end lists. Time chunks!
-                        obs_time_chunk = obs_time[t_chunks_ints[t_int]: t_chunks_ints[t_int+1]]
-                        obs_unix_chunk = obs_unix[t_chunks_ints[t_int]: t_chunks_ints[t_int+1]]
-                        obs_unix_end_chunk = obs_unix_end[t_chunks_ints[t_int]: t_chunks_ints[t_int+1]]
-
-                        # Parallel version
-                        #def obs_pass_match(obs_int):
-                        
-                        #Non parallel version
-                        for obs_int in range(len(obs_unix_chunk)):
+                    # Case I: Satpass occurs completely within the 30min observation
+                    if (obs_unix[obs_int] < time_interp[0] and
+                            obs_unix_end[obs_int] > time_interp[-1]):
                             
-                            sat_ephem = {}
-                            sat_ephem['sat_id'] = [s_id]
-                            sat_ephem['time_array'] = []
-                            sat_ephem['sat_alt'] = []
-                            sat_ephem['sat_az'] = []
-                        
-
-                            # Case I: Satpass occurs completely within the 30min observation
-                            if (obs_unix_chunk[obs_int] < time_interp[0] and
-                                    obs_unix_end_chunk[obs_int] > time_interp[-1]):
-                                    
-                                # append the whole pass to the dict
-                                sat_ephem['time_array'].append(time_interp)
-                                sat_ephem['sat_alt'].append(sat_alt)
-                                sat_ephem['sat_az'].append(sat_az)
-                                #print(f'{pass_idx}: I.   {obs_time[obs_int]}')
-                        
-                        
-                            # Case II: Satpass begins before the obs, but ends within it
-                            elif (obs_unix_chunk[obs_int] > time_interp[0] and
-                                    obs_unix_chunk[obs_int] < time_interp[-1] and
-                                    obs_unix_end_chunk[obs_int] > time_interp[-1]):
-                                    
-                                # find index of time_interp == obs_unix
-                                start_idx = (np.where(np.asarray(time_interp) == obs_unix_chunk[obs_int]))[0][0]
-                                
-                                # append the end of the pass which is within the obs
-                                sat_ephem['time_array'].append(time_interp[start_idx:])
-                                sat_ephem['sat_alt'].append(sat_alt[start_idx:])
-                                sat_ephem['sat_az'].append(sat_az[start_idx:])
-                        
-                                #print(f'{pass_idx}: II.  {obs_time[obs_int]}')
-                        
-                            # Case III: Satpass begins within the obs, but ends after it
-                            elif (obs_unix_end_chunk[obs_int] > time_interp[0] and 
-                                    obs_unix_end_chunk[obs_int] < time_interp[-1] and 
-                                    obs_unix_chunk[obs_int] < time_interp[0]):
-                                
-                                # find index of time_interp == obs_unix_end
-                                stop_idx = (np.where(np.asarray(time_interp) == obs_unix_end_chunk[obs_int]))[0][0]
-                                
-                                # append the end of the pass which is within the obs
-                                sat_ephem['time_array'].append(time_interp[:stop_idx+1])
-                                sat_ephem['sat_alt'].append(sat_alt[:stop_idx+1])
-                                sat_ephem['sat_az'].append(sat_az[:stop_idx+1])
-                                
-                                #print(f'{pass_idx}: III. {obs_time[obs_int]}')
-                        
-                            # doesn't create json if there are no satellite passes within it
-                            if sat_ephem['time_array'] != []:
-                                
-                                print(f'Satellite {s_id[0]} in {obs_time_chunk[obs_int]}')
-                                 
-                                # open the relevant json file and loads contents to 'data_json'
-                                with open(f'{out_dir}/{obs_time_chunk[obs_int]}.json') as json_file:
-                                    data_json = json.load(json_file)
-                                    
-                                    # append new satpass ephem data to data_json
-                                    data_json.append(sat_ephem)
-
-                                    # write the combined data back to the original file
-                                    write_json(data_json, filename=f'{obs_time_chunk[obs_int]}.json')
-                                    
-                                    # clear data_json
-                                    data_json = []
-                        
+                        # append the whole pass to the dict
+                        sat_ephem['time_array'].append(time_interp)
+                        sat_ephem['sat_alt'].append(sat_alt)
+                        sat_ephem['sat_az'].append(sat_az)
+                        #print(f'{pass_idx}: I.   {obs_time[obs_int]}')
                 
-                # Parallelize at this point!! Lowest level parallelization should cause no conflicts.
-                # We are parallelizing the matching of a sat pass with observational window
-                # For loops for different passes of one sat, and over all sats at a higher level
-                # obs_int: observation_interval
-                # Parellization Magic Here!
-                with concurrent.futures.ProcessPoolExecutor() as executor:
-                    results = executor.map(chunks, list(range(len(t_chunks_ints))))
-                    #results = executor.map(obs_pass_match, list(range(len(obs_unix))))
                 
-#                for result in results:
-#                    if result != None:
-#                        print(result)
+                    # Case II: Satpass begins before the obs, but ends within it
+                    elif (obs_unix[obs_int] > time_interp[0] and
+                            obs_unix[obs_int] < time_interp[-1] and
+                            obs_unix_end[obs_int] > time_interp[-1]):
+                            
+                        # find index of time_interp == obs_unix
+                        start_idx = (np.where(np.asarray(time_interp) == obs_unix[obs_int]))[0][0]
+                        
+                        # append the end of the pass which is within the obs
+                        sat_ephem['time_array'].append(time_interp[start_idx:])
+                        sat_ephem['sat_alt'].append(sat_alt[start_idx:])
+                        sat_ephem['sat_az'].append(sat_az[start_idx:])
+                
+                        #print(f'{pass_idx}: II.  {obs_time[obs_int]}')
+                
+                    # Case III: Satpass begins within the obs, but ends after it
+                    elif (obs_unix_end[obs_int] > time_interp[0] and 
+                            obs_unix_end[obs_int] < time_interp[-1] and 
+                            obs_unix[obs_int] < time_interp[0]):
+                        
+                        # find index of time_interp == obs_unix_end
+                        stop_idx = (np.where(np.asarray(time_interp) == obs_unix_end[obs_int]))[0][0]
+                        
+                        # append the end of the pass which is within the obs
+                        sat_ephem['time_array'].append(time_interp[:stop_idx+1])
+                        sat_ephem['sat_alt'].append(sat_alt[:stop_idx+1])
+                        sat_ephem['sat_az'].append(sat_az[:stop_idx+1])
+                        
+                        #print(f'{pass_idx}: III. {obs_time[obs_int]}')
+                
+                    # doesn't create json if there are no satellite passes within it
+                    if sat_ephem['time_array'] != []:
+                        
+                        print(f'Satellite {s_id[0]} in {obs_time[obs_int]}')
+                         
+                        # open the relevant json file and loads contents to 'data_json'
+                        with open(f'{out_dir}/{obs_time[obs_int]}.json') as json_file:
+                            data_json = json.load(json_file)
+                            
+                            # append new satpass ephem data to data_json
+                            data_json.append(sat_ephem)
+
+                            # write the combined data back to the original file
+                            write_json(data_json, filename=f'{obs_time[obs_int]}.json')
+                            
+                            # clear data_json
+                            data_json = []
+
+
