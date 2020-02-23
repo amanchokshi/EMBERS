@@ -14,8 +14,9 @@ parser = argparse.ArgumentParser(description="""
         The native skyfiled gps timestamps are converted to unix
         timestamps to match the output of the rf explorers. The 
         alt, az data is interpolated to match the cadence of 
-        align_data.py. The passes are sorted based on rise time 
-        and saved to a new file - ultimate_ephem_list.json
+        align_data.py. Make a json file with all the passes 
+        from each 30 min observation. This will help in the 
+        next stage, where we identify all sats in each obs.
         """)
 
 parser.add_argument('--json_dir', metavar='\b', default='./../../outputs/sat_ephemeris/ephem_json/', help='Directory where ephem json files live. Default=./../../outputs/sat_ephemeris/ephem_json/')
@@ -35,6 +36,13 @@ interp_freq = args.interp_freq
 start_date  = args.start_date
 stop_date   = args.stop_date
 time_zone   = args.time_zone
+
+
+# creates output dir, if it doesn't exist
+Path(out_dir).mkdir(parents=True, exist_ok=True)
+
+# Save log file 
+sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
 
 
 # Time stuff
@@ -123,13 +131,6 @@ def interp_ephem(t_array, s_alt, s_az, interp_type, interp_freq):
     
     return(time_interp, sat_alt, sat_az)
 
-
-
-# creates output dir, if it doesn't exist
-Path(out_dir).mkdir(parents=True, exist_ok=True)
-
-# Save log file 
-sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
 
 # Lets make the a json file for each 30 min observation, with an empty list
 data = []
