@@ -6,7 +6,6 @@ import argparse
 import numpy as np
 
 from pathlib import Path
-import concurrent.futures
 from scipy import interpolate
 from datetime import datetime, timedelta
 
