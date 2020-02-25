@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser(description="""
     Time alignes and smoothes all data 
     between two date ranges. Saves data
     pairs in organised directory 
-    structure as hdf5 files.
+    structure as .npz files.
     """)
 
 parser.add_argument('--data_dir', metavar='\b', help='Dir where date is saved')
