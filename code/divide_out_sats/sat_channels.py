@@ -7,3 +7,9 @@
 #TODO Or, come up with alternative thresholding scheme.
 #TODO Exclude that channel from next loop
 #TODO Find a way to include more channels - weather sats
+
+
+
+#TODO Use reference data for sat, with corresponding chrono json for ephem
+
+
