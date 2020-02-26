@@ -79,8 +79,6 @@ power, times = savgol_interp(ref_file, savgol_window, polyorder, interp_type, in
 
 # To first order, let us consider the median to be the noise floor
 noise_f = np.median(power)
-max_s = np.amax(power)
-min_s = np.amin(power)
 noise_mad = mad(power, axis=None)
 noise_threshold = 3*noise_mad
 arbitrary_threshold = 10 #dBm
@@ -92,14 +90,18 @@ arbitrary_threshold = 10 #dBm
 # Scale the power to bring the median noise floor down to zero
 power = power - noise_f
 
-#plot_waterfall(power, times, 'rf0XX')
-#plt.show()
+max_s = np.amax(power)
+min_s = np.amin(power)
+
+plot_waterfall(power, times, 'rf0XX')
+plt.savefig(f'test/waterfall.png')
+plt.close()
 
 
 
 for i in range(len(power[0])):
-    if (np.any(power[:, i] > noise_threshold) == True and
-            max(power[:, i] >= arbitrary_threshold)): 
+
+    if max(power[:, i] >= arbitrary_threshold): 
         
         print(f'Satellite in channel: {i}')
         
@@ -109,6 +111,7 @@ for i in range(len(power[0])):
         plt.scatter(times, power[:, i], marker='.', alpha=0.2, color='#db3751', label='Data')
         plt.scatter(times[::49], np.full(len(times[::49]), noise_threshold), alpha=0.7, marker='.', color='#5cb7a9', label=f'Noise Threshold: {noise_threshold:.2f} dBm')
         plt.scatter(times[::49], np.full(len(times[::49]), arbitrary_threshold), alpha=0.7, marker='.', color='#fba95f', label=f'Arbitrary Threshold: {arbitrary_threshold} dBm')
+        plt.ylim([min_s - 1, max_s + 1])
         plt.ylabel('Power [dBm]')
         plt.xlabel('Time [s]')
         plt.title(f'Satellite Pass in Channel: [{i}]')
@@ -120,19 +123,13 @@ for i in range(len(power[0])):
 
         plt.savefig(f'test/channel_{i}.png')
         plt.close()
-        #plt.show()
-        #break
     
 
-#TODO Import a dataset
-#TODO Maybe use reference data to find channels. It's much cleaner
-#TODO Find the median of the data. This will give us an approximate of the noise floor
-#TODO Loop through freq channels and find any data above the median - potential satellite
+#TODO Use reference data for sat, with corresponding chrono json for ephem
 #TODO Read chrono_ephem json file for that particular obs. Sort passes by lenght(time in sky)
 #TODO If the potential sat occupies more than 80% of the sat pass length, classify it as a sat!
 #TODO Or, come up with alternative thresholding scheme.
 #TODO Exclude that channel from next loop
 #TODO Find a way to include more channels - weather sats
-#TODO Use reference data for sat, with corresponding chrono json for ephem
 
     
