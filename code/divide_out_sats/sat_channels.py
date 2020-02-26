@@ -19,8 +19,8 @@ sys.path.append('../decode_rf_data')
 from rf_data import read_data, plot_waterfall
 
 
-ref_file = '../../../tiles_data/S06XX/2019-10-07/S06XX_2019-10-07-00:00.txt'
-#ref_file = '../../../tiles_data/rf0XX/2019-10-07/rf0XX_2019-10-07-00:00.txt'
+#ref_file = '../../../tiles_data/S06XX/2019-10-07/S06XX_2019-10-07-00:00.txt'
+ref_file = '../../../tiles_data/rf0XX/2019-10-07/rf0XX_2019-10-07-00:00.txt'
 
 power, times = read_data(ref_file)
 
@@ -33,15 +33,19 @@ print(f'Noise floor: {noise_f} dBm')
 print(f'Peak signal: {max_s} dBm')
 print(f'MAD: {mad(power, axis=None)} dBm')
 
-for i in range(len(power[0])):
-    #plt.plot(power[:, i])
-    #plt.savefig(f'test/{i}.png')
-    #plt.close()
-    #plt.show()
-    break
-    
-
+# Scale the power to bring the median noise floor down to zero
+power = power - noise_f
 
 #plot_waterfall(power, times, 'rf0XX')
 #plt.show()
+
+
+for i in range(len(power[0])):
+    plt.style.use('seaborn')
+    plt.scatter(times, power[:, i], marker='.', alpha=0.7)
+    #plt.savefig(f'test/{i}.png')
+    #plt.close()
+    plt.show()
+    break
     
+
