@@ -169,7 +169,7 @@ for json_path in list(Path(json_dir).glob('*.json')):
                 for obs_int in range(len(obs_unix)):
                     
                     sat_ephem = {}
-                    sat_ephem['sat_id'] = [s_id]
+                    sat_ephem['sat_id'] = [s_id[0]]
                     sat_ephem['time_array'] = []
                     sat_ephem['sat_alt'] = []
                     sat_ephem['sat_az'] = []
@@ -180,9 +180,9 @@ for json_path in list(Path(json_dir).glob('*.json')):
                             obs_unix_end[obs_int] > time_interp[-1]):
                             
                         # append the whole pass to the dict
-                        sat_ephem['time_array'].append(time_interp)
-                        sat_ephem['sat_alt'].append(sat_alt)
-                        sat_ephem['sat_az'].append(sat_az)
+                        sat_ephem['time_array'].extend(time_interp)
+                        sat_ephem['sat_alt'].extend(sat_alt)
+                        sat_ephem['sat_az'].extend(sat_az)
                         #print(f'{pass_idx}: I.   {obs_time[obs_int]}')
                 
                 
@@ -195,9 +195,9 @@ for json_path in list(Path(json_dir).glob('*.json')):
                         start_idx = (np.where(np.asarray(time_interp) == obs_unix[obs_int]))[0][0]
                         
                         # append the end of the pass which is within the obs
-                        sat_ephem['time_array'].append(time_interp[start_idx:])
-                        sat_ephem['sat_alt'].append(sat_alt[start_idx:])
-                        sat_ephem['sat_az'].append(sat_az[start_idx:])
+                        sat_ephem['time_array'].extend(time_interp[start_idx:])
+                        sat_ephem['sat_alt'].extend(sat_alt[start_idx:])
+                        sat_ephem['sat_az'].extend(sat_az[start_idx:])
                 
                         #print(f'{pass_idx}: II.  {obs_time[obs_int]}')
                 
@@ -210,9 +210,9 @@ for json_path in list(Path(json_dir).glob('*.json')):
                         stop_idx = (np.where(np.asarray(time_interp) == obs_unix_end[obs_int]))[0][0]
                         
                         # append the end of the pass which is within the obs
-                        sat_ephem['time_array'].append(time_interp[:stop_idx+1])
-                        sat_ephem['sat_alt'].append(sat_alt[:stop_idx+1])
-                        sat_ephem['sat_az'].append(sat_az[:stop_idx+1])
+                        sat_ephem['time_array'].extend(time_interp[:stop_idx+1])
+                        sat_ephem['sat_alt'].extend(sat_alt[:stop_idx+1])
+                        sat_ephem['sat_az'].extend(sat_az[:stop_idx+1])
                         
                         #print(f'{pass_idx}: III. {obs_time[obs_int]}')
                 
