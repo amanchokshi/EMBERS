@@ -1,15 +1,5 @@
-#TODO Import a dataset
-#TODO Maybe use reference data to find channels. It's much cleaner
-#TODO Find the median of the data. This will give us an approximate of the noise floor
-#TODO Loop through freq channels and find any data above the median - potential satellite
-#TODO Read chrono_ephem json file for that particular obs. Sort passes by lenght(time in sky)
-#TODO If the potential sat occupies more than 80% of the sat pass length, classify it as a sat!
-#TODO Or, come up with alternative thresholding scheme.
-#TODO Exclude that channel from next loop
-#TODO Find a way to include more channels - weather sats
-#TODO Use reference data for sat, with corresponding chrono json for ephem
-
-    
+import math
+import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import median_absolute_deviation as mad
@@ -19,10 +9,73 @@ sys.path.append('../decode_rf_data')
 from rf_data import read_data, plot_waterfall
 
 
+from scipy import interpolate
+from scipy.signal import savgol_filter
+
+
+parser = argparse.ArgumentParser(description="""
+    Time alignes and smoothes all data 
+    between two date ranges. Saves data
+    pairs in organised directory 
+    structure as .npz files.
+    """)
+
+#parser.add_argument('--data_dir', metavar='\b', help='Dir where date is saved')
+#parser.add_argument('--start_date', metavar='\b', help='Date from which to start aligning data. Ex: 2019-10-10')
+#parser.add_argument('--stop_date', metavar='\b', help='Date until which to align data. Ex: 2019-10-11')
+#parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/align_data/',help='Output directory. Default=./../../outputs/align_data/')
+parser.add_argument('--savgol_window', metavar='\b', default=151,help='Length of savgol window. Must be odd. Default=151')
+parser.add_argument('--polyorder', metavar='\b', default=1,help='Order of polynomial to fit to savgol window. Default=1')
+parser.add_argument('--interp_type', metavar='\b', default='cubic',help='Type of interpolation. Ex: cubic, linear, etc. Default=cubic')
+parser.add_argument('--interp_freq', metavar='\b', default=2,help='Frequency at which to resample smoothed data, in Hertz. Default=2')
+
+
+args = parser.parse_args()
+
+#data_dir =          args.data_dir
+#start_date =        args.start_date
+#stop_date =         args.stop_date
+#out_dir =           args.out_dir
+savgol_window =     args.savgol_window
+polyorder =         args.polyorder
+interp_type =       args.interp_type
+interp_freq =       args.interp_freq
+
+def savgol_interp(ref, savgol_window =None, polyorder=None, interp_type=None, interp_freq=None):
+    """Smooth and interpolate the power array with a savgol filter
+    
+    Args:
+        ref:            Path to reference data file
+        savgol_window:  Window size of savgol filer. Must be odd. Default = 151
+        polyorder:      Order of polynomial to fit to savgol_window. Default = 1
+        interp_type:    Type of interpolation. Ex: 'cubic', 'linear'. Default = cubic
+        interp_freq:    The freqency to which power array is interpolated. Default = 6 Hz
+
+    Returns:
+        power_smooth:   Aligned reference power array
+        time_smooth:    Time array corresponding to power arrays
+    """
+    
+    # Read time and power arrays from data files
+    power, times = read_data(ref)
+    
+    savgol_pow = savgol_filter(power, savgol_window, polyorder, axis=0)
+    
+    # Array of times at which to evaluate the interpolated data
+    time_smooth = np.arange(math.ceil(times[0]), math.floor(times[-1]), (1 / interp_freq))
+    
+    # Interp1d output functions. Math function, not python!
+    ref_sav_interp = interpolate.interp1d(times, savgol_pow, axis=0, kind=interp_type)
+    
+    # New power array, evaluated at the desired frequency
+    power_smooth = ref_sav_interp(time_smooth)
+    
+    return (power_smooth, time_smooth)
+
 #ref_file = '../../../tiles_data/S06XX/2019-10-07/S06XX_2019-10-07-00:00.txt'
 ref_file = '../../../tiles_data/rf0XX/2019-10-07/rf0XX_2019-10-07-00:00.txt'
 
-power, times = read_data(ref_file)
+power, times = savgol_interp(ref_file, savgol_window, polyorder, interp_type, interp_freq )
 
 # To first order, let us consider the median to be the noise floor
 noise_f = np.median(power)
@@ -49,3 +102,15 @@ for i in range(len(power[0])):
     break
     
 
+#TODO Import a dataset
+#TODO Maybe use reference data to find channels. It's much cleaner
+#TODO Find the median of the data. This will give us an approximate of the noise floor
+#TODO Loop through freq channels and find any data above the median - potential satellite
+#TODO Read chrono_ephem json file for that particular obs. Sort passes by lenght(time in sky)
+#TODO If the potential sat occupies more than 80% of the sat pass length, classify it as a sat!
+#TODO Or, come up with alternative thresholding scheme.
+#TODO Exclude that channel from next loop
+#TODO Find a way to include more channels - weather sats
+#TODO Use reference data for sat, with corresponding chrono json for ephem
+
+    
