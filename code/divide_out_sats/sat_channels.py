@@ -82,6 +82,7 @@ noise_f = np.median(power)
 max_s = np.amax(power)
 min_s = np.amin(power)
 noise_mad = mad(power, axis=None)
+noise_threshold = 10*noise_mad
 
 print(f'Noise floor: {noise_f} dBm')
 print(f'Peak signal: {max_s} dBm')
@@ -94,14 +95,17 @@ power = power - noise_f
 #plt.show()
 
 
+
 for i in range(len(power[0])):
-    plt.style.use('seaborn')
-    plt.plot(times, power[:, i], marker='.', alpha=0.7)
-    plt.plot(times, np.full(len(times), (3*noise_mad)))
-    #plt.savefig(f'test/{i}.png')
-    #plt.close()
-    plt.show()
-    break
+    if np.any(power[:, i] > noise_threshold) == True: 
+    #print(np.unique(power[:, i] > noise_threshold))
+        plt.style.use('seaborn')
+        plt.plot(times, power[:, i], marker='.', alpha=0.7)
+        plt.plot(times, np.full(len(times), noise_threshold))
+        plt.savefig(f'test/{i}.png')
+        plt.close()
+        #plt.show()
+        #break
     
 
 #TODO Import a dataset
