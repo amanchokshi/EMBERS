@@ -81,10 +81,11 @@ power, times = savgol_interp(ref_file, savgol_window, polyorder, interp_type, in
 noise_f = np.median(power)
 max_s = np.amax(power)
 min_s = np.amin(power)
+noise_mad = mad(power, axis=None)
 
 print(f'Noise floor: {noise_f} dBm')
 print(f'Peak signal: {max_s} dBm')
-print(f'MAD: {mad(power, axis=None)} dBm')
+print(f'MAD: {noise_mad} dBm')
 
 # Scale the power to bring the median noise floor down to zero
 power = power - noise_f
@@ -95,7 +96,8 @@ power = power - noise_f
 
 for i in range(len(power[0])):
     plt.style.use('seaborn')
-    plt.scatter(times, power[:, i], marker='.', alpha=0.7)
+    plt.plot(times, power[:, i], marker='.', alpha=0.7)
+    plt.plot(times, np.full(len(times), (3*noise_mad)))
     #plt.savefig(f'test/{i}.png')
     #plt.close()
     plt.show()
