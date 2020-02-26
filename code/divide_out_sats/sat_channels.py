@@ -41,6 +41,11 @@ polyorder =         args.polyorder
 interp_type =       args.interp_type
 interp_freq =       args.interp_freq
 
+
+#ref_file = '../../../tiles_data/S06XX/2019-10-07/S06XX_2019-10-07-00:00.txt'
+ref_file = '../../../tiles_data/rf0XX/2019-10-07/rf0XX_2019-10-07-00:00.txt'
+
+
 def savgol_interp(ref, savgol_window =None, polyorder=None, interp_type=None, interp_freq=None):
     """Smooth and interpolate the power array with a savgol filter
     
@@ -56,24 +61,14 @@ def savgol_interp(ref, savgol_window =None, polyorder=None, interp_type=None, in
         time_smooth:    Time array corresponding to power arrays
     """
     
-    # Read time and power arrays from data files
     power, times = read_data(ref)
-    
     savgol_pow = savgol_filter(power, savgol_window, polyorder, axis=0)
-    
-    # Array of times at which to evaluate the interpolated data
     time_smooth = np.arange(math.ceil(times[0]), math.floor(times[-1]), (1 / interp_freq))
-    
-    # Interp1d output functions. Math function, not python!
     ref_sav_interp = interpolate.interp1d(times, savgol_pow, axis=0, kind=interp_type)
-    
-    # New power array, evaluated at the desired frequency
     power_smooth = ref_sav_interp(time_smooth)
     
     return (power_smooth, time_smooth)
 
-#ref_file = '../../../tiles_data/S06XX/2019-10-07/S06XX_2019-10-07-00:00.txt'
-ref_file = '../../../tiles_data/rf0XX/2019-10-07/rf0XX_2019-10-07-00:00.txt'
 
 power, times = savgol_interp(ref_file, savgol_window, polyorder, interp_type, interp_freq )
 
@@ -81,22 +76,18 @@ power, times = savgol_interp(ref_file, savgol_window, polyorder, interp_type, in
 noise_f = np.median(power)
 noise_mad = mad(power, axis=None)
 noise_threshold = 3*noise_mad
-arbitrary_threshold = 10 #dBm
+arbitrary_threshold = 6 #dBm
 
-#print(f'Noise floor: {noise_f} dBm')
-#print(f'Peak signal: {max_s} dBm')
-#print(f'MAD: {noise_mad} dBm')
 
 # Scale the power to bring the median noise floor down to zero
 power = power - noise_f
-
 max_s = np.amax(power)
 min_s = np.amin(power)
+
 
 plot_waterfall(power, times, 'rf0XX')
 plt.savefig(f'test/waterfall.png')
 plt.close()
-
 
 
 for i in range(len(power[0])):
@@ -109,8 +100,13 @@ for i in range(len(power[0])):
         plt.rcParams.update({"axes.facecolor": "#242a3c"})
 
         plt.scatter(times, power[:, i], marker='.', alpha=0.2, color='#db3751', label='Data')
-        plt.scatter(times[::49], np.full(len(times[::49]), noise_threshold), alpha=0.7, marker='.', color='#5cb7a9', label=f'Noise Threshold: {noise_threshold:.2f} dBm')
-        plt.scatter(times[::49], np.full(len(times[::49]), arbitrary_threshold), alpha=0.7, marker='.', color='#fba95f', label=f'Arbitrary Threshold: {arbitrary_threshold} dBm')
+        plt.scatter(times[::49], np.full(len(times[::49]), noise_threshold),
+                alpha=0.7, marker='.', color='#5cb7a9',
+                label=f'Noise Threshold: {noise_threshold:.2f} dBm')
+        plt.scatter(times[::49], np.full(len(times[::49]), arbitrary_threshold),
+                alpha=0.7, marker='.', color='#fba95f',
+                label=f'Arbitrary Threshold: {arbitrary_threshold} dBm')
+
         plt.ylim([min_s - 1, max_s + 1])
         plt.ylabel('Power [dBm]')
         plt.xlabel('Time [s]')
@@ -120,7 +116,6 @@ for i in range(len(power[0])):
         leg.get_frame().set_facecolor('white')
         for l in leg.legendHandles:
             l.set_alpha(1)
-
         plt.savefig(f'test/channel_{i}.png')
         plt.close()
     
