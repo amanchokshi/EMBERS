@@ -82,7 +82,7 @@ noise_f = np.median(power)
 max_s = np.amax(power)
 min_s = np.amin(power)
 noise_mad = mad(power, axis=None)
-noise_threshold = 10*noise_mad
+noise_threshold = 3*noise_mad
 arbitrary_threshold = 10 #dBm
 
 print(f'Noise floor: {noise_f} dBm')
@@ -101,14 +101,24 @@ for i in range(len(power[0])):
     if (np.any(power[:, i] > noise_threshold) == True and
             max(power[:, i] >= arbitrary_threshold)): 
     #print(np.unique(power[:, i] > noise_threshold))
-        plt.style.use('seaborn')
-        plt.plot(times, power[:, i], marker='.', alpha=0.7)
-        plt.plot(times, np.full(len(times), noise_threshold))
-        plt.plot(times, np.full(len(times), arbitrary_threshold))
-        plt.savefig(f'test/{i}.png')
-        plt.close()
-        #plt.show()
-        #break
+        plt.style.use('dark_background')
+        plt.rcParams.update({"axes.facecolor": "#242a3c"})
+
+        plt.scatter(times, power[:, i], marker='.', alpha=0.2, color='#db3751', label='Data')
+        plt.scatter(times[::49], np.full(len(times[::49]), noise_threshold), alpha=0.7, marker='.', color='#5cb7a9', label=f'Noise Threshold: {noise_threshold:.2f} dBm')
+        plt.scatter(times[::49], np.full(len(times[::49]), arbitrary_threshold), alpha=0.7, marker='.', color='#fba95f', label=f'Arbitrary Threshold: {arbitrary_threshold} dBm')
+        plt.ylabel('Power [dBm]')
+        plt.xlabel('Time [s]')
+        plt.tight_layout()
+        leg = plt.legend(loc="upper right", frameon=True)
+        leg.get_frame().set_facecolor('white')
+        for l in leg.legendHandles:
+            l.set_alpha(1)
+
+#        plt.savefig(f'test/{i}.png')
+#        plt.close()
+        plt.show()
+        break
     
 
 #TODO Import a dataset
