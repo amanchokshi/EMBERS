@@ -85,9 +85,9 @@ noise_mad = mad(power, axis=None)
 noise_threshold = 3*noise_mad
 arbitrary_threshold = 10 #dBm
 
-print(f'Noise floor: {noise_f} dBm')
-print(f'Peak signal: {max_s} dBm')
-print(f'MAD: {noise_mad} dBm')
+#print(f'Noise floor: {noise_f} dBm')
+#print(f'Peak signal: {max_s} dBm')
+#print(f'MAD: {noise_mad} dBm')
 
 # Scale the power to bring the median noise floor down to zero
 power = power - noise_f
@@ -100,7 +100,9 @@ power = power - noise_f
 for i in range(len(power[0])):
     if (np.any(power[:, i] > noise_threshold) == True and
             max(power[:, i] >= arbitrary_threshold)): 
-    #print(np.unique(power[:, i] > noise_threshold))
+        
+        print(f'Satellite in channel: {i}')
+        
         plt.style.use('dark_background')
         plt.rcParams.update({"axes.facecolor": "#242a3c"})
 
@@ -109,16 +111,17 @@ for i in range(len(power[0])):
         plt.scatter(times[::49], np.full(len(times[::49]), arbitrary_threshold), alpha=0.7, marker='.', color='#fba95f', label=f'Arbitrary Threshold: {arbitrary_threshold} dBm')
         plt.ylabel('Power [dBm]')
         plt.xlabel('Time [s]')
+        plt.title(f'Satellite Pass in Channel: [{i}]')
         plt.tight_layout()
         leg = plt.legend(loc="upper right", frameon=True)
         leg.get_frame().set_facecolor('white')
         for l in leg.legendHandles:
             l.set_alpha(1)
 
-#        plt.savefig(f'test/{i}.png')
-#        plt.close()
-        plt.show()
-        break
+        plt.savefig(f'test/channel_{i}.png')
+        plt.close()
+        #plt.show()
+        #break
     
 
 #TODO Import a dataset
