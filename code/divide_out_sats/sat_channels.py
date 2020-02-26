@@ -24,10 +24,19 @@ power, times = read_data(ref_file)
 
 # To first order, let us consider the median to be the noise floor
 noise_f = np.median(power)
-print(noise_f)
-print(power)
+max_s = np.amax(power)
+min_s = np.amin(power)
+
+print(f'Noise floor: {noise_f} dBm')
+print(f'Peak signal: {max_s} dBm')
+
+for i in range(len(power[0])):
+    plt.plot(power[:, i])
+    plt.savefig(f'test/{i}.png')
+    plt.close()
+    
 
 
-plot_waterfall(power, times, 'rf0XX')
-plt.show()
+#plot_waterfall(power, times, 'rf0XX')
+#plt.show()
     
