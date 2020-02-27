@@ -95,9 +95,9 @@ min_s = np.amin(power)
 
 with open(chrono_file) as chrono:
     chrono_ephem = json.load(chrono)
-    
-pass_length = [(chrono_ephem[t]["time_array"][-1] - chrono_ephem[t]["time_array"][0]) for t in range(len(chrono_ephem))]
-print(pass_length)
+
+    # Not sure how lambda functions work, but this does seem to sort chrono_ephem according to pass lenght
+    chrono_ephem = sorted(chrono_ephem, key=lambda k: (k["time_array"][0] - k["time_array"][-1]))
 
 
 #   for i in range(len(power[0])):
