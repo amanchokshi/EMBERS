@@ -99,6 +99,7 @@ with open(chrono_file) as chrono:
     # Not sure how lambda functions work, but this does seem to sort chrono_ephem according to pass lenght
     chrono_ephem = sorted(chrono_ephem, key=lambda k: (k["time_array"][0] - k["time_array"][-1]))
 
+#TODO for every pass, we need to "crop" the power array, then perform thresholding withing the new cropped power array.
 
 #   for i in range(len(power[0])):
 #   
