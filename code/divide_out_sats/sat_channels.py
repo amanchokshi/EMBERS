@@ -1,4 +1,5 @@
 import math
+import json
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
@@ -45,6 +46,8 @@ interp_freq =       args.interp_freq
 #ref_file = '../../../tiles_data/S06XX/2019-10-07/S06XX_2019-10-07-00:00.txt'
 ref_file = '../../../tiles_data/rf0XX/2019-10-07/rf0XX_2019-10-07-00:00.txt'
 
+chrono_file = '../../outputs/sat_ephemeris/chrono_json/2019-10-07-00:00.json'
+
 
 def savgol_interp(ref, savgol_window =None, polyorder=None, interp_type=None, interp_freq=None):
     """Smooth and interpolate the power array with a savgol filter
@@ -85,40 +88,48 @@ max_s = np.amax(power)
 min_s = np.amin(power)
 
 
-plot_waterfall(power, times, 'rf0XX')
-plt.savefig(f'test/waterfall.png')
-plt.close()
+#plot_waterfall(power, times, 'rf0XX')
+#plt.savefig(f'test/waterfall.png')
+#plt.close()
 
 
-for i in range(len(power[0])):
-
-    if max(power[:, i] >= arbitrary_threshold): 
-        
-        print(f'Satellite in channel: {i}')
-        
-        plt.style.use('dark_background')
-        plt.rcParams.update({"axes.facecolor": "#242a3c"})
-
-        plt.scatter(times, power[:, i], marker='.', alpha=0.2, color='#db3751', label='Data')
-        plt.scatter(times[::49], np.full(len(times[::49]), noise_threshold),
-                alpha=0.7, marker='.', color='#5cb7a9',
-                label=f'Noise Threshold: {noise_threshold:.2f} dBm')
-        plt.scatter(times[::49], np.full(len(times[::49]), arbitrary_threshold),
-                alpha=0.7, marker='.', color='#fba95f',
-                label=f'Arbitrary Threshold: {arbitrary_threshold} dBm')
-
-        plt.ylim([min_s - 1, max_s + 1])
-        plt.ylabel('Power [dBm]')
-        plt.xlabel('Time [s]')
-        plt.title(f'Satellite Pass in Channel: [{i}]')
-        plt.tight_layout()
-        leg = plt.legend(loc="upper right", frameon=True)
-        leg.get_frame().set_facecolor('white')
-        for l in leg.legendHandles:
-            l.set_alpha(1)
-        plt.savefig(f'test/channel_{i}.png')
-        plt.close()
+with open(chrono_file) as chrono:
+    chrono_ephem = json.load(chrono)
     
+pass_length = [(chrono_ephem[t]["time_array"][-1] - chrono_ephem[t]["time_array"][0]) for t in range(len(chrono_ephem))]
+print(pass_length)
+
+
+#   for i in range(len(power[0])):
+#   
+#       if max(power[:, i] >= arbitrary_threshold): 
+#           
+#           print(f'Satellite in channel: {i}')
+#           
+#           plt.style.use('dark_background')
+#           plt.rcParams.update({"axes.facecolor": "#242a3c"})
+#   
+#           plt.scatter(times, power[:, i], marker='.', alpha=0.2, color='#db3751', label='Data')
+#           plt.scatter(times[::49], np.full(len(times[::49]), noise_threshold),
+#                   alpha=0.7, marker='.', color='#5cb7a9',
+#                   label=f'Noise Threshold: {noise_threshold:.2f} dBm')
+#           plt.scatter(times[::49], np.full(len(times[::49]), arbitrary_threshold),
+#                   alpha=0.7, marker='.', color='#fba95f',
+#                   label=f'Arbitrary Threshold: {arbitrary_threshold} dBm')
+#   
+#           plt.ylim([min_s - 1, max_s + 1])
+#           plt.ylabel('Power [dBm]')
+#           plt.xlabel('Time [s]')
+#           plt.title(f'Satellite Pass in Channel: [{i}]')
+#           plt.tight_layout()
+#           leg = plt.legend(loc="upper right", frameon=True)
+#           leg.get_frame().set_facecolor('white')
+#           for l in leg.legendHandles:
+#               l.set_alpha(1)
+#           #plt.savefig(f'test/channel_{i}.png')
+#           #plt.close()
+#           #plt.show()
+#           break
 
 #TODO Use reference data for sat, with corresponding chrono json for ephem
 #TODO Read chrono_ephem json file for that particular obs. Sort passes by lenght(time in sky)
