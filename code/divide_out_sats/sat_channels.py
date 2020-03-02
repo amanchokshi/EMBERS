@@ -137,14 +137,18 @@ with open(chrono_file) as chrono:
         print(sat_id)
 
         if rise_ephem < times[0]:
-            start_ind = list(times).index(times[0])
+            print('I')
+            start_ind = 0
+            print(times[0])
             stop_ind = list(times).index(set_ephem)
 
         elif set_ephem > times[-1]:
+            print('II')
             start_ind = list(times).index(rise_ephem)
-            stop_ind = list(times).index(times[-1])
+            stop_ind = -2
 
         else:
+            print('III')
             start_ind = list(times).index(rise_ephem)
             stop_ind = list(times).index(set_ephem)
         
