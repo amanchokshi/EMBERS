@@ -45,7 +45,6 @@ interp_freq =       args.interp_freq
 
 #ref_file = '../../../tiles_data/S06XX/2019-10-07/S06XX_2019-10-07-00:00.txt'
 ref_file = '../../../tiles_data/rf0XX/2019-10-07/rf0XX_2019-10-07-00:00.txt'
-
 chrono_file = '../../outputs/sat_ephemeris/chrono_json/2019-10-07-00:00.json'
 
 
@@ -99,45 +98,53 @@ with open(chrono_file) as chrono:
     # Not sure how lambda functions work, but this does seem to sort chrono_ephem according to pass lenght
     chrono_ephem = sorted(chrono_ephem, key=lambda k: (k["time_array"][0] - k["time_array"][-1]))
 
-
-#TODO for every pass, we need to "crop" the power array, then perform thresholding withing the new cropped power array.
-
+    # Choosing the longest sat pass first
     start_ind = (list(times).index(chrono_ephem[0]["time_array"][0]))
     stop_ind = (list(times).index(chrono_ephem[0]["time_array"][-1]))
+           
+    window_len = stop_ind - start_ind
+    print(f'Window Length: {window_len}')
     
+    # Slice the power/times arrays to the times of sat pass
     power = power[start_ind:stop_ind+1, :]
     times = times[start_ind:stop_ind+1]
 
     for i in range(len(power[0])):
-   
-       if max(power[:, i] >= arbitrary_threshold): 
+        
+        channel_power = power[:, i]
+        if max(channel_power) >= arbitrary_threshold:
            
-           print(f'Satellite in channel: {i}')
-           
-           plt.style.use('dark_background')
-           plt.rcParams.update({"axes.facecolor": "#242a3c"})
+            window_occupancy = (len([p for p in channel_power if p >= noise_threshold])/window_len)*100
+            print(f'Satellite in channel: {i}, occupancy: {window_occupancy:.2f}%')
+
+            
+            
+            plt.style.use('dark_background')
+            plt.rcParams.update({"axes.facecolor": "#242a3c"})
    
-           plt.scatter(times, power[:, i], marker='.', alpha=0.2, color='#db3751', label='Data')
-           plt.scatter(times[::49], np.full(len(times[::49]), noise_threshold),
-                   alpha=0.7, marker='.', color='#5cb7a9',
-                   label=f'Noise Threshold: {noise_threshold:.2f} dBm')
-           plt.scatter(times[::49], np.full(len(times[::49]), arbitrary_threshold),
-                   alpha=0.7, marker='.', color='#fba95f',
-                   label=f'Arbitrary Threshold: {arbitrary_threshold} dBm')
+            plt.scatter(times, channel_power, marker='.', alpha=0.2, color='#db3751', label='Data')
+            plt.scatter(times[::49], np.full(len(times[::49]), noise_threshold),
+                    alpha=0.7, marker='.', color='#5cb7a9',
+                    label=f'Noise Cut: {noise_threshold:.2f} dBm')
+            plt.scatter(times[::49], np.full(len(times[::49]), arbitrary_threshold),
+                    alpha=0.7, marker='.', color='#fba95f',
+                    label=f'Arbitrary Cut: {arbitrary_threshold} dBm')
    
-           plt.ylim([min_s - 1, max_s + 1])
-           plt.ylabel('Power [dBm]')
-           plt.xlabel('Time [s]')
-           plt.title(f'Satellite Pass in Channel: [{i}]')
-           plt.tight_layout()
-           leg = plt.legend(loc="upper right", frameon=True)
-           leg.get_frame().set_facecolor('white')
-           for l in leg.legendHandles:
-               l.set_alpha(1)
-           plt.savefig(f'test/channel_{i}.png')
-           plt.close()
-           #plt.show()
-           #break
+            plt.ylim([min_s - 1, max_s + 1])
+            plt.ylabel('Power [dBm]')
+            plt.xlabel('Time [s]')
+            plt.title(f'Satellite Pass in Channel: [{i}]')
+            plt.tight_layout()
+            #leg = plt.legend(loc="upper right", frameon=True)
+            leg = plt.legend(frameon=True)
+            leg.get_frame().set_facecolor('white')
+            leg.get_frame().set_alpha(0.2)
+            for l in leg.legendHandles:
+                l.set_alpha(1)
+            plt.savefig(f'test/channel_{i}.png')
+            plt.close()
+#            plt.show()
+#            break
 
 #TODO Use reference data for sat, with corresponding chrono json for ephem
 #TODO Read chrono_ephem json file for that particular obs. Sort passes by lenght(time in sky)
