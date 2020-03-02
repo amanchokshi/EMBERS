@@ -72,6 +72,35 @@ def savgol_interp(ref, savgol_window =None, polyorder=None, interp_type=None, in
     return (power_smooth, time_smooth)
 
 
+def plt_channel(times, channel_power, chan_num):
+    plt.style.use('dark_background')
+    plt.rcParams.update({"axes.facecolor": "#242a3c"})
+
+    plt.scatter(times, channel_power, marker='.', alpha=0.2, color='#db3751', label='Data')
+    plt.scatter(times[::49], np.full(len(times[::49]), noise_threshold),
+            alpha=0.7, marker='.', color='#5cb7a9',
+            label=f'Noise Cut: {noise_threshold:.2f} dBm')
+    plt.scatter(times[::49], np.full(len(times[::49]), arbitrary_threshold),
+            alpha=0.7, marker='.', color='#fba95f',
+            label=f'Arbitrary Cut: {arbitrary_threshold} dBm')
+
+    plt.ylim([min_s - 1, max_s + 1])
+    plt.ylabel('Power [dBm]')
+    plt.xlabel('Time [s]')
+    plt.title(f'Satellite Pass in Channel: [{chan_num}]')
+    plt.tight_layout()
+    #leg = plt.legend(loc="upper right", frameon=True)
+    leg = plt.legend(frameon=True)
+    leg.get_frame().set_facecolor('white')
+    leg.get_frame().set_alpha(0.2)
+    for l in leg.legendHandles:
+        l.set_alpha(1)
+    plt.savefig(f'test/channel_{chan_num}.png')
+    plt.close()
+    #plt.show()
+    #break
+
+
 power, times = savgol_interp(ref_file, savgol_window, polyorder, interp_type, interp_freq )
 
 # To first order, let us consider the median to be the noise floor
@@ -101,9 +130,9 @@ with open(chrono_file) as chrono:
     # Choosing the longest sat pass first
     start_ind = (list(times).index(chrono_ephem[0]["time_array"][0]))
     stop_ind = (list(times).index(chrono_ephem[0]["time_array"][-1]))
-           
+    
+    # length of sat pass
     window_len = stop_ind - start_ind
-    print(f'Window Length: {window_len}')
     
     # Slice the power/times arrays to the times of sat pass
     power = power[start_ind:stop_ind+1, :]
@@ -113,41 +142,16 @@ with open(chrono_file) as chrono:
         
         channel_power = power[:, i]
         if max(channel_power) >= arbitrary_threshold:
-           
+          
+            # Percentage of signal occupancy above noise threshold
             window_occupancy = (len([p for p in channel_power if p >= noise_threshold])/window_len)*100
             print(f'Satellite in channel: {i}, occupancy: {window_occupancy:.2f}%')
 
-            
-            
-            plt.style.use('dark_background')
-            plt.rcParams.update({"axes.facecolor": "#242a3c"})
-   
-            plt.scatter(times, channel_power, marker='.', alpha=0.2, color='#db3751', label='Data')
-            plt.scatter(times[::49], np.full(len(times[::49]), noise_threshold),
-                    alpha=0.7, marker='.', color='#5cb7a9',
-                    label=f'Noise Cut: {noise_threshold:.2f} dBm')
-            plt.scatter(times[::49], np.full(len(times[::49]), arbitrary_threshold),
-                    alpha=0.7, marker='.', color='#fba95f',
-                    label=f'Arbitrary Cut: {arbitrary_threshold} dBm')
-   
-            plt.ylim([min_s - 1, max_s + 1])
-            plt.ylabel('Power [dBm]')
-            plt.xlabel('Time [s]')
-            plt.title(f'Satellite Pass in Channel: [{i}]')
-            plt.tight_layout()
-            #leg = plt.legend(loc="upper right", frameon=True)
-            leg = plt.legend(frameon=True)
-            leg.get_frame().set_facecolor('white')
-            leg.get_frame().set_alpha(0.2)
-            for l in leg.legendHandles:
-                l.set_alpha(1)
-            plt.savefig(f'test/channel_{i}.png')
-            plt.close()
-#            plt.show()
-#            break
+            # Plots the channel with satellite pass
+            plt_channel(times, channel_power, i)
 
-#TODO Use reference data for sat, with corresponding chrono json for ephem
-#TODO Read chrono_ephem json file for that particular obs. Sort passes by lenght(time in sky)
+
+
 #TODO If the potential sat occupies more than 80% of the sat pass length, classify it as a sat!
 #TODO Or, come up with alternative thresholding scheme.
 #TODO Exclude that channel from next loop
