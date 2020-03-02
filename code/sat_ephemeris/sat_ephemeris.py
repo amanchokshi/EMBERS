@@ -5,7 +5,8 @@ from skyfield.api import Topos, load
 
 
 # Skyfield Timescale
-ts = load.timescale(builtin=True)
+#ts = load.timescale(builtin=True)
+ts = load.timescale()
 
 # Position of MWA site in Lat/Lon/Elevation
 MWA = Topos(latitude=-26.703319, longitude=116.670815, elevation_m=337.83)
@@ -40,7 +41,7 @@ def load_tle(tle_path):
         epoch = sat.model.jdsatepoch
         sats.append(sat)
         epochs.append(epoch)
-
+    
     sats = np.asarray(sats)
     epochs = np.asarray(epochs)
 
@@ -86,18 +87,21 @@ def epoch_time_array(epoch_range, index_epoch, cadence):
     '''
 
     # find time between epochs/ midpoints in seconds, using Astropy Time
-    t1 = Time(epoch_range[index_epoch], format='jd').gps
-    t2 = Time(epoch_range[index_epoch+1], format='jd').gps
+    #t1 = Time(epoch_range[index_epoch], format='tt').gps
+    #t2 = Time(epoch_range[index_epoch+1], format='tt').gps
+    t1 = Time(epoch_range[index_epoch], scale='tt', format='jd').gps
+    t2 = Time(epoch_range[index_epoch+1], scale='tt', format='jd').gps
     dt = round(t2 - t1)
     
-    t3 = Time(epoch_range[index_epoch], format='jd').iso
+    t3 = Time(epoch_range[index_epoch], scale='tt', format='jd').iso
     date, time = t3.split()
     year, month, day = date.split('-')
     hour, minute,_ = time.split(':')
     
     # Create a time array, every 20[cadence] seconds, starting at the first epoch, approximately
     seconds = np.arange(0,dt,cadence)
-    t_arr = ts.utc(int(year), int(month), int(day), int(hour), int(minute), seconds)
+    t_arr = ts.tt(int(year), int(month), int(day), int(hour), int(minute), seconds)
+    #t_arr = ts.utc(int(year), int(month), int(day), int(hour), int(minute), seconds)
 
     return (t_arr, index_epoch)
 
@@ -180,7 +184,7 @@ def ephem_data(t_arr, pass_index, alt, az):
 
     # A list of times at which alt/az were calculated
     # Convert to unix time to match the rf explorer timestamps
-    time_array=Time(t_arr[i:j+1].tt, format='jd').unix
+    time_array=Time(t_arr[i:j+1].tt, scale='tt', format='jd').unix
 
     theta = list(az.radians)
     r = list(alt.degrees)
