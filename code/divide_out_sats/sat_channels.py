@@ -43,11 +43,6 @@ interp_type =       args.interp_type
 interp_freq =       args.interp_freq
 
 
-#ref_file = '../../../tiles_data/S06XX/2019-10-07/S06XX_2019-10-07-00:00.txt'
-ref_file = '../../../tiles_data/rf0XX/2019-10-07/rf0XX_2019-10-07-00:00.txt'
-chrono_file = '../../outputs/sat_ephemeris/chrono_json/2019-10-07-00:00.json'
-
-
 def savgol_interp(ref, savgol_window =None, polyorder=None, interp_type=None, interp_freq=None):
     """Smooth and interpolate the power array with a savgol filter
     
@@ -101,6 +96,10 @@ def plt_channel(times, channel_power, chan_num):
     #break
 
 
+ref_file = '../../../tiles_data/rf0XX/2019-10-07/rf0XX_2019-10-07-00:00.txt'
+chrono_file = '../../outputs/sat_ephemeris/chrono_json/2019-10-07-00:00.json'
+
+
 power, times = savgol_interp(ref_file, savgol_window, polyorder, interp_type, interp_freq )
 
 # To first order, let us consider the median to be the noise floor
@@ -120,6 +119,7 @@ min_s = np.amin(power)
 #plt.savefig(f'test/waterfall.png')
 #plt.close()
 
+used_channels = []
 
 with open(chrono_file) as chrono:
     chrono_ephem = json.load(chrono)
@@ -140,15 +140,22 @@ with open(chrono_file) as chrono:
 
     for i in range(len(power[0])):
         
-        channel_power = power[:, i]
-        if max(channel_power) >= arbitrary_threshold:
-          
-            # Percentage of signal occupancy above noise threshold
-            window_occupancy = (len([p for p in channel_power if p >= noise_threshold])/window_len)*100
-            print(f'Satellite in channel: {i}, occupancy: {window_occupancy:.2f}%')
+        if i not in used_channels:
 
-            # Plots the channel with satellite pass
-            plt_channel(times, channel_power, i)
+            
+            channel_power = power[:, i]
+            if max(channel_power) >= arbitrary_threshold:
+              
+                # Percentage of signal occupancy above noise threshold
+                window_occupancy = len([p for p in channel_power if p >= noise_threshold])/window_len
+                
+                if window_occupancy >= 0.8:
+                    used_channels.extend([i-1, i, i+1])
+                    print(f'Satellite in channel: {i}, occupancy: {window_occupancy*100:.2f}%')
+
+                    # Plots the channel with satellite pass
+                    plt_channel(times, channel_power, i)
+print(used_channels)
 
 
 
