@@ -136,6 +136,23 @@ with open(chrono_file) as chrono:
         set_ephem  = chrono_ephem[j]["time_array"][-1]
         sat_id = chrono_ephem[j]["sat_id"][0]
 
+        if rise_ephem <= times[0] and set_ephem >= times[0]:
+            start = 0
+            stop = list(times).index(set_ephem)
+        elif set_ephem < times[-1] and rise_ephem >= times[0]:
+            start = list(times).index(rise_ephem)
+            stop = list(times).index(set_ephem)
+        elif set_ephem >= times[-1] and rise_ephem <= times[-1]:
+            start = list(times).index(rise_ephem)
+            stop = list(times).index(times[-1])
+        else:
+            start = 0
+            stop = 0
+
+
+
+
+
         print(sat_id)
 
         # Custom spectral colormap
@@ -154,14 +171,15 @@ with open(chrono_file) as chrono:
         ax.set_ylabel('Time Step')
     
         ax.fill_between(range(len(power[0, :])),
-                np.full(len(power[0, :]), rise_ephem),
-                np.full(len(power[0, :]), set_ephem),
+                np.full(len(power[0, :]), start),
+                np.full(len(power[0, :]), stop),
                 color='white',
                 alpha=0.2
                 )
        
-        plt.show()
-        break
+        #plt.show()
+        plt.savefig(f'test/{j}_{sat_id}.png')
+        #break
 
         
         #if set_ephem < times[0] or rise_ephem > times[-1]:
