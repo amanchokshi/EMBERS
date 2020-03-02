@@ -115,9 +115,9 @@ max_s = np.amax(power)
 min_s = np.amin(power)
 
 
-#plot_waterfall(power, times, 'rf0XX')
-#plt.savefig(f'test/waterfall.png')
-#plt.close()
+plot_waterfall(power, times, 'rf0XX')
+plt.savefig(f'test/waterfall.png')
+plt.close()
 
 used_channels = []
 
@@ -127,48 +127,69 @@ with open(chrono_file) as chrono:
     # Not sure how lambda functions work, but this does seem to sort chrono_ephem according to pass lenght
     chrono_ephem = sorted(chrono_ephem, key=lambda k: (k["time_array"][0] - k["time_array"][-1]))
 
-    # Choosing the longest sat pass first
-    start_ind = (list(times).index(chrono_ephem[0]["time_array"][0]))
-    stop_ind = (list(times).index(chrono_ephem[0]["time_array"][-1]))
+    for j in range(len(chrono_ephem)):
     
-    # length of sat pass
-    window_len = stop_ind - start_ind
-    
-    # Slice the power/times arrays to the times of sat pass
-    power = power[start_ind:stop_ind+1, :]
-    times = times[start_ind:stop_ind+1]
+        # Need to make sure that I'm not out of range on either side
 
-    occu_list = []
-    chan_list = []
-    
-    for i in range(len(power[0])):
+        rise_ephem = chrono_ephem[j]["time_array"][0] 
+        set_ephem  = chrono_ephem[j]["time_array"][-1]
+        sat_id = chrono_ephem[j]["sat_id"][0]
+        print(sat_id)
+
+        if rise_ephem < times[0]:
+            start_ind = list(times).index(times[0])
+            stop_ind = list(times).index(set_ephem)
+
+        elif set_ephem > times[-1]:
+            start_ind = list(times).index(rise_ephem)
+            stop_ind = list(times).index(times[-1])
+
+        else:
+            start_ind = list(times).index(rise_ephem)
+            stop_ind = list(times).index(set_ephem)
         
-        if i not in used_channels:
+        # length of sat pass
+        window_len = stop_ind - start_ind
+        
+        # Slice the power/times arrays to the times of sat pass
+        power = power[start_ind:stop_ind+1, :]
+        times = times[start_ind:stop_ind+1]
 
-            channel_power = power[:, i]
+        occu_list = []
+        chan_list = []
+        
+        for i in range(len(power[0])):
+            
+            if i not in used_channels:
 
-            # Arbitrary threshold below which satellites aren't counted
-            if max(channel_power) >= arbitrary_threshold:
-              
-                # Percentage of signal occupancy above noise threshold
-                window_occupancy = len([p for p in channel_power if p >= noise_threshold])/window_len
-                
-                # Only continue if there is signal for more than 80% of satellite pass
-                if window_occupancy >= 0.8:
+                channel_power = power[:, i]
 
-                    occu_list.append(window_occupancy)
-                    chan_list.append(i)
+                # Arbitrary threshold below which satellites aren't counted
+                if max(channel_power) >= arbitrary_threshold:
+                  
+                    # Percentage of signal occupancy above noise threshold
+                    window_occupancy = len([p for p in channel_power if p >= noise_threshold])/window_len
+                    
+                    # Only continue if there is signal for more than 80% of satellite pass
+                    if window_occupancy >= 0.8:
+
+                        occu_list.append(window_occupancy)
+                        chan_list.append(i)
 
 
-    # Channel number with max occupancy
-    s_chan = chan_list[occu_list.index(max(occu_list))]
-    
-    # Exclude channels on either side of pass
-    used_channels.extend([s_chan-1, s_chan, s_chan+1])
-    print(f'Satellite in channel: {s_chan}, occupancy: {max(occu_list)*100:.2f}%')
+        if occu_list == []:
+            pass
+        else:
+            print(occu_list)
+            # Channel number with max occupancy
+            s_chan = chan_list[occu_list.index(max(occu_list))]
+            
+            # Exclude channels on either side of pass
+            used_channels.extend([s_chan-1, s_chan, s_chan+1])
+            print(f'Satellite in channel: {s_chan}, occupancy: {max(occu_list)*100:.2f}%')
 
-    # Plots the channel with satellite pass
-    plt_channel(times, power[:, s_chan], s_chan)
+            # Plots the channel with satellite pass
+            plt_channel(times, power[:, s_chan], s_chan)
 
 
 #TODO If the potential sat occupies more than 80% of the sat pass length, classify it as a sat!
