@@ -138,25 +138,37 @@ with open(chrono_file) as chrono:
     power = power[start_ind:stop_ind+1, :]
     times = times[start_ind:stop_ind+1]
 
+    occu_list = []
+    chan_list = []
+    
     for i in range(len(power[0])):
         
         if i not in used_channels:
 
-            
             channel_power = power[:, i]
+
+            # Arbitrary threshold below which satellites aren't counted
             if max(channel_power) >= arbitrary_threshold:
               
                 # Percentage of signal occupancy above noise threshold
                 window_occupancy = len([p for p in channel_power if p >= noise_threshold])/window_len
                 
+                # Only continue if there is signal for more than 80% of satellite pass
                 if window_occupancy >= 0.8:
-                    used_channels.extend([i-1, i, i+1])
-                    print(f'Satellite in channel: {i}, occupancy: {window_occupancy*100:.2f}%')
 
-                    # Plots the channel with satellite pass
-                    plt_channel(times, channel_power, i)
-print(used_channels)
+                    occu_list.append(window_occupancy)
+                    chan_list.append(i)
 
+
+    # Channel number with max occupancy
+    s_chan = chan_list[occu_list.index(max(occu_list))]
+    
+    # Exclude channels on either side of pass
+    used_channels.extend([s_chan-1, s_chan, s_chan+1])
+    print(f'Satellite in channel: {s_chan}, occupancy: {max(occu_list)*100:.2f}%')
+
+    # Plots the channel with satellite pass
+    plt_channel(times, power[:, s_chan], s_chan)
 
 
 #TODO If the potential sat occupies more than 80% of the sat pass length, classify it as a sat!
