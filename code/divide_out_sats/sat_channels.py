@@ -68,7 +68,36 @@ def savgol_interp(ref, savgol_window =None, polyorder=None, interp_type=None, in
     return (power_smooth, time_smooth)
 
 
-def plt_channel(times, channel_power, chan_num):
+def plt_waterfall_pass(power, sat_id, start, stop, idx):
+    
+    # Custom spectral colormap
+    cmap = spectral()
+    
+    plt.style.use('dark_background')
+    fig = plt.figure(figsize = (7,10))
+    ax = fig.add_axes([0.12, 0.1, 0.72, 0.85])
+    im = ax.imshow(power, interpolation='none', cmap=cmap)
+    cax = fig.add_axes([0.88, 0.1, 0.03, 0.85])
+    fig.colorbar(im, cax=cax)
+    ax.set_aspect('auto')
+    ax.set_title(f'Waterfall Plot: {sat_id}')
+    
+    ax.set_xlabel('Freq Channel')
+    ax.set_ylabel('Time Step')
+    
+    ax.fill_between(range(len(power[0, :])),
+            np.full(len(power[0, :]), start),
+            np.full(len(power[0, :]), stop),
+            color='white',
+            alpha=0.2
+            )
+    
+    #plt.show()
+    plt.savefig(f'test/{idx}_{sat_id}.png')
+    plt.close()
+
+
+def plt_channel(times, channel_power, chan_num, sat_id, idx):
     plt.style.use('dark_background')
     plt.rcParams.update({"axes.facecolor": "#242a3c"})
 
@@ -91,7 +120,7 @@ def plt_channel(times, channel_power, chan_num):
     leg.get_frame().set_alpha(0.2)
     for l in leg.legendHandles:
         l.set_alpha(1)
-    plt.savefig(f'test/channel_{chan_num}.png')
+    plt.savefig(f'test/{j}_{sat_id}_{chan_num}.png')
     plt.close()
     #plt.show()
     #break
@@ -136,112 +165,75 @@ with open(chrono_file) as chrono:
         set_ephem  = chrono_ephem[j]["time_array"][-1]
         sat_id = chrono_ephem[j]["sat_id"][0]
 
-        if rise_ephem <= times[0] and set_ephem >= times[0]:
-            start = 0
-            stop = list(times).index(set_ephem)
-        elif set_ephem < times[-1] and rise_ephem >= times[0]:
-            start = list(times).index(rise_ephem)
-            stop = list(times).index(set_ephem)
-        elif set_ephem >= times[-1] and rise_ephem <= times[-1]:
-            start = list(times).index(rise_ephem)
-            stop = list(times).index(times[-1])
-        else:
-            start = 0
-            stop = 0
+        if sat_id == 44018:
+
+            # Case I: Sat rises before obs starts and sets after the obs starts
+            if rise_ephem <= times[0] and set_ephem >= times[0]:
+                #print(f'{sat_id}: I')
+                w_start = 0
+                w_stop = list(times).index(set_ephem)
+
+            # Case II: Sat rises after obs starts and sets before obs ends
+            elif set_ephem < times[-1] and rise_ephem >= times[0]:
+                #print(f'{sat_id}: II')
+                w_start = list(times).index(rise_ephem)
+                w_stop = list(times).index(set_ephem)
+
+            # Case III: Sat rises before obs ends and sets after
+            elif set_ephem >= times[-1] and rise_ephem <= times[-1]:
+                #print(f'{sat_id}: III')
+                w_start = list(times).index(rise_ephem)
+                w_stop = list(times).index(times[-1])
+            
+            # Sat out of bounds
+            else:
+                #print(f'{sat_id}: out of bounds')
+                w_start = 0
+                w_stop = 0
+
+            #plt_waterfall_pass(power, sat_id, w_start, w_stop, j)
 
 
+            # length of sat pass
+            window_len = w_stop - w_start + 1
+            
+            # Slice [crop] the power/times arrays to the times of sat pass
+            power_c = power[w_start:w_stop+1, :]
+            times_c = times[w_start:w_stop+1]
+
+            occu_list = []
+            chan_list = []
+            
+            for i in range(len(power_c[0])):
+                
+                if i not in used_channels:
+
+                    channel_power = power_c[:, i]
+
+                    # Arbitrary threshold below which satellites aren't counted
+                    if max(channel_power) >= arbitrary_threshold:
+                      
+                        # Percentage of signal occupancy above noise threshold
+                        window_occupancy = len([p for p in channel_power if p >= noise_threshold])/window_len
+                        
+                        # Only continue if there is signal for more than 80% of satellite pass
+                        if window_occupancy >= 0.90:
+
+                            occu_list.append(window_occupancy)
+                            chan_list.append(i)
 
 
-
-        print(sat_id)
-
-        # Custom spectral colormap
-        cmap = spectral()
-        
-        plt.style.use('dark_background')
-        fig = plt.figure(figsize = (7,10))
-        ax = fig.add_axes([0.12, 0.1, 0.72, 0.85])
-        im = ax.imshow(power, interpolation='none', cmap=cmap)
-        cax = fig.add_axes([0.88, 0.1, 0.03, 0.85])
-        fig.colorbar(im, cax=cax)
-        ax.set_aspect('auto')
-        ax.set_title(f'Waterfall Plot: {sat_id}')
-    
-        ax.set_xlabel('Freq Channel')
-        ax.set_ylabel('Time Step')
-    
-        ax.fill_between(range(len(power[0, :])),
-                np.full(len(power[0, :]), start),
-                np.full(len(power[0, :]), stop),
-                color='white',
-                alpha=0.2
-                )
-       
-        #plt.show()
-        plt.savefig(f'test/{j}_{sat_id}.png')
-        #break
-
-        
-        #if set_ephem < times[0] or rise_ephem > times[-1]:
-        #    print('0')
-
-        #elif rise_ephem <= times[0]:
-        #    print('I')
-        #    start_ind = 0
-        #    stop_ind = list(times).index(set_ephem)
-
-        #elif set_ephem >= times[-1]:
-        #    print('II')
-        #    start_ind = list(times).index(rise_ephem)
-        #    stop_ind = len(times) - 1
-
-        #else:
-        ##elif rise_ephem > times[0] and set_ephem < times[-1]:
-        #    print('III')
-        #    start_ind = list(times).index(rise_ephem)
-        #    stop_ind = list(times).index(set_ephem)
-        #
-
-        ## length of sat pass
-        #window_len = stop_ind - start_ind
-        #
-        ## Slice the power/times arrays to the times of sat pass
-        #power = power[start_ind:stop_ind+1, :]
-        #times = times[start_ind:stop_ind+1]
-
-        #occu_list = []
-        #chan_list = []
-        #
-        #for i in range(len(power[0])):
-        #    
-        #    if i not in used_channels:
-
-        #        channel_power = power[:, i]
-
-        #        # Arbitrary threshold below which satellites aren't counted
-        #        if max(channel_power) >= arbitrary_threshold:
-        #          
-        #            # Percentage of signal occupancy above noise threshold
-        #            window_occupancy = len([p for p in channel_power if p >= noise_threshold])/window_len
-        #            
-        #            # Only continue if there is signal for more than 80% of satellite pass
-        #            if window_occupancy >= 0.7:
-
-        #                occu_list.append(window_occupancy)
-        #                chan_list.append(i)
-
-
-        #if occu_list == []:
-        #    pass
-        #else:
-        #    # Channel number with max occupancy
-        #    s_chan = chan_list[occu_list.index(max(occu_list))]
-        #    
-        #    # Exclude channels on either side of pass
-        #    used_channels.extend([s_chan-1, s_chan, s_chan+1])
-        #    print(f'Satellite {sat_id} in channel: {s_chan}, occupancy: {max(occu_list)*100:.2f}%')
-        #    # Plots the channel with satellite pass
-        #    plt_channel(times, power[:, s_chan], s_chan)
+            if occu_list == []:
+                pass
+            else:
+                # Channel number with max occupancy
+                s_chan = chan_list[occu_list.index(max(occu_list))]
+                
+                # Exclude channels on either side of pass
+                used_channels.extend([s_chan-1, s_chan, s_chan+1])
+                print(f'Satellite {sat_id} in channel: {s_chan}, occupancy: {max(occu_list)*100:.2f}%')
+                # Plots the channel with satellite pass
+                #plt_channel(times_c, power_c[:, s_chan], s_chan, sat_id, j)
 
 #TODO If the potential sat occupies more than 80% of the sat pass length, classify it as a sat!
 #TODO Or, come up with alternative thresholding scheme.
