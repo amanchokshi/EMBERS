@@ -117,7 +117,8 @@ def plt_channel(times, channel_power, chan_num, sat_id, idx):
 
 
 def find_sat_channel(norad_id):
-
+    
+    plt.rcParams.update(plt.rcParamsDefault)
     chans = []
     
     # Loop through days
@@ -257,7 +258,7 @@ def find_sat_channel(norad_id):
     plt.title(f'Possible Transmission Channels of Satellite [{norad_id}]')
     plt.tight_layout()
     plt.savefig(f'{out_dir}/{norad_id}/{norad_id}_{pop_chan}_passes.png')
-
+    plt.close()
 
 args = parser.parse_args()
 
@@ -314,8 +315,11 @@ out_dir = Path(out_dir)
 #norad_id = 41180
 #find_sat_channel(norad_id)
 
+for norad_id in sat_list:
+    find_sat_channel(norad_id)
+
 # Parallization magic happens here
-with concurrent.futures.ProcessPoolExecutor() as executor:
-    results = executor.map(find_sat_channel, sat_list)
+#with concurrent.futures.ProcessPoolExecutor() as executor:
+#    results = executor.map(find_sat_channel, sat_list)
 
 
