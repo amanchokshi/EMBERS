@@ -3,6 +3,7 @@ import json
 import argparse
 import numpy as np
 import seaborn as sns
+import concurrent.futures
 import matplotlib.pyplot as plt
 from scipy.stats import median_absolute_deviation as mad
 from datetime import datetime, timedelta
@@ -22,10 +23,7 @@ from scipy.signal import savgol_filter
 
 
 parser = argparse.ArgumentParser(description="""
-    Time alignes and smoothes all data 
-    between two date ranges. Saves data
-    pairs in organised directory 
-    structure as .npz files.
+    Determines which channel each satellite occupies
     """)
 
 parser.add_argument('--data_dir', metavar='\b', help='Dir where date is saved')
@@ -38,56 +36,6 @@ parser.add_argument('--polyorder', metavar='\b', default=1,help='Order of polyno
 parser.add_argument('--interp_type', metavar='\b', default='cubic',help='Type of interpolation. Ex: cubic, linear, etc. Default=cubic')
 parser.add_argument('--interp_freq', metavar='\b', default=2,help='Frequency at which to resample smoothed data, in Hertz. Default=2')
 
-
-args = parser.parse_args()
-
-data_dir =          args.data_dir
-chrono_dir =        args.chrono_dir
-start_date =        args.start_date
-stop_date =         args.stop_date
-out_dir =           args.out_dir
-savgol_window =     args.savgol_window
-polyorder =         args.polyorder
-interp_type =       args.interp_type
-interp_freq =       args.interp_freq
-
-
-# Save logs 
-Path(out_dir).mkdir(parents=True, exist_ok=True)
-#sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
-
-# Import list of tile names from rf_data.py
-tiles = rf.tile_names()
-
-sat_list = [id for id in sat_ids.norad_ids.values()]
-
-print(sat_list)
-
-# Time stuff to help traverse data dir tree.
-t_start = datetime.strptime(start_date, '%Y-%m-%d')
-t_stop = datetime.strptime(stop_date, '%Y-%m-%d')
-n_days = (t_stop - t_start).days
-
-dates = []
-date_time = []
-
-for i in range(n_days+1):
-    day = t_start + timedelta(days=i)
-    date = day.strftime('%Y-%m-%d')
-    dates.append(date)
-    d_t = []
-    
-    for j in range(48):
-        t_delta = datetime.strptime(date,'%Y-%m-%d') + timedelta(minutes=30*j)
-        d_time = t_delta.strftime('%Y-%m-%d-%H:%M')
-        d_t.append(d_time)
-
-    date_time.append(d_t)    
-
-
-data_dir = Path(data_dir)
-chrono_dir = Path(chrono_dir)
-out_dir = Path(out_dir)
 
 
 def savgol_interp(ref, savgol_window =None, polyorder=None, interp_type=None, interp_freq=None):
@@ -115,7 +63,7 @@ def savgol_interp(ref, savgol_window =None, polyorder=None, interp_type=None, in
 
 
 def plt_waterfall_pass(power, sat_id, start, stop, ch, idx):
-    
+
     # Custom spectral colormap
     cmap = spectral()
     
@@ -135,7 +83,7 @@ def plt_waterfall_pass(power, sat_id, start, stop, ch, idx):
     ax.axvspan(ch-1, ch+1, alpha=0.2, color='white')
     
     #plt.show()
-    plt.savefig(f'test/{idx}_{sat_id}_{ch}.png')
+    plt.savefig(f'{out_dir}/{sat_id}/{idx}_{sat_id}_{ch}.png')
     plt.close()
 
 
@@ -162,153 +110,210 @@ def plt_channel(times, channel_power, chan_num, sat_id, idx):
     leg.get_frame().set_alpha(0.2)
     for l in leg.legendHandles:
         l.set_alpha(1)
-    plt.savefig(f'test/{j}_{sat_id}_{chan_num}.png')
+    plt.savefig(f'{out_dir}/{sat_id}/{j}_{sat_id}_{chan_num}.png')
     plt.close()
 
 ref_tile = tiles[0]
 
 
-#chans = []
-#
-## Loop through days
-#for day in range(len(dates)):
-#    
-#    # Loop through each 30 min obs in day
-#    for window in range(len(date_time[day])):
-#        
-#        ref_file = f'{data_dir}/{ref_tile}/{dates[day]}/{ref_tile}_{date_time[day][window]}.txt'
-#        chrono_file = f'{chrono_dir}/{date_time[day][window]}.json'
-#
-#        #ref_file = '../../../tiles_data/rf0XX/2019-10-07/rf0XX_2019-10-07-00:00.txt'
-#        #chrono_file = '../../outputs/sat_ephemeris/chrono_json/2019-10-07-00:00.json'
-#        
-#        power, times = savgol_interp(ref_file, savgol_window, polyorder, interp_type, interp_freq )
-#        
-#        # To first order, let us consider the median to be the noise floor
-#        noise_f = np.median(power)
-#        noise_mad = mad(power, axis=None)
-#        noise_threshold = 3*noise_mad
-#        arbitrary_threshold = 6 #dBm
-#        
-#        
-#        # Scale the power to bring the median noise floor down to zero
-#        power = power - noise_f
-#        max_s = np.amax(power)
-#        min_s = np.amin(power)
-#        
-#        
-#        #rf.plot_waterfall(power, times, 'rf0XX')
-#        #plt.savefig(f'test/{date_time[day][window]}.png')
-#        #plt.close()
-#        
-#        used_channels = []
-#        
-#        with open(chrono_file) as chrono:
-#            chrono_ephem = json.load(chrono)
-#        
-#            # Not sure how lambda functions work, but this does seem to sort chrono_ephem according to pass lenght
-#            chrono_ephem = sorted(chrono_ephem, key=lambda k: (k["time_array"][0] - k["time_array"][-1]))
-#        
-#            for j in range(len(chrono_ephem)):
-#            
-#                # Need to make sure that I'm not out of range on either side
-#        
-#                rise_ephem = chrono_ephem[j]["time_array"][0] 
-#                set_ephem  = chrono_ephem[j]["time_array"][-1]
-#                sat_id = chrono_ephem[j]["sat_id"][0]
-#        
-#                if sat_id == 41180:
-#                #if sat_id == 44018:
-#        
-#                    # Case I: Sat rises before obs starts and sets after the obs starts
-#                    if rise_ephem <= times[0] and set_ephem >= times[0]:
-#                        #print(f'{sat_id}: I')
-#                        w_start = 0
-#                        w_stop = list(times).index(set_ephem)
-#        
-#                    # Case II: Sat rises after obs starts and sets before obs ends
-#                    elif set_ephem < times[-1] and rise_ephem >= times[0]:
-#                        #print(f'{sat_id}: II')
-#                        w_start = list(times).index(rise_ephem)
-#                        w_stop = list(times).index(set_ephem)
-#        
-#                    # Case III: Sat rises before obs ends and sets after
-#                    elif set_ephem >= times[-1] and rise_ephem <= times[-1]:
-#                        #print(f'{sat_id}: III')
-#                        w_start = list(times).index(rise_ephem)
-#                        w_stop = list(times).index(times[-1])
-#                    
-#                    # Sat out of bounds
-#                    else:
-#                        #print(f'{sat_id}: out of bounds')
-#                        w_start = 0
-#                        w_stop = 0
-#        
-#                    #plt_waterfall_pass(power, sat_id, w_start, w_stop, j)
-#        
-#        
-#                    # length of sat pass
-#                    window_len = w_stop - w_start + 1
-#                   
-#                    if window_len >= 240: #(240*0.5 = 120s)
-#
-#                        # Slice [crop] the power/times arrays to the times of sat pass
-#                        power_c = power[w_start:w_stop+1, :]
-#                        times_c = times[w_start:w_stop+1]
-#        
-#                        occu_list = []
-#                        chan_list = []
-#                        
-#                        for i in range(len(power_c[0])):
-#                            
-#                            if i not in used_channels:
-#        
-#                                channel_power = power_c[:, i]
-#        
-#                                # Arbitrary threshold below which satellites aren't counted
-#                                if max(channel_power) >= arbitrary_threshold:
-#                                  
-#                                    # Percentage of signal occupancy above noise threshold
-#                                    window_occupancy = len([p for p in channel_power if p >= noise_threshold])/window_len
-#                                    
-#                                    # Only continue if there is signal for more than 80% of satellite pass
-#                                    if window_occupancy >= 0.90 and window_occupancy < 1.00:
-#        
-#                                        occu_list.append(window_occupancy)
-#                                        chan_list.append(i)
-#        
-#        
-#                        if occu_list == []:
-#                            pass
-#                        else:
-#                            # Channel number with max occupancy
-#                            s_chan = chan_list[occu_list.index(max(occu_list))]
-#                            
-#                            plt_waterfall_pass(power, sat_id, w_start, w_stop, s_chan, f'{date_time[day][window]}')
-#                            # Exclude channels on either side of pass
-#                            used_channels.extend([s_chan-1, s_chan, s_chan+1])
-#                            
-#                            #print(f'{date_time[day][window]}: Satellite {sat_id} in channel: {s_chan}, occupancy: {max(occu_list)*100:.2f}%')
-#                            
-#                            # Plots the channel with satellite pass
-#                            #plt_channel(times_c, power_c[:, s_chan], s_chan, sat_id, j)
-#                            chans.append(s_chan)
-#
-#chans = np.array(chans)
-#counts = np.bincount(chans)
-#pop_chan = np.argmax(counts)
-#
-#print(f'Most frequently occupied channel for sat {sat_id}: {pop_chan}')
-#
-#plt.rcParams.update(plt.rcParamsDefault)
-#sns.set()
-#values, counts = np.unique(chans, return_counts=True)
-#y_pos = np.arange(len(values))
-#plt.bar(y_pos, counts, color=sns.color_palette("GnBu_d", len(counts)))
-#plt.ylabel('Number of Passes in Channel')
-#plt.xlabel('Channel')
-#plt.xticks(y_pos, values)
-#plt.tight_layout()
-#plt.savefig(f'test/{sat_id}_{pop_chan}_passes.png')
-#
-#
+
+def find_sat_channel(norad_id):
+
+    chans = []
+    
+    # Loop through days
+    for day in range(len(dates)):
+        
+        
+        # Loop through each 30 min obs in day
+        for window in range(len(date_time[day])):
+            
+            ref_file = f'{data_dir}/{ref_tile}/{dates[day]}/{ref_tile}_{date_time[day][window]}.txt'
+            chrono_file = f'{chrono_dir}/{date_time[day][window]}.json'
+    
+            #ref_file = '../../../tiles_data/rf0XX/2019-10-07/rf0XX_2019-10-07-00:00.txt'
+            #chrono_file = '../../outputs/sat_ephemeris/chrono_json/2019-10-07-00:00.json'
+            
+            power, times = savgol_interp(ref_file, savgol_window, polyorder, interp_type, interp_freq )
+            
+            # To first order, let us consider the median to be the noise floor
+            noise_f = np.median(power)
+            noise_mad = mad(power, axis=None)
+            noise_threshold = 3*noise_mad
+            arbitrary_threshold = 6 #dBm
+            
+            
+            # Scale the power to bring the median noise floor down to zero
+            power = power - noise_f
+            max_s = np.amax(power)
+            min_s = np.amin(power)
+            
+            
+            #rf.plot_waterfall(power, times, 'rf0XX')
+            #plt.savefig(f'test/{date_time[day][window]}.png')
+            #plt.close()
+            
+            used_channels = []
+            
+            with open(chrono_file) as chrono:
+                chrono_ephem = json.load(chrono)
+            
+                # Not sure how lambda functions work, but this does seem to sort chrono_ephem according to pass lenght
+                chrono_ephem = sorted(chrono_ephem, key=lambda k: (k["time_array"][0] - k["time_array"][-1]))
+            
+                for j in range(len(chrono_ephem)):
+                
+                    # Need to make sure that I'm not out of range on either side
+            
+                    rise_ephem = chrono_ephem[j]["time_array"][0] 
+                    set_ephem  = chrono_ephem[j]["time_array"][-1]
+                    sat_id = chrono_ephem[j]["sat_id"][0]
+            
+                    if sat_id == norad_id:
+                        Path(f'{out_dir}/{sat_id}').mkdir(parents=True, exist_ok=True)
+            
+                        # Case I: Sat rises before obs starts and sets after the obs starts
+                        if rise_ephem <= times[0] and set_ephem >= times[0]:
+                            w_start = 0
+                            w_stop = list(times).index(set_ephem)
+            
+                        # Case II: Sat rises after obs starts and sets before obs ends
+                        elif set_ephem < times[-1] and rise_ephem >= times[0]:
+                            w_start = list(times).index(rise_ephem)
+                            w_stop = list(times).index(set_ephem)
+            
+                        # Case III: Sat rises before obs ends and sets after
+                        elif set_ephem >= times[-1] and rise_ephem <= times[-1]:
+                            w_start = list(times).index(rise_ephem)
+                            w_stop = list(times).index(times[-1])
+                        
+                        # Sat out of bounds
+                        else:
+                            w_start = 0
+                            w_stop = 0
+            
+                        # length of sat pass
+                        window_len = w_stop - w_start + 1
+                       
+                        if window_len >= 240: #(240*0.5 = 120s)
+    
+                            # Slice [crop] the power/times arrays to the times of sat pass
+                            power_c = power[w_start:w_stop+1, :]
+                            times_c = times[w_start:w_stop+1]
+            
+                            occu_list = []
+                            chan_list = []
+                            
+                            for i in range(len(power_c[0])):
+                                
+                                if i not in used_channels:
+            
+                                    channel_power = power_c[:, i]
+            
+                                    # Arbitrary threshold below which satellites aren't counted
+                                    if max(channel_power) >= arbitrary_threshold:
+                                      
+                                        # Percentage of signal occupancy above noise threshold
+                                        window_occupancy = len([p for p in channel_power if p >= noise_threshold])/window_len
+                                        
+                                        # Only continue if there is signal for more than 80% of satellite pass
+                                        if window_occupancy >= 0.90 and window_occupancy < 1.00:
+            
+                                            occu_list.append(window_occupancy)
+                                            chan_list.append(i)
+            
+            
+                            if occu_list == []:
+                                pass
+                            else:
+                                # Channel number with max occupancy
+                                s_chan = chan_list[occu_list.index(max(occu_list))]
+                                
+                                plt_waterfall_pass(power, sat_id, w_start, w_stop, s_chan, f'{date_time[day][window]}')
+                                # Exclude channels on either side of pass
+                                used_channels.extend([s_chan-1, s_chan, s_chan+1])
+                                
+                                #print(f'{date_time[day][window]}: Satellite {sat_id} in channel: {s_chan}, occupancy: {max(occu_list)*100:.2f}%')
+                                
+                                # Plots the channel with satellite pass
+                                #plt_channel(times_c, power_c[:, s_chan], s_chan, sat_id, j)
+                                chans.append(s_chan)
+    
+    
+    
+    chans = np.array(chans)
+    counts = np.bincount(chans)
+    pop_chan = np.argmax(counts)
+    
+    print(f'Most frequently occupied channel for sat {sat_id}: {pop_chan}')
+    
+    plt.rcParams.update(plt.rcParamsDefault)
+    sns.set()
+    values, counts = np.unique(chans, return_counts=True)
+    y_pos = np.arange(len(values))
+    plt.bar(y_pos, counts, color=sns.color_palette("GnBu_d", len(counts)))
+    plt.ylabel('Number of Passes in Channel')
+    plt.xlabel('Channel')
+    plt.xticks(y_pos, values)
+    plt.title(f'Possible Transmission Channels of Satellite [{norad_id}]')
+    plt.tight_layout()
+    plt.savefig(f'{out_dir}/{norad_id}/{norad_id}_{pop_chan}_passes.png')
+
+
+args = parser.parse_args()
+
+data_dir =          args.data_dir
+chrono_dir =        args.chrono_dir
+start_date =        args.start_date
+stop_date =         args.stop_date
+out_dir =           args.out_dir
+savgol_window =     args.savgol_window
+polyorder =         args.polyorder
+interp_type =       args.interp_type
+interp_freq =       args.interp_freq
+
+
+# Save logs 
+Path(out_dir).mkdir(parents=True, exist_ok=True)
+sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+
+# Import list of tile names from rf_data.py
+tiles = rf.tile_names()
+
+# Import list of Norad catalogue IDs
+sat_list = [id for id in sat_ids.norad_ids.values()]
+
+# Time stuff to help traverse data dir tree.
+t_start = datetime.strptime(start_date, '%Y-%m-%d')
+t_stop = datetime.strptime(stop_date, '%Y-%m-%d')
+n_days = (t_stop - t_start).days
+
+dates = []
+date_time = []
+
+for i in range(n_days+1):
+    day = t_start + timedelta(days=i)
+    date = day.strftime('%Y-%m-%d')
+    dates.append(date)
+    d_t = []
+    
+    for j in range(48):
+        t_delta = datetime.strptime(date,'%Y-%m-%d') + timedelta(minutes=30*j)
+        d_time = t_delta.strftime('%Y-%m-%d-%H:%M')
+        d_t.append(d_time)
+
+    date_time.append(d_t)    
+
+
+data_dir = Path(data_dir)
+chrono_dir = Path(chrono_dir)
+out_dir = Path(out_dir)
+    
+#norad_id = 41180
+#find_sat_channel(norad_id)
+
+# Parallization magic happens here
+with concurrent.futures.ProcessPoolExecutor() as executor:
+    results = executor.map(find_sat_channel, sat_list)
+
+
