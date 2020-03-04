@@ -4,11 +4,16 @@ import argparse
 import numpy as np
 import seaborn as sns
 import concurrent.futures
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from scipy.stats import median_absolute_deviation as mad
 from datetime import datetime, timedelta
 from pathlib import Path
 
+
+import matplotlib
+# Force matplotlib to not use X-Server backend
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 import sys
 sys.path.append('../decode_rf_data')
@@ -315,11 +320,13 @@ out_dir = Path(out_dir)
 #norad_id = 41180
 #find_sat_channel(norad_id)
 
-for norad_id in sat_list:
-    find_sat_channel(norad_id)
+#for norad_id in sat_list:
+#    find_sat_channel(norad_id)
 
 # Parallization magic happens here
-#with concurrent.futures.ProcessPoolExecutor() as executor:
-#    results = executor.map(find_sat_channel, sat_list)
+with concurrent.futures.ProcessPoolExecutor() as executor:
+    results = executor.map(find_sat_channel, sat_list)
 
+    for result in results:
+        print(result)
 
