@@ -324,7 +324,7 @@ out_dir = Path(out_dir)
 #    find_sat_channel(norad_id)
 
 # Parallization magic happens here
-with concurrent.futures.ProcessPoolExecutor() as executor:
+with concurrent.futures.ProcessPoolExecutor(max_workers=24) as executor:
     results = executor.map(find_sat_channel, sat_list)
 
 for result in results:
