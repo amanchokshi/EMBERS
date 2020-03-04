@@ -2,6 +2,7 @@ import os
 import json
 import sat_ids
 import argparse
+import concurrent.futures
 from sat_ephemeris import sat_plot
 
 
@@ -23,7 +24,7 @@ os.makedirs(os.path.dirname(out_dir), exist_ok=True)
 # Load list of satellites (Nodar ids)
 sat_list = list(sat_ids.norad_ids.values())
 
-for sat_id in sat_list:
+def plot_ephem(sat_id):
     try:
         with open(f'{json_dir}/{sat_id}.json', 'r') as ephem:
             sat_ephem = json.load(ephem)
@@ -37,4 +38,8 @@ for sat_id in sat_list:
 
     except Exception:
         print(f'Could not plot {sat_id}.png. Source json file missing ')
+
+# Parellization Magic Here!
+with concurrent.futures.ProcessPoolExecutor() as executor:
+    results = executor.map(plot_ephem, sat_list)
 
