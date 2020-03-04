@@ -327,6 +327,6 @@ out_dir = Path(out_dir)
 with concurrent.futures.ProcessPoolExecutor() as executor:
     results = executor.map(find_sat_channel, sat_list)
 
-    for result in results:
-        print(result)
+for result in results:
+    print(result)
 
