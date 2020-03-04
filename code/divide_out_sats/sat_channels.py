@@ -113,7 +113,6 @@ def plt_channel(times, channel_power, chan_num, sat_id, idx):
     plt.savefig(f'{out_dir}/{sat_id}/{j}_{sat_id}_{chan_num}.png')
     plt.close()
 
-ref_tile = tiles[0]
 
 
 
@@ -279,6 +278,9 @@ sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
 
 # Import list of tile names from rf_data.py
 tiles = rf.tile_names()
+
+# Only using rf0XX for now
+ref_tile = tiles[0]
 
 # Import list of Norad catalogue IDs
 sat_list = [id for id in sat_ids.norad_ids.values()]
