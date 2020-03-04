@@ -40,6 +40,7 @@ parser.add_argument('--savgol_window', metavar='\b', default=151,help='Length of
 parser.add_argument('--polyorder', metavar='\b', default=1,help='Order of polynomial to fit to savgol window. Default=1')
 parser.add_argument('--interp_type', metavar='\b', default='cubic',help='Type of interpolation. Ex: cubic, linear, etc. Default=cubic')
 parser.add_argument('--interp_freq', metavar='\b', default=2,help='Frequency at which to resample smoothed data, in Hertz. Default=2')
+parser.add_argument('--parallel', metavar='\b', default=True,help='If parallel=False, paralellization will be disabled.')
 
 
 
@@ -122,7 +123,7 @@ def plt_channel(times, channel_power, chan_num, sat_id, idx):
 
 
 def find_sat_channel(norad_id):
-    
+   
     plt.rcParams.update(plt.rcParamsDefault)
     chans = []
     
@@ -276,11 +277,12 @@ savgol_window =     args.savgol_window
 polyorder =         args.polyorder
 interp_type =       args.interp_type
 interp_freq =       args.interp_freq
+parallel=           args.parallel
 
 
 # Save logs 
 Path(out_dir).mkdir(parents=True, exist_ok=True)
-sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+#sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
 
 # Import list of tile names from rf_data.py
 tiles = rf.tile_names()
@@ -319,14 +321,16 @@ out_dir = Path(out_dir)
     
 #norad_id = 41180
 #find_sat_channel(norad_id)
+if parallel != True:
+    print('Case I')
+    for norad_id in sat_list:
+        find_sat_channel(norad_id)
 
-#for norad_id in sat_list:
-#    find_sat_channel(norad_id)
-
-# Parallization magic happens here
-with concurrent.futures.ProcessPoolExecutor(max_workers=24) as executor:
-    results = executor.map(find_sat_channel, sat_list)
-
-for result in results:
-    print(result)
+else:
+    # Parallization magic happens here
+    with concurrent.futures.ProcessPoolExecutor(max_workers=12) as executor:
+        results = executor.map(find_sat_channel, sat_list)
+    
+    #for result in results:
+    #    print(result)
 
