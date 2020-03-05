@@ -340,16 +340,16 @@ data_dir = Path(data_dir)
 chrono_dir = Path(chrono_dir)
 out_dir = Path(out_dir)
     
-norad_id = 41180
-find_sat_channel(norad_id)
+#norad_id = 41180
+#find_sat_channel(norad_id)
 
-#if parallel != True:
-#    for norad_id in sat_list:
-#        find_sat_channel(norad_id)
-#        #break
-#else:
-#    # Parallization magic happens here
-#    with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
-#        results = executor.map(find_sat_channel, sat_list)
+if parallel != True:
+    for norad_id in sat_list:
+        find_sat_channel(norad_id)
+        #break
+else:
+    # Parallization magic happens here
+    with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
+        results = executor.map(find_sat_channel, sat_list)
   
 
