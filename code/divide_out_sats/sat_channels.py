@@ -142,7 +142,8 @@ def plt_hist(chans, pop_chan):
 
 def find_sat_channel(norad_id):
    
-    
+    chans = []
+   
     # Loop through days
     for day in range(len(dates)):
         
@@ -152,8 +153,9 @@ def find_sat_channel(norad_id):
             
             ref_file = f'{data_dir}/{ref_tile}/{dates[day]}/{ref_tile}_{date_time[day][window]}.txt'
             chrono_file = f'{chrono_dir}/{date_time[day][window]}.json'
+   
+            if Path(ref_file).is_file() and Path(chrono_file).is_file():
     
-            try:
                 power, times = savgol_interp(ref_file, savgol_window, polyorder, interp_type, interp_freq )
                 
                 # To first order, let us consider the median to be the noise floor
@@ -166,7 +168,6 @@ def find_sat_channel(norad_id):
                 # Scale the power to bring the median noise floor down to zero
                 power = power - noise_f
                 
-                chans = []
                 
                 with open(chrono_file) as chrono:
                     chrono_ephem = json.load(chrono)
@@ -276,17 +277,14 @@ def find_sat_channel(norad_id):
                                     chans.append(s_chan)
 
 
-                if chans == []:
-                    pass
-                else:
-                    chans = np.array(chans).astype('int64')
-                    counts = np.bincount(chans)
-                    pop_chan = np.argmax(counts)
-                    plt_hist(chans, pop_chan)
-                    print(f'Most frequently occupied channel for sat {norad_id}: {pop_chan}')
-
-            except Exception:
-                pass
+    if chans == []:
+        pass
+    else:
+        chans = np.array(chans).astype('int64')
+        counts = np.bincount(chans)
+        pop_chan = np.argmax(counts)
+        plt_hist(chans, pop_chan)
+        print(f'Most frequently occupied channel for sat {norad_id}: {pop_chan}')
 
 
 args = parser.parse_args()
@@ -342,16 +340,16 @@ data_dir = Path(data_dir)
 chrono_dir = Path(chrono_dir)
 out_dir = Path(out_dir)
     
-#norad_id = 41180
-#find_sat_channel(norad_id)
+norad_id = 41180
+find_sat_channel(norad_id)
 
-if parallel != True:
-    for norad_id in sat_list:
-        find_sat_channel(norad_id)
-        #break
-else:
-    # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
-        results = executor.map(find_sat_channel, sat_list)
+#if parallel != True:
+#    for norad_id in sat_list:
+#        find_sat_channel(norad_id)
+#        #break
+#else:
+#    # Parallization magic happens here
+#    with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
+#        results = executor.map(find_sat_channel, sat_list)
   
 
