@@ -122,13 +122,10 @@ def plt_channel(times, channel_power, chan_num, sat_id, idx):
 
 def plt_hist(chans, pop_chan):
     
-    #plt.style.use('seaborn')
-    plt.rcParams.update(plt.rcParamsDefault)
-    sns.set()
-    sns.set_style("dark")
+    plt.style.use('dark_background')
     values, counts = np.unique(chans, return_counts=True)
     y_pos = np.arange(len(values))
-    plt.bar(y_pos, counts, color=sns.color_palette("GnBu_d", len(counts)))
+    plt.bar(y_pos, counts)
     plt.ylabel('Number of Passes in Channel')
     plt.xlabel('Channel')
     plt.xticks(y_pos, values)
@@ -136,6 +133,20 @@ def plt_hist(chans, pop_chan):
     plt.tight_layout()
     plt.savefig(f'{out_dir}/{norad_id}/{norad_id}_{pop_chan}_passes.png')
     plt.close()
+    
+    #plt.rcParams.update(plt.rcParamsDefault)
+    #sns.set()
+    #sns.set_style("dark")
+    #values, counts = np.unique(chans, return_counts=True)
+    #y_pos = np.arange(len(values))
+    #plt.bar(y_pos, counts, color=sns.color_palette("GnBu_d", len(counts)))
+    #plt.ylabel('Number of Passes in Channel')
+    #plt.xlabel('Channel')
+    #plt.xticks(y_pos, values)
+    #plt.title(f'Possible Transmission Channels of Satellite [{norad_id}]')
+    #plt.tight_layout()
+    #plt.savefig(f'{out_dir}/{norad_id}/{norad_id}_{pop_chan}_passes.png')
+    #plt.close()
 
 
 
@@ -290,7 +301,7 @@ parallel=           args.parallel
 
 # Save logs 
 Path(out_dir).mkdir(parents=True, exist_ok=True)
-#sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
 
 # Import list of tile names from rf_data.py
 tiles = rf.tile_names()
@@ -335,7 +346,7 @@ if parallel != True:
         #break
 else:
     # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor(max_workers=12) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=4) as executor:
         results = executor.map(find_sat_channel, sat_list)
     
     #for result in results:
