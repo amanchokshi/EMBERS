@@ -252,7 +252,8 @@ def find_sat_channel(norad_id):
                                 min_s = np.amin(power_c[:, s_chan])
                                 plt_waterfall_pass(power, sat_id, w_start, w_stop, s_chan, f'{date_time[day][window]}')
                                 plt_channel(times_c, power_c[:, s_chan], s_chan, min_s, max_s, noise_threshold, arbitrary_threshold, sat_id, f'{date_time[day][window]}')
-                                chans.extend(possible_chans)
+                                print(f'Most frequently occupied channel for sat {sat_id}: {pop_chan}')
+                                chans.append(possible_chans[0])
                             
                             else:
                                 # a list of indices for a column, and the center of this list
@@ -273,16 +274,17 @@ def find_sat_channel(norad_id):
                                 min_s = np.amin(power_c[:, s_chan])
                                 plt_waterfall_pass(power, sat_id, w_start, w_stop, s_chan, f'{date_time[day][window]}')
                                 plt_channel(times_c, power_c[:, s_chan], s_chan, min_s, max_s, noise_threshold, arbitrary_threshold, sat_id, f'{date_time[day][window]}')
-                                chans.extend(possible_chans)
+                                print(f'Most frequently occupied channel for sat {sat_id}: {pop_chan}')
+                                chans.append(s_chan)
 
 
-    chans = np.array(chans)
-    counts = np.bincount(chans)
-    pop_chan = np.argmax(counts)
-    
-    print(f'Most frequently occupied channel for sat {sat_id}: {pop_chan}')
-    
-    plt_hist(chans, pop_chan)
+    if chans == []:
+        pass
+    else:
+        chans = np.array(chans).astype('int64')
+        counts = np.bincount(chans)
+        pop_chan = np.argmax(counts)
+        plt_hist(chans, pop_chan)
 
 
 
@@ -302,7 +304,7 @@ parallel=           args.parallel
 
 # Save logs 
 Path(out_dir).mkdir(parents=True, exist_ok=True)
-#sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
 
 # Import list of tile names from rf_data.py
 tiles = rf.tile_names()
@@ -339,16 +341,16 @@ data_dir = Path(data_dir)
 chrono_dir = Path(chrono_dir)
 out_dir = Path(out_dir)
     
-norad_id = 41180
-find_sat_channel(norad_id)
+#norad_id = 41180
+#find_sat_channel(norad_id)
 
-#if parallel != True:
-#    for norad_id in sat_list:
-#        find_sat_channel(norad_id)
-#        break
-#else:
-#    # Parallization magic happens here
-#    with concurrent.futures.ProcessPoolExecutor(max_workers=4) as executor:
-#        results = executor.map(find_sat_channel, sat_list)
+if parallel != True:
+    for norad_id in sat_list:
+        find_sat_channel(norad_id)
+        #break
+else:
+    # Parallization magic happens here
+    with concurrent.futures.ProcessPoolExecutor(max_workers=4) as executor:
+        results = executor.map(find_sat_channel, sat_list)
    
 
