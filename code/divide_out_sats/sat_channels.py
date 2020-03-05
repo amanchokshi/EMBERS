@@ -135,7 +135,7 @@ def plt_hist(chans, pop_chan):
     plt.xticks(y_pos, values)
     plt.title(f'Possible Transmission Channels of Satellite [{norad_id}]')
     plt.tight_layout()
-    plt.savefig(f'{out_dir}/{norad_id}/{norad_id}_{pop_chan}_passes.png')
+    plt.savefig(f'{out_dir}/{norad_id}/Channels_histogram_{norad_id}_{pop_chan}.png')
     plt.close()
     plt.rcParams.update(plt.rcParamsDefault)
 
@@ -252,7 +252,6 @@ def find_sat_channel(norad_id):
                                 min_s = np.amin(power_c[:, s_chan])
                                 plt_waterfall_pass(power, sat_id, w_start, w_stop, s_chan, f'{date_time[day][window]}')
                                 plt_channel(times_c, power_c[:, s_chan], s_chan, min_s, max_s, noise_threshold, arbitrary_threshold, sat_id, f'{date_time[day][window]}')
-                                print(f'Most frequently occupied channel for sat {sat_id}: {pop_chan}')
                                 chans.append(possible_chans[0])
                             
                             else:
@@ -274,7 +273,6 @@ def find_sat_channel(norad_id):
                                 min_s = np.amin(power_c[:, s_chan])
                                 plt_waterfall_pass(power, sat_id, w_start, w_stop, s_chan, f'{date_time[day][window]}')
                                 plt_channel(times_c, power_c[:, s_chan], s_chan, min_s, max_s, noise_threshold, arbitrary_threshold, sat_id, f'{date_time[day][window]}')
-                                print(f'Most frequently occupied channel for sat {sat_id}: {pop_chan}')
                                 chans.append(s_chan)
 
 
@@ -285,6 +283,7 @@ def find_sat_channel(norad_id):
         counts = np.bincount(chans)
         pop_chan = np.argmax(counts)
         plt_hist(chans, pop_chan)
+        print(f'Most frequently occupied channel for sat {norad_id}: {pop_chan}')
 
 
 
@@ -341,16 +340,16 @@ data_dir = Path(data_dir)
 chrono_dir = Path(chrono_dir)
 out_dir = Path(out_dir)
     
-#norad_id = 41180
-#find_sat_channel(norad_id)
+norad_id = 41180
+find_sat_channel(norad_id)
 
-if parallel != True:
-    for norad_id in sat_list:
-        find_sat_channel(norad_id)
-        #break
-else:
-    # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor(max_workers=4) as executor:
-        results = executor.map(find_sat_channel, sat_list)
+#if parallel != True:
+#    for norad_id in sat_list:
+#        find_sat_channel(norad_id)
+#        #break
+#else:
+#    # Parallization magic happens here
+#    with concurrent.futures.ProcessPoolExecutor(max_workers=4) as executor:
+#        results = executor.map(find_sat_channel, sat_list)
    
 
