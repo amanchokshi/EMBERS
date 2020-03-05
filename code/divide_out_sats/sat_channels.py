@@ -120,11 +120,28 @@ def plt_channel(times, channel_power, chan_num, sat_id, idx):
     plt.close()
 
 
+def plt_hist(chans, pop_chan):
+    
+    #plt.style.use('seaborn')
+    plt.rcParams.update(plt.rcParamsDefault)
+    sns.set()
+    sns.set_style("dark")
+    values, counts = np.unique(chans, return_counts=True)
+    y_pos = np.arange(len(values))
+    plt.bar(y_pos, counts, color=sns.color_palette("GnBu_d", len(counts)))
+    plt.ylabel('Number of Passes in Channel')
+    plt.xlabel('Channel')
+    plt.xticks(y_pos, values)
+    plt.title(f'Possible Transmission Channels of Satellite [{norad_id}]')
+    plt.tight_layout()
+    plt.savefig(f'{out_dir}/{norad_id}/{norad_id}_{pop_chan}_passes.png')
+    plt.close()
+
 
 
 def find_sat_channel(norad_id):
    
-    plt.rcParams.update(plt.rcParamsDefault)
+    #plt.rcParams.update(plt.rcParamsDefault)
     chans = []
     
     # Loop through days
@@ -253,18 +270,9 @@ def find_sat_channel(norad_id):
     
     print(f'Most frequently occupied channel for sat {sat_id}: {pop_chan}')
     
-    plt.rcParams.update(plt.rcParamsDefault)
-    sns.set()
-    values, counts = np.unique(chans, return_counts=True)
-    y_pos = np.arange(len(values))
-    plt.bar(y_pos, counts, color=sns.color_palette("GnBu_d", len(counts)))
-    plt.ylabel('Number of Passes in Channel')
-    plt.xlabel('Channel')
-    plt.xticks(y_pos, values)
-    plt.title(f'Possible Transmission Channels of Satellite [{norad_id}]')
-    plt.tight_layout()
-    plt.savefig(f'{out_dir}/{norad_id}/{norad_id}_{pop_chan}_passes.png')
-    plt.close()
+    plt_hist(chans, pop_chan)
+
+
 
 args = parser.parse_args()
 
@@ -322,10 +330,9 @@ out_dir = Path(out_dir)
 #norad_id = 41180
 #find_sat_channel(norad_id)
 if parallel != True:
-    print('Case I')
     for norad_id in sat_list:
         find_sat_channel(norad_id)
-
+        #break
 else:
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor(max_workers=12) as executor:
