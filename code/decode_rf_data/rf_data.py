@@ -3,7 +3,7 @@ import numpy as np
 from colormap import spectral
 import matplotlib
 # Force matplotlib to not use X-Server backend
-matplotlib.use('TkAgg')
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 
