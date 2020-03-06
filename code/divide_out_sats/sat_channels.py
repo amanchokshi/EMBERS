@@ -229,10 +229,10 @@ def find_sat_channel(norad_id):
                                         window_occupancy = (np.where(channel_power >= noise_threshold))[0].size/window_len
                                         
                                         # Only continue if there is signal for more than 80% of satellite pass
-                                        if window_occupancy >= 0.90 and window_occupancy < 1.00:
+                                        if window_occupancy >= 0.80 and window_occupancy < 1.00:
 
-                                            if (all(p < noise_threshold for p in channel_power[:10]) and 
-                                                all(p < noise_threshold for p in channel_power[-11:-1])) is True:
+                                            if (all(p < 10*noise_threshold for p in channel_power[:10]) and 
+                                                all(p < 10*noise_threshold for p in channel_power[-11:-1])) is True:
                                                 
                                                 #plt_waterfall_pass(power, sat_id, w_start, w_stop, s_chan, f'{date_time[day][window]}')
                                                 
