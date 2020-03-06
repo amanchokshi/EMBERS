@@ -123,7 +123,7 @@ def plt_channel(times, channel_power, chan_num, min_s, max_s, noise_threshold, a
     plt.rcParams.update(plt.rcParamsDefault)
 
 
-def plt_hist(chans, pop_chan):
+def plt_hist(chans, norad_id, pop_chan):
     
     #plt.rcParams.update(plt.rcParamsDefault)
     sns.set()
@@ -278,12 +278,12 @@ def find_sat_channel(norad_id):
 
 
     if chans == []:
-        pass
+        print(f'No identified sat channels for sat  {norad_id}')
     else:
         chans = np.array(chans).astype('int64')
         counts = np.bincount(chans)
         pop_chan = np.argmax(counts)
-        plt_hist(chans, pop_chan)
+        plt_hist(chans, norad_id, pop_chan)
         print(f'Most frequently occupied channel for sat {norad_id}: {pop_chan}')
 
 
@@ -313,6 +313,7 @@ ref_tile = tiles[0]
 
 # Import list of Norad catalogue IDs
 sat_list = [id for id in sat_ids.norad_ids.values()]
+
 
 # Time stuff to help traverse data dir tree.
 t_start = datetime.strptime(start_date, '%Y-%m-%d')
@@ -349,7 +350,11 @@ if parallel != True:
         #break
 else:
     # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
-        results = executor.map(find_sat_channel, sat_list)
-  
+    with concurrent.futures.ProcessPoolExecutor(max_workers=4) as executor:
+        results = executor.map(find_sat_channel, [41180, 41181, 41182, 41183])
+        #results = executor.map(find_sat_channel, sat_list)
+
+    for result in results:
+        print(result)
+
 
