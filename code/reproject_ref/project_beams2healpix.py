@@ -115,7 +115,7 @@ def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None
 
 #Healpix constants
 nside = 32
-len_empty_healpix = 12288
+len_empty_healpix = hp.nside2npix(nside)   #12288
 
 ##Had problems with having coords = 0 when interpolating, so make a small number
 ##and call it epsilon for some reason
