@@ -350,9 +350,8 @@ if parallel != True:
         #break
 else:
     # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor(max_workers=4) as executor:
-        results = executor.map(find_sat_channel, [41180, 41181, 41182, 41183])
-        #results = executor.map(find_sat_channel, sat_list)
+    with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
+        results = executor.map(find_sat_channel, sat_list)
 
     for result in results:
         print(result)
