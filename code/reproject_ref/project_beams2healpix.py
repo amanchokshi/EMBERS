@@ -1,73 +1,12 @@
 # Code developed by Dr. Jack Line and adapted here
 # https://github.com/JLBLine/MWA_ORBCOMM
 
-
-#from numpy import *
 import numpy as np
 import healpy as hp
 import matplotlib.pyplot as plt
 from scipy import interpolate
-
-
-##Healpix constants
-nside = 32
-len_empty_healpix = 12288
-
-def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None):
-    '''Does some plotting what what'''
-    if vmin == None:
-        if cmap == None:
-            half_sky = hp.orthview(
-                    map=data_map,coord='E',
-                    half_sky=True,xsize=400,
-                    title=title,rot=(0,90,0),
-                    sub=sub,notext=True,
-                    return_projected_map=True)
-        else:
-            half_sky = hp.orthview(
-                    map=data_map,coord='E',
-                    half_sky=True,xsize=400,
-                    title=title,rot=(0,90,0),
-                    sub=sub,cmap=cmap,notext=True,
-                    return_projected_map=True)
-    else:
-        if cmap == None:
-            half_sky = hp.orthview(
-                    map=data_map,coord='E',
-                    half_sky=True,xsize=400,
-                    title=title,rot=(0,90,0),
-                    sub=sub,min=vmin,max=vmax,
-                    notext=True,return_projected_map=True)
-        else:
-            half_sky = hp.orthview(
-                    map=data_map,coord='E',
-                    half_sky=True,xsize=400,
-                    title=title,rot=(0,90,0),
-                    sub=sub,min=vmin,max=vmax,
-                    cmap=cmap,notext=True,
-                    return_projected_map=True)
-
-    hp.graticule(dpar=10,coord='E',color='k',alpha=0.3,dmer=45)
-    
-    #print where(half_sky == nan)
-
-
-    hp.projtext(0.0*(np.pi/180.0), 0.0, '0', coord='E')
-    hp.projtext(30.0*(np.pi/180.0), 0.0, '30', coord='E')
-    hp.projtext(60.0*(np.pi/180.0), 0.0, '60', coord='E')
-
-
-    hp.projtext(90.0*(np.pi/180.0), 0.0, r'$0^\circ$', coord='E',color='k',verticalalignment='top')
-    hp.projtext(90.0*(np.pi/180.0), 90.0*(np.pi/180.0), r'$90^\circ$', coord='E',color='k',horizontalalignment='right')
-    hp.projtext(90.0*(np.pi/180.0), 180.0*(np.pi/180.0), r'$180^\circ$', coord='E',color='k')
-    hp.projtext(90.0*(np.pi/180.0), 270.0*(np.pi/180.0), r'$270^\circ$', coord='E',color='k')
-
-
 from scipy.interpolate import RectSphereBivariateSpline,SmoothSphereBivariateSpline
-##Had problems with having coords = 0 when interpolating, so make a small number
-##and call it epsilon for some reason
 
-epsilon = 1.e-12
 
 def create_model(file_name=None,tag=None):
     '''Takes .ffe model, converts into healpix and smooths the response'''
@@ -122,6 +61,67 @@ def create_model(file_name=None,tag=None):
     return beam_response,theta_mesh,phi_mesh,power,theta
 
 
+def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None):
+    '''Does some plotting what what'''
+    if vmin == None:
+        if cmap == None:
+            half_sky = hp.orthview(
+                    map=data_map,coord='E',
+                    half_sky=True,xsize=400,
+                    title=title,rot=(0,90,0),
+                    sub=sub,notext=True,
+                    return_projected_map=True)
+        else:
+            half_sky = hp.orthview(
+                    map=data_map,coord='E',
+                    half_sky=True,xsize=400,
+                    title=title,rot=(0,90,0),
+                    sub=sub,cmap=cmap,notext=True,
+                    return_projected_map=True)
+    else:
+        if cmap == None:
+            half_sky = hp.orthview(
+                    map=data_map,coord='E',
+                    half_sky=True,xsize=400,
+                    title=title,rot=(0,90,0),
+                    sub=sub,min=vmin,max=vmax,
+                    notext=True,return_projected_map=True)
+        else:
+            half_sky = hp.orthview(
+                    map=data_map,coord='E',
+                    half_sky=True,xsize=400,
+                    title=title,rot=(0,90,0),
+                    sub=sub,min=vmin,max=vmax,
+                    cmap=cmap,notext=True,
+                    return_projected_map=True)
+
+    hp.graticule(dpar=10,coord='E',color='k',alpha=0.3,dmer=45)
+    
+    #print where(half_sky == nan)
+
+
+    hp.projtext(0.0*(np.pi/180.0), 0.0, '0', coord='E')
+    hp.projtext(30.0*(np.pi/180.0), 0.0, '30', coord='E')
+    hp.projtext(60.0*(np.pi/180.0), 0.0, '60', coord='E')
+
+
+    hp.projtext(90.0*(np.pi/180.0), 0.0, r'$0^\circ$', coord='E',color='k',verticalalignment='top')
+    hp.projtext(90.0*(np.pi/180.0), 90.0*(np.pi/180.0), r'$90^\circ$', coord='E',color='k',horizontalalignment='right')
+    hp.projtext(90.0*(np.pi/180.0), 180.0*(np.pi/180.0), r'$180^\circ$', coord='E',color='k')
+    hp.projtext(90.0*(np.pi/180.0), 270.0*(np.pi/180.0), r'$270^\circ$', coord='E',color='k')
+
+
+
+#Healpix constants
+nside = 32
+len_empty_healpix = 12288
+
+##Had problems with having coords = 0 when interpolating, so make a small number
+##and call it epsilon for some reason
+
+epsilon = 1.e-12
+
+# Reference FEE models in XX & YY pols
 refXX = '../../data/FEE_Reference_Models/MWA_reference_tile_FarField_XX.ffe'
 refYY = '../../data/FEE_Reference_Models/MWA_reference_tile_FarField_YY.ffe'
 
@@ -148,6 +148,7 @@ ax2.grid(color='k',alpha=0.3)
 plot_healpix(data_map=healpix_east,sub=(2,2,3),title='Healpix Eastern',vmin=-40,vmax=-20)
 plot_healpix(data_map=healpix_west,sub=(2,2,4),title='Healpix Western',vmin=-40,vmax=-20)
 
-np.savez_compressed('ung_dipole_models.npz',eastern=healpix_east,western=healpix_west)
+#np.savez_compressed('ung_dipole_models.npz',eastern=healpix_east,western=healpix_west)
 
-fig.savefig('reproject_dipole_models.png',bbox_inches='tight')
+#fig.savefig('reproject_dipole_models.png',bbox_inches='tight')
+plt.show()
