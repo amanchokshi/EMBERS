@@ -1,4 +1,4 @@
-# Code developed by Dr. Jack Line and adapted here
+# Code developed by Jack Line and adapted here
 # https://github.com/JLBLine/MWA_ORBCOMM
 
 import numpy as np
@@ -8,15 +8,15 @@ from scipy import interpolate
 from scipy.interpolate import RectSphereBivariateSpline,SmoothSphereBivariateSpline
 
 
-def create_model(file_name=None,tag=None):
+def create_model(file_name=None):
     '''Takes .ffe model, converts into healpix and smooths the response'''
 
-    ##Make an empty array for healpix projection
+    #Make an empty array for healpix projection
     beam_response = np.zeros(len_empty_healpix)*np.nan
 
-    ##Load ffe model data in, which is stored in real and imaginary components
-    ##of a phi/theta polaristaion representation of the beam
-    ##apparently this is normal to beam engineers
+    #Load ffe model data in, which is stored in real and imaginary components
+    #of a phi/theta polaristaion representation of the beam
+    #apparently this is normal to beam engineers
     data = np.loadtxt(file_name)
     theta = data[:,0]
     phi = data[:,1]
@@ -25,28 +25,29 @@ def create_model(file_name=None,tag=None):
     re_phi = data[:,4]
     im_phi = data[:,5]
 
-    ##Convert to complex numbers
+    #Convert to complex numbers
     X_theta = re_theta.astype(complex)
     X_theta.imag = im_theta
 
     X_phi = re_phi.astype(complex)
     X_phi.imag = im_phi
 
-    ##make a coord grid for the data in the .ffe model
+    #make a coord grid for the data in the .ffe model
     theta_range = np.linspace(epsilon,90,91)
     phi_range = np.linspace(epsilon,359.0,360)
     theta_mesh,phi_mesh = np.meshgrid(theta_range,phi_range)
 
-    ##Convert reference model into power from the complex values
-    ##make an inf values super small
+    #Convert reference model into power from the complex values
     power = 10*np.log10(abs(X_theta)**2 + abs(X_phi)**2)
+    
+    #make an inf values super small
     power[np.where(power == -np.inf)] = -80
 
-    ##Had a problem with edge effects, leave off near horizon values
+    #Had a problem with edge effects, leave off near horizon values
     power = power[:-91]
 
-    ##Get things into correct shape and do an interpolation
-    ##s is a paramater I had to play with to get by eye nice results
+    # Get things into correct shape and do an interpolation
+    # s is a paramater I had to play with to get by eye nice results
     power.shape = phi_mesh.shape
 
     lut = RectSphereBivariateSpline(theta_range*(np.pi/180.0), phi_range*(np.pi/180.0), power.T,s=0.1)
@@ -126,8 +127,8 @@ refXX = '../../data/FEE_Reference_Models/MWA_reference_tile_FarField_XX.ffe'
 refYY = '../../data/FEE_Reference_Models/MWA_reference_tile_FarField_YY.ffe'
 
 
-healpix_east,theta_mesh,phi_mesh,power_east,theta = create_model(file_name=refXX, tag='Eastern')
-healpix_west,theta_mesh,phi_mesh,power_west,theta = create_model(file_name=refYY, tag='Western')
+healpix_XX,theta_mesh,phi_mesh,power_XX,theta = create_model(file_name=refXX)
+healpix_YY,theta_mesh,phi_mesh,power_YY,theta = create_model(file_name=refYY)
 
 ##Plot the things to sanity check and save results
 fig = plt.figure(figsize=(10,10))
@@ -135,20 +136,20 @@ fig = plt.figure(figsize=(10,10))
 ax1 = fig.add_subplot(221,projection='polar')
 ax2 = fig.add_subplot(222,projection='polar')
 
-im1 = ax1.pcolormesh(phi_mesh*(np.pi/180.0),theta_mesh,power_east,label='Eastern',vmin=-40,vmax=-20)
-ax1.set_title('Eastern')
+im1 = ax1.pcolormesh(phi_mesh*(np.pi/180.0),theta_mesh,power_XX,label='XX',vmin=-40,vmax=-20)
+ax1.set_title('XX')
 
 ax1.grid(color='k',alpha=0.3)
 
-im2 = ax2.pcolormesh(phi_mesh*(np.pi/180.0),theta_mesh,power_west,label='Western',vmin=-40,vmax=-20)
-ax2.set_title('Western')
+im2 = ax2.pcolormesh(phi_mesh*(np.pi/180.0),theta_mesh,power_YY,label='YY',vmin=-40,vmax=-20)
+ax2.set_title('YY')
 
 ax2.grid(color='k',alpha=0.3)
 
-plot_healpix(data_map=healpix_east,sub=(2,2,3),title='Healpix Eastern',vmin=-40,vmax=-20)
-plot_healpix(data_map=healpix_west,sub=(2,2,4),title='Healpix Western',vmin=-40,vmax=-20)
+plot_healpix(data_map=healpix_XX,sub=(2,2,3),title='Healpix XX',vmin=-40,vmax=-20)
+plot_healpix(data_map=healpix_YY,sub=(2,2,4),title='Healpix YY',vmin=-40,vmax=-20)
 
-#np.savez_compressed('ung_dipole_models.npz',eastern=healpix_east,western=healpix_west)
+#np.savez_compressed('ref_dipole_models.npz',XX=healpix_XX, YY=healpix_YY)
 
 #fig.savefig('reproject_dipole_models.png',bbox_inches='tight')
 plt.show()
