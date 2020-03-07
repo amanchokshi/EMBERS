@@ -7,16 +7,22 @@ import matplotlib.pyplot as plt
 from scipy import interpolate
 from scipy.interpolate import RectSphereBivariateSpline,SmoothSphereBivariateSpline
 
+import sys
+sys.path.append('../decode_rf_data')
+from colormap import spectral
 
+# Custom spectral colormap
+cmap = spectral()
+    
 def create_model(file_name=None):
     '''Takes .ffe model, converts into healpix and smooths the response'''
 
     #Make an empty array for healpix projection
     beam_response = np.zeros(len_empty_healpix)*np.nan
 
-    #Load ffe model data in, which is stored in real and imaginary components
-    #of a phi/theta polaristaion representation of the beam
-    #apparently this is normal to beam engineers
+    # Load ffe model data in, which is stored in real and imaginary components
+    # of a phi/theta polaristaion representation of the beam
+    # apparently this is normal to beam engineers
     data = np.loadtxt(file_name)
     theta = data[:,0]
     phi = data[:,1]
@@ -25,56 +31,61 @@ def create_model(file_name=None):
     re_phi = data[:,4]
     im_phi = data[:,5]
 
-    #Convert to complex numbers
+    # Convert to complex numbers
     X_theta = re_theta.astype(complex)
     X_theta.imag = im_theta
 
     X_phi = re_phi.astype(complex)
     X_phi.imag = im_phi
 
-    #make a coord grid for the data in the .ffe model
+
+    # make a coord grid for the data in the .ffe model
     theta_range = np.linspace(epsilon,90,91)
     phi_range = np.linspace(epsilon,359.0,360)
     theta_mesh,phi_mesh = np.meshgrid(theta_range,phi_range)
 
-    #Convert reference model into power from the complex values
+    # Convert reference model into power from the complex values
     power = 10*np.log10(abs(X_theta)**2 + abs(X_phi)**2)
     
-    #make an inf values super small
+    # Make an inf values super small
     power[np.where(power == -np.inf)] = -80
 
-    #Had a problem with edge effects, leave off near horizon values
+    # Had a problem with edge effects, leave off near horizon values
+    # Basically remove the last 90 values of power list, where θ == 90
     power = power[:-91]
 
     # Get things into correct shape and do an interpolation
-    # s is a paramater I had to play with to get by eye nice results
     power.shape = phi_mesh.shape
-
+    
+    # Bivariate spline approximation over a rectangular mesh on a sphere
+    # s is a paramater I had to play with to get by eye nice results
+    # s: positive smoothing factor
     lut = RectSphereBivariateSpline(theta_range*(np.pi/180.0), phi_range*(np.pi/180.0), power.T,s=0.1)
 
-    ##Get the theta and phi of all healpixels
+    # Get the theta and phi of all healpixels
     ip = np.arange(len_empty_healpix)
     theta_rad, phi_rad = hp.pix2ang(nside, ip)
 
-    ##Use spline to map beam into healpixels
+    # Evaluate the interpolated function at healpix gridpoints
+    # Use spline to map beam into healpixels
     beam_response = lut.ev(theta_rad, phi_rad)
 
     return beam_response,theta_mesh,phi_mesh,power,theta
 
 
-def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None):
+def plot_healpix(beam_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None):
     '''Does some plotting what what'''
     if vmin == None:
         if cmap == None:
             half_sky = hp.orthview(
-                    map=data_map,coord='E',
+                    map=beam_map,coord='E',
                     half_sky=True,xsize=400,
                     title=title,rot=(0,90,0),
                     sub=sub,notext=True,
                     return_projected_map=True)
         else:
             half_sky = hp.orthview(
-                    map=data_map,coord='E',
+                    map=beam_map,coord='E',
                     half_sky=True,xsize=400,
                     title=title,rot=(0,90,0),
                     sub=sub,cmap=cmap,notext=True,
@@ -82,14 +93,14 @@ def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None
     else:
         if cmap == None:
             half_sky = hp.orthview(
-                    map=data_map,coord='E',
+                    map=beam_map,coord='E',
                     half_sky=True,xsize=400,
                     title=title,rot=(0,90,0),
                     sub=sub,min=vmin,max=vmax,
                     notext=True,return_projected_map=True)
         else:
             half_sky = hp.orthview(
-                    map=data_map,coord='E',
+                    map=beam_map,coord='E',
                     half_sky=True,xsize=400,
                     title=title,rot=(0,90,0),
                     sub=sub,min=vmin,max=vmax,
@@ -146,8 +157,8 @@ ax2.set_title('YY')
 
 ax2.grid(color='k',alpha=0.3)
 
-plot_healpix(data_map=healpix_XX,sub=(2,2,3),title='Healpix XX',vmin=-40,vmax=-20)
-plot_healpix(data_map=healpix_YY,sub=(2,2,4),title='Healpix YY',vmin=-40,vmax=-20)
+plot_healpix(beam_map=healpix_XX,sub=(2,2,3),title='Healpix XX',vmin=-40,vmax=-20, cmap=cmap)
+plot_healpix(beam_map=healpix_YY,sub=(2,2,4),title='Healpix YY',vmin=-40,vmax=-20, cmap=cmap)
 
 #np.savez_compressed('ref_dipole_models.npz',XX=healpix_XX, YY=healpix_YY)
 
