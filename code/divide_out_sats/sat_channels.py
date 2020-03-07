@@ -68,7 +68,7 @@ def savgol_interp(ref, savgol_window =None, polyorder=None, interp_type=None, in
     return (power_smooth, time_smooth)
 
 
-def plt_waterfall_pass(power, sat_id, start, stop, ch, idx):
+def plt_waterfall_pass(power, sat_id, start, stop, chs, date):
 
     # Custom spectral colormap
     cmap = spectral()
@@ -80,16 +80,20 @@ def plt_waterfall_pass(power, sat_id, start, stop, ch, idx):
     cax = fig.add_axes([0.88, 0.1, 0.03, 0.85])
     fig.colorbar(im, cax=cax)
     ax.set_aspect('auto')
-    ax.set_title(f'Waterfall Plot: {sat_id} in {ch}')
+    ax.set_title(f'Waterfall Plot: {sat_id} in {chs}')
     
     ax.set_xlabel('Freq Channel')
     ax.set_ylabel('Time Step')
     
+    # horizontal highlight of ephem
     ax.axhspan(start, stop, alpha=0.1, color='white')
-    ax.axvspan(ch-1.0, ch+0.6, alpha=0.2, color='white')
+    
+    # vertical highlight of channel
+    for ch in chs:
+        ax.axvspan(ch-1.0, ch+0.6, alpha=0.2, color='white')
     
     #plt.show()
-    plt.savefig(f'{out_dir}/{sat_id}/{idx}_{sat_id}_{ch}.png')
+    plt.savefig(f'{out_dir}/{sat_id}/{date}_{sat_id}_waterfall.png')
     plt.close()
     plt.rcParams.update(plt.rcParamsDefault)
 
@@ -234,12 +238,18 @@ def find_sat_channel(norad_id):
                                             if (all(p < 10*noise_threshold for p in channel_power[:10]) and 
                                                 all(p < 10*noise_threshold for p in channel_power[-11:-1])) is True:
                                                 
-                                                #plt_waterfall_pass(power, sat_id, w_start, w_stop, s_chan, f'{date_time[day][window]}')
+                                                #plt_waterfall_pass(power, sat_id, 
+                                                #        w_start, w_stop, s_chan, f'{date_time[day][window]}')
                                                 
-                                                #print(f'{date_time[day][window]}: Satellite {sat_id} in channel: {s_chan}, occupancy: {max(occu_list)*100:.2f}%')
+                                                #print(f'{date_time[day][window]}: 
+                                                #        Satellite {sat_id} in channel: 
+                                                #        {s_chan}, occupancy: 
+                                                #        {max(occu_list)*100:.2f}%')
                                                 
                                                 # Plots the channel with satellite pass
-                                                #plt_channel(times_c, power_c[:, s_chan], s_chan, min_s, max_s, noise_threshold, arbitrary_threshold, sat_id, f'{date_time[day][window]}')
+                                                plt_channel(times_c, power_c[:, s_chan],
+                                                        s_chan, min_s, max_s, noise_threshold,
+                                                        arbitrary_threshold, sat_id, f'{date_time[day][window]}')
                                                 
                                                 possible_chans.append(s_chan)
                                                 #chans.append(s_chan)
@@ -247,35 +257,40 @@ def find_sat_channel(norad_id):
                                 #Need to compute a CoG of each channel, to see which is more centered
                                 if len(possible_chans) < 1:
                                     pass
-                                elif len(possible_chans) == 1:
-                                    s_chan = possible_chans[0]
-                                    max_s = np.amax(power_c[:, s_chan])
-                                    min_s = np.amin(power_c[:, s_chan])
-                                    plt_waterfall_pass(power, sat_id, w_start, w_stop, s_chan, f'{date_time[day][window]}')
-                                    plt_channel(times_c, power_c[:, s_chan], s_chan, min_s, max_s, noise_threshold, arbitrary_threshold, sat_id, f'{date_time[day][window]}')
-                                    chans.append(possible_chans[0])
-                                
-                                else:
-                                    # a list of indices for a column, and the center of this list
-                                    t = np.arange(power_c[:, 0].shape[0])
-                                    center = (len(t) - 1)/2
-                                   
-                                    # We determine the center of gravity for each of the possible sat channels
-                                    cog = []
-                                    for c in possible_chans:
-                                        cog.append(np.round(np.sum(power_c[:, c] * t) / np.sum(power_c[:, c]), 1))
-                                    
-                                    # Delta c. distance b/w cog and center
-                                    del_c = np.absolute(np.array(cog) - center)
-                                   
-                                    # sat chan is the one with minimum del_c 
-                                    s_chan = possible_chans[np.where(del_c == min(del_c))[0][0]]
-                                    max_s = np.amax(power_c[:, s_chan])
-                                    min_s = np.amin(power_c[:, s_chan])
-                                    plt_waterfall_pass(power, sat_id, w_start, w_stop, s_chan, f'{date_time[day][window]}')
-                                    plt_channel(times_c, power_c[:, s_chan], s_chan, min_s, max_s, noise_threshold, arbitrary_threshold, sat_id, f'{date_time[day][window]}')
-                                    chans.append(s_chan)
+                                #elif len(possible_chans) == 1:
+                                #    s_chan = possible_chans[0]
+                                #    max_s = np.amax(power_c[:, s_chan])
+                                #    min_s = np.amin(power_c[:, s_chan])
+                                #    plt_waterfall_pass(power, sat_id, w_start, w_stop, s_chan, f'{date_time[day][window]}')
+                                #    plt_channel(times_c, power_c[:, s_chan], s_chan, min_s, max_s, noise_threshold, arbitrary_threshold, sat_id, f'{date_time[day][window]}')
+                                #    chans.append(possible_chans[0])
+                                #
+                                #else:
+                                #    # a list of indices for a column, and the center of this list
+                                #    t = np.arange(power_c[:, 0].shape[0])
+                                #    center = (len(t) - 1)/2
+                                #   
+                                #    # We determine the center of gravity for each of the possible sat channels
+                                #    cog = []
+                                #    for c in possible_chans:
+                                #        cog.append(np.round(np.sum(power_c[:, c] * t) / np.sum(power_c[:, c]), 1))
+                                #    
+                                #    # Delta c. distance b/w cog and center
+                                #    del_c = np.absolute(np.array(cog) - center)
+                                #   
+                                #    # sat chan is the one with minimum del_c 
+                                #    s_chan = possible_chans[np.where(del_c == min(del_c))[0][0]]
+                                #    max_s = np.amax(power_c[:, s_chan])
+                                #    min_s = np.amin(power_c[:, s_chan])
+                                #    plt_waterfall_pass(power, sat_id, w_start, w_stop, s_chan, f'{date_time[day][window]}')
+                                #    plt_channel(times_c, power_c[:, s_chan], s_chan, min_s, max_s, noise_threshold, arbitrary_threshold, sat_id, f'{date_time[day][window]}')
+                                #    chans.append(s_chan)
 
+                                else:
+                                    plt_waterfall_pass(power, sat_id, w_start, w_stop, possible_chans, f'{date_time[day][window]}')
+                                    chans.extend(possible_chans)
+
+                                
 
     if chans == []:
         print(f'No identified sat channels for sat  {norad_id}')
@@ -347,7 +362,7 @@ out_dir = Path(out_dir)
 if parallel != True:
     for norad_id in sat_list:
         find_sat_channel(norad_id)
-        #break
+        break
 else:
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
