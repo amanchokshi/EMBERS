@@ -76,42 +76,40 @@ def create_model(file_name=None):
 def plot_healpix(beam_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None):
     '''Does some plotting what what'''
     if vmin == None:
-        if cmap == None:
-            half_sky = hp.orthview(
-                    map=beam_map,coord='E',
-                    half_sky=True,xsize=400,
-                    title=title,rot=(0,90,0),
-                    sub=sub,notext=True,
-                    return_projected_map=True)
-        else:
-            half_sky = hp.orthview(
-                    map=beam_map,coord='E',
-                    half_sky=True,xsize=400,
-                    title=title,rot=(0,90,0),
-                    sub=sub,cmap=cmap,notext=True,
-                    return_projected_map=True)
+        #if cmap == None:
+        #    half_sky = hp.orthview(
+        #            map=beam_map,coord='E',
+        #            half_sky=True,xsize=400,
+        #            title=title,rot=(0,90,0),
+        #            sub=sub,notext=True,
+        #            return_projected_map=True)
+        #else:
+        half_sky = hp.orthview(
+                map=beam_map,coord='E',
+                half_sky=True,xsize=400,
+                title=title,rot=(0,90,0),
+                sub=sub,cmap=cmap,notext=True,
+                return_projected_map=True)
     else:
-        if cmap == None:
-            half_sky = hp.orthview(
-                    map=beam_map,coord='E',
-                    half_sky=True,xsize=400,
-                    title=title,rot=(0,90,0),
-                    sub=sub,min=vmin,max=vmax,
-                    notext=True,return_projected_map=True)
-        else:
-            half_sky = hp.orthview(
-                    map=beam_map,coord='E',
-                    half_sky=True,xsize=400,
-                    title=title,rot=(0,90,0),
-                    sub=sub,min=vmin,max=vmax,
-                    cmap=cmap,notext=True,
-                    return_projected_map=True)
+        #if cmap == None:
+        #    half_sky = hp.orthview(
+        #            map=beam_map,coord='E',
+        #            half_sky=True,xsize=400,
+        #            title=title,rot=(0,90,0),
+        #            sub=sub,min=vmin,max=vmax,
+        #            notext=True,return_projected_map=True)
+        #else:
+        half_sky = hp.orthview(
+                map=beam_map,coord='E',
+                half_sky=True,xsize=400,
+                title=title,rot=(0,90,0),
+                sub=sub,min=vmin,max=vmax,
+                cmap=cmap,notext=True,
+                return_projected_map=True)
 
     hp.graticule(dpar=10,coord='E',color='k',alpha=0.3,dmer=45)
     
-    #print where(half_sky == nan)
-
-
+    
     hp.projtext(0.0*(np.pi/180.0), 0.0, '0', coord='E')
     hp.projtext(30.0*(np.pi/180.0), 0.0, '30', coord='E')
     hp.projtext(60.0*(np.pi/180.0), 0.0, '60', coord='E')
@@ -128,8 +126,8 @@ def plot_healpix(beam_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None
 nside = 32
 len_empty_healpix = hp.nside2npix(nside)   #12288
 
-##Had problems with having coords = 0 when interpolating, so make a small number
-##and call it epsilon for some reason
+# Had problems with having coords = 0 when interpolating, so make a small number
+# and call it epsilon for some reason
 
 epsilon = 1.e-12
 
@@ -141,18 +139,18 @@ refYY = '../../data/FEE_Reference_Models/MWA_reference_tile_FarField_YY.ffe'
 healpix_XX,theta_mesh,phi_mesh,power_XX,theta = create_model(file_name=refXX)
 healpix_YY,theta_mesh,phi_mesh,power_YY,theta = create_model(file_name=refYY)
 
-##Plot the things to sanity check and save results
+# Plot the things to sanity check and save results
 fig = plt.figure(figsize=(10,10))
 
 ax1 = fig.add_subplot(221,projection='polar')
 ax2 = fig.add_subplot(222,projection='polar')
 
-im1 = ax1.pcolormesh(phi_mesh*(np.pi/180.0),theta_mesh,power_XX,label='XX',vmin=-40,vmax=-20)
+im1 = ax1.pcolormesh(phi_mesh*(np.pi/180.0),theta_mesh,power_XX,label='XX',vmin=-40,vmax=-20, cmap=cmap)
 ax1.set_title('XX')
 
 ax1.grid(color='k',alpha=0.3)
 
-im2 = ax2.pcolormesh(phi_mesh*(np.pi/180.0),theta_mesh,power_YY,label='YY',vmin=-40,vmax=-20)
+im2 = ax2.pcolormesh(phi_mesh*(np.pi/180.0),theta_mesh,power_YY,label='YY',vmin=-40,vmax=-20, cmap=cmap)
 ax2.set_title('YY')
 
 ax2.grid(color='k',alpha=0.3)
