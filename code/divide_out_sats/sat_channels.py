@@ -193,7 +193,7 @@ def find_sat_channel(norad_id):
                 # To first order, let us consider the median to be the noise floor
                 noise_f = np.median(power)
                 noise_mad = mad(power, axis=None)
-                noise_threshold = 3*noise_mad
+                noise_threshold = 10*noise_mad
                 arbitrary_threshold = 10 #dBm
                 
                 
@@ -264,8 +264,8 @@ def find_sat_channel(norad_id):
                                         if window_occupancy >= 0.80 and window_occupancy < 1.00:
 
                                             # Make sure that the ends are close to the noise floor
-                                            if (all(p < 3*noise_threshold for p in channel_power[:10]) and 
-                                                all(p < 3*noise_threshold for p in channel_power[-11:-1])) is True:
+                                            if (all(p < noise_threshold for p in channel_power[:10]) and 
+                                                all(p < noise_threshold for p in channel_power[-11:-1])) is True:
 
                                                 center, cog, frac_cen_offset = center_of_gravity(channel_power, times_c)
 
