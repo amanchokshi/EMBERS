@@ -187,7 +187,7 @@ def find_sat_channel(norad_id):
                             Path(f'{out_dir}/{sat_id}').mkdir(parents=True, exist_ok=True)
                 
                             # Case I: Sat rises before obs starts and sets after the obs starts
-                            if rise_ephem <= times[0] and set_ephem >= times[0]:
+                            if rise_ephem <= times[0] and set_ephem > times[0]:
                                 w_start = 0
                                 w_stop = list(times).index(set_ephem)
                 
@@ -362,7 +362,7 @@ out_dir = Path(out_dir)
 if parallel != True:
     for norad_id in sat_list:
         find_sat_channel(norad_id)
-        break
+        #break
 else:
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
