@@ -362,7 +362,7 @@ out_dir = Path(out_dir)
 if parallel != True:
     for norad_id in sat_list:
         find_sat_channel(norad_id)
-        break
+        #break
 else:
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
