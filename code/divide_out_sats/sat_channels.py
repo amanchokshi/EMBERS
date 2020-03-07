@@ -98,18 +98,45 @@ def plt_waterfall_pass(power, sat_id, start, stop, chs, date):
     plt.rcParams.update(plt.rcParamsDefault)
 
 
-def plt_channel(times, channel_power, chan_num, min_s, max_s, noise_threshold, arbitrary_threshold, sat_id, idx):
+def center_of_gravity(channel_power, times_c):
+    '''Determine center of gravity of channel power'''
+
+    # a list of indices for a column, and the center of this list
+    #t = np.arange(channel_power.shape[0])
+    center = times_c[(len(times_c) - 1)//2]
+   
+    # We determine the center of gravity for each of the possible sat channels
+    cog = np.round(np.sum(channel_power * times_c) / np.sum(channel_power), 1)
+    
+    # Delta c. distance b/w cog and center
+    del_c = np.absolute(cog - center)
+
+    # Fractional offset from center
+    frac_cen_offset = del_c/(channel_power.shape[0])
+
+    return (center, cog, frac_cen_offset)
+
+
+def plt_channel(times, channel_power, chan_num, min_s, max_s, noise_threshold, arbitrary_threshold, center, cog, sat_id, idx):
     plt.style.use('seaborn')
+    
+    
+    # plt channel power
     plt.plot(times, channel_power, linestyle='-', linewidth=2, alpha=1.0, color='#db3751', label='Data')
     plt.fill_between(times, channel_power, color='#db3751', alpha=0.7)
-    plt.plot(times, np.full(len(times), arbitrary_threshold),
-            alpha=1.0, linestyle='-', linewidth=2,  color='#fba95f',
-            label=f'Arbitrary Cut: {arbitrary_threshold} dBm')
+    
+    plt.axhline(arbitrary_threshold,alpha=1.0, linestyle='-', linewidth=2,
+            color='#fba95f', label=f'Arbitrary Cut: {arbitrary_threshold} dBm')
     plt.axhspan(-1, arbitrary_threshold, color='#fba95f', alpha=0.4)
-    plt.plot(times, np.full(len(times), noise_threshold),
-            alpha=1.0, linestyle='-', linewidth=2, color='#5cb7a9',
+    
+    plt.axhline(noise_threshold, linestyle='-', linewidth=2, color='#5cb7a9',
             label=f'Noise Cut: {noise_threshold:.2f} dBm')
     plt.axhspan(-1, noise_threshold, color='#5cb7a9', alpha=0.4)
+    
+    plt.axvspan(center-(0.01*len(times)), center+(0.01*len(times)), color='#2b2e4a', alpha=0.4)
+    plt.axvline(center, color='#2b2e4a', alpha=1, label='Center ± 1% ')
+    plt.axvline(cog, color='#8cba51', alpha=1, label='CoG')
+    
     
     plt.ylim([min_s - 1, max_s + 1])
     plt.xlim([times[0], times[-1]])
@@ -144,6 +171,7 @@ def plt_hist(chans, norad_id, pop_chan):
     plt.rcParams.update(plt.rcParamsDefault)
 
 
+
 def find_sat_channel(norad_id):
    
     chans = []
@@ -166,7 +194,7 @@ def find_sat_channel(norad_id):
                 noise_f = np.median(power)
                 noise_mad = mad(power, axis=None)
                 noise_threshold = 3*noise_mad
-                arbitrary_threshold = 6 #dBm
+                arbitrary_threshold = 10 #dBm
                 
                 
                 # Scale the power to bring the median noise floor down to zero
@@ -235,57 +263,26 @@ def find_sat_channel(norad_id):
                                         # Only continue if there is signal for more than 80% of satellite pass
                                         if window_occupancy >= 0.80 and window_occupancy < 1.00:
 
-                                            if (all(p < 10*noise_threshold for p in channel_power[:10]) and 
-                                                all(p < 10*noise_threshold for p in channel_power[-11:-1])) is True:
+                                            # Make sure that the ends are close to the noise floor
+                                            if (all(p < 3*noise_threshold for p in channel_power[:10]) and 
+                                                all(p < 3*noise_threshold for p in channel_power[-11:-1])) is True:
+
+                                                center, cog, frac_cen_offset = center_of_gravity(channel_power, times_c)
+
+                                                # Another threshold
+                                                # The Center of Gravity of signal is within 1% of center
+                                                if frac_cen_offset <= 0.01:
                                                 
-                                                #plt_waterfall_pass(power, sat_id, 
-                                                #        w_start, w_stop, s_chan, f'{date_time[day][window]}')
-                                                
-                                                #print(f'{date_time[day][window]}: 
-                                                #        Satellite {sat_id} in channel: 
-                                                #        {s_chan}, occupancy: 
-                                                #        {max(occu_list)*100:.2f}%')
-                                                
-                                                # Plots the channel with satellite pass
-                                                plt_channel(times_c, power_c[:, s_chan],
-                                                        s_chan, min_s, max_s, noise_threshold,
-                                                        arbitrary_threshold, sat_id, f'{date_time[day][window]}')
-                                                
-                                                possible_chans.append(s_chan)
-                                                #chans.append(s_chan)
+                                                    # Plots the channel with satellite pass
+                                                    plt_channel(times_c, power_c[:, s_chan],
+                                                            s_chan, min_s, max_s, noise_threshold,
+                                                            arbitrary_threshold,center, cog, sat_id, f'{date_time[day][window]}')
+                                                    
+                                                    possible_chans.append(s_chan)
+                                                    #chans.append(s_chan)
                                 
-                                #Need to compute a CoG of each channel, to see which is more centered
                                 if len(possible_chans) < 1:
                                     pass
-                                #elif len(possible_chans) == 1:
-                                #    s_chan = possible_chans[0]
-                                #    max_s = np.amax(power_c[:, s_chan])
-                                #    min_s = np.amin(power_c[:, s_chan])
-                                #    plt_waterfall_pass(power, sat_id, w_start, w_stop, s_chan, f'{date_time[day][window]}')
-                                #    plt_channel(times_c, power_c[:, s_chan], s_chan, min_s, max_s, noise_threshold, arbitrary_threshold, sat_id, f'{date_time[day][window]}')
-                                #    chans.append(possible_chans[0])
-                                #
-                                #else:
-                                #    # a list of indices for a column, and the center of this list
-                                #    t = np.arange(power_c[:, 0].shape[0])
-                                #    center = (len(t) - 1)/2
-                                #   
-                                #    # We determine the center of gravity for each of the possible sat channels
-                                #    cog = []
-                                #    for c in possible_chans:
-                                #        cog.append(np.round(np.sum(power_c[:, c] * t) / np.sum(power_c[:, c]), 1))
-                                #    
-                                #    # Delta c. distance b/w cog and center
-                                #    del_c = np.absolute(np.array(cog) - center)
-                                #   
-                                #    # sat chan is the one with minimum del_c 
-                                #    s_chan = possible_chans[np.where(del_c == min(del_c))[0][0]]
-                                #    max_s = np.amax(power_c[:, s_chan])
-                                #    min_s = np.amin(power_c[:, s_chan])
-                                #    plt_waterfall_pass(power, sat_id, w_start, w_stop, s_chan, f'{date_time[day][window]}')
-                                #    plt_channel(times_c, power_c[:, s_chan], s_chan, min_s, max_s, noise_threshold, arbitrary_threshold, sat_id, f'{date_time[day][window]}')
-                                #    chans.append(s_chan)
-
                                 else:
                                     plt_waterfall_pass(power, sat_id, w_start, w_stop, possible_chans, f'{date_time[day][window]}')
                                     chans.extend(possible_chans)
@@ -362,7 +359,7 @@ out_dir = Path(out_dir)
 if parallel != True:
     for norad_id in sat_list:
         find_sat_channel(norad_id)
-        #break
+        break
 else:
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
