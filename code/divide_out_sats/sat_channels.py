@@ -214,14 +214,15 @@ def find_sat_channel(norad_id):
                                 
                             Path(f'{out_dir}/{sat_id}').mkdir(parents=True, exist_ok=True)
                 
-                            # Case I: Sat rises before obs starts and sets after the obs starts
-                            if rise_ephem <= times[0] and set_ephem > times[0]:
-                                w_start = 0
+                            # Case I: Sat rises after obs starts and sets before obs ends
+                            if set_ephem <= times[-1] and rise_ephem >= times[0]:
+                                w_start = list(times).index(rise_ephem)
                                 w_stop = list(times).index(set_ephem)
                 
-                            # Case II: Sat rises after obs starts and sets before obs ends
-                            elif set_ephem < times[-1] and rise_ephem >= times[0]:
-                                w_start = list(times).index(rise_ephem)
+                            # Case II: Sat rises before obs starts and sets after the obs starts
+                            elif rise_ephem <= times[0] and set_ephem >= times[0]:
+                                # w_start = 0
+                                w_start = list(times).index(times[0])
                                 w_stop = list(times).index(set_ephem)
                 
                             # Case III: Sat rises before obs ends and sets after
