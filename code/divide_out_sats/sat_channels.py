@@ -133,8 +133,8 @@ def plt_channel(times, channel_power, chan_num, min_s, max_s, noise_threshold, a
             label=f'Noise Cut: {noise_threshold:.2f} dBm')
     plt.axhspan(-1, noise_threshold, color='#5cb7a9', alpha=0.4)
     
-    plt.axvspan(center-(0.01*len(times)), center+(0.01*len(times)), color='#2b2e4a', alpha=0.4)
-    plt.axvline(center, color='#2b2e4a', alpha=1, label='Center ± 1% ')
+    plt.axvspan(center-(0.02*len(times)), center+(0.02*len(times)), color='#2b2e4a', alpha=0.4)
+    plt.axvline(center, color='#2b2e4a', alpha=1, label='Center ± 2% ')
     plt.axvline(cog, color='#8cba51', alpha=1, label='CoG')
     
     
@@ -220,13 +220,13 @@ def find_sat_channel(norad_id):
                                 w_stop = list(times).index(set_ephem)
                 
                             # Case II: Sat rises before obs starts and sets after the obs starts
-                            elif rise_ephem <= times[0] and set_ephem >= times[0]:
+                            elif rise_ephem < times[0] and set_ephem > times[0]:
                                 # w_start = 0
                                 w_start = list(times).index(times[0])
                                 w_stop = list(times).index(set_ephem)
                 
                             # Case III: Sat rises before obs ends and sets after
-                            elif set_ephem >= times[-1] and rise_ephem <= times[-1]:
+                            elif set_ephem > times[-1] and rise_ephem < times[-1]:
                                 w_start = list(times).index(rise_ephem)
                                 w_stop = list(times).index(times[-1])
                             
@@ -271,8 +271,8 @@ def find_sat_channel(norad_id):
                                                 center, cog, frac_cen_offset = center_of_gravity(channel_power, times_c)
 
                                                 # Another threshold
-                                                # The Center of Gravity of signal is within 1% of center
-                                                if frac_cen_offset <= 0.01:
+                                                # The Center of Gravity of signal is within 2% of center
+                                                if frac_cen_offset <= 0.02:
                                                 
                                                     # Plots the channel with satellite pass
                                                     plt_channel(times_c, power_c[:, s_chan],
