@@ -48,7 +48,7 @@ A `logs.txt` file is saved to the output directory. This shows what plots were s
 
 ### Align Data
 
-The RF Explorers do not record data at exactly the same frequency and do not start recording at exactly the same time. In fact, the older models record at approximately 6 Hz, while the newer ones are capable of a sampling rate of nearly 9 Hz. This discrepency in sampling rates makes it difficult to compare any two data samples. This issue is overcome by smoothing the data, along the time axis, with a Savitzky-Golay filter. Interpolating the smoothed data and resampling it at a constant frequency [ 2Hz ] gives us a easier data set to work with. The starting times of the power arrays are also synchronized.
+The RF Explorers do not record data at exactly the same frequency and do not start recording at exactly the same time. In fact, the older models record at approximately 6 Hz, while the newer ones are capable of a sampling rate of nearly 9 Hz. This discrepency in sampling rates makes it difficult to compare any two data samples. This issue is overcome by smoothing the data, along the time axis, with a Savitzky-Golay filter. Interpolating the smoothed data and resampling it at a constant frequency [ 0.5 Hz ] gives us a easier data set to work with. The starting times of the power arrays are also synchronized.
 
 ```
 cd ../align_data
@@ -92,7 +92,7 @@ Two Line Elements contain information about the orbital elements of Earth-orbiti
 
 A python astronomy package, [Skyfield](https://rhodesmill.org/skyfield/), is used to make sense of the TLEs. Every pair of lines (tle elements) in the TLE file corresponds to a particular epoch - a time at which the satellite's possition can be determined most accurately, before or after which it goes rapidly out of date. [Space-Track.org](https://www.space-track.org/) releases new TLEs for satellites at least once a day. `sat_ephemeris.py` determined the epochs of each pair of tle elements in a `TLE.txt` file, and used the elements which are most accurate. 
 
-The MWA Satellite experiment is situated in remote Western Australia, at the Murchison Radio-astronomy Observatory. The latitude, longitude and elevation of the site are hard-coded into `sat_ephemeris.py`. Skyfield uses this in conjunction with the TLE files to determine the trajectories of satellite. `sat_ephemeris.py` computes the altitude and azimuth [alt/az] of the satellite at a particular time cadence. By default this is set to 20s, and this step is computationally expensive and can dramatically slow things down. 
+The MWA Satellite experiment is situated in remote Western Australia, at the Murchison Radio-astronomy Observatory. The latitude, longitude and elevation of the site are hard-coded into `sat_ephemeris.py`. Skyfield uses this in conjunction with the TLE files to determine the trajectories of satellite. `sat_ephemeris.py` computes the altitude and azimuth [alt/az] of the satellite at a particular time cadence. By default this is set to 2 seconds, and this step is computationally expensive and can dramatically slow things down. 
 
 ```
 python sat_ephemeris.py --help
@@ -128,7 +128,7 @@ This will plot all the json ephemeris files that were generated in the previous 
 
 #### 4. Chronological Ephemeris
 
-In later stages of this analysis we will need satellite ephemeris in chronological order. `chrono_ephem.py` collates data in all the json files produced by `sat_ephemeris.py`. As a first step, the gps timestamps used by `skyfield`, are converted to unix timestamps, to match the format used in the rf explorer data. Next, the satellite alt/az ephemeris are interpolated, to match the time cadence of `align_data.py`. It is crutial to remember to set `--interp_freq` to be the same as that used in `align_data.py`, or just use the default of 2 Hz. For each 30 min observation, a corresponding sat ephem file is created in `./../../outputs/sat_ephemeris/chrono_json/` which contains all the satellite passes within the given time window. 
+In later stages of this analysis we will need satellite ephemeris in chronological order. `chrono_ephem.py` collates data in all the json files produced by `sat_ephemeris.py`. As a first step, the gps timestamps used by `skyfield`, are converted to unix timestamps, to match the format used in the rf explorer data. Next, the satellite alt/az ephemeris are interpolated, to match the time cadence of `align_data.py`. It is crutial to remember to set `--interp_freq` to be the same as that used in `align_data.py`, or just use the default of 0.5 Hz. For each 30 min observation, a corresponding sat ephem file is created in `./../../outputs/sat_ephemeris/chrono_json/` which contains all the satellite passes within the given time window. 
 
 ```
 python chrono_ephem.py --help
