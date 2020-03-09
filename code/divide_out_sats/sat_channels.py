@@ -285,7 +285,8 @@ def find_sat_channel(norad_id):
                             if sat_alt_max >= 20:
                                 
                                 Path(f'{out_dir}/{sat_id}').mkdir(parents=True, exist_ok=True)
-                
+                                    
+                                # window start, stop
                                 # Case I: Sat rises after obs starts and sets before obs ends
                                 if set_ephem <= times[-1] and rise_ephem >= times[0]:
                                     w_start = list(times).index(rise_ephem)
@@ -359,10 +360,15 @@ def find_sat_channel(norad_id):
                                     else:
                                         plt_waterfall_pass(power, sat_id, w_start, w_stop, possible_chans, f'{date_time[day][window]}')
                                         chans.extend(possible_chans)
+
+                                        wt_start = times_c[0]
+                                        wt_stop = times_c[-1]
+
+                                        # TODO only want to plot ephem of sats within the window of w_start:w_stop+1
                                         
+                                        ids = [chrono_ephem[i]["sat_id"][0] for i in range(num_passes)]
                                         alt = [chrono_ephem[i]["sat_alt"] for i in range(num_passes)]
                                         az  = [chrono_ephem[i]["sat_az"] for i in range(num_passes)]
-                                        ids = [chrono_ephem[i]["sat_id"][0] for i in range(num_passes)]
 
                                         sat_plot(ids, norad_id, alt, az, num_passes, f'{date_time[day][window]}')
 
