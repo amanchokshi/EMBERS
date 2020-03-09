@@ -42,7 +42,7 @@ time_zone   = args.time_zone
 Path(out_dir).mkdir(parents=True, exist_ok=True)
 
 # Save log file 
-#sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
 
 
 # Time stuff
