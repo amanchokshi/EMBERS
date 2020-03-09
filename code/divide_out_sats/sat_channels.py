@@ -185,6 +185,37 @@ def plt_channel(times, channel_power, chan_num, min_s, max_s, noise_threshold, a
     plt.rcParams.update(plt.rcParamsDefault)
 
 
+def sat_plot(sat_id, alt, az, num_passes, date):
+    '''Plots satellite passes
+    
+    Args:
+        alt: list of altitude values
+        az: list of azimuth values
+        num_passes: Number of satellite passes
+    '''
+    
+    
+    # Set up the polar plot.
+    plt.style.use('dark_background')
+    figure = plt.figure(figsize=(8,6))
+    ax = figure.add_subplot(111, polar=True)
+    ax.set_ylim(90, 0)
+    ax.set_rgrids([0,30,60,90], angle=22)
+    ax.set_theta_zero_location('N')
+    ax.set_theta_direction(-1)
+    ax.set_title(f'Satellite on {date}: {num_passes} Passes', y=1.08)
+    ax.grid(color='#8bbabb', linewidth=1.6, alpha=0.6)
+    plt.tight_layout()
+    
+    for i in range(len(alt)):
+        plt.plot(az[i], alt[i], '-', linewidth=1.6, label=f'{sat_id[i]}')
+        plt.legend(bbox_to_anchor=(0.28, 1.0, 1., .102), loc='upper right')
+    
+    plt.savefig(f'{out_dir}/{date}_passes.png')
+    plt.close()
+    plt.rcParams.update(plt.rcParamsDefault)
+
+
 def plt_hist(chans, norad_id, pop_chan):
     '''Plt histogram of occupied channels'''
     
@@ -235,8 +266,17 @@ def find_sat_channel(norad_id):
                 
                 with open(chrono_file) as chrono:
                     chrono_ephem = json.load(chrono)
+
+                    num_passes = len(chrono_ephem)
+
+                    alt = [chrono_ephem[i]["sat_alt"] for i in range(num_passes)]
+                    az  = [chrono_ephem[i]["sat_az"] for i in range(num_passes)]
+                    ids = [chrono_ephem[i]["sat_id"][0] for i in range(num_passes)]
+
+                    sat_plot(ids, alt, az, num_passes, f'{date_time[day][window]}')
+
                 
-                    for j in range(len(chrono_ephem)):
+                    for j in range(num_passes):
                     
                         rise_ephem  = chrono_ephem[j]["time_array"][0] 
                         set_ephem   = chrono_ephem[j]["time_array"][-1]
@@ -397,7 +437,7 @@ out_dir = Path(out_dir)
 if parallel != True:
     for norad_id in sat_list:
         find_sat_channel(norad_id)
-        #break
+        break
 else:
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
