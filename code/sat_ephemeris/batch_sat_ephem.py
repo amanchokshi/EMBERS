@@ -27,7 +27,7 @@ parser = argparse.ArgumentParser(description="""
         """)
         
 parser.add_argument('--tle_dir', metavar='\b', default='./../../outputs/sat_ephemeris/TLE', help='Directory where TLE files are saved. Default=./../../outputs/sat_ephemeris/TLE')
-parser.add_argument('--cadence', metavar='\b', default=20, help='Rate at which sat alt/az is computed. Expensive! Default=20s')
+parser.add_argument('--cadence', metavar='\b', default=2, help='Rate at which sat alt/az is computed. Default=2s')
 parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/sat_ephemeris/ephem_json/', help='Path to output directory. Default=./../../outputs/sat_ephemeris/ephem_json/')
 
 args = parser.parse_args()
