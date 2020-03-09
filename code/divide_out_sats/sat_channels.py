@@ -244,32 +244,33 @@ def time_filter(s_rise, s_set, times):
     
     # I. sat rises before times, sets within times window
     if (s_rise < times[0] and s_set > times[0] and s_set < times[-1]):
-        i_0 = times.index(times[0])
-        i_1 = times.index(s_set)
+        i_0 = np.where(times == times[0])[0][0]
+        i_1 = np.where(times == s_set)[0][0]
         intvl = [i_0, i_1]
     
     # II. sat rises and sets within times
     elif (s_rise >= times[0] and s_set <= times[-1]):
-        i_0 = times.index(s_rise)
-        i_1 = times.index(s_set)
+        i_0 = np.where(times == s_rise)[0][0]
+        i_1 = np.where(times == s_set)[0][0]
         intvl = [i_0, i_1]
     
     # III. sat rises within times, and sets after
     elif (s_rise > times[0] and s_rise < times[-1] and s_set > times[-1]):
-        i_0 = times.index(s_rise)
-        i_1 = times.index(times[-1])
+        i_0 = np.where(times == s_rise)[0][0]
+        i_1 = np.where(times == times[-1])[0][0]
         intvl = [i_0, i_1]
     
     # IV. sat rises before times and sets after
     elif (s_rise < times[0] and s_set > times[-1]):
-        i_0 = times.index(times[0])
-        i_1 = times.index(times[-1])
+        i_0 = np.where(times == times[0])[0][0]
+        i_1 = np.where(times == times[-1])[0][0]
         intvl = [i_0, i_1]
    
     # V. sat completely out of times. Could be on either side
     else:
          intvl = None
-
+    
+    # intvl = interval
     return intvl
 
 
@@ -330,128 +331,109 @@ def find_sat_channel(norad_id):
                                 
                                 Path(f'{out_dir}/{sat_id}').mkdir(parents=True, exist_ok=True)
                                     
-                                ## window start, stop
-                                ## Case I: Sat rises after obs starts and sets before obs ends
-                                #if set_ephem <= times[-1] and rise_ephem >= times[0]:
-                                #    w_start = list(times).index(rise_ephem)
-                                #    w_stop = list(times).index(set_ephem)
-                
-                                ## Case II: Sat rises before obs starts and sets after the obs starts
-                                #elif rise_ephem < times[0] and set_ephem > times[0]:
-                                #    # w_start = 0
-                                #    w_start = list(times).index(times[0])
-                                #    w_stop = list(times).index(set_ephem)
-                
-                                ## Case III: Sat rises before obs ends and sets after
-                                #elif set_ephem > times[-1] and rise_ephem < times[-1]:
-                                #    w_start = list(times).index(rise_ephem)
-                                #    w_stop = list(times).index(times[-1])
-                                #
-                                ## Sat out of bounds
-                                #else:
-                                #    w_start = 0
-                                #    w_stop = 0
-
                                 intvl = time_filter(rise_ephem, set_ephem, times)
+
+                                if intvl != None:
+                                    w_start, w_stop = intvl
                 
-                                # length of sat pass. Only consider passes longer than 2 minutes
-                                window_len = w_stop - w_start + 1
-                                
-                                if window_len >= 240: #(240*0.5 = 120s)
-    
-                                    # Slice [crop] the power/times arrays to the times of sat pass
-                                    power_c = power[w_start:w_stop+1, :]
-                                    times_c = times[w_start:w_stop+1]
-           
-                                   
-                                    possible_chans = []
-
-                                    # Loop over every channel
-                                    for s_chan in range(len(power_c[0])):
-                                        
-                                        channel_power = power_c[:, s_chan]
-                
-                                        max_s = np.amax(channel_power)
-                                        min_s = np.amin(channel_power)
-
-                                        # Arbitrary threshold below which satellites aren't counted
-                                        if max(channel_power) >= arbitrary_threshold:
-                                          
-                                            # Percentage of signal occupancy above noise threshold
-                                            window_occupancy = (np.where(channel_power >= noise_threshold))[0].size/window_len
-                                            
-                                            # Only continue if there is signal for more than 80% of satellite pass
-                                            if window_occupancy >= 0.80 and window_occupancy < 1.00:
-
-                                                # Make sure that the ends are close to the noise floor
-                                                if (all(p < noise_threshold for p in channel_power[:10]) and 
-                                                    all(p < noise_threshold for p in channel_power[-11:-1])) is True:
-
-                                                    center, cog, frac_cen_offset = center_of_gravity(channel_power, times_c)
-
-                                                    # Another threshold
-                                                    # The Center of Gravity of signal is within 2% of center
-                                                    if frac_cen_offset <= 0.02:
-                                                    
-                                                        # Plots the channel with satellite pass
-                                                        plt_channel(times_c, power_c[:, s_chan],
-                                                                s_chan, min_s, max_s, noise_threshold,
-                                                                arbitrary_threshold,center, cog, sat_id, f'{date_time[day][window]}')
-                                                        
-                                                        possible_chans.append(s_chan)
-                                                        #chans.append(s_chan)
+                                    # length of sat pass. Only consider passes longer than 2 minutes
+                                    window_len = w_stop - w_start + 1
                                     
-                                    if len(possible_chans) < 1:
-                                        pass
-                                    else:
-                                        plt_waterfall_pass(power, sat_id, w_start, w_stop, possible_chans, f'{date_time[day][window]}')
-                                        chans.extend(possible_chans)
+                                    if window_len >= 240: #(240*0.5 = 120s)
+    
+                                        # Slice [crop] the power/times arrays to the times of sat pass
+                                        power_c = power[w_start:w_stop+1, :]
+                                        times_c = times[w_start:w_stop+1]
+           
+                                       
+                                        possible_chans = []
 
-                                    ## Window Time
-                                    #wt_start = times_c[0]
-                                    #wt_stop = times_c[-1]
+                                        # Loop over every channel
+                                        for s_chan in range(len(power_c[0])):
+                                            
+                                            channel_power = power_c[:, s_chan]
+                
+                                            max_s = np.amax(channel_power)
+                                            min_s = np.amin(channel_power)
 
-                                    ## TODO only want to plot ephem of sats within the window of w_start:w_stop+1
-                                    #
-                                    #ids = []
-                                    #alt = []
-                                    #az  = []
+                                            # Arbitrary threshold below which satellites aren't counted
+                                            if max(channel_power) >= arbitrary_threshold:
+                                              
+                                                # Percentage of signal occupancy above noise threshold
+                                                window_occupancy = (np.where(channel_power >= noise_threshold))[0].size/window_len
+                                                
+                                                # Only continue if there is signal for more than 80% of satellite pass
+                                                if window_occupancy >= 0.80 and window_occupancy < 1.00:
 
-                                    #for s in range(num_passes):
-                                    #    times_sat = chrono_ephem[s]["time_array"]
-                                    #    
-                                    #    # sat pass completely within window
-                                    #    if times_sat[0] >= wt_start and times_sat[-1] <= wt_stop:
-                                    #        start_idx = list(times_sat).index(times_sat[0])
-                                    #        stop_idx  = list(times_sat).index(times_sat[-1])
-                                    #    # sat pass starts before window, ends within
-                                    #    elif times_sat[0] < wt_start and times_sat[-1] > wt_start and times_sat[-1] <= wt_stop:
-                                    #        start_idx = list(times_sat).index(wt_start)
-                                    #        stop_idx  = list(times_sat).index(times_sat[-1])
-                                    #    # sat pass starts within window, ends after
-                                    #    elif times_sat[0] < wt_stop and times_sat[0] >= wt_start and times_sat[-1] > wt_stop:
-                                    #        start_idx = list(times_sat).index(times_sat[0])
-                                    #        stop_idx  = list(times_sat).index(wt_stop)
-                                    #    # sat pass starts before window, ends after
-                                    #    elif times_sat[0] < wt_start and times_sat[-1] > wt_stop:
-                                    #        start_idx = list(times_sat).index(wt_start)
-                                    #        stop_idx  = list(times_sat).index(wt_stop)
-                                    #    # sat before or after window
-                                    #    if times_sat[-1] < wt_start or times_sat[0] > wt_stop:
-                                    #        start_idx = None
-                                    #        stop_idx = None
+                                                    # Make sure that the ends are close to the noise floor
+                                                    if (all(p < noise_threshold for p in channel_power[:10]) and 
+                                                        all(p < noise_threshold for p in channel_power[-11:-1])) is True:
 
-                                    #    if start_idx and stop_idx != None:
-                                    #        ids.append(chrono_ephem[s]["sat_id"][0])
-                                    #        alt.append(chrono_ephem[s]["sat_alt"][start_idx:stop_idx])
-                                    #        az.append(chrono_ephem[s]["sat_az"][start_idx:stop_idx])
+                                                        center, cog, frac_cen_offset = center_of_gravity(channel_power, times_c)
+
+                                                        # Another threshold
+                                                        # The Center of Gravity of signal is within 2% of center
+                                                        if frac_cen_offset <= 0.02:
+                                                        
+                                                            # Plots the channel with satellite pass
+                                                            plt_channel(times_c, power_c[:, s_chan],
+                                                                    s_chan, min_s, max_s, noise_threshold,
+                                                                    arbitrary_threshold,center, cog, sat_id, f'{date_time[day][window]}')
+                                                            
+                                                            possible_chans.append(s_chan)
+                                                            #chans.append(s_chan)
+                                        
+                                        if len(possible_chans) < 1:
+                                            pass
+                                        else:
+                                            plt_waterfall_pass(power, sat_id, w_start, w_stop, possible_chans, f'{date_time[day][window]}')
+                                            chans.extend(possible_chans)
+
+                                        ## Window Time
+                                        #wt_start = times_c[0]
+                                        #wt_stop = times_c[-1]
+
+                                        ## TODO only want to plot ephem of sats within the window of w_start:w_stop+1
+                                        #
+                                        #ids = []
+                                        #alt = []
+                                        #az  = []
+
+                                        #for s in range(num_passes):
+                                        #    times_sat = chrono_ephem[s]["time_array"]
+                                        #    
+                                        #    # sat pass completely within window
+                                        #    if times_sat[0] >= wt_start and times_sat[-1] <= wt_stop:
+                                        #        start_idx = list(times_sat).index(times_sat[0])
+                                        #        stop_idx  = list(times_sat).index(times_sat[-1])
+                                        #    # sat pass starts before window, ends within
+                                        #    elif times_sat[0] < wt_start and times_sat[-1] > wt_start and times_sat[-1] <= wt_stop:
+                                        #        start_idx = list(times_sat).index(wt_start)
+                                        #        stop_idx  = list(times_sat).index(times_sat[-1])
+                                        #    # sat pass starts within window, ends after
+                                        #    elif times_sat[0] < wt_stop and times_sat[0] >= wt_start and times_sat[-1] > wt_stop:
+                                        #        start_idx = list(times_sat).index(times_sat[0])
+                                        #        stop_idx  = list(times_sat).index(wt_stop)
+                                        #    # sat pass starts before window, ends after
+                                        #    elif times_sat[0] < wt_start and times_sat[-1] > wt_stop:
+                                        #        start_idx = list(times_sat).index(wt_start)
+                                        #        stop_idx  = list(times_sat).index(wt_stop)
+                                        #    # sat before or after window
+                                        #    if times_sat[-1] < wt_start or times_sat[0] > wt_stop:
+                                        #        start_idx = None
+                                        #        stop_idx = None
+
+                                        #    if start_idx and stop_idx != None:
+                                        #        ids.append(chrono_ephem[s]["sat_id"][0])
+                                        #        alt.append(chrono_ephem[s]["sat_alt"][start_idx:stop_idx])
+                                        #        az.append(chrono_ephem[s]["sat_az"][start_idx:stop_idx])
 
 
-                                    ##ids = [chrono_ephem[i]["sat_id"][0] for i in range(num_passes)]
-                                    ##alt = [chrono_ephem[i]["sat_alt"] for i in range(num_passes)]
-                                    ##az  = [chrono_ephem[i]["sat_az"] for i in range(num_passes)]
+                                        ##ids = [chrono_ephem[i]["sat_id"][0] for i in range(num_passes)]
+                                        ##alt = [chrono_ephem[i]["sat_alt"] for i in range(num_passes)]
+                                        ##az  = [chrono_ephem[i]["sat_az"] for i in range(num_passes)]
 
-                                    #sat_plot(ids, norad_id, alt, az, len(ids), f'{date_time[day][window]}')
+                                        #sat_plot(ids, norad_id, alt, az, len(ids), f'{date_time[day][window]}')
 
                                     
 
