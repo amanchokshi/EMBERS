@@ -246,24 +246,29 @@ def find_sat_channel(norad_id):
                                                                 norad_id, f'{date_time[day][window]}')
                                                         
                                                         possible_chans.append(s_chan)
-                                                        #chans.append(s_chan)
                                     
+                                    # If channels are identified in the 30 min obs
                                     if len(possible_chans) > 0:
+
                                         plt_waterfall_pass(
                                                 out_dir, power, norad_id,
                                                 w_start, w_stop, possible_chans,
                                                 f'{date_time[day][window]}', cmap)
                                         
+                                        # Add possible chans to ultimate list of chans, for histogram
                                         chans.extend(possible_chans)
 
 
+                                        # Plot ephemeris of all sats present in ephem window of norad_id sat
                                         ids = []
                                         alt = []
                                         az  = []
-                                        
+                                       
+                                        # loop through all sats in chrono_ephem
                                         for s in range(len(chrono_ephem)):
                                             times_sat = chrono_ephem[s]["time_array"]
                                             
+                                            # Crop ephem of all sats to size of norad_id sat
                                             intvl_ephem = time_filter(times_sat[0], times_sat[-1], times_c)
                                             
                                             if intvl_ephem != None:
@@ -279,7 +284,7 @@ def find_sat_channel(norad_id):
                                     
 
     if chans == []:
-        print(f'No identified sat channels for sat  {norad_id}')
+        print(f'No identified sat channels for sat {norad_id}')
     else:
         chans = np.array(chans).astype('int64')
         counts = np.bincount(chans)
