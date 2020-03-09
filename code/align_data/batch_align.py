@@ -25,7 +25,7 @@ parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/align_da
 parser.add_argument('--savgol_window', metavar='\b', default=151,help='Length of savgol window. Must be odd. Default=151')
 parser.add_argument('--polyorder', metavar='\b', default=1,help='Order of polynomial to fit to savgol window. Default=1')
 parser.add_argument('--interp_type', metavar='\b', default='cubic',help='Type of interpolation. Ex: cubic, linear, etc. Default=cubic')
-parser.add_argument('--interp_freq', metavar='\b', default=2,help='Frequency at which to resample smoothed data, in Hertz. Default=2')
+parser.add_argument('--interp_freq', metavar='\b', default=0.5,help='Frequency at which to resample smoothed data, in Hertz. Default=0.5')
 
 
 args = parser.parse_args()
