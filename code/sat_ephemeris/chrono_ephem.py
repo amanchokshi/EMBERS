@@ -116,7 +116,14 @@ def interp_ephem(t_array, s_alt, s_az, interp_type, interp_freq):
             
     # Create interpolation functions. Math functions, not Python!
     alt_interp = interpolate.interp1d(t_array, s_alt, kind=interp_type)
-    az_interp  = interpolate.interp1d(t_array, s_az, kind=interp_type)
+    
+    # The next step was a bit tricky. Azimuth may wrap around.  
+    # This may lead to a discontinuity between 0, 2π
+    # We deal with this, by unwrapping the angles
+    
+    # This extends the angles beyond 2π, if the angles cross the discontinuity
+    s_az_cont = np.unwrap(s_az)
+    az_interp  = interpolate.interp1d(t_array, s_az_cont, kind=interp_type)
     
     # Makes start and end times clean integers
     # Also ensures that the interp range is inclusive of data points
@@ -127,7 +134,9 @@ def interp_ephem(t_array, s_alt, s_az, interp_type, interp_freq):
     time_interp = list(np.double(np.arange(start, stop, (1/interp_freq))))
     
     sat_alt = list(alt_interp(time_interp))
-    sat_az = list(az_interp(time_interp))
+    
+    # The modulus division by 2π, un-does the np.unwrap
+    sat_az = list(az_interp(time_interp)%(2*np.pi))
     
     return(time_interp, sat_alt, sat_az)
 
