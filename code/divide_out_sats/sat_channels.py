@@ -269,14 +269,14 @@ def find_sat_channel(norad_id):
 
                     num_passes = len(chrono_ephem)
 
-
-                
                     for j in range(num_passes):
                     
                         rise_ephem  = chrono_ephem[j]["time_array"][0] 
                         set_ephem   = chrono_ephem[j]["time_array"][-1]
-                        sat_alt_max = np.amax(chrono_ephem[j]["sat_alt"])
                         sat_id      = chrono_ephem[j]["sat_id"][0]
+                        
+                        # Max altitude that the sat attains
+                        sat_alt_max = np.amax(chrono_ephem[j]["sat_alt"])
                 
                         # Focus on one sat at a time
                         if sat_id == norad_id:
@@ -361,7 +361,7 @@ def find_sat_channel(norad_id):
                                         plt_waterfall_pass(power, sat_id, w_start, w_stop, possible_chans, f'{date_time[day][window]}')
                                         chans.extend(possible_chans)
 
-                                        # Window Time
+                                    # Window Time
                                     wt_start = times_c[0]
                                     wt_stop = times_c[-1]
 
@@ -374,27 +374,24 @@ def find_sat_channel(norad_id):
                                     for s in range(num_passes):
                                         times_sat = chrono_ephem[s]["time_array"]
                                         
-                                        # sat before or after window
-                                        if times_sat[-1] < wt_start or times_sat[0] > wt_stop:
-                                            start_idx = None
-                                            stop_idx = None
                                         # sat pass completely within window
-                                        elif times_sat[0] >= wt_start and times_sat[-1] <= wt_stop:
-                                            start_idx = 0
-                                            stop_idx  = -1
+                                        if times_sat[0] >= wt_start and times_sat[-1] <= wt_stop:
+                                            start_idx = list(times_sat).index(times_sat[0])
+                                            stop_idx  = list(times_sat).index(times_sat[-1])
                                         # sat pass starts before window, ends within
                                         elif times_sat[0] < wt_start and times_sat[-1] > wt_start and times_sat[-1] <= wt_stop:
                                             start_idx = list(times_sat).index(wt_start)
-                                            stop_idx  = -1
+                                            stop_idx  = list(times_sat).index(times_sat[-1])
                                         # sat pass starts within window, ends after
-                                        elif times_sat[0] < wt_stop and times_sat[0] <= wt_start and times_sat[-1] > wt_stop:
-                                            start_idx = 0
+                                        elif times_sat[0] < wt_stop and times_sat[0] >= wt_start and times_sat[-1] > wt_stop:
+                                            start_idx = list(times_sat).index(times_sat[0])
                                             stop_idx  = list(times_sat).index(wt_stop)
                                         # sat pass starts before window, ends after
                                         elif times_sat[0] < wt_start and times_sat[-1] > wt_stop:
                                             start_idx = list(times_sat).index(wt_start)
                                             stop_idx  = list(times_sat).index(wt_stop)
-                                        else:
+                                        # sat before or after window
+                                        if times_sat[-1] < wt_start or times_sat[0] > wt_stop:
                                             start_idx = None
                                             stop_idx = None
 
