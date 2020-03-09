@@ -110,12 +110,14 @@ if __name__ == '__main__':
 #    "savefig.facecolor": "#2F1543",
 #    "savefig.edgecolor": "black"})
 
-    plt.scatter(ref_t, ref_p[::, 59], color='#abcb89',marker='.', alpha=0.7, label='ref tile')
-    plt.plot(time_array,ref_p_aligned[::, 59], color='#25a55f', alpha=0.9, label='ref savgol')	
 
-    plt.scatter(tile_t, tile_p[::, 59], color='#ea7362',marker='.', alpha=0.7, label='aut tile')
-    plt.plot(time_array,tile_p_aligned[::, 59], color='#a64942', alpha=0.9, label='aut savgol')
+    plt.plot(time_array,tile_p_aligned[::, 59], color='#e23a4e', alpha=0.9, label='aut savgol')
+    #plt.fill_between(time_array,tile_p_aligned[::, 59], np.full(len(time_array), min(ref_p_aligned[::, 59])), color='#ff5453', alpha=0.8)	
+    plt.scatter(tile_t, tile_p[::, 59], color='#f78b51',marker='.', alpha=0.6, label='aut tile')
     
+    plt.plot(time_array,ref_p_aligned[::, 59], color='#252b40', alpha=0.9, label='ref savgol')	
+    #plt.fill_between(time_array,ref_p_aligned[::, 59], np.full(len(time_array), min(ref_p_aligned[::, 59])), color='#252b40', alpha=0.8)	
+    plt.scatter(ref_t, ref_p[::, 59], color='#6a82bb',marker='.', alpha=0.6, label='ref tile')
 #    plt.scatter(ref_t, ref_p[::, 59], color='#fe6845',marker='.', alpha=0.7)
 #    plt.plot(time_array,ref_p_aligned[::, 59], color='#ec9b3b', alpha=0.9, label='Ref Tile')	
 #
