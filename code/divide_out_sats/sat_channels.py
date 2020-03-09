@@ -304,7 +304,7 @@ parallel=           args.parallel
 
 # Save logs 
 Path(out_dir).mkdir(parents=True, exist_ok=True)
-#sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
 
 # Import list of tile names from rf_data.py
 tiles = rf.tile_names()
@@ -342,19 +342,19 @@ data_dir = Path(data_dir)
 chrono_dir = Path(chrono_dir)
 out_dir = Path(out_dir)
     
-norad_id = 41180
-find_sat_channel(norad_id)
+#norad_id = 41180
+#find_sat_channel(norad_id)
 
-#if parallel != True:
-#    for norad_id in sat_list:
-#        find_sat_channel(norad_id)
-#        break
-#else:
-#    # Parallization magic happens here
-#    with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
-#        results = executor.map(find_sat_channel, sat_list)
-#
-#    for result in results:
-#        print(result)
+if parallel != True:
+    for norad_id in sat_list:
+        find_sat_channel(norad_id)
+        break
+else:
+    # Parallization magic happens here
+    with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
+        results = executor.map(find_sat_channel, sat_list)
+
+    for result in results:
+        print(result)
 
 
