@@ -45,7 +45,7 @@ def plt_waterfall_pass(out_dir, power, sat_id, start, stop, chs, date, cmap):
 def plt_channel(
         out_dir, times, channel_power,
         chan_num, min_s, max_s, noise_threshold,
-        arbitrary_threshold, center, cog, sat_id, date):
+        arbitrary_threshold, center, cog, c_thresh, sat_id, date):
 
     '''Plot power in channel, with various thresholds
     
@@ -59,6 +59,7 @@ def plt_channel(
         arbitrary_threshold: Arbitrary threshold used to only select bright passes
         center:         Center of channel_power
         cog:            Center of gravity of channel_power
+        c_thresh:       Threshold about center
         sat_id:         Norad Cat ID
         date:           Date of observation
         '''
@@ -78,8 +79,8 @@ def plt_channel(
             label=f'Noise Cut: {noise_threshold:.2f} dBm')
     plt.axhspan(-1, noise_threshold, color='#5cb7a9', alpha=0.4)
     
-    plt.axvspan(center-(0.02*len(times)), center+(0.02*len(times)), color='#2b2e4a', alpha=0.4)
-    plt.axvline(center, color='#2b2e4a', alpha=1, label='Center ± 2% ')
+    plt.axvspan(center-(c_thresh*len(times)), center+(c_thresh*len(times)), color='#2b2e4a', alpha=0.4)
+    plt.axvline(center, color='#2b2e4a', alpha=1, label=f'Center ± {c_thresh*100}% ')
     plt.axvline(cog, color='#8cba51', alpha=1, label='CoG')
     
     
