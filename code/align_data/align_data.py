@@ -88,7 +88,7 @@ if __name__ == '__main__':
             savgol_window =151,
             polyorder=1,
             interp_type='cubic',
-            interp_freq=0.5
+            interp_freq=1
             )
 
 
