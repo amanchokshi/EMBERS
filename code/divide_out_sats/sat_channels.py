@@ -234,6 +234,45 @@ def plt_hist(chans, norad_id, pop_chan):
     plt.rcParams.update(plt.rcParamsDefault)
 
 
+def time_filter(s_rise, s_set, times):
+    '''Slice obs window to size of ephem of norad sat
+    Args:
+        s_rise          : ephem rise time
+        s_set           : ephem set time
+        times           : time array of obs
+        '''
+    
+    # I. sat rises before times, sets within times window
+    if (s_rise < times[0] and s_set > times[0] and s_set < times[-1]):
+        i_0 = times.index(times[0])
+        i_1 = times.index(s_set)
+        intvl = [i_0, i_1]
+    
+    # II. sat rises and sets within times
+    elif (s_rise >= times[0] and s_set <= times[-1]):
+        i_0 = times.index(s_rise)
+        i_1 = times.index(s_set)
+        intvl = [i_0, i_1]
+    
+    # III. sat rises within times, and sets after
+    elif (s_rise > times[0] and s_rise < times[-1] and s_set > times[-1]):
+        i_0 = times.index(s_rise)
+        i_1 = times.index(times[-1])
+        intvl = [i_0, i_1]
+    
+    # IV. sat rises before times and sets after
+    elif (s_rise < times[0] and s_set > times[-1]):
+        i_0 = times.index(times[0])
+        i_1 = times.index(times[-1])
+        intvl = [i_0, i_1]
+   
+    # V. sat completely out of times. Could be on either side
+    else:
+         intvl = None
+
+    return intvl
+
+
 
 def find_sat_channel(norad_id):
    
@@ -274,7 +313,6 @@ def find_sat_channel(norad_id):
                     if norad_id in norad_list:
                         norad_index = norad_list.index(norad_id)
                     
-                        #for j in range(num_passes):
                         norad_ephem = chrono_ephem[norad_index]
                             
                         rise_ephem  = norad_ephem["time_array"][0] 
@@ -292,27 +330,29 @@ def find_sat_channel(norad_id):
                                 
                                 Path(f'{out_dir}/{sat_id}').mkdir(parents=True, exist_ok=True)
                                     
-                                # window start, stop
-                                # Case I: Sat rises after obs starts and sets before obs ends
-                                if set_ephem <= times[-1] and rise_ephem >= times[0]:
-                                    w_start = list(times).index(rise_ephem)
-                                    w_stop = list(times).index(set_ephem)
+                                ## window start, stop
+                                ## Case I: Sat rises after obs starts and sets before obs ends
+                                #if set_ephem <= times[-1] and rise_ephem >= times[0]:
+                                #    w_start = list(times).index(rise_ephem)
+                                #    w_stop = list(times).index(set_ephem)
                 
-                                # Case II: Sat rises before obs starts and sets after the obs starts
-                                elif rise_ephem < times[0] and set_ephem > times[0]:
-                                    # w_start = 0
-                                    w_start = list(times).index(times[0])
-                                    w_stop = list(times).index(set_ephem)
+                                ## Case II: Sat rises before obs starts and sets after the obs starts
+                                #elif rise_ephem < times[0] and set_ephem > times[0]:
+                                #    # w_start = 0
+                                #    w_start = list(times).index(times[0])
+                                #    w_stop = list(times).index(set_ephem)
                 
-                                # Case III: Sat rises before obs ends and sets after
-                                elif set_ephem > times[-1] and rise_ephem < times[-1]:
-                                    w_start = list(times).index(rise_ephem)
-                                    w_stop = list(times).index(times[-1])
-                                
-                                # Sat out of bounds
-                                else:
-                                    w_start = 0
-                                    w_stop = 0
+                                ## Case III: Sat rises before obs ends and sets after
+                                #elif set_ephem > times[-1] and rise_ephem < times[-1]:
+                                #    w_start = list(times).index(rise_ephem)
+                                #    w_stop = list(times).index(times[-1])
+                                #
+                                ## Sat out of bounds
+                                #else:
+                                #    w_start = 0
+                                #    w_stop = 0
+
+                                intvl = time_filter(rise_ephem, set_ephem, times)
                 
                                 # length of sat pass. Only consider passes longer than 2 minutes
                                 window_len = w_stop - w_start + 1
