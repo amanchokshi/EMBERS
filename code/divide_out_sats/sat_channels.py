@@ -207,6 +207,9 @@ def find_sat_channel(norad_id):
                                     # Slice [crop] the power/times arrays to the times of sat pass
                                     power_c = power[w_start:w_stop+1, :]
                                     times_c = times[w_start:w_stop+1]
+                                    print(norad_ephem["time_array"][0], times_c[0])
+                                    print(norad_ephem["time_array"][-1], times_c[-1])
+                                    print('-------------------------')
            
                                    
                                     possible_chans = []
