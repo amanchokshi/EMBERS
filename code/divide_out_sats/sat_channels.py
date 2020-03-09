@@ -1,17 +1,22 @@
 import math
+# Force matplotlib to not use X-Server backend
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 import json
 import argparse
 import numpy as np
 import seaborn as sns
 import concurrent.futures
-#import matplotlib.pyplot as plt
+from scipy import interpolate
+from scipy.signal import savgol_filter
 from scipy.stats import median_absolute_deviation as mad
 from datetime import datetime, timedelta
 from pathlib import Path
 
 
-import matplotlib
 # Force matplotlib to not use X-Server backend
+import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
@@ -20,11 +25,11 @@ sys.path.append('../decode_rf_data')
 sys.path.append('../sat_ephemeris')
 import rf_data as rf
 from colormap import spectral
+# Custom spectral colormap
+cmap = spectral()
 import sat_ids
 
-
-from scipy import interpolate
-from scipy.signal import savgol_filter
+from channels_plt import plt_waterfall_pass, plt_channel, plt_hist, sat_plot
 
 
 parser = argparse.ArgumentParser(description="""
@@ -39,7 +44,7 @@ parser.add_argument('--chrono_dir', metavar='\b', default='./../../outputs/sat_e
 parser.add_argument('--savgol_window', metavar='\b', default=151,help='Length of savgol window. Must be odd. Default=151')
 parser.add_argument('--polyorder', metavar='\b', default=1,help='Order of polynomial to fit to savgol window. Default=1')
 parser.add_argument('--interp_type', metavar='\b', default='cubic',help='Type of interpolation. Ex: cubic, linear, etc. Default=cubic')
-parser.add_argument('--interp_freq', metavar='\b', default=2,help='Frequency at which to resample smoothed data, in Hertz. Default=2')
+parser.add_argument('--interp_freq', metavar='\b', default=1,help='Frequency at which to resample smoothed data, in Hertz. Default=2')
 parser.add_argument('--parallel', metavar='\b', default=True,help='If parallel=False, paralellization will be disabled.')
 
 
@@ -68,46 +73,6 @@ def savgol_interp(ref, savgol_window =None, polyorder=None, interp_type=None, in
     return (power_smooth, time_smooth)
 
 
-def plt_waterfall_pass(power, sat_id, start, stop, chs, date):
-    '''Plot waterfall with sat window and occupied channels
-    
-    Args:
-        power:          RF power array
-        sat_id:         Norad cat ID
-        start:          Start of epehm for sat_id
-        stop:           Stop of ephem of sat_id
-        chs:            Occupied channels [list]
-        date:           Date of observation
-    '''
-
-    # Custom spectral colormap
-    cmap = spectral()
-    
-    plt.style.use('dark_background')
-    fig = plt.figure(figsize = (7,10))
-    ax = fig.add_axes([0.12, 0.1, 0.72, 0.85])
-    im = ax.imshow(power, interpolation='none', cmap=cmap)
-    cax = fig.add_axes([0.88, 0.1, 0.03, 0.85])
-    fig.colorbar(im, cax=cax)
-    ax.set_aspect('auto')
-    ax.set_title(f'Waterfall Plot: {sat_id} in {chs}')
-    
-    ax.set_xlabel('Freq Channel')
-    ax.set_ylabel('Time Step')
-    
-    # horizontal highlight of ephem
-    ax.axhspan(start, stop, alpha=0.1, color='white')
-    
-    # vertical highlight of channel
-    for ch in chs:
-        ax.axvspan(ch-1.0, ch+0.6, alpha=0.2, color='white')
-    
-    #plt.show()
-    plt.savefig(f'{out_dir}/{sat_id}/{date}_{sat_id}_waterfall.png')
-    plt.close()
-    plt.rcParams.update(plt.rcParamsDefault)
-
-
 def center_of_gravity(channel_power, times_c):
     '''Determine center of gravity of channel power
     
@@ -130,108 +95,6 @@ def center_of_gravity(channel_power, times_c):
     frac_cen_offset = del_c/(channel_power.shape[0])
 
     return (center, cog, frac_cen_offset)
-
-
-def plt_channel(times, channel_power, chan_num, min_s, max_s, noise_threshold, arbitrary_threshold, center, cog, sat_id, date):
-    '''Plot power in channel, with various thresholds
-    
-    Args:
-        times:          Time array
-        channel_power:  Power in channel
-        chan_num:       Channel Number
-        min_s:          Minimum signal in channel_power
-        max_s:          Maximum signal in channel_power
-        noise_threshold: Noise Threshold (n*MAD)
-        arbitrary_threshold: Arbitrary threshold used to only select bright passes
-        center:         Center of channel_power
-        cog:            Center of gravity of channel_power
-        sat_id:         Norad Cat ID
-        date:           Date of observation
-        '''
-    
-    
-    plt.style.use('seaborn')
-    
-    # plt channel power
-    plt.plot(times, channel_power, linestyle='-', linewidth=2, alpha=1.0, color='#db3751', label='Data')
-    plt.fill_between(times, channel_power, color='#db3751', alpha=0.7)
-    
-    plt.axhline(arbitrary_threshold,alpha=1.0, linestyle='-', linewidth=2,
-            color='#fba95f', label=f'Arbitrary Cut: {arbitrary_threshold} dBm')
-    plt.axhspan(-1, arbitrary_threshold, color='#fba95f', alpha=0.4)
-    
-    plt.axhline(noise_threshold, linestyle='-', linewidth=2, color='#5cb7a9',
-            label=f'Noise Cut: {noise_threshold:.2f} dBm')
-    plt.axhspan(-1, noise_threshold, color='#5cb7a9', alpha=0.4)
-    
-    plt.axvspan(center-(0.02*len(times)), center+(0.02*len(times)), color='#2b2e4a', alpha=0.4)
-    plt.axvline(center, color='#2b2e4a', alpha=1, label='Center ± 2% ')
-    plt.axvline(cog, color='#8cba51', alpha=1, label='CoG')
-    
-    
-    plt.ylim([min_s - 1, max_s + 1])
-    plt.xlim([times[0], times[-1]])
-    plt.ylabel('Power [dBm]')
-    plt.xlabel('Time [s]')
-    plt.title(f'Satellite Pass in Channel: [{chan_num}]')
-    plt.tight_layout()
-    leg = plt.legend(frameon=True)
-    leg.get_frame().set_facecolor('grey')
-    leg.get_frame().set_alpha(0.2)
-    for l in leg.legendHandles:
-        l.set_alpha(1)
-    plt.savefig(f'{out_dir}/{sat_id}/{date}_{sat_id}_{chan_num}_channel.png')
-    plt.close()
-    plt.rcParams.update(plt.rcParamsDefault)
-
-
-def sat_plot(ids, norad_id, alt, az, num_passes, date):
-    '''Plots satellite passes
-    
-    Args:
-        alt: list of altitude values
-        az: list of azimuth values
-        num_passes: Number of satellite passes
-    '''
-    
-    
-    # Set up the polar plot.
-    plt.style.use('dark_background')
-    figure = plt.figure(figsize=(8,6))
-    ax = figure.add_subplot(111, polar=True)
-    ax.set_ylim(90, 0)
-    ax.set_rgrids([0,30,60,90], angle=22)
-    ax.set_theta_zero_location('N')
-    ax.set_theta_direction(-1)
-    ax.set_title(f'Satellite on {date}: {num_passes} Passes', y=1.08)
-    ax.grid(color='#8bbabb', linewidth=1.6, alpha=0.6)
-    plt.tight_layout()
-    
-    for i in range(len(alt)):
-        plt.plot(az[i], alt[i], '-', linewidth=1.6, label=f'{ids[i]}')
-        plt.legend(bbox_to_anchor=(0.28, 1.0, 1., .102), loc='upper right')
-    
-    plt.savefig(f'{out_dir}/{norad_id}/{date}_passes.png')
-    plt.close()
-    plt.rcParams.update(plt.rcParamsDefault)
-
-
-def plt_hist(chans, norad_id, pop_chan):
-    '''Plt histogram of occupied channels'''
-    
-    #plt.rcParams.update(plt.rcParamsDefault)
-    sns.set()
-    values, counts = np.unique(chans, return_counts=True)
-    y_pos = np.arange(len(values))
-    plt.bar(y_pos, counts, color=sns.color_palette("GnBu_d", len(counts)))
-    plt.ylabel('Number of Passes in Channel')
-    plt.xlabel('Channel')
-    plt.xticks(y_pos, values)
-    plt.title(f'Possible Transmission Channels of Satellite [{norad_id}]')
-    plt.tight_layout()
-    plt.savefig(f'{out_dir}/{norad_id}/Channels_histogram_{norad_id}_{pop_chan}.png')
-    plt.close()
-    plt.rcParams.update(plt.rcParamsDefault)
 
 
 def time_filter(s_rise, s_set, times):
@@ -282,7 +145,6 @@ def find_sat_channel(norad_id):
     # Loop through days
     for day in range(len(dates)):
         
-        
         # Loop through each 30 min obs in day
         for window in range(len(date_time[day])):
             
@@ -330,7 +192,8 @@ def find_sat_channel(norad_id):
                             if sat_alt_max >= 20:
                                 
                                 Path(f'{out_dir}/{sat_id}').mkdir(parents=True, exist_ok=True)
-                                    
+                                   
+                                print(len(norad_ephem['time_array']))
                                 intvl = time_filter(rise_ephem, set_ephem, times)
 
                                 if intvl != None:
@@ -338,6 +201,7 @@ def find_sat_channel(norad_id):
                 
                                     # length of sat pass. Only consider passes longer than 2 minutes
                                     window_len = w_stop - w_start + 1
+                                    print(window_len)
                                     
                                     if window_len >= 240: #(240*0.5 = 120s)
     
@@ -376,17 +240,21 @@ def find_sat_channel(norad_id):
                                                         if frac_cen_offset <= 0.02:
                                                         
                                                             # Plots the channel with satellite pass
-                                                            plt_channel(times_c, power_c[:, s_chan],
+                                                            plt_channel(
+                                                                    out_dir, times_c, power_c[:, s_chan],
                                                                     s_chan, min_s, max_s, noise_threshold,
-                                                                    arbitrary_threshold,center, cog, sat_id, f'{date_time[day][window]}')
+                                                                    arbitrary_threshold,center, cog,
+                                                                    sat_id, f'{date_time[day][window]}')
                                                             
                                                             possible_chans.append(s_chan)
                                                             #chans.append(s_chan)
                                         
-                                        if len(possible_chans) < 1:
-                                            pass
-                                        else:
-                                            plt_waterfall_pass(power, sat_id, w_start, w_stop, possible_chans, f'{date_time[day][window]}')
+                                        if len(possible_chans) > 0:
+                                            plt_waterfall_pass(
+                                                    out_dir, power, sat_id,
+                                                    w_start, w_stop, possible_chans,
+                                                    f'{date_time[day][window]}', cmap)
+                                            
                                             chans.extend(possible_chans)
 
 
@@ -406,7 +274,7 @@ def find_sat_channel(norad_id):
                                                 alt.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
                                                 az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
 
-                                        sat_plot(ids, norad_id, alt, az, len(ids), f'{date_time[day][window]}')
+                                        sat_plot(out_dir, ids, norad_id, alt, az, len(ids), f'{date_time[day][window]}')
 
                                     
 
@@ -416,7 +284,7 @@ def find_sat_channel(norad_id):
         chans = np.array(chans).astype('int64')
         counts = np.bincount(chans)
         pop_chan = np.argmax(counts)
-        plt_hist(chans, norad_id, pop_chan)
+        plt_hist(out_dir, chans, norad_id, pop_chan)
         print(f'Most frequently occupied channel for sat {norad_id}: {pop_chan}')
 
 
@@ -436,7 +304,7 @@ parallel=           args.parallel
 
 # Save logs 
 Path(out_dir).mkdir(parents=True, exist_ok=True)
-sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+#sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
 
 # Import list of tile names from rf_data.py
 tiles = rf.tile_names()
