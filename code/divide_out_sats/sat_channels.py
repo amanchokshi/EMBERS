@@ -185,7 +185,7 @@ def plt_channel(times, channel_power, chan_num, min_s, max_s, noise_threshold, a
     plt.rcParams.update(plt.rcParamsDefault)
 
 
-def sat_plot(sat_id, alt, az, num_passes, date):
+def sat_plot(ids, norad_id, alt, az, num_passes, date):
     '''Plots satellite passes
     
     Args:
@@ -208,10 +208,10 @@ def sat_plot(sat_id, alt, az, num_passes, date):
     plt.tight_layout()
     
     for i in range(len(alt)):
-        plt.plot(az[i], alt[i], '-', linewidth=1.6, label=f'{sat_id[i]}')
+        plt.plot(az[i], alt[i], '-', linewidth=1.6, label=f'{ids[i]}')
         plt.legend(bbox_to_anchor=(0.28, 1.0, 1., .102), loc='upper right')
     
-    plt.savefig(f'{out_dir}/{date}_passes.png')
+    plt.savefig(f'{out_dir}/{norad_id}/{date}_passes.png')
     plt.close()
     plt.rcParams.update(plt.rcParamsDefault)
 
@@ -269,11 +269,6 @@ def find_sat_channel(norad_id):
 
                     num_passes = len(chrono_ephem)
 
-                    alt = [chrono_ephem[i]["sat_alt"] for i in range(num_passes)]
-                    az  = [chrono_ephem[i]["sat_az"] for i in range(num_passes)]
-                    ids = [chrono_ephem[i]["sat_id"][0] for i in range(num_passes)]
-
-                    sat_plot(ids, alt, az, num_passes, f'{date_time[day][window]}')
 
                 
                     for j in range(num_passes):
@@ -364,6 +359,12 @@ def find_sat_channel(norad_id):
                                     else:
                                         plt_waterfall_pass(power, sat_id, w_start, w_stop, possible_chans, f'{date_time[day][window]}')
                                         chans.extend(possible_chans)
+                                        
+                                        alt = [chrono_ephem[i]["sat_alt"] for i in range(num_passes)]
+                                        az  = [chrono_ephem[i]["sat_az"] for i in range(num_passes)]
+                                        ids = [chrono_ephem[i]["sat_id"][0] for i in range(num_passes)]
+
+                                        sat_plot(ids, norad_id, alt, az, num_passes, f'{date_time[day][window]}')
 
                                     
 
