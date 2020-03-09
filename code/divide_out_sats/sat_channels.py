@@ -106,7 +106,7 @@ def time_filter(s_rise, s_set, times):
         '''
     
     # I. sat rises before times, sets within times window
-    if (s_rise < times[0] and s_set > times[0] and s_set < times[-1]):
+    if (s_rise < times[0] and s_set > times[0] and s_set <= times[-1]):
         i_0 = np.where(times == times[0])[0][0]
         i_1 = np.where(times == s_set)[0][0]
         intvl = [i_0, i_1]
@@ -118,7 +118,7 @@ def time_filter(s_rise, s_set, times):
         intvl = [i_0, i_1]
     
     # III. sat rises within times, and sets after
-    elif (s_rise > times[0] and s_rise < times[-1] and s_set > times[-1]):
+    elif (s_rise >= times[0] and s_rise < times[-1] and s_set > times[-1]):
         i_0 = np.where(times == s_rise)[0][0]
         i_1 = np.where(times == times[-1])[0][0]
         intvl = [i_0, i_1]
@@ -193,7 +193,7 @@ def find_sat_channel(norad_id):
                             
                             Path(f'{out_dir}/{norad_id}').mkdir(parents=True, exist_ok=True)
                                
-                            intvl = time_filter(rise_ephem, set_ephem, times)
+                            intvl = time_filter(rise_ephem, set_ephem, np.asarray(times))
 
                             if intvl != None:
                                 
@@ -260,19 +260,19 @@ def find_sat_channel(norad_id):
                                     ids = []
                                     alt = []
                                     az  = []
-
-                                    for s in range(num_passes):
+                                    
+                                    for s in range(len(chrono_ephem)):
                                         times_sat = chrono_ephem[s]["time_array"]
                                         
                                         intvl_ephem = time_filter(times_sat[0], times_sat[-1], times_c)
-
+                                        
                                         if intvl_ephem != None:
                                             e_0, e_1 = intvl_ephem
                                             
                                             ids.extend(chrono_ephem[s]["sat_id"])
                                             alt.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
                                             az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
-
+                                            
                                     if norad_id in ids:
                                         sat_plot(out_dir, ids, norad_id, alt, az, len(ids), f'{date_time[day][window]}')
 
@@ -304,7 +304,7 @@ parallel=           args.parallel
 
 # Save logs 
 Path(out_dir).mkdir(parents=True, exist_ok=True)
-sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+#sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
 
 # Import list of tile names from rf_data.py
 tiles = rf.tile_names()
