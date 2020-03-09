@@ -268,15 +268,21 @@ def find_sat_channel(norad_id):
                     chrono_ephem = json.load(chrono)
 
                     num_passes = len(chrono_ephem)
+    
+                    norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(num_passes)]
 
-                    for j in range(num_passes):
+                    if norad_id in norad_list:
+                        norad_index = norad_list.index(norad_id)
                     
-                        rise_ephem  = chrono_ephem[j]["time_array"][0] 
-                        set_ephem   = chrono_ephem[j]["time_array"][-1]
-                        sat_id      = chrono_ephem[j]["sat_id"][0]
+                        #for j in range(num_passes):
+                        norad_ephem = chrono_ephem[norad_index]
+                            
+                        rise_ephem  = norad_ephem["time_array"][0] 
+                        set_ephem   = norad_ephem["time_array"][-1]
+                        sat_id      = norad_ephem["sat_id"][0]
                         
                         # Max altitude that the sat attains
-                        sat_alt_max = np.amax(chrono_ephem[j]["sat_alt"])
+                        sat_alt_max = np.amax(norad_ephem["sat_alt"])
                 
                         # Focus on one sat at a time
                         if sat_id == norad_id:
@@ -361,51 +367,51 @@ def find_sat_channel(norad_id):
                                         plt_waterfall_pass(power, sat_id, w_start, w_stop, possible_chans, f'{date_time[day][window]}')
                                         chans.extend(possible_chans)
 
-                                    # Window Time
-                                    wt_start = times_c[0]
-                                    wt_stop = times_c[-1]
+                                    ## Window Time
+                                    #wt_start = times_c[0]
+                                    #wt_stop = times_c[-1]
 
-                                    # TODO only want to plot ephem of sats within the window of w_start:w_stop+1
-                                    
-                                    ids = []
-                                    alt = []
-                                    az  = []
+                                    ## TODO only want to plot ephem of sats within the window of w_start:w_stop+1
+                                    #
+                                    #ids = []
+                                    #alt = []
+                                    #az  = []
 
-                                    for s in range(num_passes):
-                                        times_sat = chrono_ephem[s]["time_array"]
-                                        
-                                        # sat pass completely within window
-                                        if times_sat[0] >= wt_start and times_sat[-1] <= wt_stop:
-                                            start_idx = list(times_sat).index(times_sat[0])
-                                            stop_idx  = list(times_sat).index(times_sat[-1])
-                                        # sat pass starts before window, ends within
-                                        elif times_sat[0] < wt_start and times_sat[-1] > wt_start and times_sat[-1] <= wt_stop:
-                                            start_idx = list(times_sat).index(wt_start)
-                                            stop_idx  = list(times_sat).index(times_sat[-1])
-                                        # sat pass starts within window, ends after
-                                        elif times_sat[0] < wt_stop and times_sat[0] >= wt_start and times_sat[-1] > wt_stop:
-                                            start_idx = list(times_sat).index(times_sat[0])
-                                            stop_idx  = list(times_sat).index(wt_stop)
-                                        # sat pass starts before window, ends after
-                                        elif times_sat[0] < wt_start and times_sat[-1] > wt_stop:
-                                            start_idx = list(times_sat).index(wt_start)
-                                            stop_idx  = list(times_sat).index(wt_stop)
-                                        # sat before or after window
-                                        if times_sat[-1] < wt_start or times_sat[0] > wt_stop:
-                                            start_idx = None
-                                            stop_idx = None
+                                    #for s in range(num_passes):
+                                    #    times_sat = chrono_ephem[s]["time_array"]
+                                    #    
+                                    #    # sat pass completely within window
+                                    #    if times_sat[0] >= wt_start and times_sat[-1] <= wt_stop:
+                                    #        start_idx = list(times_sat).index(times_sat[0])
+                                    #        stop_idx  = list(times_sat).index(times_sat[-1])
+                                    #    # sat pass starts before window, ends within
+                                    #    elif times_sat[0] < wt_start and times_sat[-1] > wt_start and times_sat[-1] <= wt_stop:
+                                    #        start_idx = list(times_sat).index(wt_start)
+                                    #        stop_idx  = list(times_sat).index(times_sat[-1])
+                                    #    # sat pass starts within window, ends after
+                                    #    elif times_sat[0] < wt_stop and times_sat[0] >= wt_start and times_sat[-1] > wt_stop:
+                                    #        start_idx = list(times_sat).index(times_sat[0])
+                                    #        stop_idx  = list(times_sat).index(wt_stop)
+                                    #    # sat pass starts before window, ends after
+                                    #    elif times_sat[0] < wt_start and times_sat[-1] > wt_stop:
+                                    #        start_idx = list(times_sat).index(wt_start)
+                                    #        stop_idx  = list(times_sat).index(wt_stop)
+                                    #    # sat before or after window
+                                    #    if times_sat[-1] < wt_start or times_sat[0] > wt_stop:
+                                    #        start_idx = None
+                                    #        stop_idx = None
 
-                                        if start_idx and stop_idx != None:
-                                            ids.append(chrono_ephem[s]["sat_id"][0])
-                                            alt.append(chrono_ephem[s]["sat_alt"][start_idx:stop_idx])
-                                            az.append(chrono_ephem[s]["sat_az"][start_idx:stop_idx])
+                                    #    if start_idx and stop_idx != None:
+                                    #        ids.append(chrono_ephem[s]["sat_id"][0])
+                                    #        alt.append(chrono_ephem[s]["sat_alt"][start_idx:stop_idx])
+                                    #        az.append(chrono_ephem[s]["sat_az"][start_idx:stop_idx])
 
 
-                                    #ids = [chrono_ephem[i]["sat_id"][0] for i in range(num_passes)]
-                                    #alt = [chrono_ephem[i]["sat_alt"] for i in range(num_passes)]
-                                    #az  = [chrono_ephem[i]["sat_az"] for i in range(num_passes)]
+                                    ##ids = [chrono_ephem[i]["sat_id"][0] for i in range(num_passes)]
+                                    ##alt = [chrono_ephem[i]["sat_alt"] for i in range(num_passes)]
+                                    ##az  = [chrono_ephem[i]["sat_az"] for i in range(num_passes)]
 
-                                    sat_plot(ids, norad_id, alt, az, len(ids), f'{date_time[day][window]}')
+                                    #sat_plot(ids, norad_id, alt, az, len(ids), f'{date_time[day][window]}')
 
                                     
 
