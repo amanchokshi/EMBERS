@@ -206,89 +206,94 @@ def find_sat_channel(norad_id):
                 
                     for j in range(len(chrono_ephem)):
                     
-                        rise_ephem = chrono_ephem[j]["time_array"][0] 
-                        set_ephem  = chrono_ephem[j]["time_array"][-1]
-                        sat_id = chrono_ephem[j]["sat_id"][0]
+                        rise_ephem  = chrono_ephem[j]["time_array"][0] 
+                        set_ephem   = chrono_ephem[j]["time_array"][-1]
+                        sat_alt_max = np.amax(chrono_ephem[j]["sat_alt"])
+                        sat_id      = chrono_ephem[j]["sat_id"][0]
                 
+                        # Focus on one sat at a time
                         if sat_id == norad_id:
-                                
-                            Path(f'{out_dir}/{sat_id}').mkdir(parents=True, exist_ok=True)
-                
-                            # Case I: Sat rises after obs starts and sets before obs ends
-                            if set_ephem <= times[-1] and rise_ephem >= times[0]:
-                                w_start = list(times).index(rise_ephem)
-                                w_stop = list(times).index(set_ephem)
-                
-                            # Case II: Sat rises before obs starts and sets after the obs starts
-                            elif rise_ephem < times[0] and set_ephem > times[0]:
-                                # w_start = 0
-                                w_start = list(times).index(times[0])
-                                w_stop = list(times).index(set_ephem)
-                
-                            # Case III: Sat rises before obs ends and sets after
-                            elif set_ephem > times[-1] and rise_ephem < times[-1]:
-                                w_start = list(times).index(rise_ephem)
-                                w_stop = list(times).index(times[-1])
                             
-                            # Sat out of bounds
-                            else:
-                                w_start = 0
-                                w_stop = 0
-                
-                            # length of sat pass. Only consider passes longer than 2 minutes
-                            window_len = w_stop - w_start + 1
-                            
-                            if window_len >= 240: #(240*0.5 = 120s)
-    
-                                # Slice [crop] the power/times arrays to the times of sat pass
-                                power_c = power[w_start:w_stop+1, :]
-                                times_c = times[w_start:w_stop+1]
-           
-                               
-                                possible_chans = []
-
-                                # Loop over every channel
-                                for s_chan in range(len(power_c[0])):
-                                    
-                                    channel_power = power_c[:, s_chan]
-                
-                                    max_s = np.amax(channel_power)
-                                    min_s = np.amin(channel_power)
-
-                                    # Arbitrary threshold below which satellites aren't counted
-                                    if max(channel_power) >= arbitrary_threshold:
-                                      
-                                        # Percentage of signal occupancy above noise threshold
-                                        window_occupancy = (np.where(channel_power >= noise_threshold))[0].size/window_len
-                                        
-                                        # Only continue if there is signal for more than 80% of satellite pass
-                                        if window_occupancy >= 0.80 and window_occupancy < 1.00:
-
-                                            # Make sure that the ends are close to the noise floor
-                                            if (all(p < noise_threshold for p in channel_power[:10]) and 
-                                                all(p < noise_threshold for p in channel_power[-11:-1])) is True:
-
-                                                center, cog, frac_cen_offset = center_of_gravity(channel_power, times_c)
-
-                                                # Another threshold
-                                                # The Center of Gravity of signal is within 2% of center
-                                                if frac_cen_offset <= 0.02:
-                                                
-                                                    # Plots the channel with satellite pass
-                                                    plt_channel(times_c, power_c[:, s_chan],
-                                                            s_chan, min_s, max_s, noise_threshold,
-                                                            arbitrary_threshold,center, cog, sat_id, f'{date_time[day][window]}')
-                                                    
-                                                    possible_chans.append(s_chan)
-                                                    #chans.append(s_chan)
+                            # Altitude threshold. Sats below 15 degrees are bound to be faint, and not register
+                            if sat_alt_max >= 15:
                                 
-                                if len(possible_chans) < 1:
-                                    pass
+                                Path(f'{out_dir}/{sat_id}').mkdir(parents=True, exist_ok=True)
+                
+                                # Case I: Sat rises after obs starts and sets before obs ends
+                                if set_ephem <= times[-1] and rise_ephem >= times[0]:
+                                    w_start = list(times).index(rise_ephem)
+                                    w_stop = list(times).index(set_ephem)
+                
+                                # Case II: Sat rises before obs starts and sets after the obs starts
+                                elif rise_ephem < times[0] and set_ephem > times[0]:
+                                    # w_start = 0
+                                    w_start = list(times).index(times[0])
+                                    w_stop = list(times).index(set_ephem)
+                
+                                # Case III: Sat rises before obs ends and sets after
+                                elif set_ephem > times[-1] and rise_ephem < times[-1]:
+                                    w_start = list(times).index(rise_ephem)
+                                    w_stop = list(times).index(times[-1])
+                                
+                                # Sat out of bounds
                                 else:
-                                    plt_waterfall_pass(power, sat_id, w_start, w_stop, possible_chans, f'{date_time[day][window]}')
-                                    chans.extend(possible_chans)
-
+                                    w_start = 0
+                                    w_stop = 0
+                
+                                # length of sat pass. Only consider passes longer than 2 minutes
+                                window_len = w_stop - w_start + 1
                                 
+                                if window_len >= 240: #(240*0.5 = 120s)
+    
+                                    # Slice [crop] the power/times arrays to the times of sat pass
+                                    power_c = power[w_start:w_stop+1, :]
+                                    times_c = times[w_start:w_stop+1]
+           
+                                   
+                                    possible_chans = []
+
+                                    # Loop over every channel
+                                    for s_chan in range(len(power_c[0])):
+                                        
+                                        channel_power = power_c[:, s_chan]
+                
+                                        max_s = np.amax(channel_power)
+                                        min_s = np.amin(channel_power)
+
+                                        # Arbitrary threshold below which satellites aren't counted
+                                        if max(channel_power) >= arbitrary_threshold:
+                                          
+                                            # Percentage of signal occupancy above noise threshold
+                                            window_occupancy = (np.where(channel_power >= noise_threshold))[0].size/window_len
+                                            
+                                            # Only continue if there is signal for more than 80% of satellite pass
+                                            if window_occupancy >= 0.80 and window_occupancy < 1.00:
+
+                                                # Make sure that the ends are close to the noise floor
+                                                if (all(p < noise_threshold for p in channel_power[:10]) and 
+                                                    all(p < noise_threshold for p in channel_power[-11:-1])) is True:
+
+                                                    center, cog, frac_cen_offset = center_of_gravity(channel_power, times_c)
+
+                                                    # Another threshold
+                                                    # The Center of Gravity of signal is within 2% of center
+                                                    if frac_cen_offset <= 0.02:
+                                                    
+                                                        # Plots the channel with satellite pass
+                                                        plt_channel(times_c, power_c[:, s_chan],
+                                                                s_chan, min_s, max_s, noise_threshold,
+                                                                arbitrary_threshold,center, cog, sat_id, f'{date_time[day][window]}')
+                                                        
+                                                        possible_chans.append(s_chan)
+                                                        #chans.append(s_chan)
+                                    
+                                    if len(possible_chans) < 1:
+                                        pass
+                                    else:
+                                        plt_waterfall_pass(power, sat_id, w_start, w_stop, possible_chans, f'{date_time[day][window]}')
+                                        chans.extend(possible_chans)
+
+                                    
 
     if chans == []:
         print(f'No identified sat channels for sat  {norad_id}')
