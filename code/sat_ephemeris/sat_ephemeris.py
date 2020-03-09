@@ -240,7 +240,7 @@ if __name__ == '__main__':
             
     parser.add_argument('--sat', metavar='\b', help='The Norad cat ID of satellite. Example: 21576')
     parser.add_argument('--tle_dir', metavar='\b', default='./../../outputs/sat_ephemeris/TLE', help='Directory where TLE files are saved. Default=./../../outputs/sat_ephemeris/TLE')
-    parser.add_argument('--cadence', metavar='\b', default=2, help='Rate at which sat alt/az is computed. Default=2s')
+    parser.add_argument('--cadence', metavar='\b', default=4, help='Rate at which sat alt/az is computed. Default=4s')
     parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/sat_ephemeris/ephem_json/', help='Path to output directory. Default=./../../outputs/sat_ephemeris/ephem_json/')
 
     
