@@ -257,24 +257,24 @@ def find_sat_channel(norad_id):
                                         chans.extend(possible_chans)
 
 
-                                    ids = []
-                                    alt = []
-                                    az  = []
-                                    
-                                    for s in range(len(chrono_ephem)):
-                                        times_sat = chrono_ephem[s]["time_array"]
+                                        ids = []
+                                        alt = []
+                                        az  = []
                                         
-                                        intvl_ephem = time_filter(times_sat[0], times_sat[-1], times_c)
-                                        
-                                        if intvl_ephem != None:
-                                            e_0, e_1 = intvl_ephem
+                                        for s in range(len(chrono_ephem)):
+                                            times_sat = chrono_ephem[s]["time_array"]
                                             
-                                            ids.extend(chrono_ephem[s]["sat_id"])
-                                            alt.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
-                                            az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
+                                            intvl_ephem = time_filter(times_sat[0], times_sat[-1], times_c)
                                             
-                                    if norad_id in ids:
-                                        sat_plot(out_dir, ids, norad_id, alt, az, len(ids), f'{date_time[day][window]}')
+                                            if intvl_ephem != None:
+                                                e_0, e_1 = intvl_ephem
+                                                
+                                                ids.extend(chrono_ephem[s]["sat_id"])
+                                                alt.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
+                                                az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
+                                                
+                                        if norad_id in ids:
+                                            sat_plot(out_dir, ids, norad_id, alt, az, len(ids), f'{date_time[day][window]}')
 
                                     
 
