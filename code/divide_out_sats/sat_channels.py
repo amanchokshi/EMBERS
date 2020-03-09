@@ -107,35 +107,30 @@ def time_filter(s_rise, s_set, times):
     
     # I. sat rises before times, sets within times window
     if (s_rise < times[0] and s_set > times[0] and s_set < times[-1]):
-        print('I')
         i_0 = np.where(times == times[0])[0][0]
         i_1 = np.where(times == s_set)[0][0]
         intvl = [i_0, i_1]
     
     # II. sat rises and sets within times
     elif (s_rise >= times[0] and s_set <= times[-1]):
-        print('II')
         i_0 = np.where(times == s_rise)[0][0]
         i_1 = np.where(times == s_set)[0][0]
         intvl = [i_0, i_1]
     
     # III. sat rises within times, and sets after
     elif (s_rise > times[0] and s_rise < times[-1] and s_set > times[-1]):
-        print('III')
         i_0 = np.where(times == s_rise)[0][0]
         i_1 = np.where(times == times[-1])[0][0]
         intvl = [i_0, i_1]
     
     # IV. sat rises before times and sets after
     elif (s_rise < times[0] and s_set > times[-1]):
-        print('IV')
         i_0 = np.where(times == times[0])[0][0]
         i_1 = np.where(times == times[-1])[0][0]
         intvl = [i_0, i_1]
    
     # V. sat completely out of times. Could be on either side
     else:
-        print('V')
         intvl = None
     
     # intvl = interval
@@ -278,7 +273,8 @@ def find_sat_channel(norad_id):
                                             alt.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
                                             az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
 
-                                    sat_plot(out_dir, ids, norad_id, alt, az, len(ids), f'{date_time[day][window]}')
+                                    if norad_id in ids:
+                                        sat_plot(out_dir, ids, norad_id, alt, az, len(ids), f'{date_time[day][window]}')
 
                                     
 
@@ -308,7 +304,7 @@ parallel=           args.parallel
 
 # Save logs 
 Path(out_dir).mkdir(parents=True, exist_ok=True)
-#sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
 
 # Import list of tile names from rf_data.py
 tiles = rf.tile_names()
