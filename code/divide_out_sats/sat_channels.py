@@ -69,6 +69,16 @@ def savgol_interp(ref, savgol_window =None, polyorder=None, interp_type=None, in
 
 
 def plt_waterfall_pass(power, sat_id, start, stop, chs, date):
+    '''Plot waterfall with sat window and occupied channels
+    
+    Args:
+        power:          RF power array
+        sat_id:         Norad cat ID
+        start:          Start of epehm for sat_id
+        stop:           Stop of ephem of sat_id
+        chs:            Occupied channels [list]
+        date:           Date of observation
+    '''
 
     # Custom spectral colormap
     cmap = spectral()
@@ -99,7 +109,12 @@ def plt_waterfall_pass(power, sat_id, start, stop, chs, date):
 
 
 def center_of_gravity(channel_power, times_c):
-    '''Determine center of gravity of channel power'''
+    '''Determine center of gravity of channel power
+    
+    Args:
+        channel_power:  Power in one channel
+        times_c:        Corresponding time array
+    '''
 
     # a list of indices for a column, and the center of this list
     #t = np.arange(channel_power.shape[0])
@@ -117,9 +132,25 @@ def center_of_gravity(channel_power, times_c):
     return (center, cog, frac_cen_offset)
 
 
-def plt_channel(times, channel_power, chan_num, min_s, max_s, noise_threshold, arbitrary_threshold, center, cog, sat_id, idx):
-    plt.style.use('seaborn')
+def plt_channel(times, channel_power, chan_num, min_s, max_s, noise_threshold, arbitrary_threshold, center, cog, sat_id, date):
+    '''Plot power in channel, with various thresholds
     
+    Args:
+        times:          Time array
+        channel_power:  Power in channel
+        chan_num:       Channel Number
+        min_s:          Minimum signal in channel_power
+        max_s:          Maximum signal in channel_power
+        noise_threshold: Noise Threshold (n*MAD)
+        arbitrary_threshold: Arbitrary threshold used to only select bright passes
+        center:         Center of channel_power
+        cog:            Center of gravity of channel_power
+        sat_id:         Norad Cat ID
+        date:           Date of observation
+        '''
+    
+    
+    plt.style.use('seaborn')
     
     # plt channel power
     plt.plot(times, channel_power, linestyle='-', linewidth=2, alpha=1.0, color='#db3751', label='Data')
@@ -149,12 +180,13 @@ def plt_channel(times, channel_power, chan_num, min_s, max_s, noise_threshold, a
     leg.get_frame().set_alpha(0.2)
     for l in leg.legendHandles:
         l.set_alpha(1)
-    plt.savefig(f'{out_dir}/{sat_id}/{idx}_{sat_id}_{chan_num}_channel.png')
+    plt.savefig(f'{out_dir}/{sat_id}/{date}_{sat_id}_{chan_num}_channel.png')
     plt.close()
     plt.rcParams.update(plt.rcParamsDefault)
 
 
 def plt_hist(chans, norad_id, pop_chan):
+    '''Plt histogram of occupied channels'''
     
     #plt.rcParams.update(plt.rcParamsDefault)
     sns.set()
@@ -214,8 +246,8 @@ def find_sat_channel(norad_id):
                         # Focus on one sat at a time
                         if sat_id == norad_id:
                             
-                            # Altitude threshold. Sats below 15 degrees are bound to be faint, and not register
-                            if sat_alt_max >= 15:
+                            # Altitude threshold. Sats below 20 degrees are bound to be faint, and not register
+                            if sat_alt_max >= 20:
                                 
                                 Path(f'{out_dir}/{sat_id}').mkdir(parents=True, exist_ok=True)
                 
