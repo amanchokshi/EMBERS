@@ -107,31 +107,36 @@ def time_filter(s_rise, s_set, times):
     
     # I. sat rises before times, sets within times window
     if (s_rise < times[0] and s_set > times[0] and s_set < times[-1]):
+        print('I')
         i_0 = np.where(times == times[0])[0][0]
         i_1 = np.where(times == s_set)[0][0]
         intvl = [i_0, i_1]
     
     # II. sat rises and sets within times
     elif (s_rise >= times[0] and s_set <= times[-1]):
+        print('II')
         i_0 = np.where(times == s_rise)[0][0]
         i_1 = np.where(times == s_set)[0][0]
         intvl = [i_0, i_1]
     
     # III. sat rises within times, and sets after
     elif (s_rise > times[0] and s_rise < times[-1] and s_set > times[-1]):
+        print('III')
         i_0 = np.where(times == s_rise)[0][0]
         i_1 = np.where(times == times[-1])[0][0]
         intvl = [i_0, i_1]
     
     # IV. sat rises before times and sets after
     elif (s_rise < times[0] and s_set > times[-1]):
+        print('IV')
         i_0 = np.where(times == times[0])[0][0]
         i_1 = np.where(times == times[-1])[0][0]
         intvl = [i_0, i_1]
    
     # V. sat completely out of times. Could be on either side
     else:
-         intvl = None
+        print('V')
+        intvl = None
     
     # intvl = interval
     return intvl
@@ -207,10 +212,6 @@ def find_sat_channel(norad_id):
                                     # Slice [crop] the power/times arrays to the times of sat pass
                                     power_c = power[w_start:w_stop+1, :]
                                     times_c = times[w_start:w_stop+1]
-                                    print(norad_ephem["time_array"][0], times_c[0])
-                                    print(norad_ephem["time_array"][-1], times_c[-1])
-                                    print('-------------------------')
-           
                                    
                                     possible_chans = []
 
