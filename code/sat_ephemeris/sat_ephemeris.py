@@ -99,7 +99,7 @@ def epoch_time_array(epoch_range, index_epoch, cadence):
     year, month, day = date.split('-')
     hour, minute,_ = time.split(':')
     
-    # Create a time array, every 20[cadence] seconds, starting at the first epoch, approximately
+    # Create a time array, every 2[cadence] seconds, starting at the first epoch, approximately
     seconds = np.arange(0,dt,cadence)
     t_arr = ts.tt(int(year), int(month), int(day), int(hour), int(minute), seconds)
 
@@ -240,7 +240,7 @@ if __name__ == '__main__':
             
     parser.add_argument('--sat', metavar='\b', help='The Norad cat ID of satellite. Example: 21576')
     parser.add_argument('--tle_dir', metavar='\b', default='./../../outputs/sat_ephemeris/TLE', help='Directory where TLE files are saved. Default=./../../outputs/sat_ephemeris/TLE')
-    parser.add_argument('--cadence', metavar='\b', default=20, help='Rate at which sat alt/az is computed. Expensive! Default=20s')
+    parser.add_argument('--cadence', metavar='\b', default=2, help='Rate at which sat alt/az is computed. Default=2s')
     parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/sat_ephemeris/ephem_json/', help='Path to output directory. Default=./../../outputs/sat_ephemeris/ephem_json/')
 
     
