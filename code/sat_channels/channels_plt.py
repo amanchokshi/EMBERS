@@ -126,6 +126,7 @@ def sat_plot(out_dir, ids, norad_id, alt, az, num_passes, date):
         plt.plot(az[i], alt[i], '-', linewidth=1.6, label=f'{ids[i]}')
         plt.legend(bbox_to_anchor=(0.28, 1.0, 1., .102), loc='upper right')
     
+    plt.legend(title="Norad ID")
     plt.savefig(f'{out_dir}/{norad_id}/{date}_{norad_id}_passes.png')
     plt.close()
     plt.rcParams.update(plt.rcParamsDefault)
