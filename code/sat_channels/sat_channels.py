@@ -39,7 +39,7 @@ parser = argparse.ArgumentParser(description="""
 parser.add_argument('--data_dir', metavar='\b', help='Dir where date is saved')
 parser.add_argument('--start_date', metavar='\b', help='Date from which to start aligning data. Ex: 2019-10-10')
 parser.add_argument('--stop_date', metavar='\b', help='Date until which to align data. Ex: 2019-10-11')
-parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/divide_out_sats/sat_channels/',help='Output directory. Default=./../../outputs/divide_out_sats/sat_channels/')
+parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/sat_channels/',help='Output directory. Default=./../../outputs/sat_channels/')
 parser.add_argument('--chrono_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json',help='Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/')
 parser.add_argument('--savgol_window', metavar='\b', default=151,help='Length of savgol window. Must be odd. Default=151')
 parser.add_argument('--polyorder', metavar='\b', default=1,help='Order of polynomial to fit to savgol window. Default=1')
@@ -277,7 +277,15 @@ def find_sat_channel(norad_id):
                                                 ids.extend(chrono_ephem[s]["sat_id"])
                                                 alt.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
                                                 az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
-                                                
+                                        
+                                        # Length of each pass
+                                        pass_lengths = [len(i) for i in az] 
+                                        
+                                        # sort ids, alt, az based on pass len, with shortest first
+                                        ids = [i for l, i in sorted(zip(pass_lengths, ids), reverse=True)]
+                                        alt.sort(key=len)
+                                        az.sort(key=len)
+
                                         if norad_id in ids:
                                             sat_plot(out_dir, ids, norad_id, alt, az, len(ids), f'{date_time[day][window]}')
 
@@ -347,19 +355,20 @@ data_dir = Path(data_dir)
 chrono_dir = Path(chrono_dir)
 out_dir = Path(out_dir)
     
-#norad_id = 41180
-#find_sat_channel(norad_id)
+norad_id = 41180
+find_sat_channel(norad_id)
 
-if parallel != True:
-    for norad_id in sat_list:
-        find_sat_channel(norad_id)
-        break
-else:
-    # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
-        results = executor.map(find_sat_channel, sat_list)
-
-    for result in results:
-        print(result)
+#if parallel != True:
+#    for norad_id in sat_list:
+#        find_sat_channel(norad_id)
+#        #break
+#
+#else:
+#    # Parallization magic happens here
+#    with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
+#        results = executor.map(find_sat_channel, sat_list)
+#
+#    for result in results:
+#        print(result)
 
 
