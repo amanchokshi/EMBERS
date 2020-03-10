@@ -2,6 +2,7 @@
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import matplotlib.pylab as pl
 import seaborn as sns
 import numpy as np
 
@@ -120,10 +121,12 @@ def sat_plot(out_dir, ids, norad_id, alt, az, num_passes, date):
     ax.set_theta_zero_location('N')
     ax.set_theta_direction(-1)
     ax.set_title(f'Satellites in {date}: {num_passes} Passes', y=1.08)
-    #ax.grid(color='#8bbabb', linewidth=1.6, alpha=0.6)
+    ax.grid(color='grey', linewidth=1.6, alpha=0.6)
+
+    colors = pl.cm.Spectral(np.linspace(0,1,len(alt)))
     
     for i in range(len(alt)):
-        plt.plot(az[i], alt[i], '-', linewidth=1.6, label=f'{ids[i]}')
+        plt.plot(az[i], alt[i], '-', linewidth=1.6, color=colors[i], label=f'{ids[i]}')
         plt.legend()
     
     plt.legend(bbox_to_anchor=(0.28, 1.0, 1., -0.95), loc='center right', title="Norad ID")
