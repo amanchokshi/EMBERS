@@ -126,7 +126,7 @@ def sat_plot(out_dir, ids, norad_id, alt, az, num_passes, date, name):
     colors = pl.cm.Spectral(np.linspace(0,1,len(alt)))
     
     for i in range(len(alt)):
-        plt.plot(az[i], alt[i], '-', linewidth=1.6, color=colors[i], label=f'{ids[i]}')
+        plt.plot(az[i], alt[i], '-', linewidth=2, alpha=0.9, color=colors[i], label=f'{ids[i]}')
         plt.legend()
     
     leg = plt.legend(frameon=True, bbox_to_anchor=(0.28, 1.0, 1., -0.95), loc='center right', title="Norad SatID")
