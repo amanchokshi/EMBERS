@@ -48,6 +48,33 @@ parser.add_argument('--interp_freq', metavar='\b', default=1,help='Frequency at 
 parser.add_argument('--parallel', metavar='\b', default=True,help='If parallel=False, paralellization will be disabled.')
 
 
+def time_tree(start_date, stop_date):
+    '''Split the time interval into 30 min obs'''
+
+    t_start = datetime.strptime(start_date, '%Y-%m-%d')
+    t_stop = datetime.strptime(stop_date, '%Y-%m-%d')
+    n_days = (t_stop - t_start).days
+    
+    dates = []
+    date_time = []
+   
+    # Every Day
+    for i in range(n_days+1):
+        day = t_start + timedelta(days=i)
+        date = day.strftime('%Y-%m-%d')
+        dates.append(date)
+        d_t = []
+        
+        # Every 30 min in the day
+        for j in range(48):
+            t_delta = datetime.strptime(date,'%Y-%m-%d') + timedelta(minutes=30*j)
+            d_time = t_delta.strftime('%Y-%m-%d-%H:%M')
+            d_t.append(d_time)
+    
+        date_time.append(d_t)
+
+    return (dates, date_time)
+
 
 def savgol_interp(ref, savgol_window =None, polyorder=None, interp_type=None, interp_freq=None):
     """Smooth and interpolate the power array with a savgol filter
@@ -321,31 +348,14 @@ ref_tile = tiles[0]
 sat_list = [id for id in sat_ids.norad_ids.values()]
 
 
-# Time stuff to help traverse data dir tree.
-t_start = datetime.strptime(start_date, '%Y-%m-%d')
-t_stop = datetime.strptime(stop_date, '%Y-%m-%d')
-n_days = (t_stop - t_start).days
-
-dates = []
-date_time = []
-
-for i in range(n_days+1):
-    day = t_start + timedelta(days=i)
-    date = day.strftime('%Y-%m-%d')
-    dates.append(date)
-    d_t = []
-    
-    for j in range(48):
-        t_delta = datetime.strptime(date,'%Y-%m-%d') + timedelta(minutes=30*j)
-        d_time = t_delta.strftime('%Y-%m-%d-%H:%M')
-        d_t.append(d_time)
-
-    date_time.append(d_t)    
-
-
+# Path to important locations
 data_dir = Path(data_dir)
 chrono_dir = Path(chrono_dir)
 out_dir = Path(out_dir)
+
+# dates: list of days
+# date_time = list of 30 min observation windows
+dates, date_time = time_tree(start_date, stop_date)
     
 #norad_id = 41180
 #find_sat_channel(norad_id)
@@ -353,7 +363,7 @@ out_dir = Path(out_dir)
 if parallel != True:
     for norad_id in sat_list:
         find_sat_channel(norad_id)
-        #break
+        break
 
 else:
     # Parallization magic happens here
