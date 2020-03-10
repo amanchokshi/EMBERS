@@ -83,43 +83,33 @@ def time_filter(s_rise, s_set, times):
         s_set           : ephem set time
         times           : time array of obs
         '''
-    print(s_rise, s_set, times[0], times[-1])
     # I. sat rises before times, sets within times window
     if (s_rise < times[0] and s_set > times[0] and s_set <= times[-1]):
         i_0 = np.where(times == times[0])[0][0]
         i_1 = np.where(times == s_set)[0][0]
         intvl = [i_0, i_1]
-        print(times[i_0], times[i_1])
-        print('I')
     
     # II. sat rises and sets within times
     elif (s_rise >= times[0] and s_set <= times[-1]):
         i_0 = np.where(times == s_rise)[0][0]
         i_1 = np.where(times == s_set)[0][0]
         intvl = [i_0, i_1]
-        print(times[i_0], times[i_1])
-        print('II')
     
     # III. sat rises within times, and sets after
     elif (s_rise >= times[0] and s_rise < times[-1] and s_set > times[-1]):
         i_0 = np.where(times == s_rise)[0][0]
         i_1 = np.where(times == times[-1])[0][0]
         intvl = [i_0, i_1]
-        print(times[i_0], times[i_1])
-        print('III')
     
     # IV. sat rises before times and sets after
     elif (s_rise < times[0] and s_set > times[-1]):
         i_0 = np.where(times == times[0])[0][0]
         i_1 = np.where(times == times[-1])[0][0]
         intvl = [i_0, i_1]
-        print(times[i_0], times[i_1])
-        print('IV')
    
     # V. sat completely out of times. Could be on either side
     else:
         intvl = None
-        print('V')
     
     # intvl = interval
     return intvl
@@ -272,12 +262,12 @@ def find_sat_channel(norad_id):
 
                                                 sat_alt_max = np.amax(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
                                                 if sat_alt_max >=20:
-                                                    
-                                                    len_window = len(times_c)
+                                                   
+                                                    if len(chrono_ephem[s]["sat_alt"][e_0:e_1+1]) >= 0.8*len(times_c):
 
-                                                    ids.extend(chrono_ephem[s]["sat_id"])
-                                                    alt.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
-                                                    az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
+                                                        ids.extend(chrono_ephem[s]["sat_id"])
+                                                        alt.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
+                                                        az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
                                         
                                         if norad_id in ids:
                                             sat_plot(out_dir, ids, norad_id, alt, az, len(ids), f'{date_time[day][window]}', 'passes')
