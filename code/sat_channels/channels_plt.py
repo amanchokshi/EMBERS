@@ -111,22 +111,24 @@ def sat_plot(out_dir, ids, norad_id, alt, az, num_passes, date):
     
     
     # Set up the polar plot.
+    plt.style.use('seaborn')
     plt.style.use('dark_background')
-    figure = plt.figure(figsize=(8,6))
+    figure = plt.figure(figsize=(7,6))
     ax = figure.add_subplot(111, polar=True)
     ax.set_ylim(90, 0)
     ax.set_rgrids([0,30,60,90], angle=22)
     ax.set_theta_zero_location('N')
     ax.set_theta_direction(-1)
-    ax.set_title(f'Satellite on {date}: {num_passes} Passes', y=1.08)
-    ax.grid(color='#8bbabb', linewidth=1.6, alpha=0.6)
-    plt.tight_layout()
+    ax.set_title(f'Satellites in {date}: {num_passes} Passes', y=1.08)
+    #ax.grid(color='#8bbabb', linewidth=1.6, alpha=0.6)
     
     for i in range(len(alt)):
         plt.plot(az[i], alt[i], '-', linewidth=1.6, label=f'{ids[i]}')
-        plt.legend(bbox_to_anchor=(0.28, 1.0, 1., .102), loc='upper right')
+        plt.legend()
     
-    plt.legend(title="Norad ID")
+    plt.legend(bbox_to_anchor=(0.28, 1.0, 1., -0.95), loc='center right', title="Norad ID")
+    #plt.legend(loc="lower left", mode = "expand", ncol=7, title="Norad ID")
+    plt.tight_layout()
     plt.savefig(f'{out_dir}/{norad_id}/{date}_{norad_id}_passes.png')
     plt.close()
     plt.rcParams.update(plt.rcParamsDefault)
