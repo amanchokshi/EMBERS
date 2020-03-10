@@ -253,9 +253,14 @@ def find_sat_channel(norad_id):
                                             # Crop ephem of all sats to size of norad_id sat
                                             intvl_ephem = time_filter(times_sat[0], times_sat[-1], times_c)
                                             
+                                            
+                                            ######### THE ABOVE CASE SEEMS WRONG!! SEE BELOW #########
+                                            
+                                            #intvl_ephem = time_filter(times_c[0], times_c[-1], times_sat)
+                                            
                                             if intvl_ephem != None:
                                                 e_0, e_1 = intvl_ephem
-                                                
+
                                                 ids.extend(chrono_ephem[s]["sat_id"])
                                                 alt.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
                                                 az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
@@ -264,15 +269,15 @@ def find_sat_channel(norad_id):
                                             sat_plot(out_dir, ids, norad_id, alt, az, len(ids), f'{date_time[day][window]}', 'passes')
                                         
                                         
-                                        # Plot the most lightly sat candidates, matching possible_chans
-                                        # Choose the longest n ephem, where n is len(possible_chans)
-                                        pass_lenghts = [len(i) for i in alt]
-                                        alt.sort(key=len, reverse=True)
-                                        az.sort(key=len, reverse=True)
-                                        ids = [i for _,i in sorted(zip(pass_lenghts,ids), reverse=True)][:n_chans]
-                                        
-                                        #if norad_id in ids:
-                                        sat_plot(out_dir, ids, norad_id, alt[:n_chans], az[:n_chans], len(ids), f'{date_time[day][window]}', 'possible_sats')
+                                        ## Plot the most lightly sat candidates, matching possible_chans
+                                        ## Choose the longest n ephem, where n is len(possible_chans)
+                                        #pass_lenghts = [len(i) for i in alt]
+                                        #alt.sort(key=len, reverse=True)
+                                        #az.sort(key=len, reverse=True)
+                                        #ids = [i for _,i in sorted(zip(pass_lenghts,ids), reverse=True)][:n_chans]
+                                        #
+                                        ##if norad_id in ids:
+                                        #sat_plot(out_dir, ids, norad_id, alt[:n_chans], az[:n_chans], len(ids), f'{date_time[day][window]}', 'possible_sats')
 
 
 
@@ -353,7 +358,7 @@ if __name__=="__main__":
     
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+    #sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
     
     # Import list of tile names from rf_data.py
     tiles = rf.tile_names()
