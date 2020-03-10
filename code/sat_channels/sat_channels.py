@@ -278,14 +278,6 @@ def find_sat_channel(norad_id):
                                                 alt.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
                                                 az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
                                         
-                                        # Length of each pass
-                                        pass_lengths = [len(i) for i in az] 
-                                        
-                                        # sort ids, alt, az based on pass len, with shortest first
-                                        ids = [i for l, i in sorted(zip(pass_lengths, ids), reverse=True)]
-                                        alt.sort(key=len)
-                                        az.sort(key=len)
-
                                         if norad_id in ids:
                                             sat_plot(out_dir, ids, norad_id, alt, az, len(ids), f'{date_time[day][window]}')
 
