@@ -129,8 +129,12 @@ def sat_plot(out_dir, ids, norad_id, alt, az, num_passes, date):
         plt.plot(az[i], alt[i], '-', linewidth=1.6, color=colors[i], label=f'{ids[i]}')
         plt.legend()
     
-    plt.legend(bbox_to_anchor=(0.28, 1.0, 1., -0.95), loc='center right', title="Norad ID")
-    #plt.legend(loc="lower left", mode = "expand", ncol=7, title="Norad ID")
+    leg = plt.legend(frameon=True, bbox_to_anchor=(0.28, 1.0, 1., -0.95), loc='center right', title="Norad SatID")
+    leg.get_frame().set_facecolor('grey')
+    leg.get_frame().set_alpha(0.4)
+    for l in leg.legendHandles:
+        l.set_alpha(1)
+    
     plt.tight_layout()
     plt.savefig(f'{out_dir}/{norad_id}/{date}_{norad_id}_passes.png')
     plt.close()
