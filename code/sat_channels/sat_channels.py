@@ -1,4 +1,4 @@
-
+# CODE TO DETERMINE WHICH CHANNELS DIFFERENT SATELLITES OCCUPY #
 
 def time_tree(start_date, stop_date):
     '''Split the time interval into 30 min obs'''
@@ -227,7 +227,10 @@ def find_sat_channel(norad_id):
                                                         possible_chans.append(s_chan)
                                     
                                     # If channels are identified in the 30 min obs
-                                    if len(possible_chans) > 0:
+                                    
+                                    n_chans = len(possible_chans)
+                                    
+                                    if n_chans > 0:
 
                                         plt_waterfall_pass(
                                                 out_dir, power, norad_id,
@@ -258,9 +261,20 @@ def find_sat_channel(norad_id):
                                                 az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
                                         
                                         if norad_id in ids:
-                                            sat_plot(out_dir, ids, norad_id, alt, az, len(ids), f'{date_time[day][window]}')
+                                            sat_plot(out_dir, ids, norad_id, alt, az, len(ids), f'{date_time[day][window]}', 'passes')
+                                        
+                                        
+                                        # Plot the most lightly sat candidates, matching possible_chans
+                                        # Choose the longest n ephem, where n is len(possible_chans)
+                                        pass_lenghts = [len(i) for i in alt]
+                                        alt.sort(key=len, reverse=True)
+                                        az.sort(key=len, reverse=True)
+                                        ids = [i for _,i in sorted(zip(pass_lenghts,ids), reverse=True)][:n_chans]
+                                        
+                                        #if norad_id in ids:
+                                        sat_plot(out_dir, ids, norad_id, alt[:n_chans], az[:n_chans], len(ids), f'{date_time[day][window]}', 'possible_sats')
 
-                                    
+
 
     if chans == []:
         print(f'No identified sat channels for sat {norad_id}')
