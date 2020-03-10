@@ -101,7 +101,7 @@ def plt_channel(
     plt.rcParams.update(plt.rcParamsDefault)
 
 
-def sat_plot(out_dir, ids, norad_id, alt, az, num_passes, date):
+def sat_plot(out_dir, ids, norad_id, alt, az, num_passes, date, name):
     '''Plots satellite passes
     
     Args:
@@ -136,7 +136,7 @@ def sat_plot(out_dir, ids, norad_id, alt, az, num_passes, date):
         l.set_alpha(1)
     
     plt.tight_layout()
-    plt.savefig(f'{out_dir}/{norad_id}/{date}_{norad_id}_passes.png')
+    plt.savefig(f'{out_dir}/{norad_id}/{date}_{norad_id}_{name}.png')
     plt.close()
     plt.rcParams.update(plt.rcParamsDefault)
 
