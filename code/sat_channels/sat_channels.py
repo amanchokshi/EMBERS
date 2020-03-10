@@ -270,8 +270,10 @@ def find_sat_channel(norad_id):
                                             if intvl_ephem != None:
                                                 e_0, e_1 = intvl_ephem
 
-                                                sat_alt_max = np.amax(norad_ephem["sat_alt"][e_0:e_1+1])
+                                                sat_alt_max = np.amax(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
                                                 if sat_alt_max >=20:
+                                                    
+                                                    len_window = len(times_c)
 
                                                     ids.extend(chrono_ephem[s]["sat_id"])
                                                     alt.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
