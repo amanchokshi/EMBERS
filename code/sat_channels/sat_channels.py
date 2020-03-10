@@ -250,32 +250,35 @@ def find_sat_channel(norad_id):
                                         chans.extend(possible_chans)
 
 
-                                        ## Plot ephemeris of all sats present in ephem window of norad_id sat
-                                        #ids = []
-                                        #alt = []
-                                        #az  = []
+                                        # Plot ephemeris of all sats present in ephem window of norad_id sat
+                                        ids = []
+                                        alt = []
+                                        az  = []
                                        
-                                        ## loop through all sats in chrono_ephem
-                                        #for s in range(len(chrono_ephem)):
-                                        #    times_sat = chrono_ephem[s]["time_array"]
-                                        #    
-                                        #    # Crop ephem of all sats to size of norad_id sat
-                                        #    intvl_ephem = time_filter(times_sat[0], times_sat[-1], times_c)
-                                        #    
-                                        #    
-                                        #    ######### THE ABOVE CASE SEEMS WRONG!! SEE BELOW #########
-                                        #    
-                                        #    #intvl_ephem = time_filter(times_c[0], times_c[-1], times_sat)
-                                        #    
-                                        #    if intvl_ephem != None:
-                                        #        e_0, e_1 = intvl_ephem
+                                        # loop through all sats in chrono_ephem
+                                        #print('------------------') 
+                                        for s in range(len(chrono_ephem)):
+                                            times_sat = chrono_ephem[s]["time_array"]
+                                            # Crop ephem of all sats to size of norad_id sat
+                                            #intvl_ephem = time_filter(times_sat[0], times_sat[-1], times_c)
+                                            
+                                            
+                                            ######### THE ABOVE CASE SEEMS WRONG!! SEE BELOW #########
+                                            
+                                            intvl_ephem = time_filter(times_c[0], times_c[-1], np.asarray(times_sat))
+                                        #print('------------------') 
+                                            if intvl_ephem != None:
+                                                e_0, e_1 = intvl_ephem
 
-                                        #        ids.extend(chrono_ephem[s]["sat_id"])
-                                        #        alt.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
-                                        #        az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
-                                        #
-                                        #if norad_id in ids:
-                                        #    sat_plot(out_dir, ids, norad_id, alt, az, len(ids), f'{date_time[day][window]}', 'passes')
+                                                sat_alt_max = np.amax(norad_ephem["sat_alt"][e_0:e_1+1])
+                                                if sat_alt_max >=20:
+
+                                                    ids.extend(chrono_ephem[s]["sat_id"])
+                                                    alt.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
+                                                    az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
+                                        
+                                        if norad_id in ids:
+                                            sat_plot(out_dir, ids, norad_id, alt, az, len(ids), f'{date_time[day][window]}', 'passes')
                                         
                                         
                                         ## Plot the most lightly sat candidates, matching possible_chans
