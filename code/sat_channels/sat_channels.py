@@ -1,51 +1,3 @@
-import math
-# Force matplotlib to not use X-Server backend
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import json
-import argparse
-import numpy as np
-import seaborn as sns
-import concurrent.futures
-from scipy import interpolate
-from scipy.signal import savgol_filter
-from scipy.stats import median_absolute_deviation as mad
-from datetime import datetime, timedelta
-from pathlib import Path
-
-
-# Force matplotlib to not use X-Server backend
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-
-import sys
-sys.path.append('../decode_rf_data')
-sys.path.append('../sat_ephemeris')
-import rf_data as rf
-from colormap import spectral
-# Custom spectral colormap
-cmap = spectral()
-import sat_ids
-
-from channels_plt import plt_waterfall_pass, plt_channel, plt_hist, sat_plot
-
-
-parser = argparse.ArgumentParser(description="""
-    Determines which channel each satellite occupies
-    """)
-
-parser.add_argument('--data_dir', metavar='\b', help='Dir where date is saved')
-parser.add_argument('--start_date', metavar='\b', help='Date from which to start aligning data. Ex: 2019-10-10')
-parser.add_argument('--stop_date', metavar='\b', help='Date until which to align data. Ex: 2019-10-11')
-parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/sat_channels/',help='Output directory. Default=./../../outputs/sat_channels/')
-parser.add_argument('--chrono_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json',help='Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/')
-parser.add_argument('--savgol_window', metavar='\b', default=151,help='Length of savgol window. Must be odd. Default=151')
-parser.add_argument('--polyorder', metavar='\b', default=1,help='Order of polynomial to fit to savgol window. Default=1')
-parser.add_argument('--interp_type', metavar='\b', default='cubic',help='Type of interpolation. Ex: cubic, linear, etc. Default=cubic')
-parser.add_argument('--interp_freq', metavar='\b', default=1,help='Frequency at which to resample smoothed data, in Hertz. Default=2')
-parser.add_argument('--parallel', metavar='\b', default=True,help='If parallel=False, paralellization will be disabled.')
 
 
 def time_tree(start_date, stop_date):
@@ -320,57 +272,108 @@ def find_sat_channel(norad_id):
         print(f'Most frequently occupied channel for sat {norad_id}: {pop_chan}')
 
 
-args = parser.parse_args()
+if __name__=="__main__":
 
-data_dir =          args.data_dir
-chrono_dir =        args.chrono_dir
-start_date =        args.start_date
-stop_date =         args.stop_date
-out_dir =           args.out_dir
-savgol_window =     args.savgol_window
-polyorder =         args.polyorder
-interp_type =       args.interp_type
-interp_freq =       args.interp_freq
-parallel=           args.parallel
-
-
-# Save logs 
-Path(out_dir).mkdir(parents=True, exist_ok=True)
-sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
-
-# Import list of tile names from rf_data.py
-tiles = rf.tile_names()
-
-# Only using rf0XX for now
-ref_tile = tiles[0]
-
-# Import list of Norad catalogue IDs
-sat_list = [id for id in sat_ids.norad_ids.values()]
-
-
-# Path to important locations
-data_dir = Path(data_dir)
-chrono_dir = Path(chrono_dir)
-out_dir = Path(out_dir)
-
-# dates: list of days
-# date_time = list of 30 min observation windows
-dates, date_time = time_tree(start_date, stop_date)
+    import math
+    # Force matplotlib to not use X-Server backend
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    import json
+    import argparse
+    import numpy as np
+    import seaborn as sns
+    import concurrent.futures
+    from scipy import interpolate
+    from scipy.signal import savgol_filter
+    from scipy.stats import median_absolute_deviation as mad
+    from datetime import datetime, timedelta
+    from pathlib import Path
     
-#norad_id = 41180
-#find_sat_channel(norad_id)
-
-if parallel != True:
-    for norad_id in sat_list:
-        find_sat_channel(norad_id)
-        break
-
-else:
-    # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
-        results = executor.map(find_sat_channel, sat_list)
-
-    for result in results:
-        print(result)
+    
+    # Force matplotlib to not use X-Server backend
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    
+    import sys
+    sys.path.append('../decode_rf_data')
+    sys.path.append('../sat_ephemeris')
+    import rf_data as rf
+    from colormap import spectral
+    # Custom spectral colormap
+    cmap = spectral()
+    import sat_ids
+    
+    from channels_plt import plt_waterfall_pass, plt_channel, plt_hist, sat_plot
+    
+    
+    parser = argparse.ArgumentParser(description="""
+        Determines which channel each satellite occupies
+        """)
+    
+    parser.add_argument('--data_dir', metavar='\b', help='Dir where date is saved')
+    parser.add_argument('--start_date', metavar='\b', help='Date from which to start aligning data. Ex: 2019-10-10')
+    parser.add_argument('--stop_date', metavar='\b', help='Date until which to align data. Ex: 2019-10-11')
+    parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/sat_channels/',help='Output directory. Default=./../../outputs/sat_channels/')
+    parser.add_argument('--chrono_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json',help='Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/')
+    parser.add_argument('--savgol_window', metavar='\b', default=151,help='Length of savgol window. Must be odd. Default=151')
+    parser.add_argument('--polyorder', metavar='\b', default=1,help='Order of polynomial to fit to savgol window. Default=1')
+    parser.add_argument('--interp_type', metavar='\b', default='cubic',help='Type of interpolation. Ex: cubic, linear, etc. Default=cubic')
+    parser.add_argument('--interp_freq', metavar='\b', default=1,help='Frequency at which to resample smoothed data, in Hertz. Default=2')
+    parser.add_argument('--parallel', metavar='\b', default=True,help='If parallel=False, paralellization will be disabled.')
+    
+    args = parser.parse_args()
+    
+    data_dir =          args.data_dir
+    chrono_dir =        args.chrono_dir
+    start_date =        args.start_date
+    stop_date =         args.stop_date
+    out_dir =           args.out_dir
+    savgol_window =     args.savgol_window
+    polyorder =         args.polyorder
+    interp_type =       args.interp_type
+    interp_freq =       args.interp_freq
+    parallel=           args.parallel
+    
+    
+    # Save logs 
+    Path(out_dir).mkdir(parents=True, exist_ok=True)
+    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+    
+    # Import list of tile names from rf_data.py
+    tiles = rf.tile_names()
+    
+    # Only using rf0XX for now
+    ref_tile = tiles[0]
+    
+    # Import list of Norad catalogue IDs
+    sat_list = [id for id in sat_ids.norad_ids.values()]
+    
+    
+    # Path to important locations
+    data_dir = Path(data_dir)
+    chrono_dir = Path(chrono_dir)
+    out_dir = Path(out_dir)
+    
+    # dates: list of days
+    # date_time = list of 30 min observation windows
+    dates, date_time = time_tree(start_date, stop_date)
+        
+    norad_id = 41180
+    find_sat_channel(norad_id)
+    
+    #if parallel != True:
+    #    for norad_id in sat_list:
+    #        find_sat_channel(norad_id)
+    #        break
+    #
+    #else:
+    #    # Parallization magic happens here
+    #    with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
+    #        results = executor.map(find_sat_channel, sat_list)
+    #
+    #    for result in results:
+    #        print(result)
 
 
