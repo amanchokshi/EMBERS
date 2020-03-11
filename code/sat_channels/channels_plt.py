@@ -121,12 +121,12 @@ def sat_plot(out_dir, ids, norad_id, alt, az, num_passes, date, name):
     ax.set_theta_zero_location('N')
     ax.set_theta_direction(-1)
     ax.set_title(f'{num_passes} satellite passes in {date} [{norad_id}] window', y=1.05)
-    ax.grid(color='grey', linewidth=1.6, alpha=0.6)
+    ax.grid(color='grey', linewidth=1.6, alpha=0.4)
 
-    colors = pl.cm.Spectral(np.linspace(0,1,len(alt)))
+    colors = pl.cm.Spectral(np.linspace(0.17,0.9,len(alt)))
     
     for i in range(len(alt)):
-        plt.plot(az[i], alt[i], '-', linewidth=2, alpha=0.9, color=colors[i], label=f'{ids[i]}')
+        plt.plot(az[i], alt[i], '-', linewidth=2.4, alpha=0.9, color=colors[i], label=f'{ids[i]}')
         plt.legend()
     
     leg = plt.legend(frameon=True, bbox_to_anchor=(0.28, 1.0, 1., -0.95), loc='center right', title="Norad SatID")
