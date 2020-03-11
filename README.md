@@ -175,7 +175,22 @@ This will create `ref_dipole_models.npz` and a diagnostic plot of the beams in t
 &nbsp;
 ### Satellite Channels
 
-As access to the ORBCOMM interface box was not available, the channels in which each satellite transimits can be determined with a careful analysis of the RF data and satellite ephemeris.  
+As access to the ORBCOMM interface box was not available, the channels in which each satellite transimits can be determined with a careful analysis of the RF data and satellite ephemeris.
+
+We use reference data to detect satellite channels and it is much less noisy. For any given reference RF data file, we use it's corresponding chrono_ephem file. This gives us the raw data as well as all the satellite which we expect to be present in the given 30 minute observation. The chrono_ephem.json file containes the ephemeris for each of these satellites.
+
+We first smooth the rf data using a savgol filter, and interpolate it to a `1Hz` frequency to match the cadence of the chrono_ephem data. Choosing one satellite present in the data, we identify the temporal region of the rf data where we expect to see its signal. We now use a series of thresholding criteria to help identify the correct channel.
+
+#### Channel Filtering 
+
+The following thresholds were used to identify the correct channel:
+
+
+```
+cd ../sat_channels
+
+python sat_channels.py --help
+```
 
 ### Beam Pointings
 
@@ -205,13 +220,13 @@ Next, open [http://ws.mwatelescope.org](http://ws.mwatelescope.org/metadata/find
 
 
 <p float="left">
-  <img src="./documentation/metadata-1.jpg" width="1200" />
+  <img src="./docs/metadata-1.jpg" width="1200" />
 </p>
 
 The important thing to note is the number of pages that are returned by the search. In this particular case it is 74.
 
 <p float="left">
-  <img src="./documentation/metadata-2.jpg" width="700" />
+  <img src="./docs/metadata-2.jpg" width="700" />
 </p>
 
 Using this information we can download the required metadata using `download_pointings.sh`. The site limits queries to approximately 200 per minute, which is why these steps were necessary.
