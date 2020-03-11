@@ -115,13 +115,14 @@ def time_filter(s_rise, s_set, times):
     return intvl
 
 
-
 def find_sat_channel(norad_id):
-  
+    '''All the magic [filtering] happens here'''
+
     # list of all occupied channels
     chans = []
 
     # for a sat window with multiple channels identified, use ephemeris to deterime which sats they could be
+
     # list of all sats identified
     sats = []
     
@@ -142,7 +143,7 @@ def find_sat_channel(norad_id):
                 # To first order, let us consider the median to be the noise floor
                 noise_f = np.median(power)
                 noise_mad = mad(power, axis=None)
-                noise_threshold = 10*noise_mad
+                noise_threshold = noi_thresh*noise_mad
                 arbitrary_threshold = 10 #dBm
                 
                 
@@ -168,11 +169,8 @@ def find_sat_channel(norad_id):
                         # Max altitude that the sat attains
                         sat_alt_max = np.amax(norad_ephem["sat_alt"])
                 
-                        ## Focus on one sat at a time
-                        #if sat_id == norad_id:
-                            
                         # Altitude threshold. Sats below 20 degrees are bound to be faint, and not register
-                        if sat_alt_max >= 20:
+                        if sat_alt_max >= alt_thresh:
                             
                             Path(f'{out_dir}/{norad_id}').mkdir(parents=True, exist_ok=True)
                                
@@ -204,24 +202,26 @@ def find_sat_channel(norad_id):
 
                                     # Arbitrary threshold below which satellites aren't counted
                                     # Only continue if there is signal for more than 80% of satellite pass
-                                    if (max(channel_power) >= arbitrary_threshold and 
-                                            0.80 <= window_occupancy < 1.00):
-                                      
+                                    if (max(channel_power) >= arb_thresh and 
+                                            occ_thresh <= window_occupancy < 1.00):
+                                     
+                                        # fist and last 10 steps must be below the noise threshold
                                         if (all(p < noise_threshold for p in channel_power[:10]) and 
                                             all(p < noise_threshold for p in channel_power[-11:-1])) is True:
 
+                                            # Center of gravity section
+                                            # Checks how central the signal is within the window
                                             center, cog, frac_cen_offset = center_of_gravity(channel_power, times_c)
 
-                                            c_thresh = 0.05
                                             # Another threshold
                                             # The Center of Gravity of signal is within 5% of center
-                                            if frac_cen_offset <= c_thresh:
+                                            if frac_cen_offset <= cog_thresh:
                                             
                                                 # Plots the channel with satellite pass
                                                 plt_channel(
                                                         out_dir, times_c, power_c[:, s_chan],
                                                         s_chan, min_s, max_s, noise_threshold,
-                                                        arbitrary_threshold,center, cog, c_thresh,
+                                                        arbitrary_threshold,center, cog, cog_thresh,
                                                         norad_id, f'{date_time[day][window]}')
                                                 
                                                 possible_chans.append(s_chan)
@@ -230,7 +230,8 @@ def find_sat_channel(norad_id):
                                 n_chans = len(possible_chans)
                                 
                                 if n_chans > 0:
-
+                                    
+                                    # plot waterfall with sat window and all selected channels highlighted
                                     plt_waterfall_pass(
                                             out_dir, power, norad_id,
                                             w_start, w_stop, possible_chans,
@@ -255,11 +256,12 @@ def find_sat_channel(norad_id):
                                         
                                         if intvl_ephem != None:
                                             e_0, e_1 = intvl_ephem
-
+                                            
+                                            # altittude and occupancy filters
                                             sat_alt_max = np.amax(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
-                                            if sat_alt_max >=20:
+                                            if sat_alt_max >= alt_thresh:
                                                
-                                                if len(chrono_ephem[s]["sat_alt"][e_0:e_1+1]) >= 0.8*len(times_c):
+                                                if len(chrono_ephem[s]["sat_alt"][e_0:e_1+1]) >= occ_thresh*len(times_c):
                                                     
                                                     if chrono_ephem[s]["sat_id"][0] == norad_id:
                                                     
@@ -284,13 +286,11 @@ def find_sat_channel(norad_id):
                                             plt_alt.append(e[2])
                                             plt_az.append(e[3])
                                     
-                                    
+                                    # Plot sat ephemeris 
                                     sat_plot(out_dir, plt_ids, norad_id, plt_alt, plt_az, len(plt_ids), f'{date_time[day][window]}', 'passes')
                                     sats.extend(plt_ids) 
 
-    if chans == []:
-        print(f'No identified sat channels for sat {norad_id}')
-    else:
+    if chans != []:
         values, counts = np.unique(chans, return_counts=True)
         
         # if more than one channel has the same max number of passes, return all
@@ -304,7 +304,8 @@ def find_sat_channel(norad_id):
                 f'{out_dir}/{norad_id}/channels_histo_{norad_id}_{pop_chans}.png',
                 'GnBu_d')
         
-        print(f'Most frequently occupied channel for sat {norad_id}: {pop_chans}')
+        #print(f'Most frequently occupied channel for sat {norad_id}: {pop_chans}')
+        print(f'{norad_id}: {pop_chans}')
     
     if sats != []:
         s_values, s_counts = np.unique(sats, return_counts=True)
@@ -317,7 +318,7 @@ def find_sat_channel(norad_id):
                 f'{out_dir}/{norad_id}/sats_histo_{norad_id}.png',
                 'rocket')
         
-        print(f'Possible sats in {norad_id} window: {s_values}')
+        #print(f'Possible sats in {norad_id} window: {s_values}')
 
 
 if __name__=="__main__":
@@ -371,6 +372,13 @@ if __name__=="__main__":
     parser.add_argument('--interp_freq', metavar='\b', default=1,help='Frequency at which to resample smoothed data, in Hertz. Default=2')
     parser.add_argument('--parallel', metavar='\b', default=True,help='If parallel=False, paralellization will be disabled.')
     
+    parser.add_argument('--noi_thresh', metavar='\b', default=10,help='Noise Threshold: Multiples of MAD. Default=10.')
+    parser.add_argument('--arb_thresh', metavar='\b', default=10,help='Arbitrary Threshold to detect sats. Default=10 dB.')
+    parser.add_argument('--alt_thresh', metavar='\b', default=20,help='Altitude Threshold to detect sats. Default=20 degrees.')
+    parser.add_argument('--cog_thresh', metavar='\b', default=0.05,help='Center of Gravity Threshold to detect sats. Default=0.05 [5%]')
+    parser.add_argument('--occ_thresh', metavar='\b', default=0.80,help='Occupation Threshold of sat in window. Default=0.80 [5%]')
+
+    
     args = parser.parse_args()
     
     data_dir =          args.data_dir
@@ -382,11 +390,16 @@ if __name__=="__main__":
     polyorder =         args.polyorder
     interp_type =       args.interp_type
     interp_freq =       args.interp_freq
+    noi_thresh =        args.noi_thresh 
+    arb_thresh =        args.arb_thresh
+    alt_thresh =        args.alt_thresh
+    cog_thresh =        args.cog_thresh
+    occ_thresh =        args.occ_thresh
     parallel=           args.parallel
-    
     
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
+    sys.stdout = open(f'{out_dir}/Satellite_Channels_{start_date}_{stop_date}.txt', 'a')
     #sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
     
     # Import list of tile names from rf_data.py
@@ -414,7 +427,7 @@ if __name__=="__main__":
     #if parallel != True:
     #    for norad_id in sat_list:
     #        find_sat_channel(norad_id)
-    #        break
+    #        #break
     #
     #else:
     #    # Parallization magic happens here
