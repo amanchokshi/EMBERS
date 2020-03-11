@@ -248,9 +248,10 @@ def find_sat_channel(norad_id):
                                         plt_ids = []
                                         plt_alt = []
                                         plt_az  = []
+
+                                        other_passes = []
                                        
                                         # loop through all sats in chrono_ephem
-                                        #print('------------------') 
                                         for s in range(len(chrono_ephem)):
                                             times_sat = chrono_ephem[s]["time_array"]
                                             
@@ -272,38 +273,25 @@ def find_sat_channel(norad_id):
                                                             plt_az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
                                                         
                                                         else:
-                                                            ids.extend(chrono_ephem[s]["sat_id"])
-                                                            alt.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
-                                                            az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
+                                                            other_ephem = []
+                                                            other_ephem.append(len(chrono_ephem[s]['sat_alt'][e_0:e_1+1]))
+                                                            other_ephem.extend(chrono_ephem[s]["sat_id"])
+                                                            other_ephem.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
+                                                            other_ephem.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
+
+                                                            other_passes.append(other_ephem)
+
+
+                                        other_passes = sorted(other_passes, key=lambda x: x[0])
+                                        if n_chans > 1:
+                                            for e in other_passes[-(n_chans-1):][::-1]:   # BEWARE!!!! If two elements have same lenght, are they switched?
+                                                plt_ids.append(e[1])
+                                                plt_alt.append(e[2])
+                                                plt_az.append(e[3])
                                         
                                         
                                         sat_plot(out_dir, plt_ids, norad_id, plt_alt, plt_az, len(plt_ids), f'{date_time[day][window]}', 'passes')
                                         
-                                        #if norad_id in ids:
-                                        #    sat_plot(out_dir, ids, norad_id, alt, az, len(ids), f'{date_time[day][window]}', 'passes')
-                                        
-
-                                        #ephem_dict = [] 
-                                        #if norad_id in ids:
-                                        #    for i in range(len(ids)):
-                                        #        i = {'id':ids[i], 'alt':len(alt[i]), 'az':len(az[i])}
-                                        #        ephem_dict.append(i)
-                                        #print(ephem_dict)
-                                        #    #sat_plot(out_dir, ids, norad_id, alt, az, len(ids), f'{date_time[day][window]}', 'passes')
-                                        
-                                        
-                                        ## Plot the most lightly sat candidates, matching possible_chans
-                                        ## Choose the longest n ephem, where n is len(possible_chans)
-                                        #alt_2 = sorted(alt, key=len, reverse=True)[:n_chans]
-                                        #az_2 = sorted(az, key=len, reverse=True)[:n_chans]
-                                        #
-                                        #p_len = [len(i) for i in alt]
-                                        ## Sort according to p_len. Reverse the list. Choose the first n_chans, Reverse back
-                                        #ids_2 = [k for _,k in sorted(zip(p_len,ids))][::-1][:n_chans][::-1]
-                                        #
-                                        #sat_plot(out_dir, ids_2, norad_id, alt_2, az_2, len(ids_2), f'{date_time[day][window]}', 'possible_sats')
-
-
 
     if chans == []:
         print(f'No identified sat channels for sat {norad_id}')
