@@ -286,17 +286,36 @@ def find_sat_channel(norad_id):
                                     
                                     
                                     sat_plot(out_dir, plt_ids, norad_id, plt_alt, plt_az, len(plt_ids), f'{date_time[day][window]}', 'passes')
-                                    
+                                    sats.extend(plt_ids) 
 
     if chans == []:
         print(f'No identified sat channels for sat {norad_id}')
     else:
         values, counts = np.unique(chans, return_counts=True)
-        plt_hist(out_dir, values, counts, norad_id)
         
         # if more than one channel has the same max number of passes, return all
         pop_chans = [values[i] for i, j in enumerate(counts) if j == max(counts)]
+        
+        #plt_hist(out_dir, values, counts, norad_id)
+        plt_hist(values, counts,
+                'Channel Number',
+                'Number of Passes', 
+                f'Probable Transmission Channel of Sat {norad_id}: {pop_chans}',
+                f'{out_dir}/{norad_id}/channels_histo_{norad_id}_{pop_chans}.png')
+        
         print(f'Most frequently occupied channel for sat {norad_id}: {pop_chans}')
+    
+    if sats != []:
+        s_values, s_counts = np.unique(sats, return_counts=True)
+        
+        #plt_hist(out_dir, values, counts, norad_id)
+        plt_hist(s_values, s_counts,
+                'Norad Catalogue ID',
+                'Number of Passes', 
+                f'Possible Satellites in {norad_id} Window',
+                f'{out_dir}/{norad_id}/sats_histo_{norad_id}.png')
+        
+        print(f'Possible sats in {norad_id} window: {s_values}')
 
 
 if __name__=="__main__":
