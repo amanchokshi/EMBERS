@@ -121,12 +121,12 @@ def sat_plot(out_dir, ids, norad_id, alt, az, num_passes, date, name):
     ax.set_theta_zero_location('N')
     ax.set_theta_direction(-1)
     ax.set_title(f'{num_passes} satellite passes in {date} [{norad_id}] window', y=1.05)
-    ax.grid(color='grey', linewidth=1.6, alpha=0.4)
+    ax.grid(color='grey', linewidth=1.6, alpha=0.3)
 
     colors = pl.cm.Spectral(np.linspace(0.17,0.9,len(alt)))
     
     for i in range(len(alt)):
-        plt.plot(az[i], alt[i], '-', linewidth=2.4, alpha=0.9, color=colors[i], label=f'{ids[i]}')
+        plt.plot(az[i], alt[i], '-', linewidth=2.4, alpha=0.8, color=colors[i], label=f'{ids[i]}')
         plt.legend()
     
     leg = plt.legend(frameon=True, bbox_to_anchor=(0.28, 1.0, 1., -0.95), loc='center right', title="Norad SatID")
@@ -141,20 +141,21 @@ def sat_plot(out_dir, ids, norad_id, alt, az, num_passes, date, name):
     plt.rcParams.update(plt.rcParamsDefault)
 
 
-def plt_hist(out_dir, chans, norad_id, pop_chan):
+def plt_hist(out_dir, values, counts, norad_id):
     '''Plt histogram of occupied channels'''
     
     #plt.rcParams.update(plt.rcParamsDefault)
     sns.set()
-    values, counts = np.unique(chans, return_counts=True)
-    y_pos = np.arange(len(values))
-    plt.bar(y_pos, counts, color=sns.color_palette("GnBu_d", len(counts)))
-    plt.ylabel('Number of Passes in Channel')
+    index = np.arange(len(values))
+    
+    plt.bar(index, counts, color=sns.color_palette("GnBu_d", len(counts)))
+    
+    plt.ylabel('Passes in Channel')
     plt.xlabel('Channel')
-    plt.xticks(y_pos, values)
+    plt.xticks(index, values)
     plt.title(f'Possible Transmission Channels of Satellite [{norad_id}]')
     plt.tight_layout()
-    plt.savefig(f'{out_dir}/{norad_id}/Channels_histogram_{norad_id}_{pop_chan}.png')
+    plt.savefig(f'{out_dir}/{norad_id}/Channels_histogram_{norad_id}_{max(values)}.png')
     plt.close()
     plt.rcParams.update(plt.rcParamsDefault)
 
