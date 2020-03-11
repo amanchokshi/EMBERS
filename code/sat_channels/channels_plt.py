@@ -121,7 +121,7 @@ def sat_plot(out_dir, ids, norad_id, alt, az, num_passes, date, name):
     ax.set_theta_zero_location('N')
     ax.set_theta_direction(-1)
     ax.set_title(f'{num_passes} satellite passes in {date} [{norad_id}] window', y=1.05)
-    ax.grid(color='grey', linewidth=1.6, alpha=0.3)
+    ax.grid(color='grey', linewidth=1.6, alpha=0.5)
 
     colors = pl.cm.Spectral(np.linspace(0.17,0.9,len(alt)))
     
