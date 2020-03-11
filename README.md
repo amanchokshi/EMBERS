@@ -216,8 +216,8 @@ A waterfall plot of the rf data is also created. It has the window and potential
 
 
 <p float="left">
-  <img src="./docs/2019-10-04-16:00_41180_waterfall.png" height="420" />
-  <img src="./docs/2019-10-04-16:00_41180_passes.png" height="420" />
+  <img src="./docs/2019-10-04-16:00_41180_waterfall.png" height="460" />
+  <img src="./docs/2019-10-04-16:00_41180_passes.png" height="460" />
 </p>
 
 For each satellite, a list of all potential channels is compiled. As it is inevitable that we will mis-identify some channels, we plot a histogram of the number of classifications of each channel. This gives us a good idea of which channel the satellite occupies. Using the ephemeris data, we also plot a histogram of potential satellites. This helps us identify the other satellites which generated the false positives in channel identification.
