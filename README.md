@@ -18,6 +18,21 @@ conda deactivate
 When running code in this repository, ensure that `sat-env`is active.
 
 &nbsp;
+#### Directory Structure
+
+```
+.
+├── code                    # Code lives here
+├── docs                    # Documentation files
+├── data                    # Sample data and beam maps
+├── outputs                 # All outputs saved here by default
+├── setup.sh                # Creates conda virtual env with dependancies
+├── env.yml                 # Conda environment file
+├── LICENSE                 
+└── README.md
+```
+
+&nbsp;
 ### Decode RF Explorer Data
 
 The RF Explorers saves a single line of data, per time step, to a text file. This contains a timestamp, in UNIX time, and a binary string of power data, corresponding to power in dB per frequency channel. `rf_data.py` has two functions. The first, decodes the rf data files and returns a list of times, and a 2D array of powers. The second function used the time and power arrays to create a waterfall plot. This is an extremely useful diagnostic tool, displaying satellite passes at bright vertical streaks. 
@@ -34,8 +49,8 @@ python plot_waterfall.py --rf_name=S10XX_2019-10-10-02:30
 Can be used to plot a waterfall from a single rf data file. The above code creates waterfall plots from the two sample data files provided in the `data` directory. On the left is the waterfall plot of the reference antenna, with an obvious broadband weather satellite pass visible at the bottom right. The narrower vertical lines are ORBCOMM satellites. The plot on the right shows the same satellites as seen by an MWA tile. The nulls in the primary beam are clearly visible. 
 
 <p float="left">
-  <img src="./documentation/rf0XX_2019-10-10-02:30.png" width="49%" />
-  <img src="./documentation/S10XX_2019-10-10-02:30.png" width="49%" /> 
+  <img src="./docs/rf0XX_2019-10-10-02:30.png" width="49%" />
+  <img src="./docs/S10XX_2019-10-10-02:30.png" width="49%" /> 
 </p>
 
 To plot a large batch of waterfall plots, use `batch_waterfall.py`. Using a start date, and stop date, it plots waterfall plots of all data found between them.
@@ -57,7 +72,7 @@ python align_data.py
 ```
 
 <p float="left">
-  <img src="./documentation/align_data.png" width="110%" /> 
+  <img src="./docs/align_data.png" width="110%" /> 
 </p>
 
 This illustrates how `align_data.py` smoothes the noisy power data. The image displayed above represents only one frequency channel  [59] from the 2D power array. This channel was chosen to best show the spectral features of satellite passes as seen by the reference and mwa tiles. 
@@ -122,7 +137,7 @@ This will plot all the json ephemeris files that were generated in the previous 
 &nbsp;
 
 <p float="left">
-  <img src="./documentation/sat_ephem.jpg" width="100%" />
+  <img src="./docs/sat_ephem.jpg" width="100%" />
 </p>
 
 
@@ -150,7 +165,7 @@ python project_beam2healpix.py
 This will create `ref_dipole_models.npz` and a diagnostic plot of the beams in the output directory `../../outputs/reproject_ref/`.
 
 <p float="left">
-  <img src="./documentation/reproject_dipole_models.png" width="110%" /> 
+  <img src="./docs/reproject_dipole_models.png" width="110%" /> 
 </p>
 
 
