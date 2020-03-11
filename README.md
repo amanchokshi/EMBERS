@@ -212,7 +212,7 @@ In the `/outputs/sat_channels` directory, `sat_channels.py` generates a folder f
   <img src="./docs/2019-10-04-16:00_41180_52_channel.png" width="100%" />
 </p>
 
-A waterfall plot of the rf data is also created. It has the window and potential channels highlighted. The plots of channels `[41, 52]` seem very similar and led us to question whether satellite may emit in more that one frequency. By plotting the ephemeris of other satellites in the *window*, we were able to rule this out, intead showing that two satellites with incredibly simillar ephemeri exist.
+A waterfall plot of the rf data is also created. It has the window and potential channels highlighted. The channel plots of channels `[41, 52]` seem very similar and led us to question whether satellite may emit in more that one frequency. By plotting the ephemeris of other satellites in the *window*, we were able to rule this out, intead showing that two satellites with incredibly simillar ephemeri exist. While plotting the satellite tracks, we implemented an altitude and occupancy cut, identical to those above. 
 
 
 <p float="left">
