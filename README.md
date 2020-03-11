@@ -179,12 +179,19 @@ As access to the ORBCOMM interface box was not available, the channels in which 
 
 We use reference data to detect satellite channels and it is much less noisy. For any given reference RF data file, we use it's corresponding chrono_ephem file. This gives us the raw data as well as all the satellite which we expect to be present in the given 30 minute observation. The chrono_ephem.json file containes the ephemeris for each of these satellites.
 
-We first smooth the rf data using a savgol filter, and interpolate it to a `1Hz` frequency to match the cadence of the chrono_ephem data. Choosing one satellite present in the data, we identify the temporal region of the rf data where we expect to see its signal. We now use a series of thresholding criteria to help identify the correct channel.
+We first smooth the rf data using a savgol filter, and interpolate it to a `1Hz` frequency to match the cadence of the chrono_ephem data. Choosing one satellite present in the data, we identify the temporal region of the rf data where we expect to see its signal. Let us call this the *window*. We now use a series of thresholding criteria to help identify the correct channel.
 
 #### Channel Filtering 
 
 The following thresholds were used to identify the correct channel:
 
+* Arbitrary threshold
+* Window Occupancy
+* Center of Gravity 
+* Noise floor
+* Altitude
+
+The peak signal in our data is `~ 30 dB` above the noise floor. We define an arbitrary threshold at `10 dB` and require that the maximum signal in a channel must exceed this value, if it contains a satellit. As our rf power array is sparsely populated with satellite signals, to first order, the median value of the data gives us an estimate of the noise floor. We calculate the Median Average Deviation [MAD] of our signal, and assign a multiple of this to be our noise cutoff. By default we use `10 * MAD` as our noise threshold, and demand that the signal at the edges of the *window* be below the noise threshold. This ensures that the satellite begins and ends within the expected region. A fractional occupancy of the window is computed by finding length of signal above the noise floor and dividing it by the window length. We require that `0.8 ≤ occupancy < 1.0`. By requiring that occupancy is less than `1.0`, we ensure that satellite passes longer than the window are not classified as potential channels. A center of gravity [CoG] method is used as a measure of how centrally distributed the data is. We require that the CoG be within `± 5 %` of the physical center of the window. The last criteria that the signal has to meet to be classified as a potential channel is altitude. Satellite passes near the horizon result in very weak signal, due to the beam shape of the antennas. By requiring that the ephemeris of satellites must exceed `20°` in altitude, we ensure that these beam edge effects don't effect our classification.
 
 ```
 cd ../sat_channels
