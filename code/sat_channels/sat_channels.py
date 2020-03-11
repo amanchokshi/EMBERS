@@ -117,8 +117,14 @@ def time_filter(s_rise, s_set, times):
 
 
 def find_sat_channel(norad_id):
-   
+  
+    # list of all occupied channels
     chans = []
+
+    # for a sat window with multiple channels identified, use ephemeris to deterime which sats they could be
+    # list of all sats identified
+    sats = []
+    
    
     # Loop through days
     for day in range(len(dates)):
@@ -285,11 +291,12 @@ def find_sat_channel(norad_id):
     if chans == []:
         print(f'No identified sat channels for sat {norad_id}')
     else:
-        chans = np.array(chans).astype('int64')
-        counts = np.bincount(chans)
-        pop_chan = np.argmax(counts)
-        plt_hist(out_dir, chans, norad_id, pop_chan)
-        print(f'Most frequently occupied channel for sat {norad_id}: {pop_chan}')
+        values, counts = np.unique(chans, return_counts=True)
+        plt_hist(out_dir, values, counts, norad_id)
+        
+        # if more than one channel has the same max number of passes, return all
+        pop_chans = [values[i] for i, j in enumerate(counts) if j == max(counts)]
+        print(f'Most frequently occupied channel for sat {norad_id}: {pop_chans}')
 
 
 if __name__=="__main__":
