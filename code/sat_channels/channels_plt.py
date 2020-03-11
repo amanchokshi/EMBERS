@@ -141,7 +141,7 @@ def sat_plot(out_dir, ids, norad_id, alt, az, num_passes, date, name):
     plt.rcParams.update(plt.rcParamsDefault)
 
 
-def plt_hist(out_dir, values, counts, norad_id):
+def plt_hist(values, counts, x_label, y_label, title, saveout):
     '''Plt histogram of occupied channels'''
     
     #plt.rcParams.update(plt.rcParamsDefault)
@@ -150,12 +150,13 @@ def plt_hist(out_dir, values, counts, norad_id):
     
     plt.bar(index, counts, color=sns.color_palette("GnBu_d", len(counts)))
     
-    plt.ylabel('Passes in Channel')
-    plt.xlabel('Channel')
+    plt.xlabel(x_label)
     plt.xticks(index, values)
-    plt.title(f'Possible Transmission Channels of Satellite [{norad_id}]')
+    plt.ylabel(y_label)
+    plt.title(title)
     plt.tight_layout()
-    plt.savefig(f'{out_dir}/{norad_id}/Channels_histogram_{norad_id}_{max(values)}.png')
+    
+    plt.savefig(saveout)
     plt.close()
     plt.rcParams.update(plt.rcParamsDefault)
 
