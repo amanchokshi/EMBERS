@@ -249,14 +249,10 @@ def find_sat_channel(norad_id):
                                         #print('------------------') 
                                         for s in range(len(chrono_ephem)):
                                             times_sat = chrono_ephem[s]["time_array"]
+                                            
                                             # Crop ephem of all sats to size of norad_id sat
-                                            #intvl_ephem = time_filter(times_sat[0], times_sat[-1], times_c)
-                                            
-                                            
-                                            ######### THE ABOVE CASE SEEMS WRONG!! SEE BELOW #########
-                                            
                                             intvl_ephem = time_filter(times_c[0], times_c[-1], np.asarray(times_sat))
-                                        #print('------------------') 
+                                            
                                             if intvl_ephem != None:
                                                 e_0, e_1 = intvl_ephem
 
@@ -273,15 +269,17 @@ def find_sat_channel(norad_id):
                                             sat_plot(out_dir, ids, norad_id, alt, az, len(ids), f'{date_time[day][window]}', 'passes')
                                         
                                         
-                                        ## Plot the most lightly sat candidates, matching possible_chans
-                                        ## Choose the longest n ephem, where n is len(possible_chans)
-                                        #pass_lenghts = [len(i) for i in alt]
+                                        # Plot the most lightly sat candidates, matching possible_chans
+                                        # Choose the longest n ephem, where n is len(possible_chans)
+                                        p_lens = [len(i) for i in alt]
                                         #alt.sort(key=len, reverse=True)
                                         #az.sort(key=len, reverse=True)
-                                        #ids = [i for _,i in sorted(zip(pass_lenghts,ids), reverse=True)][:n_chans]
-                                        #
-                                        ##if norad_id in ids:
-                                        #sat_plot(out_dir, ids, norad_id, alt[:n_chans], az[:n_chans], len(ids), f'{date_time[day][window]}', 'possible_sats')
+                                        alt_2 = [i for _,i in sorted(zip(p_lens,alt), reverse=True)][:n_chans]
+                                        az_2  = [j for _,j in sorted(zip(p_lens, az), reverse=True)][:n_chans]
+                                        ids_2 = [k for _,k in sorted(zip(p_lens,ids), reverse=True)][:n_chans]
+                                        #print(ids) 
+                                        #if norad_id in ids:
+                                        sat_plot(out_dir, ids_2, norad_id, alt_2, az_2, len(ids_2), f'{date_time[day][window]}', 'possible_sats')
 
 
 
