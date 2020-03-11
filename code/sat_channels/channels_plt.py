@@ -141,14 +141,14 @@ def sat_plot(out_dir, ids, norad_id, alt, az, num_passes, date, name):
     plt.rcParams.update(plt.rcParamsDefault)
 
 
-def plt_hist(values, counts, x_label, y_label, title, saveout):
+def plt_hist(values, counts, x_label, y_label, title, saveout, cmap):
     '''Plt histogram of occupied channels'''
     
     #plt.rcParams.update(plt.rcParamsDefault)
     sns.set()
     index = np.arange(len(values))
     
-    plt.bar(index, counts, color=sns.color_palette("GnBu_d", len(counts)))
+    plt.bar(index, counts, color=sns.color_palette(cmap, len(counts)))
     
     plt.xlabel(x_label)
     plt.xticks(index, values)

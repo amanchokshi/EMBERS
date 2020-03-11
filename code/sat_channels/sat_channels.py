@@ -301,7 +301,8 @@ def find_sat_channel(norad_id):
                 'Channel Number',
                 'Number of Passes', 
                 f'Probable Transmission Channel of Sat {norad_id}: {pop_chans}',
-                f'{out_dir}/{norad_id}/channels_histo_{norad_id}_{pop_chans}.png')
+                f'{out_dir}/{norad_id}/channels_histo_{norad_id}_{pop_chans}.png',
+                'GnBu_d')
         
         print(f'Most frequently occupied channel for sat {norad_id}: {pop_chans}')
     
@@ -313,7 +314,8 @@ def find_sat_channel(norad_id):
                 'Norad Catalogue ID',
                 'Number of Passes', 
                 f'Possible Satellites in {norad_id} Window',
-                f'{out_dir}/{norad_id}/sats_histo_{norad_id}.png')
+                f'{out_dir}/{norad_id}/sats_histo_{norad_id}.png',
+                'rocket')
         
         print(f'Possible sats in {norad_id} window: {s_values}')
 
