@@ -193,11 +193,50 @@ The following thresholds were used to identify the correct channel:
 
 The peak signal in our data is `~ 30 dB` above the noise floor. We define an arbitrary threshold at `10 dB` and require that the maximum signal in a channel must exceed this value, if it contains a satellit. As our rf power array is sparsely populated with satellite signals, to first order, the median value of the data gives us an estimate of the noise floor. We calculate the Median Average Deviation [MAD] of our signal, and assign a multiple of this to be our noise cutoff. By default we use `10 * MAD` as our noise threshold, and demand that the signal at the edges of the *window* be below the noise threshold. This ensures that the satellite begins and ends within the expected region. A fractional occupancy of the window is computed by finding length of signal above the noise floor and dividing it by the window length. We require that `0.8 ≤ occupancy < 1.0`. By requiring that occupancy is less than `1.0`, we ensure that satellite passes longer than the window are not classified as potential channels. A center of gravity [CoG] method is used as a measure of how centrally distributed the data is. We require that the CoG be within `± 5 %` of the physical center of the window. The last criteria that the signal has to meet to be classified as a potential channel is altitude. Satellite passes near the horizon result in very weak signal, due to the beam shape of the antennas. By requiring that the ephemeris of satellites must exceed `20°` in altitude, we ensure that these beam edge effects don't effect our classification.
 
+The code generates many diagnostic plots and a `Satellite_Channels.txt` file in the `/outputs/sat_channels` directory.
+
 ```
 cd ../sat_channels
 
 python sat_channels.py --help
 ```
+
+In the `/outputs/sat_channels` directory, `sat_channels.py` generates a folder for each satellite. For every identified *window* a plot of each channels which meet our thresholding criteria is created. This plot shows the signal strength within the window, with all the thresholds used in its classification. For example, in the observation at `2019-10-04-16:00`, while searching for satellite `41180`, two potential channels `[41, 52]` were identified.  
+
+
+<p float="left">
+  <img src="./docs/2019-10-04-16:00_41180_41_channel.png" width="100%" />
+</p>
+
+<p float="left">
+  <img src="./docs/2019-10-04-16:00_41180_52_channel.png" width="100%" />
+</p>
+
+A waterfall plot of the rf data is also created. It has the window and potential channels highlighted. The plots of channels `[41, 52]` seem very similar and led us to question whether satellite may emit in more that one frequency. By plotting the ephemeris of other satellites in the *window*, we were able to rule this out, intead showing that two satellites with incredibly simillar ephemeri exist.
+
+
+<p float="left">
+  <img src="./docs/2019-10-04-16:00_41180_waterfall.png" height="420" />
+  <img src="./docs/2019-10-04-16:00_41180_passes.png" height="420" />
+</p>
+
+For each satellite, a list of all potential channels is compiled. As it is inevitable that we will mis-identify some channels, we plot a histogram of the number of classifications of each channel. This gives us a good idea of which channel the satellite occupies. Using the ephemeris data, we also plot a histogram of potential satellites. This helps us identify the other satellites which generated the false positives in channel identification.
+
+
+<p float="left">
+  <img src="./docs/channels_histo_41180_[52].png" width="49%" />
+  <img src="./docs/sats_histo_41180.png" width="49%" />
+</p>
+
+These plots tell us that satellite `41180` transimits in channel number `52`. We can also guess that channel number `41` must be the transimition channel of satellite `41189`.
+
+Once the code does this for all satellite, it compites a list of channels that each satellite occupies in `/outputs/Satellite_Channels.txt`.
+
+
+&nbsp;
+### Null Test
+
+Work on this next!!
 
 ### Beam Pointings
 
