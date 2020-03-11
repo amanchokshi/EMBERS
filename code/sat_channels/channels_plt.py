@@ -151,7 +151,7 @@ def plt_hist(values, counts, x_label, y_label, title, saveout, cmap):
     plt.bar(index, counts, color=sns.color_palette(cmap, len(counts)))
     
     plt.xlabel(x_label)
-    plt.xticks(index, values)
+    plt.xticks(index, values, rotation=90)
     plt.ylabel(y_label)
     plt.title(title)
     plt.tight_layout()
