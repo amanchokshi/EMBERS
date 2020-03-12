@@ -125,6 +125,10 @@ def find_sat_channel(norad_id):
 
     # list of all sats identified
     sats = []
+
+    # Lets make a counter of sats. If one or more channels are identified in a window, increment sat count by one
+
+    sat_count = 0
     
    
     # Loop through days
@@ -230,6 +234,8 @@ def find_sat_channel(norad_id):
                                 n_chans = len(possible_chans)
                                 
                                 if n_chans > 0:
+
+                                    sat_count += 1
                                     
                                     # plot waterfall with sat window and all selected channels highlighted
                                     plt_waterfall_pass(
@@ -301,14 +307,19 @@ def find_sat_channel(norad_id):
                 'Channel Number',
                 'Number of Passes', 
                 f'Probable Transmission Channel of Sat {norad_id}: {pop_chans}',
-                f'{out_dir}/{norad_id}/channels_histo_{norad_id}_{pop_chans}.png',
+                f'{out_dir}/{norad_id}/channels_histo_{norad_id}_{sat_count}_passes_{pop_chans}.png',
                 'GnBu_d')
         
         #print(f'Most frequently occupied channel for sat {norad_id}: {pop_chans}')
-        print(f'{norad_id}: {pop_chans}')
+        print(f'{norad_id}: {pop_chans}, {sat_count} Passes')
     
     if sats != []:
         s_values, s_counts = np.unique(sats, return_counts=True)
+
+        # only plot sat if it has more than 3 counts
+
+        s_values = s_values[np.where(s_counts>2)]
+        s_counts = s_counts[np.where(s_counts>2)]
         
         #plt_hist(out_dir, values, counts, norad_id)
         plt_hist(s_values, s_counts,
@@ -350,6 +361,7 @@ if __name__=="__main__":
     sys.path.append('../sat_ephemeris')
     import rf_data as rf
     from colormap import spectral
+    
     # Custom spectral colormap
     cmap = spectral()
     import sat_ids
@@ -373,7 +385,7 @@ if __name__=="__main__":
     parser.add_argument('--parallel', metavar='\b', default=True,help='If parallel=False, paralellization will be disabled.')
     
     parser.add_argument('--noi_thresh', metavar='\b', default=10,help='Noise Threshold: Multiples of MAD. Default=10.')
-    parser.add_argument('--arb_thresh', metavar='\b', default=10,help='Arbitrary Threshold to detect sats. Default=10 dB.')
+    parser.add_argument('--arb_thresh', metavar='\b', default=12,help='Arbitrary Threshold to detect sats. Default=12 dB.')
     parser.add_argument('--alt_thresh', metavar='\b', default=20,help='Altitude Threshold to detect sats. Default=20 degrees.')
     parser.add_argument('--cog_thresh', metavar='\b', default=0.05,help='Center of Gravity Threshold to detect sats. Default=0.05 [5%]')
     parser.add_argument('--occ_thresh', metavar='\b', default=0.80,help='Occupation Threshold of sat in window. Default=0.80 [5%]')
@@ -400,7 +412,6 @@ if __name__=="__main__":
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
     sys.stdout = open(f'{out_dir}/Satellite_Channels_{start_date}_{stop_date}.txt', 'a')
-    #sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
     
     # Import list of tile names from rf_data.py
     tiles = rf.tile_names()
