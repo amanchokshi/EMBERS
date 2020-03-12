@@ -348,6 +348,7 @@ if __name__=="__main__":
     import sys
     import argparse
     from pathlib import Path
+    import concurrent.futures
     from channels_plt import plt_waterfall_pass, plt_channel, plt_hist, sat_plot
     
     
@@ -423,11 +424,14 @@ if __name__=="__main__":
             #break
     
     else:
-    # Parallization magic happens here
-        with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
-            results = executor.map(find_sat_channel, sat_list)
-    
-        for result in results:
-            print(result)
+        try:
+        # Parallization magic happens here
+            with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
+                results = executor.map(find_sat_channel, sat_list)
+        
+            for result in results:
+                print(result)
+        except Exception:
+            print('Inssuficient Memory. Try using --parallel=False flag')
 
 
