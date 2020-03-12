@@ -1,11 +1,8 @@
 import math
-# Force matplotlib to not use X-Server backend
-#import matplotlib
-#matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 import json
 import argparse
 import numpy as np
+import healpy as hp
 import seaborn as sns
 import concurrent.futures
 from scipy import interpolate
@@ -13,7 +10,6 @@ from scipy.signal import savgol_filter
 from scipy.stats import median_absolute_deviation as mad
 from datetime import datetime, timedelta
 from pathlib import Path
-
 
 # Force matplotlib to not use X-Server backend
 import matplotlib
@@ -27,12 +23,12 @@ sys.path.append('../sat_channels')
 import rf_data as rf
 from colormap import spectral
 from sat_channels import time_tree, savgol_interp, time_filter
+from channels_plt import plt_waterfall_pass, plt_channel, plt_hist, sat_plot
 
 # Custom spectral colormap
 cmap = spectral()
 import sat_ids
 
-from channels_plt import plt_waterfall_pass, plt_channel, plt_hist, sat_plot
 
 
 
@@ -106,6 +102,7 @@ if __name__=='__main__':
     parser.add_argument('--polyorder', metavar='\b', default=1,help='Order of polynomial to fit to savgol window. Default=1')
     parser.add_argument('--interp_type', metavar='\b', default='cubic',help='Type of interpolation. Ex: cubic, linear, etc. Default=cubic')
     parser.add_argument('--interp_freq', metavar='\b', default=1,help='Frequency at which to resample smoothed data, in Hertz. Default=2')
+    parser.add_argument('--nside', metavar='\b', default=32,help='Healpix Nside. Default = 32')
     
     args = parser.parse_args()
     
@@ -118,6 +115,7 @@ if __name__=='__main__':
     polyorder =         args.polyorder
     interp_type =       args.interp_type
     interp_freq =       args.interp_freq
+    nside =            args.nside
     
     # Save logs 
     #Path(out_dir).mkdir(parents=True, exist_ok=True)
@@ -136,6 +134,9 @@ if __name__=='__main__':
         print(len(channel_power), len(alt), len(az))
 
 
+
+    ref_tile_map_dB_med  = [[] for pixel in range(hp.nside2npix(nside))]
+    ref_tile_map_data_entries_counter=np.zeros(hp.nside2npix(nside))
 
 
 
