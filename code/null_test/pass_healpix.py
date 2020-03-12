@@ -29,7 +29,7 @@ sys.path.append('../sat_ephemeris')
 sys.path.append('../sat_channels')
 import rf_data as rf
 from colormap import spectral
-from sat_channels import time_tree, savgol_interp
+from sat_channels import time_tree, savgol_interp, time_filter
 
 # Custom spectral colormap
 cmap = spectral()
@@ -85,17 +85,42 @@ if __name__=='__main__':
     noise_f = np.median(power)
     noise_mad = mad(power, axis=None)
     
-    
     # Scale the power to bring the median noise floor down to zero
     power = power - noise_f
-
-    channel_power = power[:, 52]
     
-    plt.scatter(times, channel_power)
-    plt.savefig('test.png')
+    with open(chrono_file) as chrono:
+        chrono_ephem = json.load(chrono)
+    
+        num_passes = len(chrono_ephem)
+        
+        norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(num_passes)]
+        
+        if sat_id in norad_list:
+            norad_index = norad_list.index(norad_id)
+        
+            norad_ephem = chrono_ephem[norad_index]
+                
+            rise_ephem  = norad_ephem["time_array"][0] 
+            set_ephem   = norad_ephem["time_array"][-1]
+            
+            intvl = time_filter(rise_ephem, set_ephem, np.asarray(times))
+        
+            if intvl != None:
+                
+                w_start, w_stop = intvl
+                
+                # Slice [crop] the power/times arrays to the times of sat pass
+                power_c = power[w_start:w_stop+1, :]
+                times_c = times[w_start:w_stop+1]
+
+                channel_power = power_c[:, 52]
+    
+                plt.scatter(times, channel_power)
+                plt.savefig('test.png')
 
     
 
+                        
 
 
 
