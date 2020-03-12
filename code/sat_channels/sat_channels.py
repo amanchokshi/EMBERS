@@ -424,10 +424,13 @@ if __name__=="__main__":
     
     else:
         # Parallization magic happens here
-        with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
-            results = executor.map(find_sat_channel, sat_list)
+        try:
+            with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
+                results = executor.map(find_sat_channel, sat_list)
     
-        for result in results:
-            print(result)
+            for result in results:
+                print(result)
+        except Exception:
+            print('Insufficient Memory. Use --parallel=False flag to run serially')
 
 
