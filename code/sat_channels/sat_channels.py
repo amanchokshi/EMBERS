@@ -432,6 +432,6 @@ if __name__=="__main__":
             for result in results:
                 print(result)
         except Exception:
-            print('Inssuficient Memory. Try using --parallel=False flag')
+            print('Inssuficient Memory. Try using --parallel=False flag to run code serially')
 
 
