@@ -214,11 +214,17 @@ In the `/outputs/sat_channels` directory, `sat_channels.py` generates a folder f
 
 A waterfall plot of the rf data is also created. It has the window and potential channels highlighted. The channel plots of channels `[41, 52]` seem very similar and led us to question whether satellite may emit in more that one frequency. By plotting the ephemeris of other satellites in the *window*, we were able to rule this out, intead showing that two satellites with incredibly simillar ephemeri exist. While plotting the satellite tracks, we implemented an altitude and occupancy cut, identical to those above. 
 
+`sat_channels.py` creates the plots and saved the relevant data to a json file in `/outputs/sat_channels/channel_data/`.
+
 
 <p float="left">
   <img src="./docs/2019-10-04-16:00_41180_waterfall.png" height="460" />
   <img src="./docs/2019-10-04-16:00_41180_passes.png" height="460" />
 </p>
+
+```
+python export_channel_info.py
+```
 
 For each satellite, a list of all potential channels is compiled. As it is inevitable that we will mis-identify some channels, we plot a histogram of the number of classifications of each channel. This gives us a good idea of which channel the satellite occupies. Using the ephemeris data, we also plot a histogram of potential satellites. This helps us identify the other satellites which generated the false positives in channel identification.
 
@@ -230,7 +236,7 @@ For each satellite, a list of all potential channels is compiled. As it is inevi
 
 These plots tell us that satellite `41180` transimits in channel number `52`. We can also guess that channel number `41` must be the transimition channel of satellite `41189`.
 
-Once the code does this for all satellite, it compites a list of channels that each satellite occupies in `/outputs/Satellite_Channels.txt`.
+Once the code does this for all satellite, it compites a list of channels that each satellite occupies in `/outputs/channel_map.json`.
 
 
 &nbsp;
