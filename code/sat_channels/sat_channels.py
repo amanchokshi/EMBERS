@@ -13,7 +13,7 @@ sys.path.append('../sat_ephemeris')
 import rf_data as rf
 import sat_ids
 
-# Custom spectral colormap
+## Custom spectral colormap
 from colormap import spectral
 cmap = spectral()
 
@@ -317,53 +317,22 @@ def find_sat_channel(norad_id):
 
     if chans != []:
 
-
         values, counts = np.unique(chans, return_counts=True)
         
         # if more than one channel has the same max number of passes, return all
-        pop_chans = [values[i] for i, j in enumerate(counts) if j == max(counts)]
+        pop_chans = [int(values[i]) for i, j in enumerate(counts) if j == max(counts)]
         
-        #plt_hist(out_dir, values, counts, norad_id)
-        plt_hist(values, counts,
-                'Channel Number',
-                'Number of Passes', 
-                f'Probable Transmission Channel of Sat {norad_id}: {pop_chans}',
-                f'{out_dir}/{norad_id}/channels_histo_{norad_id}_{sat_count}_passes_{pop_chans}.png',
-                'GnBu_d')
-        
-        #print(f'Most frequently occupied channel for sat {norad_id}: {pop_chans}')
-        print(f'{norad_id}: {pop_chans}, {sat_count} Passes')
-    
-    if sats != []:
-        s_values, s_counts = np.unique(sats, return_counts=True)
-
-        # only plot sat if it has more than 3 counts
-
-        s_values = s_values[np.where(s_counts>2)]
-        s_counts = s_counts[np.where(s_counts>2)]
-        
-        #plt_hist(out_dir, values, counts, norad_id)
-        plt_hist(s_values, s_counts,
-                'Norad Catalogue ID',
-                'Number of Passes', 
-                f'Possible Satellites in {norad_id} Window',
-                f'{out_dir}/{norad_id}/sats_histo_{norad_id}.png',
-                'rocket')
-        
-        #print(f'Possible sats in {norad_id} window: {s_values}')
-
         sat_data = {
-                'sat_id': f'{norad_id}', 
-                'pop_chans':f'{pop_chans}',
-                'sat_count': f'{sat_count}',
-                'chans': f'{chans}',
-                'sats': f'{sats}'
+                'sat_id': norad_id,
+                'pop_chans': pop_chans,
+                'sat_count': sat_count,
+                'chans': chans,
+                'sats': sats
                 }
                 
-        
         Path(f'{out_dir}/channel_data/').mkdir(parents=True, exist_ok=True)
 
-        with open(f'{out_dir}/channel_data/{norad_id}.json','w') as f: 
+        with open(f'{out_dir}/channel_data/{int(norad_id)}.json','w') as f: 
             json.dump(sat_data, f, indent=4) 
 
 if __name__=="__main__":
@@ -416,7 +385,7 @@ if __name__=="__main__":
     
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-    sys.stdout = open(f'{out_dir}/Satellite_Channels_{start_date}_{stop_date}.txt', 'a')
+    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
     
     # Import list of tile names from rf_data.py
     tiles = rf.tile_names()
