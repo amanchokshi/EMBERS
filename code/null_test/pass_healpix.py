@@ -96,7 +96,7 @@ if __name__=='__main__':
         norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(num_passes)]
         
         if sat_id in norad_list:
-            norad_index = norad_list.index(norad_id)
+            norad_index = norad_list.index(sat_id)
         
             norad_ephem = chrono_ephem[norad_index]
                 
@@ -115,7 +115,7 @@ if __name__=='__main__':
 
                 channel_power = power_c[:, 52]
     
-                plt.scatter(times, channel_power)
+                plt.scatter(times_c, channel_power)
                 plt.savefig('test.png')
 
     
