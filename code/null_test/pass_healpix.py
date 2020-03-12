@@ -32,7 +32,18 @@ import sat_ids
 
 
 
-def power_ephem(ref_file, chrono_file, sat_id, sat_chan):
+def power_ephem(
+        ref_file,
+        chrono_file,
+        sat_id,
+        sat_chan,
+        savgol_window,
+        polyorder,
+        interp_type,
+        interp_freq
+        ):
+
+    '''Create power, alt, az arrays at constant cadence'''
 
     power, times = savgol_interp(ref_file, savgol_window, polyorder, interp_type, interp_freq )
     
@@ -126,17 +137,59 @@ if __name__=='__main__':
 
     sat_id = 41180
     sat_chan = 52
+    
+    
+    # Initialize empty beam map and list
+    # a list of empty lists to append values to
+    ref_tile_map  = [[] for pixel in range(hp.nside2npix(nside))]
+
+    # a list of zeros, to increment when a new values is added
+    ref_tile_map_pixel_counter=np.zeros(hp.nside2npix(nside))
    
-    sat_data = power_ephem(ref_file, chrono_file, sat_id, sat_chan)
+
+    sat_data = power_ephem(
+            ref_file,
+            chrono_file,
+            sat_id,
+            sat_chan,
+            savgol_window,
+            polyorder,
+            interp_type,
+            interp_freq
+            )
 
     if sat_data != 0:
         channel_power, alt, az = sat_data
-        print(len(channel_power), len(alt), len(az))
+        
+        # Altitude is in deg while az is in radians
+        # convert alt to radians
+        alt = np.radians(alt)
+        az  = np.asarray(az)
+        
+        # To convert from Alt/Az to θ/ϕ spherical coordinates
+        # θ = 90 - Alt
+        # ɸ = 90 - Az
+
+        # Healpix uses sperical coordinates
+        θ = np.pi - alt
+        ɸ = np.pi - az
+
+        # Since we need to slice along NS & EW, and nside = 32 healpix does not 
+        # straight lines of pixels vertically or horizontally, but it does have
+        # them diagonally. We rotate ɸ by 45° to be able to slice NS & EW
+        ɸ_rot = ɸ + (np.pi / 4)
+
+        # Now convert to healpix coordinates
+        healpix_index = hp.ang2pix(nside, θ, ɸ_rot)
+                            
+        # Append channel power to ref healpix map 
+        ref_tile_map[healpix_index].append(channel_power)
+
+        # Increment pix ounter to keep track of passes in each pix 
+        ref_tile_map_pixel_counter[healpix_index]+=1
 
 
 
-    ref_tile_map_dB_med  = [[] for pixel in range(hp.nside2npix(nside))]
-    ref_tile_map_data_entries_counter=np.zeros(hp.nside2npix(nside))
 
 
 
