@@ -316,6 +316,8 @@ def find_sat_channel(norad_id):
                                     sats.extend(plt_ids) 
 
     if chans != []:
+
+
         values, counts = np.unique(chans, return_counts=True)
         
         # if more than one channel has the same max number of passes, return all
@@ -350,6 +352,19 @@ def find_sat_channel(norad_id):
         
         #print(f'Possible sats in {norad_id} window: {s_values}')
 
+        sat_data = {
+                'sat_id': f'{norad_id}', 
+                'pop_chans':f'{pop_chans}',
+                'sat_count': f'{sat_count}',
+                'chans': f'{chans}',
+                'sats': f'{sats}'
+                }
+                
+        
+        Path(f'{out_dir}/channel_data/').mkdir(parents=True, exist_ok=True)
+
+        with open(f'{out_dir}/channel_data/{norad_id}.json','w') as f: 
+            json.dump(sat_data, f, indent=4) 
 
 if __name__=="__main__":
 
