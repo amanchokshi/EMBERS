@@ -71,6 +71,6 @@ if __name__=="__main__":
 
     sat_channels = dict(zip(norad_ids, channels))
                 
-    with open(f'{out_dir}/sat_chan_map.json','w') as f: 
+    with open(f'{out_dir}/channel_map.json','w') as f: 
         json.dump(sat_channels, f) 
 
