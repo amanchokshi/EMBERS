@@ -387,8 +387,8 @@ if __name__=="__main__":
     parser.add_argument('--noi_thresh', metavar='\b', default=10,help='Noise Threshold: Multiples of MAD. Default=10.')
     parser.add_argument('--arb_thresh', metavar='\b', default=12,help='Arbitrary Threshold to detect sats. Default=12 dB.')
     parser.add_argument('--alt_thresh', metavar='\b', default=20,help='Altitude Threshold to detect sats. Default=20 degrees.')
-    parser.add_argument('--cog_thresh', metavar='\b', default=0.05,help='Center of Gravity Threshold to detect sats. Default=0.05 [5%]')
-    parser.add_argument('--occ_thresh', metavar='\b', default=0.80,help='Occupation Threshold of sat in window. Default=0.80 [5%]')
+    parser.add_argument('--cog_thresh', metavar='\b', default=0.05,help='Center of Gravity Threshold to detect sats. Default=0.05')
+    parser.add_argument('--occ_thresh', metavar='\b', default=0.80,help='Occupation Threshold of sat in window. Default=0.80')
 
     
     args = parser.parse_args()
