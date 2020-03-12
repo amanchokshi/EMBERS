@@ -165,6 +165,11 @@ if __name__=='__main__':
         # convert alt to radians
         alt = np.radians(alt)
         az  = np.asarray(az)
+
+        # make sure that alt doesn't go below zero
+        alt = alt[np.where(alt > 0)]
+        az  = az[np.where(alt > 0)]
+        channel_power = channel_power[np.where(alt > 0)]
         
         # To convert from Alt/Az to θ/ϕ spherical coordinates
         # θ = 90 - Alt
@@ -181,17 +186,40 @@ if __name__=='__main__':
 
         # Now convert to healpix coordinates
         healpix_index = hp.ang2pix(nside, θ, ɸ_rot)
-                            
-        # Append channel power to ref healpix map 
-        ref_tile_map[healpix_index].append(channel_power)
+                
+        ### FIGURE THIS OUT ###
 
+        # Append channel power to ref healpix map
+        #ref_tile_map[healpix_index].append(channel_power)
+
+      
         # Increment pix ounter to keep track of passes in each pix 
-        ref_tile_map_pixel_counter[healpix_index]+=1
+        #ref_tile_map_pixel_counter[healpix_index]+=1
+        #np.array(ref_tile_map_pixel_counter)[healpix_index] += 1
+
+        # Plot the things to sanity check and save results
+        fig = plt.figure(figsize=(10,10))
+
+        half_sky = hp.orthview(
+                map=ref_tile_map,coord='E',
+                half_sky=True,xsize=800,
+                title='ref map', rot=(0,90,0),
+                cmap=cmap,notext=True,
+                return_projected_map=True)
+       
+
+        hp.graticule(dpar=10,coord='E',color='k',alpha=0.3,dmer=45)
+        
+        
+        hp.projtext(00.0*(np.pi/180.0), 0.0, '00', coord='E')
+        hp.projtext(30.0*(np.pi/180.0), 0.0, '30', coord='E')
+        hp.projtext(60.0*(np.pi/180.0), 0.0, '60', coord='E')
 
 
+        hp.projtext(90.0*(np.pi/180.0), 00.0, r'$0^\circ$', coord='E',color='k',verticalalignment='top')
+        hp.projtext(90.0*(np.pi/180.0), 90.0*(np.pi/180.0), r'$90^\circ$', coord='E',color='k',horizontalalignment='right')
+        hp.projtext(90.0*(np.pi/180.0), 180.0*(np.pi/180.0), r'$180^\circ$', coord='E',color='k')
+        hp.projtext(90.0*(np.pi/180.0), 270.0*(np.pi/180.0), r'$270^\circ$', coord='E',color='k')
 
-
-
-
-
+        fig.savefig('ref.png')
 
