@@ -196,7 +196,6 @@ def find_sat_channel(norad_id):
                     
                 rise_ephem  = norad_ephem["time_array"][0] 
                 set_ephem   = norad_ephem["time_array"][-1]
-                sat_id      = norad_ephem["sat_id"][0]
                 
                 # Max altitude that the sat attains
                 sat_alt_max = np.amax(norad_ephem["sat_alt"])
@@ -415,20 +414,20 @@ if __name__=="__main__":
     # date_time = list of 30 min observation windows
     dates, date_time = time_tree(start_date, stop_date)
         
-    norad_id = 41180
-    find_sat_channel(norad_id)
+    #norad_id = 41180
+    #find_sat_channel(norad_id)
     
-    #if parallel != True:
-    #    for norad_id in sat_list:
-    #        find_sat_channel(norad_id)
-    #        #break
-    #
-    #else:
-    #    # Parallization magic happens here
-    #    with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
-    #        results = executor.map(find_sat_channel, sat_list)
-    #
-    #    for result in results:
-    #        print(result)
+    if parallel != True:
+        for norad_id in sat_list:
+            find_sat_channel(norad_id)
+            #break
+    
+    else:
+        # Parallization magic happens here
+        with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
+            results = executor.map(find_sat_channel, sat_list)
+    
+        for result in results:
+            print(result)
 
 
