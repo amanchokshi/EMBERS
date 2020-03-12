@@ -115,12 +115,24 @@ if __name__=='__main__':
 
                 channel_power = power_c[:, 52]
     
-                plt.scatter(times_c, channel_power)
-                plt.savefig('test.png')
+                #plt.scatter(times_c, channel_power)
+                #plt.savefig('test.png')
 
     
 
                         
+                times_sat = norad_ephem["time_array"]
+                
+                # Crop ephem of all sats to size of norad_id sat
+                intvl_ephem = time_filter(times_c[0], times_c[-1], np.asarray(times_sat))
+                
+                if intvl_ephem != None:
+                    e_0, e_1 = intvl_ephem
+                        
+                    alt = norad_ephem["sat_alt"][e_0:e_1+1]
+                    az  = norad_ephem["sat_az"][e_0:e_1+1]
+                    
+                    print(len(times_c), len(alt), len(az))
 
 
 
