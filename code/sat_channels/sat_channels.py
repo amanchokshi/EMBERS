@@ -1,4 +1,22 @@
-# CODE TO DETERMINE WHICH CHANNELS DIFFERENT SATELLITES OCCUPY #
+import math
+import json
+import numpy as np
+from scipy import interpolate
+from scipy.signal import savgol_filter
+from scipy.stats import median_absolute_deviation as mad
+from datetime import datetime, timedelta
+from pathlib import Path
+
+import sys
+sys.path.append('../decode_rf_data')
+sys.path.append('../sat_ephemeris')
+import rf_data as rf
+import sat_ids
+
+# Custom spectral colormap
+from colormap import spectral
+cmap = spectral()
+
 
 def time_tree(start_date, stop_date):
     '''Split the time interval into 30 min obs'''
@@ -42,6 +60,7 @@ def savgol_interp(ref, savgol_window =None, polyorder=None, interp_type=None, in
         power_smooth:   Aligned reference power array
         time_smooth:    Time array corresponding to power arrays
     """
+    
     
     power, times = rf.read_data(ref)
     savgol_pow = savgol_filter(power, savgol_window, polyorder, axis=0)
@@ -334,38 +353,9 @@ def find_sat_channel(norad_id):
 
 if __name__=="__main__":
 
-    import math
-    # Force matplotlib to not use X-Server backend
-    import matplotlib
-    matplotlib.use('Agg')
-    import matplotlib.pyplot as plt
-    import json
-    import argparse
-    import numpy as np
-    import seaborn as sns
-    import concurrent.futures
-    from scipy import interpolate
-    from scipy.signal import savgol_filter
-    from scipy.stats import median_absolute_deviation as mad
-    from datetime import datetime, timedelta
-    from pathlib import Path
-    
-    
-    # Force matplotlib to not use X-Server backend
-    import matplotlib
-    matplotlib.use('Agg')
-    import matplotlib.pyplot as plt
-    
     import sys
-    sys.path.append('../decode_rf_data')
-    sys.path.append('../sat_ephemeris')
-    import rf_data as rf
-    from colormap import spectral
-    
-    # Custom spectral colormap
-    cmap = spectral()
-    import sat_ids
-    
+    import argparse
+    from pathlib import Path
     from channels_plt import plt_waterfall_pass, plt_channel, plt_hist, sat_plot
     
     
@@ -432,20 +422,20 @@ if __name__=="__main__":
     # date_time = list of 30 min observation windows
     dates, date_time = time_tree(start_date, stop_date)
         
-    #norad_id = 41180
-    #find_sat_channel(norad_id)
+    norad_id = 41180
+    find_sat_channel(norad_id)
     
-    if parallel != True:
-        for norad_id in sat_list:
-            find_sat_channel(norad_id)
-            #break
-    
-    else:
-        # Parallization magic happens here
-        with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
-            results = executor.map(find_sat_channel, sat_list)
-    
-        for result in results:
-            print(result)
+    #if parallel != True:
+    #    for norad_id in sat_list:
+    #        find_sat_channel(norad_id)
+    #        #break
+    #
+    #else:
+    #    # Parallization magic happens here
+    #    with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
+    #        results = executor.map(find_sat_channel, sat_list)
+    #
+    #    for result in results:
+    #        print(result)
 
 
