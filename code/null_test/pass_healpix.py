@@ -195,10 +195,10 @@ if __name__=='__main__':
         for i in healpix_index:
             ref_tile_map_pixel_counter[i] += 1
 
-        fig = plt.figure(figsize=(10,10))
-        plot_healpix(data_map=np.asarray(ref_tile_map_med),sub=(1,1,1), cmap=cmap)
+        #fig = plt.figure(figsize=(10,10))
+        #plot_healpix(data_map=np.asarray(ref_tile_map_med),sub=(1,1,1), cmap=cmap)
 
-        plt.savefig('ref.png',bbox_inches='tight')
+        #plt.savefig('ref.png',bbox_inches='tight')
 
 
 
