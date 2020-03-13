@@ -51,6 +51,7 @@ if __name__=='__main__':
     
     import argparse
     import matplotlib.pyplot as plt
+    from pathlib import Path
     
     import sys
     sys.path.append('../decode_rf_data')
@@ -67,26 +68,30 @@ if __name__=='__main__':
         Plot healpix map of reference data
         """)
     
-    parser.add_argument('--map_data', metavar='\b', default='../../outputs/null_test/ref_map_healpix.npz', help='Reference Map healpix data. default=../../outputs/null_test/ref_map_healpix.npz')
+    parser.add_argument('--map_dir', metavar='\b', default='../../outputs/null_test/', help='Reference Map healpix data. default=../../outputs/null_test/')
     parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/null_test/',help='Output directory. Default=./../../outputs/null_test/')
     
     args = parser.parse_args()
     
-    map_data =          args.map_data
+    map_dir =          Path(args.map_dir)
     out_dir =           args.out_dir
     
-    # load data from map .npz file
-    map_data = np.load(map_data, allow_pickle=True)
-    ref_map = map_data['ref_map']
-    ref_counter = map_data['ref_counter']
-    
-    # compute the median for every pixel array
-    ref_map_med = [(np.median(i) if i != [] else np.nan ) for i in ref_map]
+    for f in map_dir.glob('*.npz'):
+        f_name, _ = f.name.split('.')
+        ref, _, _ = f_name.split('_')
+        
+        # load data from map .npz file
+        map_data = np.load(f, allow_pickle=True)
+        ref_map = map_data['ref_map']
+        ref_counter = map_data['ref_counter']
+        
+        # compute the median for every pixel array
+        ref_map_med = [(np.median(i) if i != [] else np.nan ) for i in ref_map]
 
-    fig = plt.figure(figsize=(8,10))
-    fig.suptitle(f'Reference Beam Healpix', fontsize=16)
-    plot_healpix(data_map=np.asarray(ref_map_med),sub=(1,1,1), cmap=cmap)
+        fig = plt.figure(figsize=(8,10))
+        fig.suptitle(f'Reference Beam Healpix: {ref}', fontsize=16)
+        plot_healpix(data_map=np.asarray(ref_map_med),sub=(1,1,1), cmap=cmap)
 
-    plt.savefig(f'{out_dir}/ref_map_healpix.png',bbox_inches='tight')
+        plt.savefig(f'{out_dir}/{f_name}.png',bbox_inches='tight')
 
 
