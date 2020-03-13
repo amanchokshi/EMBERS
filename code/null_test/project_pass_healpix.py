@@ -45,12 +45,7 @@ def power_ephem(
     
         norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))]
         
-        try:
-            norad_index = norad_list.index(sat_id)
-        
-        except Exception:
-            print(f'{sat_id}: not in {chrono_file}')
-            return 0
+        norad_index = norad_list.index(sat_id)
         
         norad_ephem = chrono_ephem[norad_index]
             
@@ -62,6 +57,7 @@ def power_ephem(
         if intvl != None:
             
             w_start, w_stop = intvl
+
         
             # Slice [crop] the power/times arrays to the times of sat pass
             channel_power = power[w_start:w_stop+1, sat_chan]
@@ -79,7 +75,9 @@ def power_ephem(
                 alt = norad_ephem["sat_alt"][e_0:e_1+1]
                 az  = norad_ephem["sat_az"][e_0:e_1+1]
 
-    return [channel_power, alt, az]
+            return [channel_power, alt, az]
+        else:
+            return 0
 
         
 if __name__=='__main__':
@@ -154,34 +152,36 @@ if __name__=='__main__':
             try:    
                 with open(chrono_file) as chrono:
                     chrono_ephem = json.load(chrono)
-                    norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))]
             
             except Exception:
                 print(f'{date_time[day][window]}: chrono file not found')
                 continue
 
             
+            norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))]
+            
             for sat in list(channel_map.keys()):
-                if sat in norad_list:
+                                
+                if int(sat) in norad_list and norad_list != []:
 
                     chans = channel_map[sat]
-
+                    
                     for chan_num in chans:
 
                         sat_data = power_ephem(
                                 ref_file,
                                 chrono_file,
-                                sat_id,
+                                int(sat),
                                 chan_num,
                                 savgol_window,
                                 polyorder,
                                 interp_type,
                                 interp_freq
                                 )
-
+                        
                         if sat_data != 0:
                             channel_power, alt, az = sat_data
-                            
+
                             # Altitude is in deg while az is in radians
                             # convert alt to radians
                             alt = np.radians(alt)
@@ -205,9 +205,9 @@ if __name__=='__main__':
                             healpix_index = hp.ang2pix(nside,θ, ɸ_rot)
                                     
                             # Append channel power to ref healpix map
-                            #for i in range(len(healpix_index)):
-                            #    ref_tile_map[healpix_index[i]].append(channel_power[i])
-                            [ref_map[healpix_index[i]].append(channel_power[i]) for i in range(len(healpix_index))]
+                            for i in range(len(healpix_index)):
+                                ref_map[healpix_index[i]].append(channel_power[i])
+                            #[ref_map[healpix_index[i]].append(channel_power[i]) for i in range(len(healpix_index))]
                              
                             
                             # Increment pix ounter to keep track of passes in each pix 
@@ -272,7 +272,8 @@ if __name__=='__main__':
     #    # Increment pix ounter to keep track of passes in each pix 
     #    for i in healpix_index:
     #        ref_counter[i] += 1
-        
+       
+    #print(ref_map)
     # Save map arrays to npz file
     np.savez_compressed(f'{out_dir}/ref_map_healpix.npz',
             ref_map = ref_map,
