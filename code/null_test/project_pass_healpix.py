@@ -113,6 +113,8 @@ if __name__=='__main__':
     interp_type =       args.interp_type
     interp_freq =       args.interp_freq
     nside =            args.nside
+
+    ref_tile='rf0XX'
     
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
@@ -123,76 +125,157 @@ if __name__=='__main__':
     with open(chan_map) as map:
         channel_map = json.load(map)
     
-    # Help traverse all 30 min obs b/w start & stop
-    dates, datetime = time_tree(start_date, stop_date)
-
-
-    ref_file = Path(f'{data_dir}/rf0XX/2019-10-04/rf0XX_2019-10-04-16:00.txt')
-    chrono_file = Path(f'{chrono_dir}/2019-10-04-16:00.json')
-
-
-    sat_id = 41180
-    sat_chan = 52
-    
-    
     # Initialize empty beam map and list
     # a list of empty lists to append values to
     ref_map  = [[] for pixel in range(hp.nside2npix(nside))]
 
     # a list of zeros, to increment when a new values is added
     ref_counter=np.zeros(hp.nside2npix(nside))
+    
+    # Help traverse all 30 min obs b/w start & stop
+    dates, date_time = time_tree(start_date, stop_date)
+
+    # Loop through days
+    for day in range(len(dates)):
+        
+        # Loop through each 30 min obs in day
+        for window in range(len(date_time[day])):
+            
+            ref_file = f'{data_dir}/{ref_tile}/{dates[day]}/{ref_tile}_{date_time[day][window]}.txt'
+            chrono_file = f'{chrono_dir}/{date_time[day][window]}.json'
+            
+            try:
+                Path(ref_file).is_file()
+            
+            except Exception:
+                print(f'{date_time[day][window]}: ref file not found')
+                continue
+
+            try:    
+                with open(chrono_file) as chrono:
+                    chrono_ephem = json.load(chrono)
+            
+            except Exception:
+                print(f'{date_time[day][window]}: chrono file not found')
+                continue
+
+            num_passes = len(chrono_ephem)
+    
+            norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(num_passes)]
+            
+            for sat_id in norad_list:
+
+
+
+                sat_data = power_ephem(
+                        ref_file,
+                        chrono_file,
+                        sat_id,
+                        channel_map[f'{sat_id}'],
+                        savgol_window,
+                        polyorder,
+                        interp_type,
+                        interp_freq
+                        )
+
+                if sat_data != 0:
+                    channel_power, alt, az = sat_data
+                    
+                    # Altitude is in deg while az is in radians
+                    # convert alt to radians
+                    alt = np.radians(alt)
+                    az  = np.asarray(az)
+
+                    # To convert from Alt/Az to θ/ϕ spherical coordinates
+                    # Jack's convention, not sure about ɸ
+                    # θ = 90 - Alt
+                    # ɸ = 180 - Az
+
+                    # Healpix uses sperical coordinates
+                    θ = np.pi/2 - alt
+                    ɸ = np.pi - az
+
+                    # Since we need to slice along NS & EW, and nside = 32 healpix does not 
+                    # straight lines of pixels vertically or horizontally, but it does have
+                    # them diagonally. We rotate ɸ by 45° to be able to slice NS & EW
+                    ɸ_rot = ɸ + (np.pi / 4)
+
+                    # Now convert to healpix coordinates
+                    healpix_index = hp.ang2pix(nside,θ, ɸ_rot)
+                            
+                    # Append channel power to ref healpix map
+                    #for i in range(len(healpix_index)):
+                    #    ref_tile_map[healpix_index[i]].append(channel_power[i])
+                    [ref_map[healpix_index[i]].append(channel_power[i]) for i in range(len(healpix_index))]
+                     
+                    
+                    # Increment pix ounter to keep track of passes in each pix 
+                    for i in healpix_index:
+                        ref_counter[i] += 1
+        
+
+                    
+
+    #ref_file = Path(f'{data_dir}/rf0XX/2019-10-04/rf0XX_2019-10-04-16:00.txt')
+    #chrono_file = Path(f'{chrono_dir}/2019-10-04-16:00.json')
+
+
+    #sat_id = 41180
+    #sat_chan = 52
+    
+    
   
 
-    sat_data = power_ephem(
-            ref_file,
-            chrono_file,
-            sat_id,
-            sat_chan,
-            savgol_window,
-            polyorder,
-            interp_type,
-            interp_freq
+    #sat_data = power_ephem(
+    #        ref_file,
+    #        chrono_file,
+    #        sat_id,
+    #        sat_chan,
+    #        savgol_window,
+    #        polyorder,
+    #        interp_type,
+    #        interp_freq
+    #        )
+
+    #if sat_data != 0:
+    #    channel_power, alt, az = sat_data
+    #    
+    #    # Altitude is in deg while az is in radians
+    #    # convert alt to radians
+    #    alt = np.radians(alt)
+    #    az  = np.asarray(az)
+
+    #    # To convert from Alt/Az to θ/ϕ spherical coordinates
+    #    # Jack's convention, not sure about ɸ
+    #    # θ = 90 - Alt
+    #    # ɸ = 180 - Az
+
+    #    # Healpix uses sperical coordinates
+    #    θ = np.pi/2 - alt
+    #    ɸ = np.pi - az
+
+    #    # Since we need to slice along NS & EW, and nside = 32 healpix does not 
+    #    # straight lines of pixels vertically or horizontally, but it does have
+    #    # them diagonally. We rotate ɸ by 45° to be able to slice NS & EW
+    #    ɸ_rot = ɸ + (np.pi / 4)
+
+    #    # Now convert to healpix coordinates
+    #    healpix_index = hp.ang2pix(nside,θ, ɸ_rot)
+    #            
+    #    # Append channel power to ref healpix map
+    #    #for i in range(len(healpix_index)):
+    #    #    ref_tile_map[healpix_index[i]].append(channel_power[i])
+    #    [ref_map[healpix_index[i]].append(channel_power[i]) for i in range(len(healpix_index))]
+    #     
+    #    
+    #    # Increment pix ounter to keep track of passes in each pix 
+    #    for i in healpix_index:
+    #        ref_counter[i] += 1
+        
+    # Save map arrays to npz file
+    np.savez_compressed(f'{out_dir}/ref_map_healpix.npz',
+            ref_map = ref_map,
+            ref_counter = ref_counter
             )
-
-    if sat_data != 0:
-        channel_power, alt, az = sat_data
-        
-        # Altitude is in deg while az is in radians
-        # convert alt to radians
-        alt = np.radians(alt)
-        az  = np.asarray(az)
-
-        # To convert from Alt/Az to θ/ϕ spherical coordinates
-        # Jack's convention, not sure about ɸ
-        # θ = 90 - Alt
-        # ɸ = 180 - Az
-
-        # Healpix uses sperical coordinates
-        θ = np.pi/2 - alt
-        ɸ = np.pi - az
-
-        # Since we need to slice along NS & EW, and nside = 32 healpix does not 
-        # straight lines of pixels vertically or horizontally, but it does have
-        # them diagonally. We rotate ɸ by 45° to be able to slice NS & EW
-        ɸ_rot = ɸ + (np.pi / 4)
-
-        # Now convert to healpix coordinates
-        healpix_index = hp.ang2pix(nside,θ, ɸ_rot)
-                
-        # Append channel power to ref healpix map
-        #for i in range(len(healpix_index)):
-        #    ref_tile_map[healpix_index[i]].append(channel_power[i])
-        [ref_map[healpix_index[i]].append(channel_power[i]) for i in range(len(healpix_index))]
-         
-        
-        # Increment pix ounter to keep track of passes in each pix 
-        for i in healpix_index:
-            ref_counter[i] += 1
-        
-        # Save map arrays to npz file
-        np.savez_compressed(f'{out_dir}/ref_map_healpix.npz',
-                ref_map = ref_map,
-                ref_counter = ref_counter
-                )
         
 
