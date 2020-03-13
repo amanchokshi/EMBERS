@@ -79,46 +79,9 @@ def power_ephem(
         else:
             return 0
 
-        
-if __name__=='__main__':
 
-    parser = argparse.ArgumentParser(description="""
-        Project a sat pass onto a healpix map using ephemeris data
-        """)
-    
-    parser.add_argument('--data_dir', metavar='\b', help='Dir where date is saved')
-    parser.add_argument('--start_date', metavar='\b', help='Date from which to start aligning data. Ex: 2019-10-10')
-    parser.add_argument('--stop_date', metavar='\b', help='Date until which to align data. Ex: 2019-10-11')
-    parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/null_test/',help='Output directory. Default=./../../outputs/null_test/')
-    parser.add_argument('--chan_map', metavar='\b', default='../../data/channel_map.json',help='Satellite channel map. Default=../../data/channel_map.json')
-    parser.add_argument('--chrono_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json',help='Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/')
-    parser.add_argument('--savgol_window', metavar='\b', default=151,help='Length of savgol window. Must be odd. Default=151')
-    parser.add_argument('--polyorder', metavar='\b', default=1,help='Order of polynomial to fit to savgol window. Default=1')
-    parser.add_argument('--interp_type', metavar='\b', default='cubic',help='Type of interpolation. Ex: cubic, linear, etc. Default=cubic')
-    parser.add_argument('--interp_freq', metavar='\b', default=1,help='Frequency at which to resample smoothed data, in Hertz. Default=2')
-    parser.add_argument('--nside', metavar='\b', default=32,help='Healpix Nside. Default = 32')
-    
-    args = parser.parse_args()
-    
-    data_dir =          args.data_dir
-    chrono_dir =        args.chrono_dir
-    start_date =        args.start_date
-    stop_date =         args.stop_date
-    out_dir =           args.out_dir
-    chan_map =          args.chan_map
-    savgol_window =     args.savgol_window
-    polyorder =         args.polyorder
-    interp_type =       args.interp_type
-    interp_freq =       args.interp_freq
-    nside =            args.nside
+def proj_ref_healpix(ref):
 
-    ref_tile='rf0XX'
-    
-    # Save logs 
-    Path(out_dir).mkdir(parents=True, exist_ok=True)
-    #sys.stdout = open(f'{out_dir}/Satellite_Channels_{start_date}_{stop_date}.txt', 'a')
-
-    
     # Read channel map file
     with open(chan_map) as map:
         channel_map = json.load(map)
@@ -139,7 +102,7 @@ if __name__=='__main__':
         # Loop through each 30 min obs in day
         for window in range(len(date_time[day])):
             
-            ref_file = f'{data_dir}/{ref_tile}/{dates[day]}/{ref_tile}_{date_time[day][window]}.txt'
+            ref_file = f'{data_dir}/{ref}/{dates[day]}/{ref_tile}_{date_time[day][window]}.txt'
             chrono_file = f'{chrono_dir}/{date_time[day][window]}.json'
             
             try:
@@ -215,69 +178,53 @@ if __name__=='__main__':
                                 ref_counter[i] += 1
         
 
-                    
-
-    #ref_file = Path(f'{data_dir}/rf0XX/2019-10-04/rf0XX_2019-10-04-16:00.txt')
-    #chrono_file = Path(f'{chrono_dir}/2019-10-04-16:00.json')
-
-
-    #sat_id = 41180
-    #sat_chan = 52
-    
-    
-  
-
-    #sat_data = power_ephem(
-    #        ref_file,
-    #        chrono_file,
-    #        sat_id,
-    #        sat_chan,
-    #        savgol_window,
-    #        polyorder,
-    #        interp_type,
-    #        interp_freq
-    #        )
-
-    #if sat_data != 0:
-    #    channel_power, alt, az = sat_data
-    #    
-    #    # Altitude is in deg while az is in radians
-    #    # convert alt to radians
-    #    alt = np.radians(alt)
-    #    az  = np.asarray(az)
-
-    #    # To convert from Alt/Az to θ/ϕ spherical coordinates
-    #    # Jack's convention, not sure about ɸ
-    #    # θ = 90 - Alt
-    #    # ɸ = 180 - Az
-
-    #    # Healpix uses sperical coordinates
-    #    θ = np.pi/2 - alt
-    #    ɸ = np.pi - az
-
-    #    # Since we need to slice along NS & EW, and nside = 32 healpix does not 
-    #    # straight lines of pixels vertically or horizontally, but it does have
-    #    # them diagonally. We rotate ɸ by 45° to be able to slice NS & EW
-    #    ɸ_rot = ɸ + (np.pi / 4)
-
-    #    # Now convert to healpix coordinates
-    #    healpix_index = hp.ang2pix(nside,θ, ɸ_rot)
-    #            
-    #    # Append channel power to ref healpix map
-    #    #for i in range(len(healpix_index)):
-    #    #    ref_tile_map[healpix_index[i]].append(channel_power[i])
-    #    [ref_map[healpix_index[i]].append(channel_power[i]) for i in range(len(healpix_index))]
-    #     
-    #    
-    #    # Increment pix ounter to keep track of passes in each pix 
-    #    for i in healpix_index:
-    #        ref_counter[i] += 1
-       
-    #print(ref_map)
     # Save map arrays to npz file
-    np.savez_compressed(f'{out_dir}/ref_map_healpix.npz',
+    np.savez_compressed(f'{out_dir}/{ref}_map_healpix.npz',
             ref_map = ref_map,
             ref_counter = ref_counter
             )
+
+
+        
+if __name__=='__main__':
+
+    parser = argparse.ArgumentParser(description="""
+        Project a sat pass onto a healpix map using ephemeris data
+        """)
+    
+    parser.add_argument('--data_dir', metavar='\b', help='Dir where date is saved')
+    parser.add_argument('--start_date', metavar='\b', help='Date from which to start aligning data. Ex: 2019-10-10')
+    parser.add_argument('--stop_date', metavar='\b', help='Date until which to align data. Ex: 2019-10-11')
+    parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/null_test/',help='Output directory. Default=./../../outputs/null_test/')
+    parser.add_argument('--chan_map', metavar='\b', default='../../data/channel_map.json',help='Satellite channel map. Default=../../data/channel_map.json')
+    parser.add_argument('--chrono_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json',help='Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/')
+    parser.add_argument('--savgol_window', metavar='\b', default=151,help='Length of savgol window. Must be odd. Default=151')
+    parser.add_argument('--polyorder', metavar='\b', default=1,help='Order of polynomial to fit to savgol window. Default=1')
+    parser.add_argument('--interp_type', metavar='\b', default='cubic',help='Type of interpolation. Ex: cubic, linear, etc. Default=cubic')
+    parser.add_argument('--interp_freq', metavar='\b', default=1,help='Frequency at which to resample smoothed data, in Hertz. Default=2')
+    parser.add_argument('--nside', metavar='\b', default=32,help='Healpix Nside. Default = 32')
+    
+    args = parser.parse_args()
+    
+    data_dir =          args.data_dir
+    chrono_dir =        args.chrono_dir
+    start_date =        args.start_date
+    stop_date =         args.stop_date
+    out_dir =           args.out_dir
+    chan_map =          args.chan_map
+    savgol_window =     args.savgol_window
+    polyorder =         args.polyorder
+    interp_type =       args.interp_type
+    interp_freq =       args.interp_freq
+    nside =            args.nside
+
+    ref_tile='rf0XX'
+    
+    # Save logs 
+    Path(out_dir).mkdir(parents=True, exist_ok=True)
+    #sys.stdout = open(f'{out_dir}/Satellite_Channels_{start_date}_{stop_date}.txt', 'a')
+
+    proj_ref_healpix(ref_tile)
+
         
 
