@@ -242,6 +242,8 @@ We need to now look at a gazzilion plots and determine by eye, which satellites 
 
 Emperically, we expect ORBCOMM satellites to only emit in one frequency channel, while the NOAA weather satellites emit in two consecutive channels and the Meteor satellite emits in 5 consecutive channels. I modify `channel_map.json` and save it to the data folder, to used later.
 
+After looking at all the plots, `channel_map.json` has only 35 remaining satellites of the original 71.
+
 
 &nbsp;
 ### Null Test
