@@ -105,9 +105,10 @@ if __name__=='__main__':
         """)
     
     parser.add_argument('--data_dir', metavar='\b', help='Dir where date is saved')
-    #parser.add_argument('--start_date', metavar='\b', help='Date from which to start aligning data. Ex: 2019-10-10')
-    #parser.add_argument('--stop_date', metavar='\b', help='Date until which to align data. Ex: 2019-10-11')
+    parser.add_argument('--start_date', metavar='\b', help='Date from which to start aligning data. Ex: 2019-10-10')
+    parser.add_argument('--stop_date', metavar='\b', help='Date until which to align data. Ex: 2019-10-11')
     parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/null_test/',help='Output directory. Default=./../../outputs/null_test/')
+    parser.add_argument('--chan_map', metavar='\b', default='../../data/channel_map.json',help='Satellite channel map. Default=../../data/channel_map.json')
     parser.add_argument('--chrono_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json',help='Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/')
     parser.add_argument('--savgol_window', metavar='\b', default=151,help='Length of savgol window. Must be odd. Default=151')
     parser.add_argument('--polyorder', metavar='\b', default=1,help='Order of polynomial to fit to savgol window. Default=1')
@@ -119,9 +120,10 @@ if __name__=='__main__':
     
     data_dir =          args.data_dir
     chrono_dir =        args.chrono_dir
-    #start_date =        args.start_date
-    #stop_date =         args.stop_date
+    start_date =        args.start_date
+    stop_date =         args.stop_date
     out_dir =           args.out_dir
+    chan_map =          args.chan_map
     savgol_window =     args.savgol_window
     polyorder =         args.polyorder
     interp_type =       args.interp_type
@@ -129,11 +131,21 @@ if __name__=='__main__':
     nside =            args.nside
     
     # Save logs 
-    #Path(out_dir).mkdir(parents=True, exist_ok=True)
+    Path(out_dir).mkdir(parents=True, exist_ok=True)
     #sys.stdout = open(f'{out_dir}/Satellite_Channels_{start_date}_{stop_date}.txt', 'a')
+
+    
+    # Read channel map file
+    with open(chan_map) as map:
+        channel_map = json.load(map)
+    
+    # Help traverse all 30 min obs b/w start & stop
+    dates, datetime = time_tree(start_date, stop_date)
+
 
     ref_file = Path(f'{data_dir}/rf0XX/2019-10-04/rf0XX_2019-10-04-16:00.txt')
     chrono_file = Path(f'{chrono_dir}/2019-10-04-16:00.json')
+
 
     sat_id = 41180
     sat_chan = 52
@@ -141,10 +153,10 @@ if __name__=='__main__':
     
     # Initialize empty beam map and list
     # a list of empty lists to append values to
-    ref_tile_map  = [[] for pixel in range(hp.nside2npix(nside))]
+    ref_map  = [[] for pixel in range(hp.nside2npix(nside))]
 
     # a list of zeros, to increment when a new values is added
-    ref_tile_map_pixel_counter=np.zeros(hp.nside2npix(nside))
+    ref_counter=np.zeros(hp.nside2npix(nside))
   
 
     sat_data = power_ephem(
@@ -186,14 +198,20 @@ if __name__=='__main__':
         # Append channel power to ref healpix map
         #for i in range(len(healpix_index)):
         #    ref_tile_map[healpix_index[i]].append(channel_power[i])
-        [ref_tile_map[healpix_index[i]].append(channel_power[i]) for i in range(len(healpix_index))]
+        [ref_map[healpix_index[i]].append(channel_power[i]) for i in range(len(healpix_index))]
          
         # compute the median for every pixel array
-        ref_tile_map_med = [(np.median(i) if i != [] else np.nan ) for i in ref_tile_map]
+        ref_map_med = [(np.median(i) if i != [] else np.nan ) for i in ref_map]
       
         # Increment pix ounter to keep track of passes in each pix 
         for i in healpix_index:
-            ref_tile_map_pixel_counter[i] += 1
+            ref_counter[i] += 1
+
+        np.savez_compressed(f'{out_dir}/ref_project_healpix.npz',
+                ref_map = ref_map,
+                ref_counter = ref_counter
+                )
+        
 
         #fig = plt.figure(figsize=(10,10))
         #plot_healpix(data_map=np.asarray(ref_tile_map_med),sub=(1,1,1), cmap=cmap)
