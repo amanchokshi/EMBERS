@@ -25,11 +25,11 @@ from colormap import spectral
 from sat_channels import time_tree, savgol_interp, time_filter
 from channels_plt import plt_waterfall_pass, plt_channel, plt_hist, sat_plot
 
+from plot_healpix import plot_healpix
+
 # Custom spectral colormap
 cmap = spectral()
 import sat_ids
-
-
 
 
 def power_ephem(
@@ -145,7 +145,7 @@ if __name__=='__main__':
 
     # a list of zeros, to increment when a new values is added
     ref_tile_map_pixel_counter=np.zeros(hp.nside2npix(nside))
-   
+  
 
     sat_data = power_ephem(
             ref_file,
@@ -166,17 +166,13 @@ if __name__=='__main__':
         alt = np.radians(alt)
         az  = np.asarray(az)
 
-        # make sure that alt doesn't go below zero
-        alt = alt[np.where(alt > 0)]
-        az  = az[np.where(alt > 0)]
-        channel_power = channel_power[np.where(alt > 0)]
-        
         # To convert from Alt/Az to θ/ϕ spherical coordinates
+        # Jack's convention, not sure about ɸ
         # θ = 90 - Alt
-        # ɸ = 90 - Az
+        # ɸ = 180 - Az
 
         # Healpix uses sperical coordinates
-        θ = np.pi - alt
+        θ = np.pi/2 - alt
         ɸ = np.pi - az
 
         # Since we need to slice along NS & EW, and nside = 32 healpix does not 
@@ -185,41 +181,25 @@ if __name__=='__main__':
         ɸ_rot = ɸ + (np.pi / 4)
 
         # Now convert to healpix coordinates
-        healpix_index = hp.ang2pix(nside, θ, ɸ_rot)
+        healpix_index = hp.ang2pix(nside,θ, ɸ_rot)
                 
-        ### FIGURE THIS OUT ###
-
         # Append channel power to ref healpix map
-        #ref_tile_map[healpix_index].append(channel_power)
-
+        #for i in range(len(healpix_index)):
+        #    ref_tile_map[healpix_index[i]].append(channel_power[i])
+        [ref_tile_map[healpix_index[i]].append(channel_power[i]) for i in range(len(healpix_index))]
+         
+        # compute the median for every pixel array
+        ref_tile_map_med = [(np.median(i) if i != [] else np.nan ) for i in ref_tile_map]
       
         # Increment pix ounter to keep track of passes in each pix 
-        #ref_tile_map_pixel_counter[healpix_index]+=1
-        #np.array(ref_tile_map_pixel_counter)[healpix_index] += 1
+        for i in healpix_index:
+            ref_tile_map_pixel_counter[i] += 1
 
-        # Plot the things to sanity check and save results
         fig = plt.figure(figsize=(10,10))
+        plot_healpix(data_map=np.asarray(ref_tile_map_med),sub=(1,1,1), cmap=cmap)
 
-        half_sky = hp.orthview(
-                map=ref_tile_map,coord='E',
-                half_sky=True,xsize=800,
-                title='ref map', rot=(0,90,0),
-                cmap=cmap,notext=True,
-                return_projected_map=True)
-       
-
-        hp.graticule(dpar=10,coord='E',color='k',alpha=0.3,dmer=45)
-        
-        
-        hp.projtext(00.0*(np.pi/180.0), 0.0, '00', coord='E')
-        hp.projtext(30.0*(np.pi/180.0), 0.0, '30', coord='E')
-        hp.projtext(60.0*(np.pi/180.0), 0.0, '60', coord='E')
+        plt.savefig('ref.png',bbox_inches='tight')
 
 
-        hp.projtext(90.0*(np.pi/180.0), 00.0, r'$0^\circ$', coord='E',color='k',verticalalignment='top')
-        hp.projtext(90.0*(np.pi/180.0), 90.0*(np.pi/180.0), r'$90^\circ$', coord='E',color='k',horizontalalignment='right')
-        hp.projtext(90.0*(np.pi/180.0), 180.0*(np.pi/180.0), r'$180^\circ$', coord='E',color='k')
-        hp.projtext(90.0*(np.pi/180.0), 270.0*(np.pi/180.0), r'$270^\circ$', coord='E',color='k')
 
-        fig.savefig('ref.png')
 
