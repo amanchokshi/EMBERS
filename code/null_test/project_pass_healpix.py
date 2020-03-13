@@ -1,20 +1,9 @@
-import math
 import json
 import argparse
 import numpy as np
 import healpy as hp
-import seaborn as sns
-import concurrent.futures
-from scipy import interpolate
-from scipy.signal import savgol_filter
-from scipy.stats import median_absolute_deviation as mad
-from datetime import datetime, timedelta
 from pathlib import Path
 
-# Force matplotlib to not use X-Server backend
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 
 import sys
 sys.path.append('../decode_rf_data')
@@ -24,8 +13,6 @@ import rf_data as rf
 from colormap import spectral
 from sat_channels import time_tree, savgol_interp, time_filter
 from channels_plt import plt_waterfall_pass, plt_channel, plt_hist, sat_plot
-
-from plot_healpix import plot_healpix
 
 # Custom spectral colormap
 cmap = spectral()
@@ -49,7 +36,6 @@ def power_ephem(
     
     # To first order, let us consider the median to be the noise floor
     noise_f = np.median(power)
-    noise_mad = mad(power, axis=None)
     
     # Scale the power to bring the median noise floor down to zero
     power = power - noise_f
@@ -96,8 +82,6 @@ def power_ephem(
     return [channel_power, alt, az]
 
         
-    
-
 if __name__=='__main__':
 
     parser = argparse.ArgumentParser(description="""
@@ -200,24 +184,15 @@ if __name__=='__main__':
         #    ref_tile_map[healpix_index[i]].append(channel_power[i])
         [ref_map[healpix_index[i]].append(channel_power[i]) for i in range(len(healpix_index))]
          
-        # compute the median for every pixel array
-        ref_map_med = [(np.median(i) if i != [] else np.nan ) for i in ref_map]
-      
+        
         # Increment pix ounter to keep track of passes in each pix 
         for i in healpix_index:
             ref_counter[i] += 1
-
-        np.savez_compressed(f'{out_dir}/ref_project_healpix.npz',
+        
+        # Save map arrays to npz file
+        np.savez_compressed(f'{out_dir}/ref_map_healpix.npz',
                 ref_map = ref_map,
                 ref_counter = ref_counter
                 )
         
-
-        #fig = plt.figure(figsize=(10,10))
-        #plot_healpix(data_map=np.asarray(ref_tile_map_med),sub=(1,1,1), cmap=cmap)
-
-        #plt.savefig('ref.png',bbox_inches='tight')
-
-
-
 
