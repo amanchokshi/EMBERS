@@ -1,4 +1,4 @@
-# Healpix plotting code by Jack Line
+# Healpix plotting script adapted from Dr. Jack Line's code
 # https://github.com/JLBLine/MWA_ORBCOMM
 
 import numpy as np
@@ -45,5 +45,44 @@ def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None
     hp.projtext(90.0*(np.pi/180.0), 90.0*(np.pi/180.0), r'$90^\circ$', coord='E',color='k',horizontalalignment='right')
     hp.projtext(90.0*(np.pi/180.0), 180.0*(np.pi/180.0), r'$180^\circ$', coord='E',color='k')
     hp.projtext(90.0*(np.pi/180.0), 270.0*(np.pi/180.0), r'$270^\circ$', coord='E',color='k')
+
+
+if __name__=='__main__':
     
+    import argparse
+    import matplotlib.pyplot as plt
+    
+    import sys
+    sys.path.append('../decode_rf_data')
+    from colormap import spectral
+    
+    # Custom spectral colormap
+    cmap = spectral()
+
+    parser = argparse.ArgumentParser(description="""
+        Plot healpix map of reference data
+        """)
+    
+    parser.add_argument('--map_data', metavar='\b', default='../../outputs/null_test/ref_project_healpix.npz', help='Reference Map healpix data. default=../../outputs/null_test/ref_project_healpix.npz')
+    parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/null_test/',help='Output directory. Default=./../../outputs/null_test/')
+    
+    args = parser.parse_args()
+    
+    map_data =          args.map_data
+    out_dir =           args.out_dir
+    
+    # load data from map .npz file
+    map_data = np.load(map_data, allow_pickle=True)
+    ref_map = map_data['ref_map']
+    ref_counter = map_data['ref_counter']
+    
+    # compute the median for every pixel array
+    ref_map_med = [(np.median(i) if i != [] else np.nan ) for i in ref_map]
+
+    fig = plt.figure(figsize=(8,10))
+    fig.suptitle(f'Reference Beam Healpix', fontsize=16)
+    plot_healpix(data_map=np.asarray(ref_map_med),sub=(1,1,1), cmap=cmap)
+
+    plt.savefig(f'{out_dir}/ref.png',bbox_inches='tight')
+
 
