@@ -58,6 +58,10 @@ if __name__=='__main__':
     
     # Custom spectral colormap
     cmap = spectral()
+    
+    # Disable cryptic healpy warnings. Can't figure out where they originate
+    import warnings
+    warnings.filterwarnings("ignore", category=RuntimeWarning) 
 
     parser = argparse.ArgumentParser(description="""
         Plot healpix map of reference data
