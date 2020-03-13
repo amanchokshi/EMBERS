@@ -63,7 +63,7 @@ if __name__=='__main__':
         Plot healpix map of reference data
         """)
     
-    parser.add_argument('--map_data', metavar='\b', default='../../outputs/null_test/ref_project_healpix.npz', help='Reference Map healpix data. default=../../outputs/null_test/ref_project_healpix.npz')
+    parser.add_argument('--map_data', metavar='\b', default='../../outputs/null_test/ref_map_healpix.npz', help='Reference Map healpix data. default=../../outputs/null_test/ref_map_healpix.npz')
     parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/null_test/',help='Output directory. Default=./../../outputs/null_test/')
     
     args = parser.parse_args()
@@ -83,6 +83,6 @@ if __name__=='__main__':
     fig.suptitle(f'Reference Beam Healpix', fontsize=16)
     plot_healpix(data_map=np.asarray(ref_map_med),sub=(1,1,1), cmap=cmap)
 
-    plt.savefig(f'{out_dir}/ref.png',bbox_inches='tight')
+    plt.savefig(f'{out_dir}/ref_map_healpix.png',bbox_inches='tight')
 
 
