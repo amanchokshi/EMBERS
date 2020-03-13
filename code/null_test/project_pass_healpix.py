@@ -3,6 +3,7 @@ import argparse
 import numpy as np
 import healpy as hp
 from pathlib import Path
+import concurrent.futures
 
 
 import sys
@@ -102,7 +103,7 @@ def proj_ref_healpix(ref):
         # Loop through each 30 min obs in day
         for window in range(len(date_time[day])):
             
-            ref_file = f'{data_dir}/{ref}/{dates[day]}/{ref_tile}_{date_time[day][window]}.txt'
+            ref_file = f'{data_dir}/{ref}/{dates[day]}/{ref}_{date_time[day][window]}.txt'
             chrono_file = f'{chrono_dir}/{date_time[day][window]}.json'
             
             try:
@@ -218,13 +219,14 @@ if __name__=='__main__':
     interp_freq =       args.interp_freq
     nside =            args.nside
 
-    ref_tile='rf0XX'
+    ref_names=['rf0XX', 'rf0YY', 'rf1XX', 'rf1YY']
     
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
     #sys.stdout = open(f'{out_dir}/Satellite_Channels_{start_date}_{stop_date}.txt', 'a')
 
-    proj_ref_healpix(ref_tile)
-
-        
+    # Parallization magic happens here
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(proj_ref_healpix, ref_names)
+    
 
