@@ -4,7 +4,7 @@ import numpy as np
 import healpy as hp
 from pathlib import Path
 import concurrent.futures
-
+from scipy.stats import median_absolute_deviation as mad
 
 import sys
 sys.path.append('../decode_rf_data')
@@ -37,6 +37,10 @@ def power_ephem(
     
     # To first order, let us consider the median to be the noise floor
     noise_f = np.median(power)
+    noise_mad = mad(power, axis=None)
+
+    # Very rudimentary, change this
+    noise_threshold = noi_thresh*noise_mad
     
     # Scale the power to bring the median noise floor down to zero
     power = power - noise_f
@@ -203,6 +207,8 @@ if __name__=='__main__':
     parser.add_argument('--polyorder', metavar='\b', default=1,help='Order of polynomial to fit to savgol window. Default=1')
     parser.add_argument('--interp_type', metavar='\b', default='cubic',help='Type of interpolation. Ex: cubic, linear, etc. Default=cubic')
     parser.add_argument('--interp_freq', metavar='\b', default=1,help='Frequency at which to resample smoothed data, in Hertz. Default=2')
+    parser.add_argument('--noi_thresh', metavar='\b', default=10,help='Noise Threshold: Multiples of MAD. Default=10.')
+    parser.add_argument('--arb_thresh', metavar='\b', default=12,help='Arbitrary Threshold to detect sats Default=12 dB.')
     parser.add_argument('--nside', metavar='\b', default=32,help='Healpix Nside. Default = 32')
     
     args = parser.parse_args()
@@ -217,7 +223,9 @@ if __name__=='__main__':
     polyorder =         args.polyorder
     interp_type =       args.interp_type
     interp_freq =       args.interp_freq
-    nside =            args.nside
+    noi_thresh =        args.noi_thresh
+    arb_thresh =        args.arb_thresh
+    nside =             args.nside
 
     ref_names=['rf0XX', 'rf0YY', 'rf1XX', 'rf1YY']
     
