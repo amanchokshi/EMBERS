@@ -236,7 +236,11 @@ For each satellite, a list of all potential channels is compiled. As it is inevi
 
 These plots tell us that satellite `41180` transimits in channel number `52`. We can also guess that channel number `41` must be the transimition channel of satellite `41189`.
 
-Once the code does this for all satellite, it compites a list of channels that each satellite occupies in `/outputs/channel_map.json`.
+Once the code does this for all satellite, it compites a list of channels that each satellite occupies in `/outputs/channel_map.json`. Looking at this list shows some obvious problems. For a first test, I used 3 months of data between `2019-10-01 to 2020-02-01`. In this period, I expect each satellite to pass over the MWA hundreds of times. In the sat channel data some satellites have only registered 10s of passes. To me this indicates that the satellite probably transmits in a frequency channel outside our experiment. 
+
+We need to now look at a gazzilion plots and determine by eye, which satellites to ignore, and attempt to resolve any ambiguity in the channels identified. By setting an abitrary criteria that the most popular channel in the histogram plots should have more than 5 counts, we rule out the satellites which are obviously not in our frequency window. 
+
+Emperically, we expect ORBCOMM satellites to only emit in one frequency channel, while the NOAA weather satellites emit in two consecutive channels and the Meteor satellite emits in 5 consecutive channels. I modify `channel_map.json` and save it to the data folder, to used later.
 
 
 &nbsp;
