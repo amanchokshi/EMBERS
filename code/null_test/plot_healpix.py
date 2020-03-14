@@ -90,7 +90,7 @@ if __name__=='__main__':
 
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Reference Beam Healpix: {ref}', fontsize=16)
-        plot_healpix(data_map=np.asarray(ref_map_med),sub=(1,1,1), cmap=cmap)
+        plot_healpix(data_map=np.asarray(ref_map_med),sub=(1,1,1), cmap=cmap, vmin=0, vmax=30)
 
         plt.savefig(f'{out_dir}/{f_name}.png',bbox_inches='tight')
 
