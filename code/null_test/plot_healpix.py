@@ -87,10 +87,12 @@ if __name__=='__main__':
         
         # compute the median for every pixel array
         ref_map_med = [(np.median(i) if i != [] else np.nan ) for i in ref_map]
+        vmin = np.nanmin(ref_map_med)
+        vmax = np.nanmax(ref_map_med)
 
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Reference Beam Healpix: {ref}', fontsize=16)
-        plot_healpix(data_map=np.asarray(ref_map_med),sub=(1,1,1), cmap=cmap, vmin=0, vmax=30)
+        plot_healpix(data_map=np.asarray(ref_map_med),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
 
         plt.savefig(f'{out_dir}/{f_name}.png',bbox_inches='tight')
 
