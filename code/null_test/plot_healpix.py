@@ -35,16 +35,23 @@ def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None
                     cmap=cmap,notext=True,return_projected_map=True)
 
     hp.graticule(dpar=10,coord='E',color='k',alpha=0.3,dmer=45)
-    
+   
+    # Altitude grid
     hp.projtext(0.0*(np.pi/180.0), 0.0, '0', coord='E')
     hp.projtext(30.0*(np.pi/180.0), 0.0, '30', coord='E')
     hp.projtext(60.0*(np.pi/180.0), 0.0, '60', coord='E')
 
-
-    hp.projtext(90.0*(np.pi/180.0), 0.0, r'$0^\circ$', coord='E',color='k',verticalalignment='top')
-    hp.projtext(90.0*(np.pi/180.0), 90.0*(np.pi/180.0), r'$90^\circ$', coord='E',color='k',horizontalalignment='right')
-    hp.projtext(90.0*(np.pi/180.0), 180.0*(np.pi/180.0), r'$180^\circ$', coord='E',color='k')
-    hp.projtext(90.0*(np.pi/180.0), 270.0*(np.pi/180.0), r'$270^\circ$', coord='E',color='k')
+    # Azimuth grid
+    hp.projtext(90.0*(np.pi/180.0), 00.0*(np.pi/180.0), r'$0^\circ$', coord='E',color='k',verticalalignment='top', fontsize=12)
+    hp.projtext(90.0*(np.pi/180.0), 90.0*(np.pi/180.0), r'$90^\circ$', coord='E',color='k',horizontalalignment='right', fontsize=12)
+    hp.projtext(90.0*(np.pi/180.0), 180.0*(np.pi/180.0), r'$180^\circ$', coord='E',color='k', fontsize=12)
+    hp.projtext(90.0*(np.pi/180.0), 270.0*(np.pi/180.0), r'$270^\circ$', coord='E',color='k', fontsize=12)
+    
+    # NSEW 
+    hp.projtext(90.0*(np.pi/180.0), 045.0*(np.pi/180.0), r'$N  $', coord='E',color='k',verticalalignment='top', horizontalalignment='right', fontsize=14)
+    hp.projtext(90.0*(np.pi/180.0), 135.0*(np.pi/180.0), r'$E  $', coord='E',color='k',horizontalalignment='right', fontsize=14)
+    hp.projtext(90.0*(np.pi/180.0), 225.0*(np.pi/180.0), r'$S  $', coord='E',color='k', fontsize=14)
+    hp.projtext(90.0*(np.pi/180.0), 315.0*(np.pi/180.0), r'$W  $', coord='E',color='k', verticalalignment='top', horizontalalignment='left', fontsize=14)
 
 
 if __name__=='__main__':
