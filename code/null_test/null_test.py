@@ -67,8 +67,8 @@ def ref_map_slice(ref_tile):
             zenith_angle_EW.append(i)
 
 
-    NS_data = [ref_map[NS_indices], ref_map_med[NS_indices], ref_map_mad[NS_indices], zenith_angle_NS]
-    EW_data = [ref_map[EW_indices], ref_map_med[EW_indices], ref_map_mad[EW_indices], zenith_angle_EW]
+    NS_data = [ref_map_med[NS_indices], ref_map_mad[NS_indices], zenith_angle_NS]
+    EW_data = [ref_map_med[EW_indices], ref_map_mad[EW_indices], zenith_angle_EW]
 
     return [NS_data, EW_data]
 
@@ -104,15 +104,10 @@ if __name__=='__main__':
     nside   = args.nside
     
     ref_tiles = ['rf0XX', 'rf0YY', 'rf1XX', 'rf1YY']
-    ref_tile = 'rf0XX'
-    
-    NS_data, EW_data = ref_map_slice(ref_tile)
-    
-    _, ref_map_med_NS, ref_map_mad_NS, zenith_angle_NS = NS_data
-    _, ref_map_med_EW, ref_map_mad_EW, zenith_angle_EW = EW_data
 
-    plt.scatter(zenith_angle_NS, ref_map_med_NS)
-    plt.show()
-        
-        #break
+    rf0XX_NS, rf0XX_EW = ref_map_slice(ref_tiles[0])
+    rf0YY_NS, rf0YY_EW = ref_map_slice(ref_tiles[1])
+    rf1XX_NS, rf1XX_EW = ref_map_slice(ref_tiles[2])
+    rf1YY_NS, rf1YY_EW = ref_map_slice(ref_tiles[3])
+    
 
