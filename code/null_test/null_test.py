@@ -109,5 +109,9 @@ if __name__=='__main__':
     rf0YY_NS, rf0YY_EW = ref_map_slice(ref_tiles[1])
     rf1XX_NS, rf1XX_EW = ref_map_slice(ref_tiles[2])
     rf1YY_NS, rf1YY_EW = ref_map_slice(ref_tiles[3])
+
+    plt.style.use('seaborn')
+    plt.errorbar(rf0XX_NS[2], rf0XX_NS[0], yerr=rf0XX_NS[1], fmt='o', color='#326765', ecolor='#7da87b', elinewidth=1.2, capsize=2, capthick=1.4, alpha=0.7)
+    plt.show()
     
 
