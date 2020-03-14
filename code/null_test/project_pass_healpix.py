@@ -80,9 +80,11 @@ def power_ephem(
             μ_noise = np.median(noise_data)
             σ_noise = mad(noise_data, axis=None)
             noise_threshold = μ_noise + noi_thresh*σ_noise
-            print(noise_threshold)
 
             channel_power = power_c[:, sat_chan]
+
+            #print(np.where(channel_power >= noise_threshold)[0])
+            
     
             times_sat = norad_ephem["time_array"]
             
@@ -92,10 +94,14 @@ def power_ephem(
             if intvl_ephem != None:
                 e_0, e_1 = intvl_ephem
                     
-                alt = norad_ephem["sat_alt"][e_0:e_1+1]
-                az  = norad_ephem["sat_az"][e_0:e_1+1]
-
-            return [channel_power, alt, az]
+                alt = np.asarray(norad_ephem["sat_alt"][e_0:e_1+1])
+                az  = np.asarray(norad_ephem["sat_az"][e_0:e_1+1])
+                
+                good_power = channel_power[np.where(channel_power >= noise_threshold)[0]]
+                good_alt = alt[np.where(channel_power >= noise_threshold)[0]]
+                good_az  = az[np.where(channel_power >= noise_threshold)[0]]
+            
+            return [good_power, good_alt, good_az]
         else:
             return 0
 
