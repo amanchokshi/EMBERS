@@ -62,6 +62,7 @@ def power_ephem(
         
             # Slice [crop] the power/times arrays to the times of sat pass
             power_c = power[w_start:w_stop+1, :]
+            channel_power = power_c[:, sat_chan]
             times_c = times[w_start:w_stop+1]
             
             # the median of this data should already be very close to 0
@@ -76,16 +77,12 @@ def power_ephem(
             # Exclude the channels with sats, to only have noise data
             noise_chans = np.where(chans_pow_max < sat_cut)[0]
             noise_data = power_c[:, noise_chans]
-            
+           
+            # noise median, noise mad, noise threshold = μ + 3*σ
             μ_noise = np.median(noise_data)
             σ_noise = mad(noise_data, axis=None)
             noise_threshold = μ_noise + noi_thresh*σ_noise
 
-            channel_power = power_c[:, sat_chan]
-
-            #print(np.where(channel_power >= noise_threshold)[0])
-            
-    
             times_sat = norad_ephem["time_array"]
             
             # Crop ephem of all sats to size of norad_id sat
@@ -97,11 +94,12 @@ def power_ephem(
                 alt = np.asarray(norad_ephem["sat_alt"][e_0:e_1+1])
                 az  = np.asarray(norad_ephem["sat_az"][e_0:e_1+1])
                 
-                good_power = channel_power[np.where(channel_power >= noise_threshold)[0]]
-                good_alt = alt[np.where(channel_power >= noise_threshold)[0]]
-                good_az  = az[np.where(channel_power >= noise_threshold)[0]]
+                if np.where(channel_power >= noise_threshold) != []: 
+                    good_power = channel_power[np.where(channel_power >= noise_threshold)[0]]
+                    good_alt = alt[np.where(channel_power >= noise_threshold)[0]]
+                    good_az  = az[np.where(channel_power >= noise_threshold)[0]]
             
-            return [good_power, good_alt, good_az]
+                    return [good_power, good_alt, good_az]
         else:
             return 0
 
