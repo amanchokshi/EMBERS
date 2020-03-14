@@ -1,8 +1,46 @@
+import numpy as np
+import healpy as hp
+
+def hp_slices_horizon(nside=32):
+    '''Healpix pix indices of NS, EW slices and above horizon'''
+    # theta phi values of each pixel 
+    hp_indices = np.arange(hp.nside2npix(nside))
+    θ, ɸ = hp.pix2ang(nside, hp_indices)
+
+    # healpix indices above the horizon
+    above_horizon_indices = np.where(θ <= np.radians(90))[0]
+    
+    # pixel coords above the horizon
+    θ_above_horizon = θ[above_horizon_indices]
+    ɸ_above_horizon = ɸ[above_horizon_indices]
+
+    NS_indices = []
+    EW_indices = []
+
+    # pixel indices along N, E, S, W slices
+    n_slice = np.where((np.round(np.degrees(ɸ_above_horizon))) ==  45)[0]
+    e_slice = np.where((np.round(np.degrees(ɸ_above_horizon))) == 135)[0]
+    s_slice = np.where((np.round(np.degrees(ɸ_above_horizon))) == 225)[0]
+    w_slice = np.where((np.round(np.degrees(ɸ_above_horizon))) == 315)[0]
+
+    NS_indices.extend(n_slice)
+    NS_indices.extend(s_slice)
+    EW_indices.extend(e_slice)
+    EW_indices.extend(w_slice)
+    
+    NS_indices = sorted(NS_indices)
+    EW_indices = sorted(EW_indices)
+    
+    return [NS_indices, EW_indices, above_horizon_indices]
+
+
+
+
+
 if __name__=='__main__':
     
     import argparse
     import numpy as np
-    import healpy as hp
     import matplotlib.pyplot as plt
     from pathlib import Path
     from scipy.stats import median_absolute_deviation as mad
@@ -40,36 +78,7 @@ if __name__=='__main__':
         ref_map_med = [(np.median(i) if i != [] else np.nan ) for i in ref_map]
         ref_map_mad = [mad(i) for i in ref_map]
 
-        # theta phi values of each pixel 
-        hp_indices = np.arange(hp.nside2npix(nside))
-        θ, ɸ = hp.pix2ang(nside, hp_indices)
-
-        # healpix indices above the horizon
-        above_horizon_indices = np.where(θ <= np.radians(90))[0]
-        
-        # pixel coords above the horizon
-        θ_above_horizon = θ[above_horizon_indices]
-        ɸ_above_horizon = ɸ[above_horizon_indices]
-
-        NS_indices = []
-        EW_indices = []
-
-        # pixel indices along N, E, S, W slices
-        n_slice = np.where((np.round(np.degrees(ɸ_above_horizon))) ==  45)[0]
-        e_slice = np.where((np.round(np.degrees(ɸ_above_horizon))) == 135)[0]
-        s_slice = np.where((np.round(np.degrees(ɸ_above_horizon))) == 225)[0]
-        w_slice = np.where((np.round(np.degrees(ɸ_above_horizon))) == 315)[0]
-
-        NS_indices.extend(n_slice)
-        NS_indices.extend(s_slice)
-        EW_indices.extend(e_slice)
-        EW_indices.extend(w_slice)
-        
-        NS_indices = sorted(NS_indices)
-        EW_indices = sorted(EW_indices)
-
-        print(NS_indices)
-        print(EW_indices)
+        NS_indices, EW_indices, _ = hp_slices_horizon()
         
         break
 
