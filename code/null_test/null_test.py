@@ -51,11 +51,25 @@ if __name__=='__main__':
         θ_above_horizon = θ[above_horizon_indices]
         ɸ_above_horizon = ɸ[above_horizon_indices]
 
+        NS_indices = []
+        EW_indices = []
+
         # pixel indices along N, E, S, W slices
-        print(np.where((np.round(np.degrees(ɸ_above_horizon))) ==  45)[0])
-        print(np.where((np.round(np.degrees(ɸ_above_horizon))) == 135)[0])
-        print(np.where((np.round(np.degrees(ɸ_above_horizon))) == 225)[0])
-        print(np.where((np.round(np.degrees(ɸ_above_horizon))) == 315)[0])
+        n_slice = np.where((np.round(np.degrees(ɸ_above_horizon))) ==  45)[0]
+        e_slice = np.where((np.round(np.degrees(ɸ_above_horizon))) == 135)[0]
+        s_slice = np.where((np.round(np.degrees(ɸ_above_horizon))) == 225)[0]
+        w_slice = np.where((np.round(np.degrees(ɸ_above_horizon))) == 315)[0]
+
+        NS_indices.extend(n_slice)
+        NS_indices.extend(s_slice)
+        EW_indices.extend(e_slice)
+        EW_indices.extend(w_slice)
+        
+        NS_indices = sorted(NS_indices)
+        EW_indices = sorted(EW_indices)
+
+        print(NS_indices)
+        print(EW_indices)
         
         break
 
