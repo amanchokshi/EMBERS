@@ -4,6 +4,7 @@ if __name__=='__main__':
     import numpy as np
     import matplotlib.pyplot as plt
     from pathlib import Path
+    from scipy.stats import median_absolute_deviation as mad
     
     import sys
     sys.path.append('../decode_rf_data')
@@ -33,6 +34,7 @@ if __name__=='__main__':
         
         # compute the median for every pixel array
         ref_map_med = [(np.median(i) if i != [] else np.nan ) for i in ref_map]
+        ref_map_mad = [mad(i) for i in ref_map]
         vmin = np.nanmin(ref_map_med)
         vmax = np.nanmax(ref_map_med)
 
