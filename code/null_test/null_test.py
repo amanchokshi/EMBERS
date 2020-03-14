@@ -49,11 +49,26 @@ def ref_map_slice(ref_tile):
 
     NS_indices, EW_indices, _ = hp_slices_horizon(nside)
 
-    θ_NS, _ = hp.pix2ang(nside, NS_indices)
-    θ_EW, _ = hp.pix2ang(nside, EW_indices)
+    θ_NS, ɸ_NS = np.degrees(hp.pix2ang(nside, NS_indices))
+    θ_EW, ɸ_EW = hp.pix2ang(nside, EW_indices)
 
-    NS_data = [ref_map[NS_indices], ref_map_med[NS_indices], ref_map_mad[NS_indices], θ_NS]
-    EW_data = [ref_map[EW_indices], ref_map_med[EW_indices], ref_map_mad[EW_indices], θ_EW]
+    zenith_angle_NS = []
+    for i, j in zip(θ_NS, ɸ_NS):
+        if j <= 180:
+            zenith_angle_NS.append(-1*i)
+        else:
+            zenith_angle_NS.append(i)
+    
+    zenith_angle_EW = []
+    for i, j in zip(θ_EW, ɸ_EW):
+        if j <= 180:
+            zenith_angle_EW.append(-1*i)
+        else:
+            zenith_angle_EW.append(i)
+
+
+    NS_data = [ref_map[NS_indices], ref_map_med[NS_indices], ref_map_mad[NS_indices], zenith_angle_NS]
+    EW_data = [ref_map[EW_indices], ref_map_med[EW_indices], ref_map_mad[EW_indices], zenith_angle_EW]
 
     return [NS_data, EW_data]
 
@@ -93,9 +108,11 @@ if __name__=='__main__':
     
     NS_data, EW_data = ref_map_slice(ref_tile)
     
-    _, ref_map_med_NS, ref_map_mad_NS, θ_NS = NS_data
-    _, ref_map_med_EW, ref_map_mad_EW, θ_EW = EW_data
+    _, ref_map_med_NS, ref_map_mad_NS, zenith_angle_NS = NS_data
+    _, ref_map_med_EW, ref_map_mad_EW, zenith_angle_EW = EW_data
 
+    plt.scatter(zenith_angle_NS, ref_map_med_NS)
+    plt.show()
         
         #break
 
