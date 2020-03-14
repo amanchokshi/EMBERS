@@ -1,7 +1,7 @@
 import numpy as np
 import healpy as hp
 
-def hp_slices_horizon(nside=32):
+def hp_slices_horizon(nside=None):
     '''Healpix pix indices of NS, EW slices and above horizon'''
     # theta phi values of each pixel 
     hp_indices = np.arange(hp.nside2npix(nside))
@@ -34,9 +34,6 @@ def hp_slices_horizon(nside=32):
     return [NS_indices, EW_indices, above_horizon_indices]
 
 
-
-
-
 if __name__=='__main__':
     
     import argparse
@@ -65,20 +62,32 @@ if __name__=='__main__':
     out_dir = Path(args.out_dir)
     nside   = args.nside
     
-    for f in out_dir.glob('*.npz'):
-        f_name, _ = f.name.split('.')
-        ref, _, _ = f_name.split('_')
+    ref_tiles = ['rf0XX', 'rf0YY', 'rf1XX', 'rf1YY']
+
+    ref_tile = 'rf0XX'
+    
+    def ref_map_slice(ref_tile):
         
         # load data from map .npz file
-        map_data = np.load(f, allow_pickle=True)
+        map_data = np.load(f'{out_dir}/{ref_tile}_map_healpix.npz', allow_pickle=True)
         ref_map = map_data['ref_map']
         ref_counter = map_data['ref_counter']
         
         # compute the median for every pixel array
-        ref_map_med = [(np.median(i) if i != [] else np.nan ) for i in ref_map]
-        ref_map_mad = [mad(i) for i in ref_map]
+        ref_map_med = np.asarray([(np.median(i) if i != [] else np.nan ) for i in ref_map])
+        ref_map_mad = np.asarray([mad(i) for i in ref_map])
 
-        NS_indices, EW_indices, _ = hp_slices_horizon()
+        NS_indices, EW_indices, _ = hp_slices_horizon(nside)
+
+        θ_NS, _ = hp.pix2ang(nside, NS_indices)
+        θ_EW, _ = hp.pix2ang(nside, EW_indices)
+
+        NS_data = [ref_map[NS_indices], ref_map_med[NS_indices], ref_map_mad[NS_indices], θ_NS]
+        EW_data = [ref_map[EW_indices], ref_map_med[EW_indices], ref_map_mad[EW_indices], θ_EW]
+
+        return [NS_data, EW_data]
+
+    NS_data, EW_data = ref_map_slice(ref_tile)
         
-        break
+        #break
 
