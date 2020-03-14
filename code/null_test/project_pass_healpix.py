@@ -37,10 +37,6 @@ def power_ephem(
     
     # To first order, let us consider the median to be the noise floor
     noise_f = np.median(power)
-    noise_mad = mad(power, axis=None)
-
-    # Very rudimentary, change this
-    noise_threshold = noi_thresh*noise_mad
     
     # Scale the power to bring the median noise floor down to zero
     power = power - noise_f
@@ -65,9 +61,28 @@ def power_ephem(
 
         
             # Slice [crop] the power/times arrays to the times of sat pass
-            channel_power = power[w_start:w_stop+1, sat_chan]
+            power_c = power[w_start:w_stop+1, :]
             times_c = times[w_start:w_stop+1]
+            
+            # the median of this data should already be very close to 0
+            # because we scaled the power array to the noise floor
+            # compute the standard deviation of data, and use it to identify occupied channels
+            σ = np.std(power_c)
+            
+            # Any channel with a max power >= 3σ has a satellite
+            sat_cut = sat_thresh*σ
+            chans_pow_max = np.amax(power_c, axis=0)
+            
+            # Exclude the channels with sats, to only have noise data
+            noise_chans = np.where(chans_pow_max < sat_cut)[0]
+            noise_data = power_c[:, noise_chans]
+            
+            μ_noise = np.median(noise_data)
+            σ_noise = mad(noise_data, axis=None)
+            noise_threshold = μ_noise + noi_thresh*σ_noise
+            print(noise_threshold)
 
+            channel_power = power_c[:, sat_chan]
     
             times_sat = norad_ephem["time_array"]
             
@@ -207,8 +222,8 @@ if __name__=='__main__':
     parser.add_argument('--polyorder', metavar='\b', default=1,help='Order of polynomial to fit to savgol window. Default=1')
     parser.add_argument('--interp_type', metavar='\b', default='cubic',help='Type of interpolation. Ex: cubic, linear, etc. Default=cubic')
     parser.add_argument('--interp_freq', metavar='\b', default=1,help='Frequency at which to resample smoothed data, in Hertz. Default=2')
-    parser.add_argument('--noi_thresh', metavar='\b', default=10,help='Noise Threshold: Multiples of MAD. Default=10.')
-    parser.add_argument('--arb_thresh', metavar='\b', default=12,help='Arbitrary Threshold to detect sats Default=12 dB.')
+    parser.add_argument('--noi_thresh', metavar='\b', default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
+    parser.add_argument('--sat_thresh', metavar='\b', default=3,help='3 σ threshold to detect sats Default=3.')
     parser.add_argument('--nside', metavar='\b', default=32,help='Healpix Nside. Default = 32')
     
     args = parser.parse_args()
@@ -224,14 +239,13 @@ if __name__=='__main__':
     interp_type =       args.interp_type
     interp_freq =       args.interp_freq
     noi_thresh =        args.noi_thresh
-    arb_thresh =        args.arb_thresh
+    sat_thresh =        args.sat_thresh
     nside =             args.nside
 
     ref_names=['rf0XX', 'rf0YY', 'rf1XX', 'rf1YY']
     
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-    #sys.stdout = open(f'{out_dir}/Satellite_Channels_{start_date}_{stop_date}.txt', 'a')
 
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor() as executor:
