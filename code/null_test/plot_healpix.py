@@ -75,15 +75,13 @@ if __name__=='__main__':
         Plot healpix map of reference data
         """)
     
-    parser.add_argument('--map_dir', metavar='\b', default='../../outputs/null_test/', help='Reference Map healpix data. default=../../outputs/null_test/')
     parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/null_test/',help='Output directory. Default=./../../outputs/null_test/')
     
     args = parser.parse_args()
     
-    map_dir =          Path(args.map_dir)
-    out_dir =           args.out_dir
+    out_dir = Path(args.out_dir)
     
-    for f in map_dir.glob('*.npz'):
+    for f in out_dir.glob('*.npz'):
         f_name, _ = f.name.split('.')
         ref, _, _ = f_name.split('_')
         
