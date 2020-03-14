@@ -44,7 +44,24 @@ if __name__=='__main__':
         hp_indices = np.arange(hp.nside2npix(nside))
         θ, ɸ = hp.pix2ang(nside, hp_indices)
 
-        print(len(θ))
+        θ_above_horizon = θ[np.where(θ <= np.radians(90))[0]]
+        ɸ_above_horizon = ɸ[np.where(θ <= np.radians(90))[0]]
+
+        print(len(θ_above_horizon))
+        print(len(ɸ_above_horizon))
+
+
+        #θ_steps = np.unique(θ)
+        #ɸ_steps = np.unique(ɸ)
+        #print(hp.ang2pix(n_side, θ_steps, )
+        #deg = np.degrees(ɸ)
+        #print(np.where(ɸ == (1*np.pi/4)))
+        #print(np.where(ɸ == (3*np.pi/4)))
+        #print(np.where(ɸ == (5*np.pi/4)))
+        #print(np.where(ɸ == (7*np.pi/4)))
+
+        #print(np.where((deg == 315))[0].size)
+
 
         break
 
