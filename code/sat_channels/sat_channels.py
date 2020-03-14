@@ -203,7 +203,7 @@ def find_sat_channel(norad_id):
                 # Altitude threshold. Sats below 20 degrees are bound to be faint, and not register
                 if sat_alt_max >= alt_thresh:
                     
-                    Path(f'{out_dir}/{norad_id}').mkdir(parents=True, exist_ok=True)
+                    Path(f'{out_dir}/{ref_tile}/{norad_id}').mkdir(parents=True, exist_ok=True)
                        
                     intvl = time_filter(rise_ephem, set_ephem, np.asarray(times))
 
@@ -250,7 +250,7 @@ def find_sat_channel(norad_id):
                                     
                                         # Plots the channel with satellite pass
                                         plt_channel(
-                                                out_dir, times_c, power_c[:, s_chan],
+                                                out_dir/ref_tile, times_c, power_c[:, s_chan],
                                                 s_chan, min_s, max_s, noise_threshold,
                                                 arbitrary_threshold,center, cog, cog_thresh,
                                                 norad_id, f'{date_time[day][window]}')
@@ -266,7 +266,7 @@ def find_sat_channel(norad_id):
                             
                             # plot waterfall with sat window and all selected channels highlighted
                             plt_waterfall_pass(
-                                    out_dir, power, norad_id,
+                                    out_dir/ref_tile, power, norad_id,
                                     w_start, w_stop, possible_chans,
                                     f'{date_time[day][window]}', cmap)
                             
@@ -320,7 +320,7 @@ def find_sat_channel(norad_id):
                                     plt_az.append(e[3])
                             
                             # Plot sat ephemeris 
-                            sat_plot(out_dir, plt_ids, norad_id, plt_alt, plt_az, len(plt_ids), f'{date_time[day][window]}', 'passes')
+                            sat_plot(out_dir/ref_tile, plt_ids, norad_id, plt_alt, plt_az, len(plt_ids), f'{date_time[day][window]}', 'passes')
                             sats.extend(plt_ids) 
 
     if chans != []:
@@ -338,9 +338,9 @@ def find_sat_channel(norad_id):
                 'sats': sats
                 }
                 
-        Path(f'{out_dir}/channel_data/').mkdir(parents=True, exist_ok=True)
+        Path(f'{out_dir}/{ref_tile}/channel_data/').mkdir(parents=True, exist_ok=True)
 
-        with open(f'{out_dir}/channel_data/{int(norad_id)}.json','w') as f: 
+        with open(f'{out_dir}/{ref_tile}/channel_data/{int(norad_id)}.json','w') as f: 
             json.dump(sat_data, f, indent=4) 
 
 if __name__=="__main__":
@@ -399,8 +399,6 @@ if __name__=="__main__":
     # Import list of tile names from rf_data.py
     tiles = rf.tile_names()
     
-    # Only using rf0XX for now
-    ref_tile = tiles[0]
     
     # Import list of Norad catalogue IDs
     sat_list = [id for id in sat_ids.norad_ids.values()]
@@ -415,23 +413,29 @@ if __name__=="__main__":
     # date_time = list of 30 min observation windows
     dates, date_time = time_tree(start_date, stop_date)
         
-    #norad_id = 41180
-    #find_sat_channel(norad_id)
+    # Only using rf0XX for now
+    #ref_tile = tiles[0]
+    ref_tiles = tiles[0:4]
+
+    for ref_tile in ref_tiles:
     
-    if parallel != True:
-        for norad_id in sat_list:
-            find_sat_channel(norad_id)
-            #break
-    
-    else:
-        try:
-        # Parallization magic happens here
-            with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
-                results = executor.map(find_sat_channel, sat_list)
+        #norad_id = 41180
+        #find_sat_channel(norad_id)
         
-            for result in results:
-                print(result)
-        except Exception:
-            print('Inssuficient Memory. Try using --parallel=False flag to run code serially')
+        if parallel != True:
+            for norad_id in sat_list:
+                find_sat_channel(norad_id)
+                #break
+        
+        else:
+            try:
+            # Parallization magic happens here
+                with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
+                    results = executor.map(find_sat_channel, sat_list)
+            
+                for result in results:
+                    print(result)
+            except Exception:
+                print('Inssuficient Memory. Try using --parallel=False flag to run code serially')
 
 
