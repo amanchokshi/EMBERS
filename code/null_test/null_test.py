@@ -1,5 +1,6 @@
 import numpy as np
 import healpy as hp
+import scipy.optimize as opt
 
 
 def hp_slices_horizon(nside=None):
@@ -118,6 +119,27 @@ def rotate(angle=None,healpix_array=None,savetag=None,flip=False):
 
     return healpix_array[new_hp_inds]
 
+# chisquared minimization to best fit map to data
+def fit_gain(map_data=None,map_error=None,beam=None):
+
+    bad_values = np.isnan(map_data)
+    map_data = map_data[~bad_values]
+    map_error = map_error[~bad_values]
+
+    map_error[np.where(map_error == 0)] = np.mean(map_error)
+
+    def chisqfunc(gain):
+        model = beam[~bad_values] + gain
+        chisq = sum(((map_data - model)/map_error)**2)
+        return chisq
+
+    x0 = np.array([0])
+
+    result =  opt.minimize(chisqfunc,x0)
+    #print(f'chisq is:{chisqfunc(result.x)}')
+    #print(f'gain is: {result.x}')
+    #print result.x
+    return result.x
 
 if __name__=='__main__':
     
@@ -184,6 +206,8 @@ if __name__=='__main__':
     YY_NS_slice, za_NS = YY_NS
     YY_EW_slice, za_EW = YY_EW
 
+    gain = fit_gain(rf0XX_NS[0], rf0XX_NS[1], XX_NS_slice)
+
     plt.style.use('seaborn')
     plt.errorbar(
             rf0XX_NS[2], rf0XX_NS[0], yerr=rf0XX_NS[1], 
@@ -191,7 +215,7 @@ if __name__=='__main__':
             elinewidth=1.2, capsize=2, capthick=1.4,
             alpha=0.9, label='rf0XX NS')
 
-    plt.plot(za_NS,XX_NS_slice)
+    plt.plot(za_NS,XX_NS_slice+gain)
 
     plt.ylabel('Power (dB)')
     plt.xlabel('Zenith Angle (degrees)')
