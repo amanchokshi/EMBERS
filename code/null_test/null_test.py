@@ -77,17 +77,22 @@ def rotate(angle=None,healpix_array=None,savetag=None,flip=False):
     '''Takes in a healpix array, rotates it by the desired angle, and saves it.
     Optionally flip the data, changes east-west into west-east because
     astronomy'''
-    new_hp_inds = hp.ang2pix(nside,hp_za,hp_az+angle)
+
+    # theta phi values of each pixel 
+    hp_indices = np.arange(hp.nside2npix(nside))
+    θ, ɸ = hp.pix2ang(nside, hp_indices)
+
+    new_hp_inds = hp.ang2pix(nside,θ,ɸ+angle)
 
     ##Flip the data to match astro conventions
     if flip == True:
         new_angles = []
-        for az in hp_az+angle:
-            if az <= pi:
-                new_angles.append(pi - az)
+        for phi in ɸ:
+            if phi <= np.pi:
+                new_angles.append(np.pi - phi)
             else:
-                new_angles.append(3*pi - az)
-        new_hp_inds = hp.ang2pix(nside,hp_za,array(new_angles))
+                new_angles.append(3*np.pi - phi)
+        new_hp_inds = hp.ang2pix(nside,ɸ, np.asarray(new_angles))
 
     ##Save the array in the new order
     if savetag:
@@ -111,6 +116,7 @@ if __name__=='__main__':
     
     import sys
     sys.path.append('../decode_rf_data')
+    from plot_healpix import plot_healpix
     from colormap import spectral
     
     # Custom spectral colormap
@@ -122,7 +128,7 @@ if __name__=='__main__':
     
     parser.add_argument('--out_dir', metavar='\b', default='../../outputs/null_test/',
             help='Output directory. Default=../../outputs/null_test/')
-    parser.add_argument('--ref_model', metavar='\b', default=../../outputs/reproject_ref/ref_dipole_models.npz,
+    parser.add_argument('--ref_model', metavar='\b', default='../../outputs/reproject_ref/ref_dipole_models.npz',
             help='Healpix reference FEE model file. default=../../outputs/reproject_ref/ref_dipole_models.npz')
     parser.add_argument('--nside', metavar='\b', default=32,help='Healpix Nside. Default = 32')
     
@@ -143,35 +149,41 @@ if __name__=='__main__':
     ref_fee_model = np.load(ref_model, allow_pickle=True)
     beam_XX = ref_fee_model['XX']
     beam_YY = ref_fee_model['YY']
-
-    ##Try a number of rotations to get the reference models into the same frame
-    ##as the data. Feel free to double check all this
-    rotate_ungeastern = rotate(angle=+(3*pi)/4.0,healpix_array=ung_eastern,savetag='rotated+180_ung_eastern.npz')
-    rotate_ungwestern = rotate(angle=+(3*pi)/4.0,healpix_array=ung_western,savetag='rotated+180_ung_western.npz')
     
-    rotate_ungeastern = rotate(angle=+pi/4.0,healpix_array=ung_eastern,savetag='rotated_ung_eastern.npz')
-    rotate_ungwestern = rotate(angle=+pi/4.0,healpix_array=ung_western,savetag='rotated_ung_western.npz')
+    rotate_beam_XX = rotate(angle=+(1*np.pi)/4.0,healpix_array=beam_XX)
     
-    rotate_ungeastern = rotate(angle=+pi/4.0,healpix_array=ung_eastern,savetag='rotated+flip_ung_eastern.npz',flip=True)
-    rotate_ungwestern = rotate(angle=+pi/4.0,healpix_array=ung_western,savetag='rotated+flip_ung_western.npz',flip=True)
-    
-    rotate_rf0 = rotate(angle=0,healpix_array=med_dB_rf0,savetag='prerotated_rf0.npz')
-    rotate_rf1 = rotate(angle=0,healpix_array=med_dB_rf1,savetag='prerotated_rf1.npz')
-    
-    rotate_rf0_mad = rotate(angle=0,healpix_array=mad_dB_rf0,savetag='prerotated_rf0_error.npz')
-    rotate_rf1_mad = rotate(angle=0,healpix_array=mad_dB_rf1,savetag='prerotated_rf1_error.npz')
-
-
-    plt.style.use('seaborn')
-    plt.errorbar(
-            rf0XX_NS[2], rf0XX_NS[0], yerr=rf0XX_NS[1], 
-            fmt='o', color='#326765', ecolor='#7da87b',
-            elinewidth=1.2, capsize=2, capthick=1.4,
-            alpha=0.9, label='rf0XX NS')
-    plt.ylabel('Power (dB)')
-    plt.xlabel('Zenith Angle (degrees)')
-    plt.legend()
-    plt.tight_layout()
+    plot_healpix(data_map=rotate_beam_XX,sub=(1,1,1), cmap=cmap, vmin=-40, vmax=-20)
     plt.show()
+
+
+    ## Try a number of rotations to get the reference models into the same frame
+    ## as the data. Feel free to double check all this
+    #rotate_ungeastern = rotate(angle=+(3*pi)/4.0,healpix_array=ung_eastern,savetag='rotated+180_ung_eastern.npz')
+    #rotate_ungwestern = rotate(angle=+(3*pi)/4.0,healpix_array=ung_western,savetag='rotated+180_ung_western.npz')
+    #
+    #rotate_ungeastern = rotate(angle=+pi/4.0,healpix_array=ung_eastern,savetag='rotated_ung_eastern.npz')
+    #rotate_ungwestern = rotate(angle=+pi/4.0,healpix_array=ung_western,savetag='rotated_ung_western.npz')
+    #
+    #rotate_ungeastern = rotate(angle=+pi/4.0,healpix_array=ung_eastern,savetag='rotated+flip_ung_eastern.npz',flip=True)
+    #rotate_ungwestern = rotate(angle=+pi/4.0,healpix_array=ung_western,savetag='rotated+flip_ung_western.npz',flip=True)
+    #
+    #rotate_rf0 = rotate(angle=0,healpix_array=med_dB_rf0,savetag='prerotated_rf0.npz')
+    #rotate_rf1 = rotate(angle=0,healpix_array=med_dB_rf1,savetag='prerotated_rf1.npz')
+    #
+    #rotate_rf0_mad = rotate(angle=0,healpix_array=mad_dB_rf0,savetag='prerotated_rf0_error.npz')
+    #rotate_rf1_mad = rotate(angle=0,healpix_array=mad_dB_rf1,savetag='prerotated_rf1_error.npz')
+
+
+    #plt.style.use('seaborn')
+    #plt.errorbar(
+    #        rf0XX_NS[2], rf0XX_NS[0], yerr=rf0XX_NS[1], 
+    #        fmt='o', color='#326765', ecolor='#7da87b',
+    #        elinewidth=1.2, capsize=2, capthick=1.4,
+    #        alpha=0.9, label='rf0XX NS')
+    #plt.ylabel('Power (dB)')
+    #plt.xlabel('Zenith Angle (degrees)')
+    #plt.legend()
+    ##plt.tight_layout()
+    #plt.show()
     
 
