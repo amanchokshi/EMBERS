@@ -64,8 +64,8 @@ def create_model(file_name=None):
     lut = RectSphereBivariateSpline(theta_range*(np.pi/180.0), phi_range*(np.pi/180.0), power.T,s=0.1)
 
     # Get the theta and phi of all healpixels
-    ip = np.arange(len_empty_healpix)
-    theta_rad, phi_rad = hp.pix2ang(nside, ip)
+    i_pix = np.arange(hp.nside2npix(nside))
+    theta_rad, phi_rad = hp.pix2ang(nside, i_pix)
 
     # Evaluate the interpolated function at healpix gridpoints
     # Use spline to map beam into healpixels
