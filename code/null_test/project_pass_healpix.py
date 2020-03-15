@@ -193,7 +193,7 @@ def proj_ref_healpix(ref):
                                             ref_counter[i] += 1
         
             except Exception:
-                #print(f'{date_time[day][window]}: ref/chrono file not found')
+                # Exception message is forwarded from ../decode_rf_data/rf_data.py
                 continue
 
     # Save map arrays to npz file
@@ -245,10 +245,9 @@ if __name__=='__main__':
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
 
-    ## Parallization magic happens here
-    #with concurrent.futures.ProcessPoolExecutor() as executor:
-    #    results = executor.map(proj_ref_healpix, ref_names)
+    # Parallization magic happens here
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(proj_ref_healpix, ref_names)
 
-    proj_ref_healpix('rf0XX')
     
 
