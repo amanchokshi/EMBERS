@@ -207,20 +207,74 @@ if __name__=='__main__':
     YY_EW_slice, za_EW = YY_EW
 
     gain = fit_gain(rf0XX_NS[0], rf0XX_NS[1], XX_NS_slice)
+    XX_NS_slice_norm = XX_NS_slice + gain
 
+    del_p = rf0XX_NS[0] - XX_NS_slice_norm
+
+    #plt.scatter(rf0XX_NS[2], del_p)
+    #plt.show()
+
+    #plt.style.use('seaborn')
+    #plt.errorbar(
+    #        rf0XX_NS[2], rf0XX_NS[0], yerr=rf0XX_NS[1], 
+    #        fmt='o', color='#326765', ecolor='#7da87b',
+    #        elinewidth=1.2, capsize=2, capthick=1.4,
+    #        alpha=0.9, label='rf0XX NS')
+
+    #plt.plot(za_NS,XX_NS_slice_norm, color='#c70039', linewidth=2, alpha=0.9, label='FEE Model')
+
+    #plt.ylabel('Power (dB)')
+    #plt.xlabel('Zenith Angle (degrees)')
+    #plt.legend()
+    ##plt.tight_layout()
+    #plt.show()
+   
     plt.style.use('seaborn')
-    plt.errorbar(
+
+    fig = plt.figure(figsize=(8,10))
+
+    ax1 = fig.add_subplot(2,1,1)
+    ax1.errorbar(
             rf0XX_NS[2], rf0XX_NS[0], yerr=rf0XX_NS[1], 
             fmt='o', color='#326765', ecolor='#7da87b',
             elinewidth=1.2, capsize=2, capthick=1.4,
             alpha=0.9, label='rf0XX NS')
 
-    plt.plot(za_NS,XX_NS_slice+gain)
+    ax1.plot(za_NS,XX_NS_slice_norm, color='#c70039', linewidth=2, alpha=0.9, label='FEE Model')
 
-    plt.ylabel('Power (dB)')
-    plt.xlabel('Zenith Angle (degrees)')
-    plt.legend()
-    #plt.tight_layout()
+    ax1.set_ylabel('Power (dB)')
+    ax1.set_xlabel('Zenith Angle (degrees)')
+    ax1.legend()
+
+    ax2 = fig.add_subplot(2,1,2)
+    ax2.scatter(rf0XX_NS[2], del_p)
+
+    plt.tight_layout()
     plt.show()
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
