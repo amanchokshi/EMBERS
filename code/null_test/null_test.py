@@ -128,6 +128,7 @@ def fit_gain(map_data=None,map_error=None,beam=None):
 
     map_error[np.where(map_error == 0)] = np.mean(map_error)
 
+    #print(len(map_data), len(map_error))
     def chisqfunc(gain):
         model = beam[~bad_values] + gain
         chisq = sum(((map_data - model)/map_error)**2)
@@ -143,12 +144,14 @@ def fit_gain(map_data=None,map_error=None,beam=None):
 def poly_fit(x, y, map_data, order):
     '''Fit polynominal of order to data'''
     
+    #print(len(x), len(y))
     x = np.asarray(x)
     y = np.asarray(y)
 
     bad_values = np.isnan(map_data)
     x = x[~bad_values]
     y = y[~bad_values]
+    #print(len(x), len(y))
     coefs = poly.polyfit(x, y, order)
     fit = poly.polyval(x, coefs)
     return [x,fit]
@@ -296,8 +299,8 @@ if __name__=='__main__':
 
     ax1 = plt_slice(sub=221, title='ref0XX NS', zen_angle=za_NS, map_slice=rf0XX_NS[0],map_error=rf0XX_NS[1], model_slice=norm_ref0_XX_NS,delta_pow=del_pow_ref0_XX_NS, pow_fit=fit_ref0_XX_NS,fit_za=za1, slice_label='ref0XX NS', model_label='FEE XX NS')
     ax2 = plt_slice(sub=222, title='ref0XX EW', zen_angle=za_EW, map_slice=rf0XX_EW[0],map_error=rf0XX_EW[0], model_slice=norm_ref0_XX_EW,delta_pow=del_pow_ref0_XX_EW, pow_fit=fit_ref0_XX_EW,fit_za=za2, slice_label='ref0XX EW', model_label='FEE XX EW')
-    ax3 = plt_slice(sub=223, title='ref1XX NW', zen_angle=za_NS, map_slice=rf1XX_NS[0],map_error=rf1XX_NS[0], model_slice=norm_ref1_XX_NS,delta_pow=del_pow_ref1_XX_NS, pow_fit=fit_ref1_XX_NS,fit_za=za3, slice_label='ref1XX NS', model_label='FEE XX NS')
-#    ax4 = plt_slice(sub=224, title='ref1XX EW', zen_angle=za_EW, map_slice=rf1XX_EW[0],map_error=rf1XX_EW[0], model_slice=norm_ref1_XX_EW,delta_pow=del_pow_ref1_XX_EW, pow_fit=fit_ref1_XX_EW,fit_za=za4, slice_label='ref1XX EW', model_label='FEE XX EW')
+    ax3 = plt_slice(sub=223, title='ref1XX NW', zen_angle=za_NS, map_slice=rf1XX_NS[0],map_error=rf1XX_NS[0], model_slice=norm_ref1_XX_NS,delta_pow=del_pow_ref1_XX_NS, pow_fit=fit_ref1_XX_NS,fit_za=za5, slice_label='ref1XX NS', model_label='FEE XX NS')
+    ax4 = plt_slice(sub=224, title='ref1XX EW', zen_angle=za_EW, map_slice=rf1XX_EW[0],map_error=rf1XX_EW[0], model_slice=norm_ref1_XX_EW,delta_pow=del_pow_ref1_XX_EW, pow_fit=fit_ref1_XX_EW,fit_za=za6, slice_label='ref1XX EW', model_label='FEE XX EW')
 #    ax5 = plt_slice(sub=221, title='ref0YY NS', zen_angle=za_NS, map_slice=rf0YY_NS[0],map_error=rf0YY_NS[0], model_slice=norm_ref0_YY_NS,delta_pow=del_pow_ref0_YY_NS, pow_fit=fit_ref0_YY_NS,slice_label='ref0YY NS', model_label='FEE YY NS')
 #    ax6 = plt_slice(sub=222, title='ref0YY EW', zen_angle=za_EW, map_slice=rf0YY_EW[0],map_error=rf0YY_EW[0], model_slice=norm_ref0_YY_EW,delta_pow=del_pow_ref0_YY_EW, pow_fit=fit_ref0_YY_EW,slice_label='ref0YY EW', model_label='FEE YY EW')
 #    ax7 = plt_slice(sub=223, title='ref1YY NS', zen_angle=za_NS, map_slice=rf1YY_NS[0],map_error=rf1YY_NS[0], model_slice=norm_ref1_YY_NS,delta_pow=del_pow_ref1_YY_NS, pow_fit=fit_ref1_YY_NS,slice_label='ref1YY NS', model_label='FEE YY NS')
