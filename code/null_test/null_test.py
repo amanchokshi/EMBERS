@@ -12,25 +12,22 @@ def hp_slices_horizon(nside=None):
     above_horizon_indices = np.where(θ <= np.radians(90))[0]
     
     # pixel coords above the horizon
-    θ_above_horizon = θ[above_horizon_indices]
     ɸ_above_horizon = ɸ[above_horizon_indices]
 
     NS_indices = []
     EW_indices = []
 
     # pixel indices along N, E, S, W slices
-    n_slice = np.where((np.round(np.degrees(ɸ_above_horizon))) ==  45)[0]
-    e_slice = np.where((np.round(np.degrees(ɸ_above_horizon))) == 135)[0]
-    s_slice = np.where((np.round(np.degrees(ɸ_above_horizon))) == 225)[0]
-    w_slice = np.where((np.round(np.degrees(ɸ_above_horizon))) == 315)[0]
+    # order the indices such that they proceed from N -> S or E -> W
+    n_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) ==  45)[0], reverse=True)
+    e_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 135)[0], reverse=True)
+    s_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 225)[0])
+    w_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 315)[0])
 
     NS_indices.extend(n_slice)
     NS_indices.extend(s_slice)
     EW_indices.extend(e_slice)
     EW_indices.extend(w_slice)
-    
-    NS_indices = sorted(NS_indices)
-    EW_indices = sorted(EW_indices)
     
     return [NS_indices, EW_indices, above_horizon_indices]
 
@@ -56,7 +53,8 @@ def slice_map(hp_map):
             zenith_angle_EW.append(-1*i)
         else:
             zenith_angle_EW.append(i)
-
+    
+    #print(sorted(zenith_angle_NS))
 
     NS_data = [hp_map[NS_indices], zenith_angle_NS]
     EW_data = [hp_map[EW_indices], zenith_angle_EW]
@@ -193,7 +191,7 @@ if __name__=='__main__':
             elinewidth=1.2, capsize=2, capthick=1.4,
             alpha=0.9, label='rf0XX NS')
 
-    plt.scatter(za_NS,XX_NS_slice)
+    plt.plot(za_NS,XX_NS_slice)
 
     plt.ylabel('Power (dB)')
     plt.xlabel('Zenith Angle (degrees)')
