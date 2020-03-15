@@ -35,18 +35,9 @@ def hp_slices_horizon(nside=None):
     return [NS_indices, EW_indices, above_horizon_indices]
 
 
-def ref_map_slice(ref_tile):
+def slice_map(hp_map):
     '''slices healpix map along NS, EW'''
     
-    # load data from map .npz file
-    map_data = np.load(f'{out_dir}/{ref_tile}_map_healpix.npz', allow_pickle=True)
-    ref_map = map_data['ref_map']
-    ref_counter = map_data['ref_counter']
-    
-    # compute the median for every pixel array
-    ref_map_med = np.asarray([(np.median(i) if i != [] else np.nan ) for i in ref_map])
-    ref_map_mad = np.asarray([mad(i) for i in ref_map])
-
     NS_indices, EW_indices, _ = hp_slices_horizon(nside)
 
     θ_NS, ɸ_NS = np.degrees(hp.pix2ang(nside, NS_indices))
@@ -67,12 +58,41 @@ def ref_map_slice(ref_tile):
             zenith_angle_EW.append(i)
 
 
-    NS_data = [ref_map_med[NS_indices], ref_map_mad[NS_indices], zenith_angle_NS]
-    EW_data = [ref_map_med[EW_indices], ref_map_mad[EW_indices], zenith_angle_EW]
+    NS_data = [hp_map[NS_indices], zenith_angle_NS]
+    EW_data = [hp_map[EW_indices], zenith_angle_EW]
 
     return [NS_data, EW_data]
 
 
+def ref_map_slice(ref_tile):
+    '''slices ref healpix map along NS, EW'''
+    
+    # load data from map .npz file
+    map_data = np.load(f'{out_dir}/{ref_tile}_map_healpix.npz', allow_pickle=True)
+    ref_map = map_data['ref_map']
+    ref_counter = map_data['ref_counter']
+    
+    # compute the median for every pixel array
+    ref_map_med = np.asarray([(np.median(i) if i != [] else np.nan ) for i in ref_map])
+    ref_map_mad = np.asarray([mad(i) for i in ref_map])
+
+    # slice the median map along NS, EW
+    ref_med_NS, ref_med_EW = slice_map(ref_map_med)
+    ref_med_map_NS, za_NS = ref_med_NS
+    ref_med_map_EW, za_EW = ref_med_EW
+
+    # slice the mad map along NS, EW
+    ref_mad_NS, ref_mad_EW = slice_map(ref_map_mad)
+    ref_mad_map_NS, _ = ref_mad_NS
+    ref_mad_map_EW, _ = ref_mad_EW
+    
+    NS_data = [ref_med_map_NS, ref_mad_map_NS, za_NS]
+    EW_data = [ref_med_map_EW, ref_mad_map_EW, za_EW]
+
+    return [NS_data, EW_data]
+
+
+# rotate func written by Jack Line
 def rotate(angle=None,healpix_array=None,savetag=None,flip=False):
     '''Takes in a healpix array, rotates it by the desired angle, and saves it.
     Optionally flip the data, changes east-west into west-east because
@@ -99,9 +119,6 @@ def rotate(angle=None,healpix_array=None,savetag=None,flip=False):
         savez_compressed(savetag,beammap=healpix_array[new_hp_inds])
 
     return healpix_array[new_hp_inds]
-
-
-
 
 
 if __name__=='__main__':
@@ -149,41 +166,39 @@ if __name__=='__main__':
     ref_fee_model = np.load(ref_model, allow_pickle=True)
     beam_XX = ref_fee_model['XX']
     beam_YY = ref_fee_model['YY']
+   
+    # Rotate beam models by pi/4 to match the rotated ref data
+    rotated_XX = rotate(angle=+(1*np.pi)/4.0,healpix_array=beam_XX)
+    rotated_YY = rotate(angle=+(1*np.pi)/4.0,healpix_array=beam_YY)
     
-    rotate_beam_XX = rotate(angle=+(1*np.pi)/4.0,healpix_array=beam_XX)
-    
-    plot_healpix(data_map=rotate_beam_XX,sub=(1,1,1), cmap=cmap, vmin=-40, vmax=-20)
-    plt.show()
-
-
-    ## Try a number of rotations to get the reference models into the same frame
-    ## as the data. Feel free to double check all this
-    #rotate_ungeastern = rotate(angle=+(3*pi)/4.0,healpix_array=ung_eastern,savetag='rotated+180_ung_eastern.npz')
-    #rotate_ungwestern = rotate(angle=+(3*pi)/4.0,healpix_array=ung_western,savetag='rotated+180_ung_western.npz')
-    #
-    #rotate_ungeastern = rotate(angle=+pi/4.0,healpix_array=ung_eastern,savetag='rotated_ung_eastern.npz')
-    #rotate_ungwestern = rotate(angle=+pi/4.0,healpix_array=ung_western,savetag='rotated_ung_western.npz')
-    #
-    #rotate_ungeastern = rotate(angle=+pi/4.0,healpix_array=ung_eastern,savetag='rotated+flip_ung_eastern.npz',flip=True)
-    #rotate_ungwestern = rotate(angle=+pi/4.0,healpix_array=ung_western,savetag='rotated+flip_ung_western.npz',flip=True)
-    #
-    #rotate_rf0 = rotate(angle=0,healpix_array=med_dB_rf0,savetag='prerotated_rf0.npz')
-    #rotate_rf1 = rotate(angle=0,healpix_array=med_dB_rf1,savetag='prerotated_rf1.npz')
-    #
-    #rotate_rf0_mad = rotate(angle=0,healpix_array=mad_dB_rf0,savetag='prerotated_rf0_error.npz')
-    #rotate_rf1_mad = rotate(angle=0,healpix_array=mad_dB_rf1,savetag='prerotated_rf1_error.npz')
-
-
-    #plt.style.use('seaborn')
-    #plt.errorbar(
-    #        rf0XX_NS[2], rf0XX_NS[0], yerr=rf0XX_NS[1], 
-    #        fmt='o', color='#326765', ecolor='#7da87b',
-    #        elinewidth=1.2, capsize=2, capthick=1.4,
-    #        alpha=0.9, label='rf0XX NS')
-    #plt.ylabel('Power (dB)')
-    #plt.xlabel('Zenith Angle (degrees)')
-    #plt.legend()
-    ##plt.tight_layout()
+    # These plots show that the pi/4 rotation was correct
+    #plot_healpix(data_map=rotated_XX,sub=(1,1,1), cmap=cmap, vmin=-40, vmax=-20)
+    #plot_healpix(data_map=rotated_YY,sub=(1,1,1), cmap=cmap, vmin=-40, vmax=-20)
     #plt.show()
+    
+    # slice the XX rotated map along NS, EW
+    XX_NS, XX_EW = slice_map(rotated_XX)
+    XX_NS_slice, za_NS = XX_NS
+    XX_EW_slice, za_EW = XX_EW
+
+    # slice the YY rotated map along NS, EW
+    YY_NS, YY_EW = slice_map(rotated_YY)
+    YY_NS_slice, za_NS = YY_NS
+    YY_EW_slice, za_EW = YY_EW
+
+    plt.style.use('seaborn')
+    plt.errorbar(
+            rf0XX_NS[2], rf0XX_NS[0], yerr=rf0XX_NS[1], 
+            fmt='o', color='#326765', ecolor='#7da87b',
+            elinewidth=1.2, capsize=2, capthick=1.4,
+            alpha=0.9, label='rf0XX NS')
+
+    plt.scatter(za_NS,XX_NS_slice)
+
+    plt.ylabel('Power (dB)')
+    plt.xlabel('Zenith Angle (degrees)')
+    plt.legend()
+    #plt.tight_layout()
+    plt.show()
     
 
