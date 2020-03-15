@@ -74,6 +74,7 @@ def ref_map_slice(out_dir, ref_tile):
     
     # compute the median for every pixel array
     ref_map_med = np.asarray([(np.median(i) if i != [] else np.nan ) for i in ref_map])
+    print(ref_map_med)
     ref_map_mad = np.asarray([mad(i) for i in ref_map])
 
     # slice the median map along NS, EW
@@ -116,7 +117,7 @@ def rotate(angle=None,healpix_array=None,savetag=None,flip=False):
 
     ##Save the array in the new order
     if savetag:
-        savez_compressed(savetag,beammap=healpix_array[new_hp_inds])
+        np.savez_compressed(savetag,beammap=healpix_array[new_hp_inds])
 
     return healpix_array[new_hp_inds]
 
@@ -131,7 +132,8 @@ def fit_gain(map_data=None,map_error=None,beam=None):
     #print(len(map_data), len(map_error))
     def chisqfunc(gain):
         model = beam[~bad_values] + gain
-        chisq = sum(((map_data - model)/map_error)**2)
+        chisq = sum((map_data - model)**2)
+        #chisq = sum(((map_data - model)/map_error)**2)
         return chisq
 
     x0 = np.array([0])
@@ -157,7 +159,7 @@ def poly_fit(x, y, map_data, order):
     return [x,fit]
 
 
-def plt_slice(sub=None, title=None, zen_angle=None, map_slice=None, map_error=None, model_slice=None, delta_pow=None, pow_fit=None, fit_za=None, slice_label=None, model_label=None):
+def plt_slice(fig=None, sub=None, title=None, zen_angle=None, map_slice=None, map_error=None, model_slice=None, delta_pow=None, pow_fit=None, fit_za=None, slice_label=None, model_label=None):
 
     ax = fig.add_subplot(sub)
 
@@ -295,16 +297,18 @@ if __name__=='__main__':
 
 
     plt.style.use('seaborn')
-    fig = plt.figure(figsize=(8,10))
+    fig1 = plt.figure(figsize=(8,10))
 
-    ax1 = plt_slice(sub=221, title='ref0XX NS', zen_angle=za_NS, map_slice=rf0XX_NS[0],map_error=rf0XX_NS[1], model_slice=norm_ref0_XX_NS,delta_pow=del_pow_ref0_XX_NS, pow_fit=fit_ref0_XX_NS,fit_za=za1, slice_label='ref0XX NS', model_label='FEE XX NS')
-    ax2 = plt_slice(sub=222, title='ref0XX EW', zen_angle=za_EW, map_slice=rf0XX_EW[0],map_error=rf0XX_EW[0], model_slice=norm_ref0_XX_EW,delta_pow=del_pow_ref0_XX_EW, pow_fit=fit_ref0_XX_EW,fit_za=za2, slice_label='ref0XX EW', model_label='FEE XX EW')
-    ax3 = plt_slice(sub=223, title='ref1XX NW', zen_angle=za_NS, map_slice=rf1XX_NS[0],map_error=rf1XX_NS[0], model_slice=norm_ref1_XX_NS,delta_pow=del_pow_ref1_XX_NS, pow_fit=fit_ref1_XX_NS,fit_za=za5, slice_label='ref1XX NS', model_label='FEE XX NS')
-    ax4 = plt_slice(sub=224, title='ref1XX EW', zen_angle=za_EW, map_slice=rf1XX_EW[0],map_error=rf1XX_EW[0], model_slice=norm_ref1_XX_EW,delta_pow=del_pow_ref1_XX_EW, pow_fit=fit_ref1_XX_EW,fit_za=za6, slice_label='ref1XX EW', model_label='FEE XX EW')
-#    ax5 = plt_slice(sub=221, title='ref0YY NS', zen_angle=za_NS, map_slice=rf0YY_NS[0],map_error=rf0YY_NS[0], model_slice=norm_ref0_YY_NS,delta_pow=del_pow_ref0_YY_NS, pow_fit=fit_ref0_YY_NS,slice_label='ref0YY NS', model_label='FEE YY NS')
-#    ax6 = plt_slice(sub=222, title='ref0YY EW', zen_angle=za_EW, map_slice=rf0YY_EW[0],map_error=rf0YY_EW[0], model_slice=norm_ref0_YY_EW,delta_pow=del_pow_ref0_YY_EW, pow_fit=fit_ref0_YY_EW,slice_label='ref0YY EW', model_label='FEE YY EW')
-#    ax7 = plt_slice(sub=223, title='ref1YY NS', zen_angle=za_NS, map_slice=rf1YY_NS[0],map_error=rf1YY_NS[0], model_slice=norm_ref1_YY_NS,delta_pow=del_pow_ref1_YY_NS, pow_fit=fit_ref1_YY_NS,slice_label='ref1YY NS', model_label='FEE YY NS')
-#    ax8 = plt_slice(sub=224, title='ref1YY EW', zen_angle=za_EW, map_slice=rf1YY_EW[0],map_error=rf1YY_EW[0], model_slice=norm_ref1_YY_EW,delta_pow=del_pow_ref1_YY_EW, pow_fit=fit_ref1_YY_EW,slice_label='ref1YY EW', model_label='FEE YY EW')
+    ax1 = plt_slice(fig=fig1, sub=221, title='ref0XX NS', zen_angle=za_NS, map_slice=rf0XX_NS[0],map_error=rf0XX_NS[1], model_slice=norm_ref0_XX_NS,delta_pow=del_pow_ref0_XX_NS, pow_fit=fit_ref0_XX_NS,fit_za=za1, slice_label='ref0XX NS', model_label='FEE XX NS')
+    ax2 = plt_slice(fig=fig1, sub=222, title='ref0XX EW', zen_angle=za_EW, map_slice=rf0XX_EW[0],map_error=rf0XX_EW[0], model_slice=norm_ref0_XX_EW,delta_pow=del_pow_ref0_XX_EW, pow_fit=fit_ref0_XX_EW,fit_za=za2, slice_label='ref0XX EW', model_label='FEE XX EW')
+    ax3 = plt_slice(fig=fig1, sub=223, title='ref1XX NW', zen_angle=za_NS, map_slice=rf1XX_NS[0],map_error=rf1XX_NS[0], model_slice=norm_ref1_XX_NS,delta_pow=del_pow_ref1_XX_NS, pow_fit=fit_ref1_XX_NS,fit_za=za5, slice_label='ref1XX NS', model_label='FEE XX NS')
+    ax4 = plt_slice(fig=fig1, sub=224, title='ref1XX EW', zen_angle=za_EW, map_slice=rf1XX_EW[0],map_error=rf1XX_EW[0], model_slice=norm_ref1_XX_EW,delta_pow=del_pow_ref1_XX_EW, pow_fit=fit_ref1_XX_EW,fit_za=za6, slice_label='ref1XX EW', model_label='FEE XX EW')
+    
+    fig2 = plt.figure(figsize=(8,10))
+    ax5 = plt_slice(fig=fig2, sub=221, title='ref0YY NS', zen_angle=za_NS, map_slice=rf0YY_NS[0],map_error=rf0YY_NS[0], model_slice=norm_ref0_YY_NS,delta_pow=del_pow_ref0_YY_NS, pow_fit=fit_ref0_YY_NS,fit_za=za3, slice_label='ref0YY NS', model_label='FEE YY NS')
+    ax6 = plt_slice(fig=fig2, sub=222, title='ref0YY EW', zen_angle=za_EW, map_slice=rf0YY_EW[0],map_error=rf0YY_EW[0], model_slice=norm_ref0_YY_EW,delta_pow=del_pow_ref0_YY_EW, pow_fit=fit_ref0_YY_EW,fit_za=za4, slice_label='ref0YY EW', model_label='FEE YY EW')
+    ax7 = plt_slice(fig=fig2, sub=223, title='ref1YY NS', zen_angle=za_NS, map_slice=rf1YY_NS[0],map_error=rf1YY_NS[0], model_slice=norm_ref1_YY_NS,delta_pow=del_pow_ref1_YY_NS, pow_fit=fit_ref1_YY_NS,fit_za=za7, slice_label='ref1YY NS', model_label='FEE YY NS')
+    ax8 = plt_slice(fig=fig2, sub=224, title='ref1YY EW', zen_angle=za_EW, map_slice=rf1YY_EW[0],map_error=rf1YY_EW[0], model_slice=norm_ref1_YY_EW,delta_pow=del_pow_ref1_YY_EW, pow_fit=fit_ref1_YY_EW,fit_za=za8, slice_label='ref1YY EW', model_label='FEE YY EW')
 
 
     plt.tight_layout()
