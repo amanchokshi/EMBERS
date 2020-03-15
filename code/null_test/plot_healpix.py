@@ -7,6 +7,10 @@ import healpy as hp
 def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None):
     '''Yeesh do some healpix magic to plot the thing'''
     
+    # Disable cryptic healpy warnings. Can't figure out where they originate
+    import warnings
+    warnings.filterwarnings("ignore", category=RuntimeWarning) 
+    
     if vmin == None:
         if cmap == None:
             half_sky = hp.orthview(
@@ -69,9 +73,6 @@ if __name__=='__main__':
     # Custom spectral colormap
     cmap = spectral()
     
-    # Disable cryptic healpy warnings. Can't figure out where they originate
-    import warnings
-    warnings.filterwarnings("ignore", category=RuntimeWarning) 
 
     parser = argparse.ArgumentParser(description="""
         Plot healpix map of reference data
