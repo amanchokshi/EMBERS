@@ -1,6 +1,7 @@
 import numpy as np
 import healpy as hp
 import scipy.optimize as opt
+import numpy.polynomial.polynomial as poly
 
 
 def hp_slices_horizon(nside=None):
@@ -141,16 +142,51 @@ def fit_gain(map_data=None,map_error=None,beam=None):
     #print result.x
     return result.x
 
+
+def poly_fit(x, y, order):
+    coefs = poly.polyfit(x, y, order)
+    fit = poly.polyval(x, coefs)
+
+    return fit
+
+
+def plt_slice(sub=None, title=None, zen_angle=None, map_slice=None, map_error=None, model_slice=None, delta_pow=None, pow_fit=None, slice_label=None, model_label=None):
+
+    ax = fig.add_subplot(sub)
+
+    ax.errorbar(
+           zen_angle, map_slice, yerr=map_error, 
+           fmt='.', color='#326765', ecolor='#7da87b',
+           elinewidth=1.2, capsize=1.2, capthick=1.4,
+           alpha=0.9, label=slice_label)
+
+    ax.plot(zen_angle,model_slice, color='#c70039', linewidth=1.2, alpha=0.9, label=model_label)
+
+    ax.set_ylabel('Power (dB)')
+    ax.set_xlabel('Zenith Angle (degrees)')
+    ax.legend()
+
+    divider = make_axes_locatable(ax)
+    dax = divider.append_axes("bottom", size="30%", pad=0.1)
+
+    #dax = fig.add_subplot(2,1,2)
+    dax.scatter(zen_angle, delta_pow, marker='.', color='#27296d')
+    dax.plot(zen_angle, pow_fit, linewidth=1.2, alpha=0.9, color='#ff8264')
+    dax.set_ylabel('Data - Model (dB)')
+
+    return ax
+
+
+
 if __name__=='__main__':
     
     import argparse
     import numpy as np
-    import matplotlib.pyplot as plt
     from pathlib import Path
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
     from scipy.stats import median_absolute_deviation as mad
 
-    import matplotlib.pyplot as plt
-    
     import sys
     sys.path.append('../decode_rf_data')
     from plot_healpix import plot_healpix
@@ -211,70 +247,21 @@ if __name__=='__main__':
 
     del_p = rf0XX_NS[0] - XX_NS_slice_norm
 
-    #plt.scatter(rf0XX_NS[2], del_p)
-    #plt.show()
+    fit = poly_fit(za_NS, del_p, 3)
 
-    #plt.style.use('seaborn')
-    #plt.errorbar(
-    #        rf0XX_NS[2], rf0XX_NS[0], yerr=rf0XX_NS[1], 
-    #        fmt='o', color='#326765', ecolor='#7da87b',
-    #        elinewidth=1.2, capsize=2, capthick=1.4,
-    #        alpha=0.9, label='rf0XX NS')
 
-    #plt.plot(za_NS,XX_NS_slice_norm, color='#c70039', linewidth=2, alpha=0.9, label='FEE Model')
-
-    #plt.ylabel('Power (dB)')
-    #plt.xlabel('Zenith Angle (degrees)')
-    #plt.legend()
-    ##plt.tight_layout()
-    #plt.show()
-   
     plt.style.use('seaborn')
-
     fig = plt.figure(figsize=(8,10))
 
-    ax1 = fig.add_subplot(2,1,1)
-    ax1.errorbar(
-            rf0XX_NS[2], rf0XX_NS[0], yerr=rf0XX_NS[1], 
-            fmt='o', color='#326765', ecolor='#7da87b',
-            elinewidth=1.2, capsize=2, capthick=1.4,
-            alpha=0.9, label='rf0XX NS')
+    ax1 = plt_slice(
+            sub=221, title='rf0XX NS Slice', 
+            zen_angle=za_NS, map_slice=rf0XX_NS[0],
+            map_error=rf0XX_NS[1], model_slice=XX_NS_slice_norm,
+            delta_pow=del_p, pow_fit=fit,
+            slice_label='rf0XX NS', model_label='FEE Model')
 
-    ax1.plot(za_NS,XX_NS_slice_norm, color='#c70039', linewidth=2, alpha=0.9, label='FEE Model')
-
-    ax1.set_ylabel('Power (dB)')
-    ax1.set_xlabel('Zenith Angle (degrees)')
-    ax1.legend()
-
-    ax2 = fig.add_subplot(2,1,2)
-    ax2.scatter(rf0XX_NS[2], del_p)
 
     plt.tight_layout()
     plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
