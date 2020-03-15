@@ -30,7 +30,7 @@ def hp_slices_horizon(nside=None):
     NS_indices.extend(s_slice)
     EW_indices.extend(e_slice)
     EW_indices.extend(w_slice)
-    
+
     return [NS_indices, EW_indices, above_horizon_indices]
 
 
@@ -40,7 +40,7 @@ def slice_map(hp_map):
     NS_indices, EW_indices, _ = hp_slices_horizon(nside)
 
     θ_NS, ɸ_NS = np.degrees(hp.pix2ang(nside, NS_indices))
-    θ_EW, ɸ_EW = hp.pix2ang(nside, EW_indices)
+    θ_EW, ɸ_EW = np.degrees(hp.pix2ang(nside, EW_indices))
 
     zenith_angle_NS = []
     for i, j in zip(θ_NS, ɸ_NS):
@@ -122,7 +122,6 @@ def rotate(angle=None,healpix_array=None,savetag=None,flip=False):
 
 # chisquared minimization to best fit map to data
 def fit_gain(map_data=None,map_error=None,beam=None):
-
     bad_values = np.isnan(map_data)
     map_data = map_data[~bad_values]
     map_error = map_error[~bad_values]
@@ -141,14 +140,21 @@ def fit_gain(map_data=None,map_error=None,beam=None):
     return result.x
 
 
-def poly_fit(x, y, order):
+def poly_fit(x, y, map_data, order):
     '''Fit polynominal of order to data'''
+    
+    x = np.asarray(x)
+    y = np.asarray(y)
+
+    bad_values = np.isnan(map_data)
+    x = x[~bad_values]
+    y = y[~bad_values]
     coefs = poly.polyfit(x, y, order)
     fit = poly.polyval(x, coefs)
-    return fit
+    return [x,fit]
 
 
-def plt_slice(sub=None, title=None, zen_angle=None, map_slice=None, map_error=None, model_slice=None, delta_pow=None, pow_fit=None, slice_label=None, model_label=None):
+def plt_slice(sub=None, title=None, zen_angle=None, map_slice=None, map_error=None, model_slice=None, delta_pow=None, pow_fit=None, fit_za=None, slice_label=None, model_label=None):
 
     ax = fig.add_subplot(sub)
 
@@ -160,6 +166,7 @@ def plt_slice(sub=None, title=None, zen_angle=None, map_slice=None, map_error=No
 
     ax.plot(zen_angle,model_slice, color='#c70039', linewidth=1.2, alpha=0.9, label=model_label)
 
+    ax.set_title(title)
     ax.set_ylabel('Power (dB)')
     ax.set_xlabel('Zenith Angle (degrees)')
     ax.legend()
@@ -169,7 +176,7 @@ def plt_slice(sub=None, title=None, zen_angle=None, map_slice=None, map_error=No
 
     #dax = fig.add_subplot(2,1,2)
     dax.scatter(zen_angle, delta_pow, marker='.', color='#27296d')
-    dax.plot(zen_angle, pow_fit, linewidth=1.2, alpha=0.9, color='#ff8264')
+    dax.plot(fit_za, pow_fit, linewidth=1.2, alpha=0.9, color='#ff8264')
     dax.set_ylabel('Data - Model (dB)')
 
     return ax
@@ -237,20 +244,21 @@ if __name__=='__main__':
     XX_NS_slice, za_NS = XX_NS
     XX_EW_slice, za_EW = XX_EW
 
+
     # slice the YY rotated map along NS, EW
     YY_NS, YY_EW = slice_map(rotated_YY)
     YY_NS_slice, za_NS = YY_NS
     YY_EW_slice, za_EW = YY_EW
 
     # Gain offsets for the 8 combinations of data and beam slices
-    gain_ref0_XX_NS = fit_gain(rf0XX_NS[0], rf0XX_NS[1], XX_NS_slice)
-    gain_ref0_XX_EW = fit_gain(rf0XX_EW[0], rf0XX_EW[1], XX_EW_slice)
-    gain_ref0_YY_NS = fit_gain(rf0YY_NS[0], rf0YY_NS[1], YY_NS_slice)
-    gain_ref0_YY_EW = fit_gain(rf0YY_EW[0], rf0YY_EW[1], YY_EW_slice)
-    gain_ref1_XX_NS = fit_gain(rf1XX_NS[0], rf1XX_NS[1], XX_NS_slice)
-    gain_ref1_XX_EW = fit_gain(rf1XX_EW[0], rf1XX_EW[1], XX_EW_slice)
-    gain_ref1_YY_NS = fit_gain(rf1YY_NS[0], rf1YY_NS[1], YY_NS_slice)
-    gain_ref1_YY_EW = fit_gain(rf1YY_EW[0], rf1YY_EW[1], YY_EW_slice)
+    gain_ref0_XX_NS = fit_gain(map_data=rf0XX_NS[0], map_error=rf0XX_NS[1], beam=XX_NS_slice)
+    gain_ref0_XX_EW = fit_gain(map_data=rf0XX_EW[0], map_error=rf0XX_EW[1], beam=XX_EW_slice)
+    gain_ref0_YY_NS = fit_gain(map_data=rf0YY_NS[0], map_error=rf0YY_NS[1], beam=YY_NS_slice)
+    gain_ref0_YY_EW = fit_gain(map_data=rf0YY_EW[0], map_error=rf0YY_EW[1], beam=YY_EW_slice)
+    gain_ref1_XX_NS = fit_gain(map_data=rf1XX_NS[0], map_error=rf1XX_NS[1], beam=XX_NS_slice)
+    gain_ref1_XX_EW = fit_gain(map_data=rf1XX_EW[0], map_error=rf1XX_EW[1], beam=XX_EW_slice)
+    gain_ref1_YY_NS = fit_gain(map_data=rf1YY_NS[0], map_error=rf1YY_NS[1], beam=YY_NS_slice)
+    gain_ref1_YY_EW = fit_gain(map_data=rf1YY_EW[0], map_error=rf1YY_EW[1], beam=YY_EW_slice)
     
     # Normalized beam slices
     norm_ref0_XX_NS = XX_NS_slice + gain_ref0_XX_NS 
@@ -273,23 +281,23 @@ if __name__=='__main__':
     del_pow_ref1_YY_EW = rf1YY_EW[0] - norm_ref1_YY_EW
 
     # 3rd order poly fits for residuals
-    fit_ref0_XX_NS = poly_fit(za_NS, del_pow_ref0_XX_NS, 3)  
-    fit_ref0_XX_EW = poly_fit(za_EW, del_pow_ref0_XX_EW, 3) 
-    fit_ref0_YY_NS = poly_fit(za_NS, del_pow_ref0_YY_NS, 3) 
-    fit_ref0_YY_EW = poly_fit(za_EW, del_pow_ref0_YY_EW, 3) 
-    fit_ref1_XX_NS = poly_fit(za_NS, del_pow_ref1_XX_NS, 3) 
-    fit_ref1_XX_EW = poly_fit(za_EW, del_pow_ref1_XX_EW, 3) 
-    fit_ref1_YY_NS = poly_fit(za_NS, del_pow_ref1_YY_NS, 3) 
-    fit_ref1_YY_EW = poly_fit(za_EW, del_pow_ref1_YY_EW, 3) 
+    za1, fit_ref0_XX_NS = poly_fit(za_NS, del_pow_ref0_XX_NS,rf0XX_NS[0], 3)  
+    za2, fit_ref0_XX_EW = poly_fit(za_EW, del_pow_ref0_XX_EW,rf0XX_EW[0], 3) 
+    za3, fit_ref0_YY_NS = poly_fit(za_NS, del_pow_ref0_YY_NS,rf0YY_NS[0], 3) 
+    za4, fit_ref0_YY_EW = poly_fit(za_EW, del_pow_ref0_YY_EW,rf0YY_EW[0], 3) 
+    za5, fit_ref1_XX_NS = poly_fit(za_NS, del_pow_ref1_XX_NS,rf1XX_NS[0], 3) 
+    za6, fit_ref1_XX_EW = poly_fit(za_EW, del_pow_ref1_XX_EW,rf1XX_EW[0], 3) 
+    za7, fit_ref1_YY_NS = poly_fit(za_NS, del_pow_ref1_YY_NS,rf1YY_NS[0], 3) 
+    za8, fit_ref1_YY_EW = poly_fit(za_EW, del_pow_ref1_YY_EW,rf1YY_EW[0], 3) 
 
 
     plt.style.use('seaborn')
-    fig1 = plt.figure(figsize=(8,10))
+    fig = plt.figure(figsize=(8,10))
 
-    ax1 = plt_slice(sub=221, title='ref0XX NS', zen_angle=za_NS, map_slice=rf0XX_NS[0],map_error=rf0XX_NS[0], model_slice=norm_ref0_XX_NS,delta_pow=del_pow_ref0_XX_NS, pow_fit=fit_ref0_XX_NS,slice_label='ref0XX NS', model_label='FEE XX NS')
-#    ax2 = plt_slice(sub=222, title='ref0XX EW', zen_angle=za_EW, map_slice=rf0XX_EW[0],map_error=rf0XX_EW[0], model_slice=norm_ref0_XX_EW,delta_pow=del_pow_ref0_XX_EW, pow_fit=fit_ref0_XX_EW,slice_label='ref0XX EW', model_label='FEE XX EW')
-#    ax3 = plt_slice(sub=223, title='ref1XX NW', zen_angle=za_NS, map_slice=rf1XX_NS[0],map_error=rf1XX_NS[0], model_slice=norm_ref1_XX_NS,delta_pow=del_pow_ref1_XX_NS, pow_fit=fit_ref1_XX_NS,slice_label='ref1XX NS', model_label='FEE XX NS')
-#    ax4 = plt_slice(sub=224, title='ref1XX EW', zen_angle=za_EW, map_slice=rf1XX_EW[0],map_error=rf1XX_EW[0], model_slice=norm_ref1_XX_EW,delta_pow=del_pow_ref1_XX_EW, pow_fit=fit_ref1_XX_EW,slice_label='ref1XX EW', model_label='FEE XX EW')
+    ax1 = plt_slice(sub=221, title='ref0XX NS', zen_angle=za_NS, map_slice=rf0XX_NS[0],map_error=rf0XX_NS[1], model_slice=norm_ref0_XX_NS,delta_pow=del_pow_ref0_XX_NS, pow_fit=fit_ref0_XX_NS,fit_za=za1, slice_label='ref0XX NS', model_label='FEE XX NS')
+    ax2 = plt_slice(sub=222, title='ref0XX EW', zen_angle=za_EW, map_slice=rf0XX_EW[0],map_error=rf0XX_EW[0], model_slice=norm_ref0_XX_EW,delta_pow=del_pow_ref0_XX_EW, pow_fit=fit_ref0_XX_EW,fit_za=za2, slice_label='ref0XX EW', model_label='FEE XX EW')
+    ax3 = plt_slice(sub=223, title='ref1XX NW', zen_angle=za_NS, map_slice=rf1XX_NS[0],map_error=rf1XX_NS[0], model_slice=norm_ref1_XX_NS,delta_pow=del_pow_ref1_XX_NS, pow_fit=fit_ref1_XX_NS,fit_za=za3, slice_label='ref1XX NS', model_label='FEE XX NS')
+#    ax4 = plt_slice(sub=224, title='ref1XX EW', zen_angle=za_EW, map_slice=rf1XX_EW[0],map_error=rf1XX_EW[0], model_slice=norm_ref1_XX_EW,delta_pow=del_pow_ref1_XX_EW, pow_fit=fit_ref1_XX_EW,fit_za=za4, slice_label='ref1XX EW', model_label='FEE XX EW')
 #    ax5 = plt_slice(sub=221, title='ref0YY NS', zen_angle=za_NS, map_slice=rf0YY_NS[0],map_error=rf0YY_NS[0], model_slice=norm_ref0_YY_NS,delta_pow=del_pow_ref0_YY_NS, pow_fit=fit_ref0_YY_NS,slice_label='ref0YY NS', model_label='FEE YY NS')
 #    ax6 = plt_slice(sub=222, title='ref0YY EW', zen_angle=za_EW, map_slice=rf0YY_EW[0],map_error=rf0YY_EW[0], model_slice=norm_ref0_YY_EW,delta_pow=del_pow_ref0_YY_EW, pow_fit=fit_ref0_YY_EW,slice_label='ref0YY EW', model_label='FEE YY EW')
 #    ax7 = plt_slice(sub=223, title='ref1YY NS', zen_angle=za_NS, map_slice=rf1YY_NS[0],map_error=rf1YY_NS[0], model_slice=norm_ref1_YY_NS,delta_pow=del_pow_ref1_YY_NS, pow_fit=fit_ref1_YY_NS,slice_label='ref1YY NS', model_label='FEE YY NS')
