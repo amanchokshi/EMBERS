@@ -34,7 +34,7 @@ def power_ephem(
     '''Create power, alt, az arrays at constant cadence'''
 
     power, times = savgol_interp(ref_file, savgol_window, polyorder, interp_type, interp_freq )
-    
+
     # To first order, let us consider the median to be the noise floor
     noise_f = np.median(power)
     
@@ -99,15 +99,8 @@ def power_ephem(
                     good_alt = alt[np.where(channel_power >= noise_threshold)[0]]
                     good_az  = az[np.where(channel_power >= noise_threshold)[0]]
             
-                    return [good_power, good_alt, good_az]
+    return [good_power, good_alt, good_az]
                 
-                else:
-                    return 0
-            else:
-                return 0
-        else:
-            return 0
-
 
 def proj_ref_healpix(ref):
 
@@ -135,71 +128,73 @@ def proj_ref_healpix(ref):
             chrono_file = f'{chrono_dir}/{date_time[day][window]}.json'
             
             try:
-                Path(ref_file).is_file() and Path(chrono_file).is_file()
+                Path(ref_file).is_file()
             
-            except Exception:
-                print(f'{date_time[day][window]}: ref/chrono file not found')
-                continue
 
-            with open(chrono_file) as chrono:
-                chrono_ephem = json.load(chrono)
-            
-                norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))]
+                with open(chrono_file) as chrono:
+                    chrono_ephem = json.load(chrono)
+
+                    if chrono_ephem != []:
                 
-                for sat in list(channel_map.keys()):
-                                    
-                    if int(sat) in norad_list and norad_list != []:
-
-                        chans = channel_map[sat]
+                        norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))]
                         
-                        for chan_num in chans:
+                        for sat in list(channel_map.keys()):
+                                            
+                            if int(sat) in norad_list and norad_list != []:
 
-                            sat_data = power_ephem(
-                                    ref_file,
-                                    chrono_file,
-                                    int(sat),
-                                    chan_num,
-                                    savgol_window,
-                                    polyorder,
-                                    interp_type,
-                                    interp_freq
-                                    )
-                            
-                            if sat_data != 0:
-                                channel_power, alt, az = sat_data
-
-                                # Altitude is in deg while az is in radians
-                                # convert alt to radians
-                                alt = np.radians(alt)
-                                az  = np.asarray(az)
-
-                                # To convert from Alt/Az to θ/ϕ spherical coordinates
-                                # Jack's convention, not sure about ɸ
-                                # θ = 90 - Alt
-                                # ɸ = 180 - Az
-
-                                # Healpix uses sperical coordinates
-                                θ = np.pi/2 - alt
-                                ɸ = np.pi - az
-
-                                # Since we need to slice along NS & EW, and nside = 32 healpix does not 
-                                # straight lines of pixels vertically or horizontally, but it does have
-                                # them diagonally. We rotate ɸ by 45° to be able to slice NS & EW
-                                ɸ_rot = ɸ + (np.pi / 4)
-
-                                # Now convert to healpix coordinates
-                                healpix_index = hp.ang2pix(nside,θ, ɸ_rot)
-                                        
-                                # Append channel power to ref healpix map
-                                for i in range(len(healpix_index)):
-                                    ref_map[healpix_index[i]].append(channel_power[i])
-                                #[ref_map[healpix_index[i]].append(channel_power[i]) for i in range(len(healpix_index))]
-                                 
+                                chans = channel_map[sat]
                                 
-                                # Increment pix ounter to keep track of passes in each pix 
-                                for i in healpix_index:
-                                    ref_counter[i] += 1
+                                for chan_num in chans:
+
+                                    sat_data = power_ephem(
+                                            ref_file,
+                                            chrono_file,
+                                            int(sat),
+                                            chan_num,
+                                            savgol_window,
+                                            polyorder,
+                                            interp_type,
+                                            interp_freq
+                                            )
+                                    
+                                    if sat_data != 0:
+                                        channel_power, alt, az = sat_data
+
+                                        # Altitude is in deg while az is in radians
+                                        # convert alt to radians
+                                        alt = np.radians(alt)
+                                        az  = np.asarray(az)
+
+                                        # To convert from Alt/Az to θ/ϕ spherical coordinates
+                                        # Jack's convention, not sure about ɸ
+                                        # θ = 90 - Alt
+                                        # ɸ = 180 - Az
+
+                                        # Healpix uses sperical coordinates
+                                        θ = np.pi/2 - alt
+                                        ɸ = np.pi - az
+
+                                        # Since we need to slice along NS & EW, and nside = 32 healpix does not 
+                                        # straight lines of pixels vertically or horizontally, but it does have
+                                        # them diagonally. We rotate ɸ by 45° to be able to slice NS & EW
+                                        ɸ_rot = ɸ + (np.pi / 4)
+
+                                        # Now convert to healpix coordinates
+                                        healpix_index = hp.ang2pix(nside,θ, ɸ_rot)
+                                                
+                                        # Append channel power to ref healpix map
+                                        for i in range(len(healpix_index)):
+                                            ref_map[healpix_index[i]].append(channel_power[i])
+                                        #[ref_map[healpix_index[i]].append(channel_power[i]) for i in range(len(healpix_index))]
+                                         
+                                        
+                                        # Increment pix ounter to keep track of passes in each pix 
+                                        for i in healpix_index:
+                                            ref_counter[i] += 1
         
+            except Exception:
+                #print(f'{date_time[day][window]}: ref/chrono file not found')
+                continue
 
     # Save map arrays to npz file
     np.savez_compressed(f'{out_dir}/{ref}_map_healpix.npz',
@@ -250,8 +245,10 @@ if __name__=='__main__':
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
 
-    # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(proj_ref_healpix, ref_names)
+    ## Parallization magic happens here
+    #with concurrent.futures.ProcessPoolExecutor() as executor:
+    #    results = executor.map(proj_ref_healpix, ref_names)
+
+    proj_ref_healpix('rf0XX')
     
 
