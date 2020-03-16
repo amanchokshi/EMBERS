@@ -3,6 +3,8 @@
 
 import numpy as np
 import healpy as hp
+from scipy.stats import median_absolute_deviation as mad
+
 
 def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None):
     '''Yeesh do some healpix magic to plot the thing'''
@@ -104,4 +106,39 @@ if __name__=='__main__':
 
         plt.savefig(f'{out_dir}/{f_name}.png',bbox_inches='tight')
 
+    for f in out_dir.glob('*.npz'):
+        f_name, _ = f.name.split('.')
+        ref, _, _ = f_name.split('_')
+        
+        # load data from map .npz file
+        map_data = np.load(f, allow_pickle=True)
+        ref_map = map_data['ref_map']
+        ref_counter = map_data['ref_counter']
+        
+        # compute the median for every pixel array
+        ref_map_med = [(np.median(i) if i != [] else np.nan ) for i in ref_map]
+
+
+        ref_map_mad = []
+        for j in ref_map:
+            if j != []:
+                j = np.asarray(j)
+                j = j[~np.isnan(j)]
+                ref_map_mad.append(mad(j))
+            else:
+                ref_map_mad.append(np.nan)
+
+        ref_map_mad = np.asarray(ref_map_mad)
+        
+        ref_map_mad[np.where(ref_map_mad == np.nan)] = np.nanmean(ref_map_mad)
+
+
+        vmin = np.nanmin(ref_map_mad)
+        vmax = np.nanmax(ref_map_mad)
+
+        fig = plt.figure(figsize=(8,10))
+        fig.suptitle(f'Reference Beam Healpix: {ref}', fontsize=16)
+        plot_healpix(data_map=np.asarray(ref_map_mad),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
+
+        plt.savefig(f'{out_dir}/{f_name}_mad.png',bbox_inches='tight')
 
