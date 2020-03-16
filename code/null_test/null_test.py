@@ -146,15 +146,20 @@ def poly_fit(x, y, map_data, order):
     y = np.asarray(y)
 
     bad_values = np.isnan(map_data)
-    x = x[~bad_values]
-    y = y[~bad_values]
+    x_good = x[~bad_values]
+    y_good = y[~bad_values]
     #print(len(x), len(y))
-    coefs = poly.polyfit(x, y, order)
+    coefs = poly.polyfit(x_good, y_good, order)
     fit = poly.polyval(x, coefs)
-    return [x,fit]
+    return fit
 
 
-def plt_slice(fig=None, sub=None, title=None, zen_angle=None, map_slice=None, map_error=None, model_slice=None, delta_pow=None, pow_fit=None, fit_za=None, slice_label=None, model_label=None):
+def plt_slice(
+        fig=None, sub=None,
+        title=None, zen_angle=None, map_slice=None,
+        map_error=None, model_slice=None, 
+        delta_pow=None, pow_fit=None, 
+        slice_label=None, model_label=None):
 
     ax = fig.add_subplot(sub)
 
@@ -176,7 +181,7 @@ def plt_slice(fig=None, sub=None, title=None, zen_angle=None, map_slice=None, ma
 
     #dax = fig.add_subplot(2,1,2)
     dax.scatter(zen_angle, delta_pow, marker='.', color='#27296d')
-    dax.plot(fit_za, pow_fit, linewidth=1.2, alpha=0.9, color='#ff8264')
+    dax.plot(zen_angle, pow_fit, linewidth=1.2, alpha=0.9, color='#ff8264')
     dax.set_ylabel('Data - Model (dB)')
 
     return ax
@@ -253,42 +258,63 @@ if __name__=='__main__':
     # Gain offsets for the 8 combinations of data and beam slices
     gain_ref0_XX_NS = fit_gain(map_data=rf0XX_NS[0], map_error=rf0XX_NS[1], beam=XX_NS_slice)
     gain_ref0_XX_EW = fit_gain(map_data=rf0XX_EW[0], map_error=rf0XX_EW[1], beam=XX_EW_slice)
-    gain_ref0_YY_NS = fit_gain(map_data=rf0YY_NS[0], map_error=rf0YY_NS[1], beam=YY_NS_slice)
-    gain_ref0_YY_EW = fit_gain(map_data=rf0YY_EW[0], map_error=rf0YY_EW[1], beam=YY_EW_slice)
     gain_ref1_XX_NS = fit_gain(map_data=rf1XX_NS[0], map_error=rf1XX_NS[1], beam=XX_NS_slice)
     gain_ref1_XX_EW = fit_gain(map_data=rf1XX_EW[0], map_error=rf1XX_EW[1], beam=XX_EW_slice)
+    
+    gain_ref0_YY_NS = fit_gain(map_data=rf0YY_NS[0], map_error=rf0YY_NS[1], beam=YY_NS_slice)
+    gain_ref0_YY_EW = fit_gain(map_data=rf0YY_EW[0], map_error=rf0YY_EW[1], beam=YY_EW_slice)
     gain_ref1_YY_NS = fit_gain(map_data=rf1YY_NS[0], map_error=rf1YY_NS[1], beam=YY_NS_slice)
     gain_ref1_YY_EW = fit_gain(map_data=rf1YY_EW[0], map_error=rf1YY_EW[1], beam=YY_EW_slice)
     
     # Normalized beam slices
     norm_ref0_XX_NS = XX_NS_slice + gain_ref0_XX_NS 
     norm_ref0_XX_EW = XX_EW_slice + gain_ref0_XX_EW
-    norm_ref0_YY_NS = YY_NS_slice + gain_ref0_YY_NS
-    norm_ref0_YY_EW = YY_EW_slice + gain_ref0_YY_EW
     norm_ref1_XX_NS = XX_NS_slice + gain_ref1_XX_NS
     norm_ref1_XX_EW = XX_EW_slice + gain_ref1_XX_EW
+    
+    norm_ref0_YY_NS = YY_NS_slice + gain_ref0_YY_NS
+    norm_ref0_YY_EW = YY_EW_slice + gain_ref0_YY_EW
     norm_ref1_YY_NS = YY_NS_slice + gain_ref1_YY_NS
     norm_ref1_YY_EW = YY_EW_slice + gain_ref1_YY_EW
+   
+    # Difference of power b/w ref0 & ref1 beam model slices
+    delta_ref01_XX_NS = norm_ref0_XX_NS - norm_ref1_XX_NS
+    delta_ref01_XX_EW = norm_ref0_XX_EW - norm_ref1_XX_EW
+    
+    delta_ref01_YY_NS = norm_ref0_YY_NS - norm_ref1_YY_NS
+    delta_ref01_YY_EW = norm_ref0_YY_EW - norm_ref1_YY_EW
    
     # delta powers
     del_pow_ref0_XX_NS = rf0XX_NS[0] - norm_ref0_XX_NS 
     del_pow_ref0_XX_EW = rf0XX_EW[0] - norm_ref0_XX_EW
-    del_pow_ref0_YY_NS = rf0YY_NS[0] - norm_ref0_YY_NS
-    del_pow_ref0_YY_EW = rf0YY_EW[0] - norm_ref0_YY_EW
     del_pow_ref1_XX_NS = rf1XX_NS[0] - norm_ref1_XX_NS
     del_pow_ref1_XX_EW = rf1XX_EW[0] - norm_ref1_XX_EW
+    
+    del_pow_ref0_YY_NS = rf0YY_NS[0] - norm_ref0_YY_NS
+    del_pow_ref0_YY_EW = rf0YY_EW[0] - norm_ref0_YY_EW
     del_pow_ref1_YY_NS = rf1YY_NS[0] - norm_ref1_YY_NS
     del_pow_ref1_YY_EW = rf1YY_EW[0] - norm_ref1_YY_EW
 
     # 3rd order poly fits for residuals
-    za1, fit_ref0_XX_NS = poly_fit(za_NS, del_pow_ref0_XX_NS,rf0XX_NS[0], 3)  
-    za2, fit_ref0_XX_EW = poly_fit(za_EW, del_pow_ref0_XX_EW,rf0XX_EW[0], 3) 
-    za3, fit_ref0_YY_NS = poly_fit(za_NS, del_pow_ref0_YY_NS,rf0YY_NS[0], 3) 
-    za4, fit_ref0_YY_EW = poly_fit(za_EW, del_pow_ref0_YY_EW,rf0YY_EW[0], 3) 
-    za5, fit_ref1_XX_NS = poly_fit(za_NS, del_pow_ref1_XX_NS,rf1XX_NS[0], 3) 
-    za6, fit_ref1_XX_EW = poly_fit(za_EW, del_pow_ref1_XX_EW,rf1XX_EW[0], 3) 
-    za7, fit_ref1_YY_NS = poly_fit(za_NS, del_pow_ref1_YY_NS,rf1YY_NS[0], 3) 
-    za8, fit_ref1_YY_EW = poly_fit(za_EW, del_pow_ref1_YY_EW,rf1YY_EW[0], 3) 
+    #za1, fit_ref0_XX_NS = poly_fit(za_NS, del_pow_ref0_XX_NS,rf0XX_NS[0], 3)  
+    #za2, fit_ref0_XX_EW = poly_fit(za_EW, del_pow_ref0_XX_EW,rf0XX_EW[0], 3) 
+    #za3, fit_ref1_XX_NS = poly_fit(za_NS, del_pow_ref1_XX_NS,rf1XX_NS[0], 3) 
+    #za4, fit_ref1_XX_EW = poly_fit(za_EW, del_pow_ref1_XX_EW,rf1XX_EW[0], 3) 
+    #
+    #za5, fit_ref0_YY_NS = poly_fit(za_NS, del_pow_ref0_YY_NS,rf0YY_NS[0], 3) 
+    #za6, fit_ref0_YY_EW = poly_fit(za_EW, del_pow_ref0_YY_EW,rf0YY_EW[0], 3) 
+    #za7, fit_ref1_YY_NS = poly_fit(za_NS, del_pow_ref1_YY_NS,rf1YY_NS[0], 3) 
+    #za8, fit_ref1_YY_EW = poly_fit(za_EW, del_pow_ref1_YY_EW,rf1YY_EW[0], 3) 
+    
+    fit_ref0_XX_NS = poly_fit(za_NS, del_pow_ref0_XX_NS,rf0XX_NS[0], 3)  
+    fit_ref0_XX_EW = poly_fit(za_EW, del_pow_ref0_XX_EW,rf0XX_EW[0], 3) 
+    fit_ref1_XX_NS = poly_fit(za_NS, del_pow_ref1_XX_NS,rf1XX_NS[0], 3) 
+    fit_ref1_XX_EW = poly_fit(za_EW, del_pow_ref1_XX_EW,rf1XX_EW[0], 3) 
+    
+    fit_ref0_YY_NS = poly_fit(za_NS, del_pow_ref0_YY_NS,rf0YY_NS[0], 3) 
+    fit_ref0_YY_EW = poly_fit(za_EW, del_pow_ref0_YY_EW,rf0YY_EW[0], 3) 
+    fit_ref1_YY_NS = poly_fit(za_NS, del_pow_ref1_YY_NS,rf1YY_NS[0], 3) 
+    fit_ref1_YY_EW = poly_fit(za_EW, del_pow_ref1_YY_EW,rf1YY_EW[0], 3) 
 
 
     plt.style.use('seaborn')
@@ -298,28 +324,29 @@ if __name__=='__main__':
             fig=fig1, sub=221, title='ref0XX NS',
             zen_angle=za_NS, map_slice=rf0XX_NS[0],
             map_error=rf0XX_NS[1], model_slice=norm_ref0_XX_NS,
-            delta_pow=del_pow_ref0_XX_NS, pow_fit=fit_ref0_XX_NS,fit_za=za1, 
+            delta_pow=del_pow_ref0_XX_NS, pow_fit=fit_ref0_XX_NS, 
             slice_label='ref0XX NS', model_label='FEE XX NS')
 
     ax2 = plt_slice(
             fig=fig1, sub=222, title='ref0XX EW',
             zen_angle=za_EW, map_slice=rf0XX_EW[0],
             map_error=rf0XX_EW[1], model_slice=norm_ref0_XX_EW,
-            delta_pow=del_pow_ref0_XX_EW, pow_fit=fit_ref0_XX_EW,fit_za=za2, 
+            delta_pow=del_pow_ref0_XX_EW, pow_fit=fit_ref0_XX_EW,
             slice_label='ref0XX EW', model_label='FEE XX EW')
 
     ax3 = plt_slice(
             fig=fig1, sub=223, title='ref1XX NW',
             zen_angle=za_NS, map_slice=rf1XX_NS[0],
             map_error=rf1XX_NS[1], model_slice=norm_ref1_XX_NS,
-            delta_pow=del_pow_ref1_XX_NS, pow_fit=fit_ref1_XX_NS,fit_za=za5,
+            delta_pow=del_pow_ref1_XX_NS, pow_fit=fit_ref1_XX_NS,
+
             slice_label='ref1XX NS', model_label='FEE XX NS')
 
     ax4 = plt_slice(
             fig=fig1, sub=224, title='ref1XX EW',
             zen_angle=za_EW, map_slice=rf1XX_EW[0],
             map_error=rf1XX_EW[1], model_slice=norm_ref1_XX_EW,
-            delta_pow=del_pow_ref1_XX_EW, pow_fit=fit_ref1_XX_EW,fit_za=za6,
+            delta_pow=del_pow_ref1_XX_EW, pow_fit=fit_ref1_XX_EW,
             slice_label='ref1XX EW', model_label='FEE XX EW')
 
     plt.tight_layout()
@@ -332,28 +359,28 @@ if __name__=='__main__':
             fig=fig2, sub=221, title='ref0YY NS',
             zen_angle=za_NS, map_slice=rf0YY_NS[0],
             map_error=rf0YY_NS[1], model_slice=norm_ref0_YY_NS,
-            delta_pow=del_pow_ref0_YY_NS, pow_fit=fit_ref0_YY_NS,fit_za=za3,
+            delta_pow=del_pow_ref0_YY_NS, pow_fit=fit_ref0_YY_NS,
             slice_label='ref0YY NS', model_label='FEE YY NS')
     
     ax6 = plt_slice(
             fig=fig2, sub=222, title='ref0YY EW',
             zen_angle=za_EW, map_slice=rf0YY_EW[0],
             map_error=rf0YY_EW[1], model_slice=norm_ref0_YY_EW,
-            delta_pow=del_pow_ref0_YY_EW, pow_fit=fit_ref0_YY_EW,fit_za=za4,
+            delta_pow=del_pow_ref0_YY_EW, pow_fit=fit_ref0_YY_EW,
             slice_label='ref0YY EW', model_label='FEE YY EW')
     
     ax7 = plt_slice(
             fig=fig2, sub=223, title='ref1YY NS',
             zen_angle=za_NS, map_slice=rf1YY_NS[0],
             map_error=rf1YY_NS[1], model_slice=norm_ref1_YY_NS,
-            delta_pow=del_pow_ref1_YY_NS, pow_fit=fit_ref1_YY_NS,fit_za=za7,
+            delta_pow=del_pow_ref1_YY_NS, pow_fit=fit_ref1_YY_NS,
             slice_label='ref1YY NS', model_label='FEE YY NS')
     
     ax8 = plt_slice(
             fig=fig2, sub=224, title='ref1YY EW',
             zen_angle=za_EW, map_slice=rf1YY_EW[0],
             map_error=rf1YY_EW[1], model_slice=norm_ref1_YY_EW,
-            delta_pow=del_pow_ref1_YY_EW, pow_fit=fit_ref1_YY_EW,fit_za=za8,
+            delta_pow=del_pow_ref1_YY_EW, pow_fit=fit_ref1_YY_EW,
             slice_label='ref1YY EW', model_label='FEE YY EW')
     
     plt.tight_layout()
