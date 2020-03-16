@@ -72,10 +72,27 @@ def ref_map_slice(out_dir, ref_tile):
     ref_map = map_data['ref_map']
     ref_counter = map_data['ref_counter']
     
+    #### REVERSE THE ORDER. FIRST SLICE, THEN med, mad
+
+
     # compute the median for every pixel array
-    ref_map_med = np.asarray([(np.median(i) if i != [] else np.nan ) for i in ref_map])
-    print(ref_map_med)
-    ref_map_mad = np.asarray([mad(i) for i in ref_map])
+    #ref_map_med = np.asarray([(np.median(i) if i != [] else np.nan ) for i in ref_map])
+    #ref_map_mad = np.asarray([mad(i) for i in ref_map])
+    ref_map_med = np.asarray([(np.nanmedian(i) if i != [] else np.nan ) for i in ref_map])
+    #ref_map_med = np.asarray([(np.nanmean(i) if i != [] else np.nan ) for i in ref_map])
+    
+    ref_map_mad = []
+    for j in ref_map:
+        if j != []:
+            j = np.asarray(j)
+            j = j[~np.isnan(j)]
+            ref_map_mad.append(mad(j))
+        else:
+            ref_map_mad.append(np.nan)
+
+    ref_map_mad = np.asarray(ref_map_mad)
+    
+    ref_map_mad[np.where(ref_map_mad == np.nan)] = np.nanmean(ref_map_mad)
 
     # slice the median map along NS, EW
     ref_med_NS, ref_med_EW = slice_map(ref_map_med)
@@ -86,7 +103,7 @@ def ref_map_slice(out_dir, ref_tile):
     ref_mad_NS, ref_mad_EW = slice_map(ref_map_mad)
     ref_mad_map_NS, _ = ref_mad_NS
     ref_mad_map_EW, _ = ref_mad_EW
-    
+
     NS_data = [ref_med_map_NS, ref_mad_map_NS, za_NS]
     EW_data = [ref_med_map_EW, ref_mad_map_EW, za_EW]
 
@@ -297,21 +314,25 @@ if __name__=='__main__':
 
 
     plt.style.use('seaborn')
+    plt.tight_layout()
     fig1 = plt.figure(figsize=(8,10))
 
     ax1 = plt_slice(fig=fig1, sub=221, title='ref0XX NS', zen_angle=za_NS, map_slice=rf0XX_NS[0],map_error=rf0XX_NS[1], model_slice=norm_ref0_XX_NS,delta_pow=del_pow_ref0_XX_NS, pow_fit=fit_ref0_XX_NS,fit_za=za1, slice_label='ref0XX NS', model_label='FEE XX NS')
     ax2 = plt_slice(fig=fig1, sub=222, title='ref0XX EW', zen_angle=za_EW, map_slice=rf0XX_EW[0],map_error=rf0XX_EW[0], model_slice=norm_ref0_XX_EW,delta_pow=del_pow_ref0_XX_EW, pow_fit=fit_ref0_XX_EW,fit_za=za2, slice_label='ref0XX EW', model_label='FEE XX EW')
     ax3 = plt_slice(fig=fig1, sub=223, title='ref1XX NW', zen_angle=za_NS, map_slice=rf1XX_NS[0],map_error=rf1XX_NS[0], model_slice=norm_ref1_XX_NS,delta_pow=del_pow_ref1_XX_NS, pow_fit=fit_ref1_XX_NS,fit_za=za5, slice_label='ref1XX NS', model_label='FEE XX NS')
     ax4 = plt_slice(fig=fig1, sub=224, title='ref1XX EW', zen_angle=za_EW, map_slice=rf1XX_EW[0],map_error=rf1XX_EW[0], model_slice=norm_ref1_XX_EW,delta_pow=del_pow_ref1_XX_EW, pow_fit=fit_ref1_XX_EW,fit_za=za6, slice_label='ref1XX EW', model_label='FEE XX EW')
+
+    fig1.savefig(f'{out_dir}/XX_slices.png')
     
     fig2 = plt.figure(figsize=(8,10))
     ax5 = plt_slice(fig=fig2, sub=221, title='ref0YY NS', zen_angle=za_NS, map_slice=rf0YY_NS[0],map_error=rf0YY_NS[0], model_slice=norm_ref0_YY_NS,delta_pow=del_pow_ref0_YY_NS, pow_fit=fit_ref0_YY_NS,fit_za=za3, slice_label='ref0YY NS', model_label='FEE YY NS')
     ax6 = plt_slice(fig=fig2, sub=222, title='ref0YY EW', zen_angle=za_EW, map_slice=rf0YY_EW[0],map_error=rf0YY_EW[0], model_slice=norm_ref0_YY_EW,delta_pow=del_pow_ref0_YY_EW, pow_fit=fit_ref0_YY_EW,fit_za=za4, slice_label='ref0YY EW', model_label='FEE YY EW')
     ax7 = plt_slice(fig=fig2, sub=223, title='ref1YY NS', zen_angle=za_NS, map_slice=rf1YY_NS[0],map_error=rf1YY_NS[0], model_slice=norm_ref1_YY_NS,delta_pow=del_pow_ref1_YY_NS, pow_fit=fit_ref1_YY_NS,fit_za=za7, slice_label='ref1YY NS', model_label='FEE YY NS')
     ax8 = plt_slice(fig=fig2, sub=224, title='ref1YY EW', zen_angle=za_EW, map_slice=rf1YY_EW[0],map_error=rf1YY_EW[0], model_slice=norm_ref1_YY_EW,delta_pow=del_pow_ref1_YY_EW, pow_fit=fit_ref1_YY_EW,fit_za=za8, slice_label='ref1YY EW', model_label='FEE YY EW')
+    
+    fig2.savefig(f'{out_dir}/YY_slices.png')
 
 
-    plt.tight_layout()
-    plt.show()
+    #plt.show()
 
 
