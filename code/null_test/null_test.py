@@ -411,7 +411,7 @@ if __name__=='__main__':
 
 
     plt.tight_layout()
-    fig1.savefig(f'{out_dir}/XX_slices.png')
+    fig1.savefig(f'{out_dir}/null_test_XX_slices.png')
    
 
     fig2 = plt.figure(figsize=(8,10))
@@ -459,7 +459,7 @@ if __name__=='__main__':
             beam_label='FEE Null', fit_label='Fit rf0-rf1')
 
     plt.tight_layout()
-    fig2.savefig(f'{out_dir}/YY_slices.png')
+    fig2.savefig(f'{out_dir}/null_test_YY_slices.png')
 
 
 
