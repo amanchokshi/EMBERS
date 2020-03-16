@@ -156,7 +156,7 @@ def poly_fit(x, y, map_data, order):
 
 def plt_slice(
         fig=None, sub=None,
-        title=None, zen_angle=None, map_slice=None,
+        zen_angle=None, map_slice=None,
         map_error=None, model_slice=None, 
         delta_pow=None, pow_fit=None, 
         slice_label=None, model_label=None):
@@ -171,7 +171,6 @@ def plt_slice(
 
     ax.plot(zen_angle,model_slice, color='#c70039', linewidth=1.2, alpha=0.9, label=model_label)
 
-    ax.set_title(title)
     ax.set_ylabel('Power (dB)')
     ax.set_xlabel('Zenith Angle (degrees)')
     ax.legend()
@@ -183,6 +182,31 @@ def plt_slice(
     dax.scatter(zen_angle, delta_pow, marker='.', color='#27296d')
     dax.plot(zen_angle, pow_fit, linewidth=1.2, alpha=0.9, color='#ff8264')
     dax.set_ylabel('Data - Model (dB)')
+
+    return ax
+
+def plt_null_test(
+        fig=None, sub=None, 
+        zen_angle=None, del_pow=None, 
+        del_err=None, del_beam=None, 
+        del_fit=None, null_label=None,
+        beam_label=None, fit_label=None):
+
+    ax = fig.add_subplot(sub)
+    
+    ax.errorbar(
+           zen_angle, del_pow, yerr=del_err, 
+           fmt='.', color='#326765', ecolor='#7da87b',
+           elinewidth=1.2, capsize=1.2, capthick=1.4,
+           alpha=0.9, label=null_label)
+
+    ax.plot(zen_angle,del_beam, color='#c70039', linewidth=1.2, alpha=0.9, label=beam_label)
+    
+    ax.plot(zen_angle,del_fit, color='#ff8264', linewidth=1.2, alpha=0.9, label=fit_label)
+
+    ax.set_ylabel('Power (dB)')
+    ax.set_xlabel('Zenith Angle (degrees)')
+    ax.legend()
 
     return ax
 
@@ -230,6 +254,18 @@ if __name__=='__main__':
     rf1XX_NS, rf1XX_EW = ref_map_slice(out_dir, ref_tiles[2])
     rf1YY_NS, rf1YY_EW = ref_map_slice(out_dir, ref_tiles[3])
 
+    # Null test diff in power b/w rf0 & rf1
+    ref01_XX_NS = rf0XX_NS[1] - rf1XX_NS[1]
+    ref01_XX_EW = rf0XX_EW[1] - rf1XX_EW[1]
+    ref01_YY_NS = rf0YY_NS[1] - rf1YY_NS[1]
+    ref01_YY_EW = rf0YY_EW[1] - rf1YY_EW[1]
+    
+    # Error propogation in null test
+    error_ref01_XX_NS = np.sqrt((rf0XX_NS[1])**2 + (rf1XX_NS[1])**2 )
+    error_ref01_XX_EW = np.sqrt((rf0XX_EW[1])**2 + (rf1XX_EW[1])**2 )
+    error_ref01_YY_NS = np.sqrt((rf0YY_NS[1])**2 + (rf1YY_NS[1])**2 )
+    error_ref01_YY_EW = np.sqrt((rf0YY_EW[1])**2 + (rf1YY_EW[1])**2 )
+    
     # Load reference FEE model
     ref_fee_model = np.load(ref_model, allow_pickle=True)
     beam_XX = ref_fee_model['XX']
@@ -278,34 +314,24 @@ if __name__=='__main__':
     norm_ref1_YY_EW = YY_EW_slice + gain_ref1_YY_EW
    
     # Difference of power b/w ref0 & ref1 beam model slices
-    delta_ref01_XX_NS = norm_ref0_XX_NS - norm_ref1_XX_NS
-    delta_ref01_XX_EW = norm_ref0_XX_EW - norm_ref1_XX_EW
-    
-    delta_ref01_YY_NS = norm_ref0_YY_NS - norm_ref1_YY_NS
-    delta_ref01_YY_EW = norm_ref0_YY_EW - norm_ref1_YY_EW
+    beam_ref01_XX_NS = XX_NS_slice - XX_NS_slice
+    beam_ref01_XX_EW = XX_EW_slice - XX_EW_slice
+    beam_ref01_YY_NS = YY_NS_slice - YY_NS_slice
+    beam_ref01_YY_EW = YY_EW_slice - YY_EW_slice
    
     # delta powers
     del_pow_ref0_XX_NS = rf0XX_NS[0] - norm_ref0_XX_NS 
     del_pow_ref0_XX_EW = rf0XX_EW[0] - norm_ref0_XX_EW
     del_pow_ref1_XX_NS = rf1XX_NS[0] - norm_ref1_XX_NS
     del_pow_ref1_XX_EW = rf1XX_EW[0] - norm_ref1_XX_EW
-    
+   
     del_pow_ref0_YY_NS = rf0YY_NS[0] - norm_ref0_YY_NS
     del_pow_ref0_YY_EW = rf0YY_EW[0] - norm_ref0_YY_EW
     del_pow_ref1_YY_NS = rf1YY_NS[0] - norm_ref1_YY_NS
     del_pow_ref1_YY_EW = rf1YY_EW[0] - norm_ref1_YY_EW
 
+
     # 3rd order poly fits for residuals
-    #za1, fit_ref0_XX_NS = poly_fit(za_NS, del_pow_ref0_XX_NS,rf0XX_NS[0], 3)  
-    #za2, fit_ref0_XX_EW = poly_fit(za_EW, del_pow_ref0_XX_EW,rf0XX_EW[0], 3) 
-    #za3, fit_ref1_XX_NS = poly_fit(za_NS, del_pow_ref1_XX_NS,rf1XX_NS[0], 3) 
-    #za4, fit_ref1_XX_EW = poly_fit(za_EW, del_pow_ref1_XX_EW,rf1XX_EW[0], 3) 
-    #
-    #za5, fit_ref0_YY_NS = poly_fit(za_NS, del_pow_ref0_YY_NS,rf0YY_NS[0], 3) 
-    #za6, fit_ref0_YY_EW = poly_fit(za_EW, del_pow_ref0_YY_EW,rf0YY_EW[0], 3) 
-    #za7, fit_ref1_YY_NS = poly_fit(za_NS, del_pow_ref1_YY_NS,rf1YY_NS[0], 3) 
-    #za8, fit_ref1_YY_EW = poly_fit(za_EW, del_pow_ref1_YY_EW,rf1YY_EW[0], 3) 
-    
     fit_ref0_XX_NS = poly_fit(za_NS, del_pow_ref0_XX_NS,rf0XX_NS[0], 3)  
     fit_ref0_XX_EW = poly_fit(za_EW, del_pow_ref0_XX_EW,rf0XX_EW[0], 3) 
     fit_ref1_XX_NS = poly_fit(za_NS, del_pow_ref1_XX_NS,rf1XX_NS[0], 3) 
@@ -317,25 +343,33 @@ if __name__=='__main__':
     fit_ref1_YY_EW = poly_fit(za_EW, del_pow_ref1_YY_EW,rf1YY_EW[0], 3) 
 
 
+    # Difference of power b/w ref0 & ref1 fits
+    fit_ref01_XX_NS = fit_ref0_XX_NS - fit_ref1_XX_NS
+    fit_ref01_XX_EW = fit_ref0_XX_EW - fit_ref1_XX_EW
+    fit_ref01_YY_NS = fit_ref0_YY_NS - fit_ref1_YY_NS
+    fit_ref01_YY_EW = fit_ref0_YY_EW - fit_ref1_YY_EW
+
+
+
     plt.style.use('seaborn')
     fig1 = plt.figure(figsize=(8,10))
 
     ax1 = plt_slice(
-            fig=fig1, sub=221, title='ref0XX NS',
+            fig=fig1, sub=321,
             zen_angle=za_NS, map_slice=rf0XX_NS[0],
             map_error=rf0XX_NS[1], model_slice=norm_ref0_XX_NS,
             delta_pow=del_pow_ref0_XX_NS, pow_fit=fit_ref0_XX_NS, 
             slice_label='ref0XX NS', model_label='FEE XX NS')
 
     ax2 = plt_slice(
-            fig=fig1, sub=222, title='ref0XX EW',
+            fig=fig1, sub=322,
             zen_angle=za_EW, map_slice=rf0XX_EW[0],
             map_error=rf0XX_EW[1], model_slice=norm_ref0_XX_EW,
             delta_pow=del_pow_ref0_XX_EW, pow_fit=fit_ref0_XX_EW,
             slice_label='ref0XX EW', model_label='FEE XX EW')
 
     ax3 = plt_slice(
-            fig=fig1, sub=223, title='ref1XX NW',
+            fig=fig1, sub=323,
             zen_angle=za_NS, map_slice=rf1XX_NS[0],
             map_error=rf1XX_NS[1], model_slice=norm_ref1_XX_NS,
             delta_pow=del_pow_ref1_XX_NS, pow_fit=fit_ref1_XX_NS,
@@ -343,11 +377,26 @@ if __name__=='__main__':
             slice_label='ref1XX NS', model_label='FEE XX NS')
 
     ax4 = plt_slice(
-            fig=fig1, sub=224, title='ref1XX EW',
+            fig=fig1, sub=324,
             zen_angle=za_EW, map_slice=rf1XX_EW[0],
             map_error=rf1XX_EW[1], model_slice=norm_ref1_XX_EW,
             delta_pow=del_pow_ref1_XX_EW, pow_fit=fit_ref1_XX_EW,
             slice_label='ref1XX EW', model_label='FEE XX EW')
+
+    ax5 = plt_null_test(
+            fig=fig1,sub=325, 
+            zen_angle=za_NS, del_pow=ref01_XX_NS, 
+            del_err=error_ref01_XX_NS, del_beam=beam_ref01_XX_NS, 
+            del_fit=fit_ref01_XX_NS, null_label='NS rf0-rf1', 
+            beam_label='FEE Null', fit_label='Fit rf0-rf1') 
+    
+    ax6 = plt_null_test(
+            fig=fig1,sub=326, 
+            zen_angle=za_EW, del_pow=ref01_XX_EW, 
+            del_err=error_ref01_XX_EW, del_beam=beam_ref01_XX_EW, 
+            del_fit=fit_ref01_XX_EW, null_label='EW rf0-rf1', 
+            beam_label='FEE Null', fit_label='Fit rf0-rf1')
+
 
     plt.tight_layout()
     fig1.savefig(f'{out_dir}/XX_slices.png')
@@ -355,34 +404,48 @@ if __name__=='__main__':
 
     fig2 = plt.figure(figsize=(8,10))
     
-    ax5 = plt_slice(
-            fig=fig2, sub=221, title='ref0YY NS',
+    ax7 = plt_slice(
+            fig=fig2, sub=321,
             zen_angle=za_NS, map_slice=rf0YY_NS[0],
             map_error=rf0YY_NS[1], model_slice=norm_ref0_YY_NS,
             delta_pow=del_pow_ref0_YY_NS, pow_fit=fit_ref0_YY_NS,
             slice_label='ref0YY NS', model_label='FEE YY NS')
     
-    ax6 = plt_slice(
-            fig=fig2, sub=222, title='ref0YY EW',
+    ax8 = plt_slice(
+            fig=fig2, sub=322,
             zen_angle=za_EW, map_slice=rf0YY_EW[0],
             map_error=rf0YY_EW[1], model_slice=norm_ref0_YY_EW,
             delta_pow=del_pow_ref0_YY_EW, pow_fit=fit_ref0_YY_EW,
             slice_label='ref0YY EW', model_label='FEE YY EW')
     
-    ax7 = plt_slice(
-            fig=fig2, sub=223, title='ref1YY NS',
+    ax9 = plt_slice(
+            fig=fig2, sub=323,
             zen_angle=za_NS, map_slice=rf1YY_NS[0],
             map_error=rf1YY_NS[1], model_slice=norm_ref1_YY_NS,
             delta_pow=del_pow_ref1_YY_NS, pow_fit=fit_ref1_YY_NS,
             slice_label='ref1YY NS', model_label='FEE YY NS')
     
-    ax8 = plt_slice(
-            fig=fig2, sub=224, title='ref1YY EW',
+    ax10 = plt_slice(
+            fig=fig2, sub=324,
             zen_angle=za_EW, map_slice=rf1YY_EW[0],
             map_error=rf1YY_EW[1], model_slice=norm_ref1_YY_EW,
             delta_pow=del_pow_ref1_YY_EW, pow_fit=fit_ref1_YY_EW,
             slice_label='ref1YY EW', model_label='FEE YY EW')
     
+    ax11 = plt_null_test(
+            fig=fig2,sub=325, 
+            zen_angle=za_NS, del_pow=ref01_YY_NS, 
+            del_err=error_ref01_YY_NS, del_beam=beam_ref01_YY_NS, 
+            del_fit=fit_ref01_YY_NS, null_label='NS rf0-rf1', 
+            beam_label='FEE Null', fit_label='Fit rf0-rf1')
+    
+    ax12 = plt_null_test(
+            fig=fig2,sub=326, 
+            zen_angle=za_EW, del_pow=ref01_YY_EW, 
+            del_err=error_ref01_YY_EW, del_beam=beam_ref01_YY_EW, 
+            del_fit=fit_ref01_YY_EW, null_label='EW rf0-rf1', 
+            beam_label='FEE Null', fit_label='Fit rf0-rf1')
+
     plt.tight_layout()
     fig2.savefig(f'{out_dir}/YY_slices.png')
 
