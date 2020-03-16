@@ -172,7 +172,7 @@ def plt_slice(
     ax.plot(zen_angle,model_slice, color='#c70039', linewidth=1.2, alpha=0.9, label=model_label)
 
     ax.set_ylabel('Power (dB)')
-    ax.set_xlabel('Zenith Angle (degrees)')
+    #ax.set_xlabel('Zenith Angle (degrees)')
     ax.legend()
 
     divider = make_axes_locatable(ax)
@@ -182,6 +182,7 @@ def plt_slice(
     dax.scatter(zen_angle, delta_pow, marker='.', color='#27296d')
     dax.plot(zen_angle, pow_fit, linewidth=1.2, alpha=0.9, color='#ff8264')
     dax.set_ylabel('Data - Model (dB)')
+    dax.set_xticklabels([])
 
     return ax
 
@@ -218,6 +219,7 @@ if __name__=='__main__':
     import numpy as np
     from pathlib import Path
     import matplotlib.pyplot as plt
+    import matplotlib.gridspec as gs
     from mpl_toolkits.axes_grid1 import make_axes_locatable
     from scipy.stats import median_absolute_deviation as mad
 
