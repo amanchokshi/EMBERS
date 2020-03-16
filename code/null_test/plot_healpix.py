@@ -85,7 +85,9 @@ if __name__=='__main__':
     args = parser.parse_args()
     
     out_dir = Path(args.out_dir)
-    
+
+
+    # Plot beam map
     for f in out_dir.glob('*.npz'):
         f_name, _ = f.name.split('.')
         ref, _, _ = f_name.split('_')
@@ -106,6 +108,8 @@ if __name__=='__main__':
 
         plt.savefig(f'{out_dir}/{f_name}.png',bbox_inches='tight')
 
+
+    # Plot MAD
     for f in out_dir.glob('*.npz'):
         f_name, _ = f.name.split('.')
         ref, _, _ = f_name.split('_')
@@ -117,7 +121,6 @@ if __name__=='__main__':
         
         # compute the median for every pixel array
         ref_map_med = [(np.median(i) if i != [] else np.nan ) for i in ref_map]
-
 
         ref_map_mad = []
         for j in ref_map:
@@ -137,8 +140,24 @@ if __name__=='__main__':
         vmax = np.nanmax(ref_map_mad)
 
         fig = plt.figure(figsize=(8,10))
-        fig.suptitle(f'Reference Beam Healpix: {ref}', fontsize=16)
+        fig.suptitle(f'Healpix MAD: {ref}', fontsize=16)
         plot_healpix(data_map=np.asarray(ref_map_mad),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
 
         plt.savefig(f'{out_dir}/{f_name}_mad.png',bbox_inches='tight')
 
+    
+    # Plot counts in pix
+    for f in out_dir.glob('*.npz'):
+        f_name, _ = f.name.split('.')
+        ref, _, _ = f_name.split('_')
+        
+        # load data from map .npz file
+        map_data = np.load(f, allow_pickle=True)
+        ref_counter = map_data['ref_counter']
+        
+        fig = plt.figure(figsize=(8,10))
+        fig.suptitle(f'Healpix Pixel Counts: {ref}', fontsize=16)
+        plot_healpix(data_map=np.asarray(ref_counter),sub=(1,1,1), cmap=cmap, vmin=0, vmax=2400)
+
+        plt.savefig(f'{out_dir}/{f_name}_counts.png',bbox_inches='tight')
+    
