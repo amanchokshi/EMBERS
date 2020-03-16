@@ -65,7 +65,7 @@ def slice_map(hp_map):
 
 
 def ref_map_slice(out_dir, ref_tile):
-    '''slices ref healpix map along NS, EW'''
+    '''slices ref healpix map along NS & EW'''
     
     # load data from map .npz file
     map_data = np.load(f'{out_dir}/{ref_tile}_map_healpix.npz', allow_pickle=True)
@@ -118,6 +118,9 @@ def rotate(angle=None,healpix_array=None,savetag=None,flip=False):
 
 # chisquared minimization to best fit map to data
 def fit_gain(map_data=None,map_error=None,beam=None):
+    '''Fit the beam model to the measured data using
+    chisquared minimization'''
+
     bad_values = np.isnan(map_data)
     map_data = map_data[~bad_values]
     map_error = map_error[~bad_values]
@@ -161,6 +164,11 @@ def plt_slice(
         delta_pow=None, pow_fit=None, 
         slice_label=None, model_label=None):
 
+    '''Plot a slice of the beam, with measured
+    data, errorbars, and fit the simulated beam
+    to the data. Also plot the diff b/w data and
+    the model'''
+
     ax = fig.add_subplot(sub)
 
     ax.errorbar(
@@ -192,6 +200,8 @@ def plt_null_test(
         del_err=None, del_beam=None, 
         del_fit=None, null_label=None,
         beam_label=None, fit_label=None):
+
+    '''Plot graphs for a null test'''
 
     ax = fig.add_subplot(sub)
     
