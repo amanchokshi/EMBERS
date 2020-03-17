@@ -74,14 +74,24 @@ for i in range(len(start_gps)):
 
 good_idx = np.where(np.asarray(pointings) != None)[0]
 
-start_gps   = list(np.asarray(start_gps)[good_idx]) 
-stop_gps    = list(np.asarray(stop_gps)[good_idx])
-obs_length  = list(np.asarray(obs_length)[good_idx])
-pointings   = list(np.asarray(pointings)[good_idx]) 
+start_gps   = np.asarray(start_gps)[good_idx].tolist()
+stop_gps    = np.asarray(stop_gps)[good_idx].tolist()
+obs_length  = np.asarray(obs_length)[good_idx].tolist()
+pointings   = np.asarray(pointings)[good_idx].tolist()
 
 
 
-for i in range(len(start_gps)):
-    print(f'{pointings[i]}: {start_gps[i]}: {stop_gps[i]}: {obs_length[i]}')
+#for i in range(len(start_gps)):
+#    print(f'{pointings[i]}: {start_gps[i]}: {stop_gps[i]}: {obs_length[i]}')
 
 
+# Create dictionary to be saved to json
+pointing_list = {}
+pointing_list['grid_pt'] = pointings
+pointing_list['start_gps'] = start_gps
+pointing_list['stop_gps'] = stop_gps
+pointing_list['obs_length'] = obs_length
+
+
+with open('{}/ultimate_pointing_times.json'.format(meta_dir), 'w') as outfile:
+    json.dump(pointing_list, outfile, indent=4)
