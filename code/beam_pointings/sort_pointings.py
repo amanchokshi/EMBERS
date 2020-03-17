@@ -61,10 +61,83 @@ for f in files:
                     obs_length.append(stop - start)
                     pointings.append(pointing)
 
-for i in range(len(start_gps)):
-    print(f'{pointings[i]}: {start_gps[i]}: {stop_gps[i]}: {obs_length[i]}')
+#for i in range(len(start_gps)):
+#    print(f'{pointings[i]}: {start_gps[i]}: {stop_gps[i]}: {obs_length[i]}')
+
+begin_gps = []
+end_gps = []
+obs_len = []
+obs_pointing = []
+
+global temp_start
+global temp_stop
+global del_time
+global poi
+
+temp_start = 0
+temp_stop = 0
+del_time = 0
+poi = 0
+
+for j in range(len(start_gps)):
+    if j != len(start_gps)-1:
+
+        
+        # times not continuous
+        if ((start_gps[j] != start_gps[j+1]) or (pointings[j] != pointings[j+1])):
+                
+            begin_gps.append(start_gps[j])
+            end_gps.append(stop_gps[j])
+            obs_len.append(stop_gps[j]-start_gps[j])
+            obs_pointing.append(pointings[j])
+    
+            if temp_stop != 0:
+                print(del_time)
+                begin_gps.append(temp_start)
+                end_gps.append(temp_stop)
+                obs_len.append(del_time)
+                obs_pointing.append(poi)
+                temp_start = 0
+                temp_stop = 0
+                del_time = 0
+                poi = 0
+            
+        else:
+            if temp_start == 0:
+                print('helllooo')
+                temp_start = start_gps[j]
+                temp_stop = stop_gps[j+1]
+                del_time = stop_gps[j+1] - start_gps[j]
+                print(del_time)
+                poi = pointings[j]
+            else:
+                temp_stop = stop_gps[j+1] 
+                del_time += (stop_gps[j+1] - start_gps[j])
 
 
+#for i in range(len(begin_gps)):
+#    print(f'{obs_pointing[i]}: {begin_gps[i]}: {end_gps[i]}: {obs_length[i]}')
+
+
+
+
+
+
+#p = np.asarray(pointings)
+#chan_idx = np.where(np.roll(p,1)!=p)[0]
+#
+#for i in range(len(chan_idx)):
+#    if i != (len(chan_idx)-1):
+#        print(chan_idx[i], chan_idx[(i+1)])
+#
+#print(len(p)-1)
+
+
+
+#for i in range(len(start_gps)):
+#    print(f'{pointings[i]}: {start_gps[i]}: {stop_gps[i]}: {obs_length[i]}')
+
+############################# YUCKY ###################################
 #begin_gps = []
 #end_gps = []
 #obs_length = []
