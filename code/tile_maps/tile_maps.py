@@ -15,6 +15,7 @@ from sat_channels import time_tree, savgol_interp, time_filter
 
 # Custom spectral colormap
 sys.path.append('../decode_rf_data')
+from rf_data import tile_names
 from colormap import spectral
 cmap = spectral()
 
@@ -50,21 +51,34 @@ if __name__=='__main__':
     
     args = parser.parse_args()
     
-    align_dir =         args.align_dir
-    chrono_dir =        args.chrono_dir
-    start_date =        args.start_date
-    stop_date =         args.stop_date
-    out_dir =           args.out_dir
-    chan_map =          args.chan_map
-    noi_thresh =        args.noi_thresh
-    sat_thresh =        args.sat_thresh
-    nside =             args.nside
+    start_date        = args.start_date
+    stop_date         = args.stop_date
+    chan_map          = args.chan_map
+    noi_thresh        = args.noi_thresh
+    sat_thresh        = args.sat_thresh
+    nside             = args.nside
+    
+    align_dir         = Path(args.align_dir)
+    chrono_dir        = Path(args.chrono_dir)
+    out_dir           = Path(args.out_dir)
 
     # Import list of Norad catalogue IDs
     sat_list = [id for id in sat_ids.norad_ids.values()]
-    
+
+    # Tile names
+    tile_n  = tile_names()
+    refs    = tile_n[:4]
+    tiles   = tile_n[4:]
+    refx    = refs[::2]
+    refy    = refs[1::2]
+
     # Read channel map file
     with open(chan_map) as map:
         channel_map = json.load(map)
 
-    print(channel_map)
+    # dates: list of days
+    # date_time = list of 30 min observation windows
+    dates, date_time = time_tree(start_date, stop_date)
+    for day in range(len(dates)):
+        for window in range(len(date_time[day])):
+            #print(date_time[day][window])
