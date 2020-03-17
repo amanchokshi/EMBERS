@@ -61,8 +61,8 @@ for f in files:
                     obs_length.append(stop - start)
                     pointings.append(pointing)
 
-#for i in range(len(start_gps)):
-#    print(f'{start_gps[i]}: {stop_gps[i]}: {pointings[i]}: {obs_length[i]}')
+for i in range(len(start_gps)):
+    print(f'{start_gps[i]}: {stop_gps[i]}: {pointings[i]}: {obs_length[i]}')
 
 # if the stop time of one obs, and the start time of the next obs are same, they are consevutive.
 # if they also have the pointing, let us combine them. To do this, create new start, stop list, 
@@ -84,8 +84,8 @@ p_0 = pointings[:-1]
 
 good_idx = np.where((np.asarray(start_1) == np.asarray(stop_0)) & (np.asarray(p_1) == np.asarray(p_0)))[0]
 
-for i in good_idx:
-    print(i)
+#for i in good_idx:
+#    print(i)
 
 
 
