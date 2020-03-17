@@ -51,12 +51,15 @@ for f in files:
                     stop = data[i+1][0]
                 else:
                     stop = data[i][1]
+
+                length = stop - start
+
+                if length >= 120:
                 
-                start_gps.append(start)
-                stop_gps.append(stop)
-                obs_length.append(stop - start)
-                pointings.append(pointing)
-                #print(f'{stop - start}: {start}: {stop}: {name}: {pointing}')
+                    start_gps.append(start)
+                    stop_gps.append(stop)
+                    obs_length.append(stop - start)
+                    pointings.append(pointing)
 
 ## CAUTION
 ## Let's find where the pointings array changes values. Basically, I want to integrate all obs with consecutive pointings
