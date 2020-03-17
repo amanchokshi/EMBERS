@@ -19,7 +19,9 @@ stop_stop = []
 obs_name = []
 pointings = []
 
-sweet_points = [0, 2, 4, None]
+point_0 = ['All_0', 'Zenith_Test']
+point_2 = ['EOR_Point_2', 'EOR_Point_2_Delays0,1,2,3,0,1,2,3,0,1,2,3,0,1,2,3_Ch100']
+point_4 = ['EOR_Point_4', 'EOR_Point_4_Delays3,2,1,0,3,2,1,0,3,2,1,0,3,2,1,0_Ch100']
 
 files = meta_dir.glob('pointings*.json')
 
@@ -37,5 +39,15 @@ for f in files:
             else:
                 stop = data[i][1]
             
-            if pointing in sweet_points:
-                print(f'{data[i][0]}: {data[i][1]}: {data[i][2]}: {data[i][-1]}')
+            # filter data by pointing
+            if pointing in [0, 2, 4, None]:
+                if name in point_0:
+                    pointing = 0
+                elif name in point_2:
+                    pointing = 2
+                elif name in point_4:
+                    pointing = 4
+                else:
+                    pass
+                    
+                print(f'{stop - start}: {start}: {stop}: {name}: {pointing}')
