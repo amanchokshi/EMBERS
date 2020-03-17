@@ -69,8 +69,11 @@ if __name__=='__main__':
     tile_n  = tile_names()
     refs    = tile_n[:4]
     tiles   = tile_n[4:]
+
     refx    = refs[::2]
     refy    = refs[1::2]
+    tilesx  = tiles[::2]
+    tilesy  = tiles[1::2]
 
     # Read channel map file
     with open(chan_map) as map:
@@ -81,4 +84,9 @@ if __name__=='__main__':
     dates, date_time = time_tree(start_date, stop_date)
     for day in range(len(dates)):
         for window in range(len(date_time[day])):
+            for x in tilesx:
+                if Path(f'{align_dir}/{dates[day]}/{date_time[day][window]}/rf0XX_{x}_{date_time[day][window]}_aligned.npz').is_file():
+                    print(f'rf0XX_{x}_{date_time[day][window]}_aligned.npz exists')
+                else:
+                    print(f'rf0XX_{x}_{date_time[day][window]}_aligned.npz missing')
             #print(date_time[day][window])
