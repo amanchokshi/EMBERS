@@ -280,8 +280,6 @@ We now compare corresponding EW and NS slices of both reference antennas. The fo
 &nbsp;
 ### Beam Pointings
 
-##### TODO: Check this whole section. Needs to be perfect!
-
 The MWA Telescope points its beam in different directions by giving each of its 16 dipoles a different delay. These pointings are quantised, with 181 discrete pointings available, each of which is given a unique 'Grid-pointing' number.  
 
 It is important to know where the telescope is pointing at all times, because we will be making individual beam maps for each pointing. This metadata is available at [http://ws.mwatelescope.org](http://ws.mwatelescope.org/metadata/find). Metadata form the MWA telescope can be downloaded by following these steps.
@@ -344,8 +342,8 @@ python plot_pointings.py
 </p>
 
 
-### Divide Out Satellites
+### Tile Maps
 
-# TODO: Sort data by gridpointing
-# TODO: Figure out how to read MWA beam
-# TODO: Finish this 
+##### TODO: Sort data by gridpointing
+##### TODO: Figure out how to read MWA beam
+##### TODO: Finish this 
