@@ -32,12 +32,6 @@ for f in files:
             name = data[i][2]
             pointing = data[i][-1]
             start = data[i][0]
-            if i != (len(data)-1):
-                # Telescope pointing remains constant till it is changed
-                # So, stop time is the start of next observation
-                stop = data[i+1][1]
-            else:
-                stop = data[i][1]
             
             # filter data by pointing
             if name in point_0:
@@ -50,11 +44,30 @@ for f in files:
                 pass
             
             if pointing in [0, 2, 4]:
+            
+                if i != (len(data)-1):
+                # Telescope pointing remains constant till it is changed
+                # So, stop time is the start of next observation
+                    stop = data[i+1][0]
+                else:
+                    stop = data[i][1]
+                
                 start_gps.append(start)
                 stop_gps.append(stop)
                 obs_length.append(stop - start)
                 pointings.append(pointing)
                 #print(f'{stop - start}: {start}: {stop}: {name}: {pointing}')
 
-for i in range(len(stop_gps)):
+## CAUTION
+## Let's find where the pointings array changes values. Basically, I want to integrate all obs with consecutive pointings
+## The code below works only if the first and last pointings aren't the same. If they are the same, the index of the first 
+## element won't be returned
+#p_changes = np.where(np.roll(pointings,1)!=pointings)[0]
+
+#for i in range(len(start_gps)):
+#    if i != (len(start_gps)-1):
+#        if ((stop_gps[i] == start_gps[i+1]) and (pointings[i] == pointings[i+1])):
+
+for i in range(len(start_gps)):
     print(f'{start_gps[i]}: {stop_gps[i]}: {pointings[i]}: {obs_length[i]}')
+
