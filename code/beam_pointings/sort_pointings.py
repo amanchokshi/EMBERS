@@ -61,16 +61,34 @@ for f in files:
                     obs_length.append(stop - start)
                     pointings.append(pointing)
 
-## CAUTION
-## Let's find where the pointings array changes values. Basically, I want to integrate all obs with consecutive pointings
-## The code below works only if the first and last pointings aren't the same. If they are the same, the index of the first 
-## element won't be returned
-#p_changes = np.where(np.roll(pointings,1)!=pointings)[0]
-
 #for i in range(len(start_gps)):
-#    if i != (len(start_gps)-1):
-#        if ((stop_gps[i] == start_gps[i+1]) and (pointings[i] == pointings[i+1])):
+#    print(f'{start_gps[i]}: {stop_gps[i]}: {pointings[i]}: {obs_length[i]}')
 
-for i in range(len(start_gps)):
-    print(f'{start_gps[i]}: {stop_gps[i]}: {pointings[i]}: {obs_length[i]}')
+# if the stop time of one obs, and the start time of the next obs are same, they are consevutive.
+# if they also have the pointing, let us combine them. To do this, create new start, stop list, 
+# with corresponding pointing lists
+
+# remove first element
+start_1 = start_gps[1:]
+p_1 = pointings[1:]
+
+# remove last element
+stop_0 = stop_gps[:-1]
+p_0 = pointings[:-1]
+
+#consecutive_obs = np.where(np.asarray(start_1) == np.asarray(stop_0))
+#consecutive_poi =  np.where(np.asarray(p_1) == np.asarray(p_0)) 
+#
+#print(len(consecutive_obs[0]))
+#print(len(consecutive_poi[0]))
+
+good_idx = np.where((np.asarray(start_1) == np.asarray(stop_0)) & (np.asarray(p_1) == np.asarray(p_0)))[0]
+
+for i in good_idx:
+    print(i)
+
+
+
+
+
 
