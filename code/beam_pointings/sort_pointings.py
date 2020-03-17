@@ -61,8 +61,27 @@ for f in files:
                     obs_length.append(stop - start)
                     pointings.append(pointing)
 
+#for i in range(len(start_gps)):
+#    print(f'{pointings[i]}: {start_gps[i]}: {stop_gps[i]}: {obs_length[i]}')
+
+for i in range(len(start_gps)):
+    if i != len(start_gps)-1:
+        if ((stop_gps[i] == start_gps[i+1]) and (pointings[i] == pointings[i+1])):
+            start_gps[i+1] = start_gps[i]
+            obs_length[i+1] += obs_length[i]
+            
+            pointings[i] = None
+
+good_idx = np.where(np.asarray(pointings) != None)[0]
+
+start_gps   = list(np.asarray(start_gps)[good_idx]) 
+stop_gps    = list(np.asarray(stop_gps)[good_idx])
+obs_length  = list(np.asarray(obs_length)[good_idx])
+pointings   = list(np.asarray(pointings)[good_idx]) 
+
+
+
 for i in range(len(start_gps)):
     print(f'{pointings[i]}: {start_gps[i]}: {stop_gps[i]}: {obs_length[i]}')
-
 
 
