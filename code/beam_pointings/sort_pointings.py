@@ -33,7 +33,8 @@ for f in files:
             pointing = data[i][-1]
             start = data[i][0]
             
-            # filter data by pointing
+            # Many obs are named None, but their title indicates their true pointing
+            # These are mostly obs which Andrew Williams schduled for this experiment
             if name in point_0:
                 pointing = 0
             elif name in point_2:
@@ -43,6 +44,7 @@ for f in files:
             else:
                 pass
             
+            # Filter obs by passes
             if pointing in [0, 2, 4]:
             
                 if i != (len(data)-1):
@@ -61,9 +63,9 @@ for f in files:
                     obs_length.append(stop - start)
                     pointings.append(pointing)
 
-#for i in range(len(start_gps)):
-#    print(f'{pointings[i]}: {start_gps[i]}: {stop_gps[i]}: {obs_length[i]}')
 
+
+# if consecutive obs have same pointing, combine them.
 for i in range(len(start_gps)):
     if i != len(start_gps)-1:
         if ((stop_gps[i] == start_gps[i+1]) and (pointings[i] == pointings[i+1])):
@@ -72,20 +74,15 @@ for i in range(len(start_gps)):
             
             pointings[i] = None
 
-good_idx = np.where(np.asarray(pointings) != None)[0]
-
+# Apply mask, couldn't think of a better way to implement this
+good_idx    = np.where(np.asarray(pointings) != None)[0]
 start_gps   = np.asarray(start_gps)[good_idx].tolist()
 stop_gps    = np.asarray(stop_gps)[good_idx].tolist()
 obs_length  = np.asarray(obs_length)[good_idx].tolist()
 pointings   = np.asarray(pointings)[good_idx].tolist()
 
 
-
-#for i in range(len(start_gps)):
-#    print(f'{pointings[i]}: {start_gps[i]}: {stop_gps[i]}: {obs_length[i]}')
-
-
-# Create dictionary to be saved to json
+# Create dictionary to be saved to json, for plotting
 pointing_list = {}
 pointing_list['grid_pt'] = pointings
 pointing_list['start_gps'] = start_gps
