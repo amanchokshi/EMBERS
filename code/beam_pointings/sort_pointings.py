@@ -14,10 +14,10 @@ parser.add_argument('--meta_dir', metavar='\b', default='./../../outputs/beam_po
 args = parser.parse_args()
 meta_dir = Path(args.meta_dir)
 
-start_gps = []
-stop_stop = []
-obs_name = []
-pointings = []
+start_gps   = []
+stop_gps    = []
+obs_length  = []
+pointings   = []
 
 point_0 = ['All_0', 'Zenith_Test']
 point_2 = ['EOR_Point_2', 'EOR_Point_2_Delays0,1,2,3,0,1,2,3,0,1,2,3,0,1,2,3_Ch100']
@@ -40,14 +40,21 @@ for f in files:
                 stop = data[i][1]
             
             # filter data by pointing
-            if pointing in [0, 2, 4, None]:
-                if name in point_0:
-                    pointing = 0
-                elif name in point_2:
-                    pointing = 2
-                elif name in point_4:
-                    pointing = 4
-                else:
-                    pass
-                    
-                print(f'{stop - start}: {start}: {stop}: {name}: {pointing}')
+            if name in point_0:
+                pointing = 0
+            elif name in point_2:
+                pointing = 2
+            elif name in point_4:
+                pointing = 4
+            else:
+                pass
+            
+            if pointing in [0, 2, 4]:
+                start_gps.append(start)
+                stop_gps.append(stop)
+                obs_length.append(stop - start)
+                pointings.append(pointing)
+                #print(f'{stop - start}: {start}: {stop}: {name}: {pointing}')
+
+for i in range(len(stop_gps)):
+    print(f'{start_gps[i]}: {stop_gps[i]}: {pointings[i]}: {obs_length[i]}')
