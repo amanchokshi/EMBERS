@@ -19,7 +19,7 @@ stop_stop = []
 obs_name = []
 pointings = []
 
-sweet_points = [0, 2, 4]
+sweet_points = [0, 2, 4, None]
 
 files = meta_dir.glob('pointings*.json')
 
@@ -27,9 +27,15 @@ for f in files:
     with open(f) as table:
         data = json.load(table)
         for i in range(len(data)):
-            start = data[i][0]
-            stop = data[i][1]
             name = data[i][2]
             pointing = data[i][-1]
+            start = data[i][0]
+            if i != (len(data)-1):
+                # Telescope pointing remains constant till it is changed
+                # So, stop time is the start of next observation
+                stop = data[i+1][1]
+            else:
+                stop = data[i][1]
+            
             if pointing in sweet_points:
                 print(f'{data[i][0]}: {data[i][1]}: {data[i][2]}: {data[i][-1]}')
