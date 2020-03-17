@@ -267,10 +267,10 @@ if __name__=='__main__':
     rf1YY_NS, rf1YY_EW = ref_map_slice(out_dir, ref_tiles[3])
 
     # Null test diff in power b/w rf0 & rf1
-    ref01_XX_NS = rf0XX_NS[1] - rf1XX_NS[1]
-    ref01_XX_EW = rf0XX_EW[1] - rf1XX_EW[1]
-    ref01_YY_NS = rf0YY_NS[1] - rf1YY_NS[1]
-    ref01_YY_EW = rf0YY_EW[1] - rf1YY_EW[1]
+    ref01_XX_NS = rf0XX_NS[0] - rf1XX_NS[0]
+    ref01_XX_EW = rf0XX_EW[0] - rf1XX_EW[0]
+    ref01_YY_NS = rf0YY_NS[0] - rf1YY_NS[0]
+    ref01_YY_EW = rf0YY_EW[0] - rf1YY_EW[0]
     
     # Error propogation in null test
     error_ref01_XX_NS = np.sqrt((rf0XX_NS[1])**2 + (rf1XX_NS[1])**2 )
