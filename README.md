@@ -324,32 +324,24 @@ source download_pointings.sh 74 1252195218 1256688018
 The results of each page are downloaded to a json file in the `./../../ouputs/beam_pointings/` directory. The download script sleeps for 66s between each download, so as not to overload the MWA data servers.
 
 
-The next step is to collate the data in all these discrete json metadata files into and `ultimate_pointing_times.json` list. This is slightly tricky, as there are a days when the MWA is idle as a whole, but the MWA Satellite experiment is recording data. This means that the metadata we downloaded will not contain any info on these times, and we must infer the pointing of the telescope from the last pointing the tiles were in. Luckily, the operators of the MWA run a set of 20 dipole test observations in the morning, the last of which resets the telescope to zenith. 
+The next step is to collate the data in all these discrete json metadata files into and `ultimate_pointing_times.json` list. This is slightly tricky, as there are a days when the MWA is idle as a whole, but the MWA Satellite experiment is recording data. This means that the metadata we downloaded will not contain any info on these times, and we must infer the pointing of the telescope from the last pointing the receivers were in. 
 
 ```
-python pointing_list.py --help
-
-python pointing_list.py
+python sort_pointings.py
 ```
 
 This creates an `ultimate_pointing_times.json` file in the metadata directory. `pointing_list.py` has condensed observations with the same pointing into blocks of observation. Each entry in `ultimate_pointing_times.json` contains the `grid_pt` number, `start_gps`, `stop_gps` time and `obs_length` in seconds.
 
-A good way to visualise the amount of data collected so far is to use `plot_pointings.py`. This computes total integration over each pointing, and converts it into hours. A threshold value can be set, which difines a time below which a pointing is not plotted. The default is 30 hours.
+A good way to visualise the amount of data collected so far is to use `plot_pointings.py`. This computes total integration over each pointing, and converts it into hours, and saves a plot to `pointing_integration.png`. The plot below represent data between `2019-09-10` and `2020-03-17`.
 
 ```
-python plot_pointings.py --help
 
 python plot_pointings.py
 ```
 
-With the default setting, a plot called `pointing_integration.png`will be created and saved to the default metadata folder. 
-
-
 <p float="left">
   <img src="./docs/pointing_integration.png" width="100%" />
 </p>
-
-The `X` bar to the left of the plot represents time when the telescope was under maintainance, and had no definite pointing.
 
 
 ### Divide Out Satellites
