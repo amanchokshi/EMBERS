@@ -1,17 +1,15 @@
-import json
-import argparse
-import numpy as np
-from pathlib import Path
-
 import sys
 import math
 import json
 import pytz
+import json
 import argparse
 import numpy as np
+from pathlib import Path
+
 
 from pathlib import Path
-from scipy import interpolate
+from astropy.time import Time
 from datetime import datetime, timedelta
 
 
@@ -23,15 +21,16 @@ parser = argparse.ArgumentParser(description="""
 
 parser.add_argument('--start_date', metavar='\b', help='Date from which to determine sat ephemeris. Ex: 2019-10-10')
 parser.add_argument('--stop_date', metavar='\b', help='Date until which to determine sat ephemeris. Ex: 2019-10-11')
-parser.add_argument('--meta_dir', metavar='\b', default='./../../outputs/beam_pointings/', help='Directory where json metadata files live. Default=./../../outputs/beam_pointings/')
 parser.add_argument('--time_zone', metavar='\b', default='Australia/Perth', help='Time zone where data was recorded. Default=Australia/Perth')
+parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/beam_pointings/', help='Directory where json metadata files live. Default=./../../outputs/beam_pointings/')
+parser.add_argument('--f_name', metavar='\b', default='ultimate_pointing_times.json', help='File name of json to be plotted. Default=ultimate_pointing_times.json')
 
 args = parser.parse_args()
 start_date  = args.start_date
 stop_date   = args.stop_date
 time_zone   = args.time_zone
-meta_dir    = Path(args.meta_dir)
-
+out_dir     = Path(args.out_dir)
+f_name      = Path(args.f_name)
 
 
 
@@ -76,4 +75,9 @@ for i in range(n_days+1):
         obs_time.append(d_time)
         obs_unix.append(utc_unix)
         obs_unix_end.append(utc_unix_end)
+
+# Start and end of 30 min obs in gps time
+obs_gps = Time(obs_unix, format='unix').gps
+obs_gps_end = Time(obs_unix_end, format='unix').gps
+
 
