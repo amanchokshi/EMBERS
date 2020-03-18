@@ -341,6 +341,13 @@ python plot_pointings.py
   <img src="./docs/pointing_integration.png" width="100%" />
 </p>
 
+We now need to classify the pointing of each 30 minute observation. 
+
+```
+python obs_pointings.py --help
+```
+
+This creates `obs_pointings.json` in the output directory, which contain three lists, for the three pointings which we are interested in. Each list contains the observations with the correct pointings.
 
 ### Tile Maps
 
