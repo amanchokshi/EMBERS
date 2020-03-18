@@ -91,9 +91,59 @@ with open(f'{out_dir}/{f_name}') as table:
 
 #for i in range(len(start_gps)):
 #    print(f'{pointings[i]}: {start_gps[i]}: {stop_gps[i]}: {obs_length[i]}')
+#
+#print(start_gps[0], start_gps[-1])
+#print(obs_gps[0], obs_gps[-1])
 
-print(start_gps[0], start_gps[-1])
-print(obs_gps[0], obs_gps[-1])
+
+def time_filter(s_rise, s_set, times):
+    
+    # I. sat rises before times, sets within times window
+    if (s_rise < times[0] and s_set > times[0] and s_set <= times[-1]):
+        occu = (s_set - times[0])/1800
+
+
+    
+    # II. sat rises and sets within times
+    elif (s_rise >= times[0] and s_set <= times[-1]):
+        occu = (s_set - s_rise)/1800
+    
+    # III. sat rises within times, and sets after
+    elif (s_rise >= times[0] and s_rise < times[-1] and s_set > times[-1]):
+        occu = (times[-1] - s_rise)/1800
+    
+    # IV. sat rises before times and sets after
+    elif (s_rise < times[0] and s_set > times[-1]):
+        occu = (times[-1] - times[0])/1800
+   
+    # V. sat completely out of times. Could be on either side
+    else:
+        occu = None
+    
+    # intvl = interval
+    return occu
+
+point_0 = []
+point_2 = []
+point_4 = []
+
+for i in range(len(obs_time)):
+    obs_window = [obs_gps[i], obs_gps_end[i]]
+
+    for j in range(len(start_gps)):
+        occu = time_filter(start_gps[j], stop_gps[j], obs_window)
+
+        if (occu != None and occu >= 0.7):
+            if pointings[j] == 0:
+                point_0.append(obs_time[i])
+            elif pointings[j] == 2:
+                point_2.append(obs_time[i])
+            else:
+                point_4.append(obs_time[i])
+
+print(len(point_0))
+print(len(point_2))
+print(len(point_4))
 
 
 
