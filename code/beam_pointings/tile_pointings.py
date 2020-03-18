@@ -86,7 +86,7 @@ if __name__=='__main__':
         Determine total integration time, per pointing, for all tiles
         """)
 
-    parser.add_argument('--data_dir', metavar='\b', help='Output directoryi')
+    parser.add_argument('--data_dir', metavar='\b', help='Data directory')
     parser.add_argument(
             '--out_dir', metavar='\b', default='./../../outputs/beam_pointings/',
             help='Output directory. Default=./../../outputs/beam_pointings/')
