@@ -347,7 +347,17 @@ We now need to classify the pointing of each 30 minute observation.
 python obs_pointings.py --help
 ```
 
-This creates `obs_pointings.json` in the output directory, which contain three lists, for the three pointings which we are interested in. Each list contains the observations with the correct pointings.
+This creates `obs_pointings.json` in the output directory, which contain three lists, for the three pointings which we are interested in. Each list contains the observations with the correct pointings. Next, using `tile_pointings.py` we create `tile_pointing_integration.png`, in the outputs folder, to examine how much integration each of the 32 tiles have. Because we had continuous failures of our equipment, some tiles have significanly less data than others.
+
+```
+python tile_pointings.py --help
+```
+
+<p float="left">
+  <img src="./docs/tiles_pointing_integration.png" width="100%" />
+</p>
+
+
 
 ### Tile Maps
 
