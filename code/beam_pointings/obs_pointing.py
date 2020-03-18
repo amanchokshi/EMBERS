@@ -77,7 +77,31 @@ for i in range(n_days+1):
         obs_unix_end.append(utc_unix_end)
 
 # Start and end of 30 min obs in gps time
-obs_gps = Time(obs_unix, format='unix').gps
-obs_gps_end = Time(obs_unix_end, format='unix').gps
+# Round to nearest int
+obs_gps     = np.rint(Time(obs_unix, format='unix').gps)
+obs_gps_end = np.rint(Time(obs_unix_end, format='unix').gps)
+
+
+with open(f'{out_dir}/{f_name}') as table:
+    data = json.load(table)
+    pointings   = data['grid_pt'] 
+    start_gps   = data['start_gps']
+    stop_gps    = data['stop_gps'] 
+    obs_length  = data['obs_length']
+
+#for i in range(len(start_gps)):
+#    print(f'{pointings[i]}: {start_gps[i]}: {stop_gps[i]}: {obs_length[i]}')
+
+print(start_gps[0], start_gps[-1])
+print(obs_gps[0], obs_gps[-1])
+
+
+
+
+
+
+
+
+
 
 
