@@ -141,9 +141,17 @@ for i in range(len(obs_time)):
             else:
                 point_4.append(obs_time[i])
 
-print(len(point_0))
-print(len(point_2))
-print(len(point_4))
+
+# Create dictionary to be saved to json
+obs_pointings = {}
+obs_pointings['point_0'] = point_0
+obs_pointings['point_2'] = point_2
+obs_pointings['point_4'] = point_4
+
+
+with open(f'{out_dir}/obs_pointings.json', 'w') as outfile:
+    json.dump(obs_pointings, outfile, indent=4)
+
 
 
 
