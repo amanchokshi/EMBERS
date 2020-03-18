@@ -326,10 +326,15 @@ if __name__=='__main__':
     norm_ref1_YY_EW = YY_EW_slice + gain_ref1_YY_EW
    
     # Difference of power b/w ref0 & ref1 beam model slices
-    beam_ref01_XX_NS = XX_NS_slice - XX_NS_slice
-    beam_ref01_XX_EW = XX_EW_slice - XX_EW_slice
-    beam_ref01_YY_NS = YY_NS_slice - YY_NS_slice
-    beam_ref01_YY_EW = YY_EW_slice - YY_EW_slice
+    #beam_ref01_XX_NS = XX_NS_slice - XX_NS_slice
+    #beam_ref01_XX_EW = XX_EW_slice - XX_EW_slice
+    #beam_ref01_YY_NS = YY_NS_slice - YY_NS_slice
+    #beam_ref01_YY_EW = YY_EW_slice - YY_EW_slice
+    
+    beam_ref01_XX_NS = norm_ref0_XX_NS - norm_ref1_XX_NS
+    beam_ref01_XX_EW = norm_ref0_XX_EW - norm_ref1_XX_EW
+    beam_ref01_YY_NS = norm_ref0_YY_NS - norm_ref1_YY_NS
+    beam_ref01_YY_EW = norm_ref0_YY_EW - norm_ref1_YY_EW
    
     # delta powers
     del_pow_ref0_XX_NS = rf0XX_NS[0] - norm_ref0_XX_NS 
