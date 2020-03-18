@@ -20,13 +20,22 @@ from colormap import spectral
 cmap = spectral()
 
 
+def read_aligned(ali_file=None):
+    paired_data = np.load(ref_model, allow_pickle=True)
+    
+    ref_p   = paired_data['ref_p_aligned']
+    tile_p  = paired_data['tile_p_aligned']
+    times   = paired_data['time_array']
+
+    return [ref_p, tile_p, times]
+
+
 if __name__=='__main__':
 
     parser = argparse.ArgumentParser(description="""
         Project a sat pass onto a healpix map using ephemeris data
         """)
     
-
     parser.add_argument(
             '--align_dir', metavar='\b',default='../../outputs/align_data/',
             help='Dir where agligned data date is saved. Default:../../outputs/align_data')
@@ -98,4 +107,5 @@ if __name__=='__main__':
     for day in range(len(dates)):
         for window in range(len(date_time[day])):
             timestamp = date_time[day][window]
-            print(timestamp)
+            if timestamp in (point_0 or point_2 or point_4):
+                print(timestamp)
