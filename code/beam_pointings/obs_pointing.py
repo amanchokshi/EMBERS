@@ -14,9 +14,7 @@ from datetime import datetime, timedelta
 
 
 parser = argparse.ArgumentParser(description="""
-        Reads data from downloaded pointing matadata
-        json files. Extracts the start, stop time and
-        grid-pointing number.
+        Classify the pointings of 30 min observations
         """)
 
 parser.add_argument('--start_date', metavar='\b', help='Date from which to determine sat ephemeris. Ex: 2019-10-10')
