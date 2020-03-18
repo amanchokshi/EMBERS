@@ -142,9 +142,12 @@ for i in range(len(obs_time)):
 
 # Create dictionary to be saved to json
 obs_pointings = {}
-obs_pointings['point_0'] = point_0
-obs_pointings['point_2'] = point_2
-obs_pointings['point_4'] = point_4
+
+obs_pointings['start_date'] = start_date
+obs_pointings['stop_date']  = stop_date
+obs_pointings['point_0']    = point_0
+obs_pointings['point_2']    = point_2
+obs_pointings['point_4']    = point_4
 
 
 with open(f'{out_dir}/obs_pointings.json', 'w') as outfile:
