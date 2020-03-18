@@ -11,6 +11,31 @@ sys.path.append('../sat_channels')
 from sat_channels import time_tree
 
 
+def point_int(tile, start, stop, point_0, point_2, point_4):
+    
+    p_0 = 0
+    p_2 = 0
+    p_4 = 0
+
+    # dates: list of days
+    # date_time = list of 30 min observation windows
+    dates, date_time = time_tree(start_date, stop_date)
+    for day in range(len(dates)):
+        for window in range(len(date_time[day])):
+            f_name = f'{tile}_{date_time[day][window]}.txt'
+            f_path = Path(f'{data_dir}/{tile}/{dates[day]}/{f_name}')
+            if f_path.is_file():
+                if date_time[day][window] in point_0:
+                    p_0 += 0.5
+                elif date_time[day][window] in point_2:
+                    p_2 += 0.5
+                elif date_time[day][window] in point_4:
+                    p_4 += 0.5
+                else:
+                    pass
+    return [p_0, p_2, p_4]
+
+
 if __name__=='__main__':
 
     parser = argparse.ArgumentParser(description="""
@@ -39,20 +64,13 @@ if __name__=='__main__':
         point_2     = data['point_2']
         point_4     = data['point_4']
 
-
+    tile_integration = {}
     for tile in tiles:
-        # dates: list of days
-        # date_time = list of 30 min observation windows
-        dates, date_time = time_tree(start_date, stop_date)
-        for day in range(len(dates)):
-            for window in range(len(date_time[day])):
-                f_name = f'{tile}_{date_time[day][window]}.txt'
-                f_path = Path(f'{data_dir}/{tile}/{dates[day]}/{f_name}')
-                if f_path.is_file():
-                    if date_time[day][window] in point_4:
-                        print(f_path)
+        p_integration = point_int(tile, start_date, stop_date, point_0, point_2, point_4)
+        tile_integration[f'{tile}'] = p_integration
 
-        break
+    print(tile_integration)
+
 
 
 
