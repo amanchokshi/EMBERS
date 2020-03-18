@@ -38,6 +38,10 @@ if __name__=='__main__':
     parser.add_argument(
             '--chan_map', metavar='\b', default='../../data/channel_map.json',
             help='Satellite channel map. Default=../../data/channel_map.json')
+    
+    parser.add_argument(
+            '--obs_point', metavar='\b', default='../../outputs/beam_pointings/obs_pointings.json',
+            help='Observation pointing lists. Default=../../outputs/beam_pointings/obs_pointings.json')
 
     parser.add_argument(
             '--chrono_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json',
@@ -51,16 +55,17 @@ if __name__=='__main__':
     
     args = parser.parse_args()
     
-    start_date        = args.start_date
-    stop_date         = args.stop_date
-    chan_map          = args.chan_map
-    noi_thresh        = args.noi_thresh
-    sat_thresh        = args.sat_thresh
-    nside             = args.nside
+    start_date      = args.start_date
+    stop_date       = args.stop_date
+    chan_map        = args.chan_map
+    obs_point       = args.obs_point
+    noi_thresh      = args.noi_thresh
+    sat_thresh      = args.sat_thresh
+    nside           = args.nside
     
-    align_dir         = Path(args.align_dir)
-    chrono_dir        = Path(args.chrono_dir)
-    out_dir           = Path(args.out_dir)
+    align_dir       = Path(args.align_dir)
+    chrono_dir      = Path(args.chrono_dir)
+    out_dir         = Path(args.out_dir)
 
     # Import list of Norad catalogue IDs
     sat_list = [id for id in sat_ids.norad_ids.values()]
@@ -79,14 +84,18 @@ if __name__=='__main__':
     with open(chan_map) as map:
         channel_map = json.load(map)
 
+    # Read observation pointing list
+    with open(obs_point) as point:
+        obs_p = json.load(point)
+        point_0 = obs_p['point_0'] 
+        point_2 = obs_p['point_2'] 
+        point_4 = obs_p['point_4']
+    
+
     # dates: list of days
     # date_time = list of 30 min observation windows
     dates, date_time = time_tree(start_date, stop_date)
     for day in range(len(dates)):
         for window in range(len(date_time[day])):
-            for x in tilesx:
-                if Path(f'{align_dir}/{dates[day]}/{date_time[day][window]}/rf0XX_{x}_{date_time[day][window]}_aligned.npz').is_file():
-                    print(f'rf0XX_{x}_{date_time[day][window]}_aligned.npz exists')
-                else:
-                    print(f'rf0XX_{x}_{date_time[day][window]}_aligned.npz missing')
-            #print(date_time[day][window])
+            timestamp = date_time[day][window]
+            print(timestamp)
