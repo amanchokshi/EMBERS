@@ -214,6 +214,8 @@ def plt_null_test(
     ax.plot(zen_angle,del_beam, color='#c70039', linewidth=1.2, alpha=0.9, label=beam_label)
     
     ax.plot(zen_angle,del_fit, color='#ff8264', linewidth=1.2, alpha=0.9, label=fit_label)
+    
+    ax.plot(zen_angle,np.full(len(zen_angle), 0), color='#5c94bd', linewidth=1.2, alpha=0.9, label='Null')
 
     ax.set_ylabel('Power (dB)')
     ax.set_xlabel('Zenith Angle (degrees)')
