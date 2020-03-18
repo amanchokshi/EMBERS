@@ -19,8 +19,8 @@ if __name__=='__main__':
 
     parser.add_argument('--data_dir', metavar='\b', help='Output directoryi')
     parser.add_argument(
-            '--out_dir', metavar='\b', default='./../../outputs/tile_maps/',
-            help='Output directory. Default=./../../outputs/tile_maps/')
+            '--out_dir', metavar='\b', default='./../../outputs/beam_pointings/',
+            help='Output directory. Default=./../../outputs/beam_pointings/')
     
     args = parser.parse_args()
    
@@ -31,23 +31,28 @@ if __name__=='__main__':
     tiles  = tile_names()
 
     # lists of obs at each pointings
-    with open(f'{out_dir}/{f_name}') as table:
+    with open(f'{out_dir}/obs_pointings.json') as table:
         data = json.load(table)
-        point_0 = data['point_0']
-        point_2 = data['point_2']
-        point_4 = data['point_4']
+        start_date  = data['start_date']
+        stop_date   = data['stop_date']
+        point_0     = data['point_0']
+        point_2     = data['point_2']
+        point_4     = data['point_4']
 
-    # dates: list of days
-    # date_time = list of 30 min observation windows
-    dates, date_time = time_tree(start_date, stop_date)
-    for day in range(len(dates)):
-        for window in range(len(date_time[day])):
-            for x in tilesx:
-                if Path(f'{align_dir}/{dates[day]}/{date_time[day][window]}/rf0XX_{x}_{date_time[day][window]}_aligned.npz').is_file():
-                    print(f'rf0XX_{x}_{date_time[day][window]}_aligned.npz exists')
-                else:
-                    print(f'rf0XX_{x}_{date_time[day][window]}_aligned.npz missing')
-            #print(date_time[day][window])
+
+    for tile in tiles:
+        # dates: list of days
+        # date_time = list of 30 min observation windows
+        dates, date_time = time_tree(start_date, stop_date)
+        for day in range(len(dates)):
+            for window in range(len(date_time[day])):
+                f_name = f'{tile}_{date_time[day][window]}.txt'
+                f_path = Path(f'{data_dir}/{tile}/{dates[day]}/{f_name}')
+                if f_path.is_file():
+                    if date_time[day][window] in point_4:
+                        print(f_path)
+
+        break
 
 
 
