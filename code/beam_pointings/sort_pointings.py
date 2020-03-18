@@ -3,16 +3,24 @@ import argparse
 import numpy as np
 from pathlib import Path
 
+
 parser = argparse.ArgumentParser(description="""
         Reads data from downloaded pointing matadata
         json files. Extracts the start, stop time and
         grid-pointing number.
         """)
 
-parser.add_argument('--meta_dir', metavar='\b', default='./../../outputs/beam_pointings/', help='Directory where json metadata files live. Default=./../../outputs/beam_pointings/')
+parser.add_argument(
+        '--meta_dir', metavar='\b', default='./../../outputs/beam_pointings/mwa_pointings/', 
+        help='Directory where json metadata files live. Default=./../../outputs/beam_pointings/mwa_pointings/')
+
+parser.add_argument(
+        '--out_dir', metavar='\b', default='./../../outputs/beam_pointings/', 
+        help='Directory where json metadata files live. Default=./../../outputs/beam_pointings/')
 
 args = parser.parse_args()
-meta_dir = Path(args.meta_dir)
+meta_dir    = Path(args.meta_dir)
+out_dir     = Path(args.out_dir)
 
 start_gps   = []
 stop_gps    = []
@@ -90,5 +98,8 @@ pointing_list['stop_gps'] = stop_gps
 pointing_list['obs_length'] = obs_length
 
 
-with open('{}/ultimate_pointing_times.json'.format(meta_dir), 'w') as outfile:
+with open(f'{out_dir}/ultimate_pointing_times.json', 'w') as outfile:
     json.dump(pointing_list, outfile, indent=4)
+
+
+

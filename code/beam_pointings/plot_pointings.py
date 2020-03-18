@@ -14,14 +14,14 @@ parser = argparse.ArgumentParser(description="""
         pointings.
         """)
 
-parser.add_argument('--meta_dir', metavar='\b', default='./../../outputs/beam_pointings/', help='Directory where json metadata files live. Default=./../../outputs/beam_pointings/')
+parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/beam_pointings/', help='Directory where json metadata lives. Default=./../../outputs/beam_pointings/')
 parser.add_argument('--f_name', metavar='\b', default='ultimate_pointing_times.json', help='File name of json to be plotted. Default=ultimate_pointing_times.json')
 
 args = parser.parse_args()
-meta_dir = args.meta_dir
+out_dir = args.out_dir
 f_name = args.f_name
 
-with open('{}{}'.format(meta_dir, f_name), 'r') as data:
+with open(f'{out_dir}{f_name}', 'r') as data:
     pointings = json.load(data)
     grid_pt = pointings['grid_pt']
     obs_length = pointings['obs_length']
@@ -75,6 +75,6 @@ plt.xlim(-0.7,len(time_point)-0.3)
 plt.xlabel('MWA Grid Pointing Number')
 plt.title('Integration at MWA Grid Pointings')
 plt.tight_layout()
-plt.savefig(f'{meta_dir}/pointing_integration.png')
+plt.savefig(f'{out_dir}/pointing_integration.png')
 
 
