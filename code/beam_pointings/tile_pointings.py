@@ -39,16 +39,17 @@ def point_int(tile, start, stop, point_0, point_2, point_4):
                     pass
     return [p_0, p_2, p_4]
 
-def plt_pointing_hist(sub=None, int_dict=None, tile=None):
+def plt_pointing_hist(a, b, c, int_dict=None, tile=None, x_ticks=None):
 
-    ax = fig.add_subplot(sub)
-    
+    ax = fig.add_subplot(a,b,c)
+
+    y_max = max(i for v in int_dict.values() for i in v)
     int_list = int_dict[tile]
     x = range(len(int_list))
     leg = int_list
 
-    pal = sns.cubehelix_palette(len(int_list), start=.4, rot=-.5, dark=.4, reverse=True)
-    barplot = plt.bar(x, int_list, color=sns.color_palette(pal))
+    pal = sns.cubehelix_palette(len(int_list), start=.7, rot=-.7, dark=.4, reverse=True)
+    barplot = plt.bar(x, int_list, color=sns.color_palette(pal), edgecolor='black')
     
     def autolabel(rects):
         for idx,rect in enumerate(barplot):
@@ -58,11 +59,24 @@ def plt_pointing_hist(sub=None, int_dict=None, tile=None):
     
     autolabel(barplot)
     
-    plt.xticks(x, ['0','2','4'])
-    plt.ylabel('Hours')
-    plt.xlim(-0.7,len(int_list)-0.3)
-    plt.xlabel('MWA Grid Pointing Number')
-    plt.title(f'{tile}: Integration at MWA Grid Pointings')
+    # these are matplotlib.patch.Patch properties
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+
+    # place a text box in upper left in axes coords
+    ax.text(0.65, 0.95, f'{tile}', transform=ax.transAxes, fontsize=10,
+        verticalalignment='top', bbox=props)
+   
+    plt.xlim(-0.5,len(int_list)-0.5)
+    ax.set_yticklabels([])
+    
+    ax.set_xticklabels([])
+    ax.set_ylim(0, 1.1*y_max)
+    #plt.xticks(x, ['0','2','4'])
+    
+    #plt.ylabel('Hours')
+    #plt.xlabel('MWA Grid Pointing Number')
+
+    return ax
 
 
 
@@ -101,10 +115,50 @@ if __name__=='__main__':
 
 
     plt.style.use('seaborn')
-    fig = plt.figure(figsize=(8,10))
-    ax = plt_pointing_hist(sub=111, int_dict=tile_integration, tile='rf0XX')
+    fig = plt.figure(figsize=(14,10))
+
+    ax01 = plt_pointing_hist(4,8,1, int_dict=tile_integration, tile=tiles[0])
+    ax02 = plt_pointing_hist(4,8,2, int_dict=tile_integration, tile=tiles[4])
+    ax03 = plt_pointing_hist(4,8,3, int_dict=tile_integration, tile=tiles[5])
+    ax04 = plt_pointing_hist(4,8,4, int_dict=tile_integration, tile=tiles[6])
+    ax05 = plt_pointing_hist(4,8,5, int_dict=tile_integration, tile=tiles[7])
+    ax06 = plt_pointing_hist(4,8,6, int_dict=tile_integration, tile=tiles[8])
+    ax07 = plt_pointing_hist(4,8,7, int_dict=tile_integration, tile=tiles[9])
+    ax08 = plt_pointing_hist(4,8,8, int_dict=tile_integration, tile=tiles[10])
+    ax09 = plt_pointing_hist(4,8,9, int_dict=tile_integration, tile=tiles[1])
+    ax10 = plt_pointing_hist(4,8,10, int_dict=tile_integration, tile=tiles[11])
+    ax11 = plt_pointing_hist(4,8,11, int_dict=tile_integration, tile=tiles[12])
+    ax12 = plt_pointing_hist(4,8,12, int_dict=tile_integration, tile=tiles[13])
+    ax12 = plt_pointing_hist(4,8,13, int_dict=tile_integration, tile=tiles[14])
+    ax13 = plt_pointing_hist(4,8,14, int_dict=tile_integration, tile=tiles[15])
+    ax14 = plt_pointing_hist(4,8,15, int_dict=tile_integration, tile=tiles[16])
+    ax15 = plt_pointing_hist(4,8,16, int_dict=tile_integration, tile=tiles[17])
+    ax16 = plt_pointing_hist(4,8,17, int_dict=tile_integration, tile=tiles[2])
+    ax17 = plt_pointing_hist(4,8,18, int_dict=tile_integration, tile=tiles[18])
+    ax18 = plt_pointing_hist(4,8,19, int_dict=tile_integration, tile=tiles[19])
+    ax19 = plt_pointing_hist(4,8,20, int_dict=tile_integration, tile=tiles[20])
+    ax20 = plt_pointing_hist(4,8,21, int_dict=tile_integration, tile=tiles[21])
+    ax21 = plt_pointing_hist(4,8,22, int_dict=tile_integration, tile=tiles[22])
+    ax22 = plt_pointing_hist(4,8,23, int_dict=tile_integration, tile=tiles[23])
+    ax23 = plt_pointing_hist(4,8,24, int_dict=tile_integration, tile=tiles[24])
+    ax24 = plt_pointing_hist(4,8,25, int_dict=tile_integration, tile=tiles[3])
+    ax25 = plt_pointing_hist(4,8,26, int_dict=tile_integration, tile=tiles[25])
+    ax26 = plt_pointing_hist(4,8,27, int_dict=tile_integration, tile=tiles[26])
+    ax27 = plt_pointing_hist(4,8,28, int_dict=tile_integration, tile=tiles[27])
+    ax28 = plt_pointing_hist(4,8,29, int_dict=tile_integration, tile=tiles[28])
+    ax29 = plt_pointing_hist(4,8,30, int_dict=tile_integration, tile=tiles[29])
+    ax30 = plt_pointing_hist(4,8,31, int_dict=tile_integration, tile=tiles[30])
+    ax31 = plt_pointing_hist(4,8,32, int_dict=tile_integration, tile=tiles[31])
+
+
+
+    #plt.title('Pointing Integration per Tile')
+    #plt.ylabel('Hours')
+    #plt.xlabel('Pointing [0, 2, 4]')
+    #fig.text(0.5, 0.04, 'MWA Receiver Pointing [0, 2, 4]', ha='center')
+    #fig.text(0.04, 0.5, 'Hours', va='center', rotation='vertical')
     plt.tight_layout()
-    fig.savefig('test.png')
+    fig.savefig(f'{out_dir}/tiles_pointing_integration.png')
 
 
 
