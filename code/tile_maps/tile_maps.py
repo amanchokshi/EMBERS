@@ -41,7 +41,9 @@ def read_aligned(ali_file=None):
 
     return [ref_p, tile_p, times]
 
+
 def noise_floor(sat_thresh, noi_thresh, data=None):
+    '''Computes '''
     
     # compute the standard deviation of data, and use it to identify occupied channels
     σ = np.std(data)
@@ -58,7 +60,11 @@ def noise_floor(sat_thresh, noi_thresh, data=None):
     μ_noise = np.median(noise_data)
     σ_noise = mad(noise_data, axis=None)
     noise_threshold = μ_noise + noi_thresh*σ_noise
-
+    
+    # scale the data so that it has zero median
+    data = data - μ_noise
+    
+    return (data, noise_threshold)
 
 
 if __name__=='__main__':
