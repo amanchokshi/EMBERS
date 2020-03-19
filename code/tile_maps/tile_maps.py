@@ -19,18 +19,15 @@ from rf_data import tile_names
 from colormap import spectral
 cmap = spectral()
 
-
 def check_pointing(timestamp, point_0, point_2, point_4):
     '''Check if timestamp is at pointing 0, 2, 4'''
     if timestamp in point_0:
         point = 0
     elif timestamp in point_2:
         point = 2
-    elif timestamp in point_4:
-        point = 4
     else:
-        point = None
-
+        point = 4
+    
     return point
 
 def read_aligned(ali_file=None):
@@ -99,10 +96,7 @@ if __name__=='__main__':
     refs    = tile_n[:4]
     tiles   = tile_n[4:]
 
-    refx    = refs[::2]
-    refy    = refs[1::2]
-    tilesx  = tiles[::2]
-    tilesy  = tiles[1::2]
+    tile_batchs = [['rf0XX', tiles[::2]], ['rf0YY', tiles[1::2]], ['rf1XX', tiles[::2]], ['rf1YY', tiles[1::2]]]
 
     # Read channel map file
     with open(chan_map) as map:
@@ -114,19 +108,35 @@ if __name__=='__main__':
         point_0 = obs_p['point_0'] 
         point_2 = obs_p['point_2'] 
         point_4 = obs_p['point_4']
-    
+        #print(point_4)
+  
+    #TODO Read in channel map and chrono files
+
 
     # dates: list of days
     # date_time = list of 30 min observation windows
     dates, date_time = time_tree(start_date, stop_date)
+    
     for day in range(len(dates)):
+        
         for window in range(len(date_time[day])):
             timestamp = date_time[day][window]
-            
             point = check_pointing(timestamp, point_0, point_2, point_4)
-            if point != None:
-                print(f'{timestamp}: {point}')
-
+            
+            if ((timestamp in point_0) or (timestamp in point_2) or (timestamp in point_4)):
+                
+                for batch in tile_batchs:
+                    ref = batch[0]
+                    
+                    for tile in batch[1]:
+                        f = Path(f'{align_dir}/{dates[day]}/{timestamp}/{ref}_{tile}_{timestamp}_aligned.npz')
+                        if f.is_file():
+                            point = check_pointing(timestamp, point_0, point_2, point_4)
+                            #print(f'{point}: {f}')
+                            ref_p, tile_p, times = read_aligned(ali_file=f)
+                            print(ref_p.shape, tile_p.shape, times.shape)
+            else:
+                continue
 
 
 
