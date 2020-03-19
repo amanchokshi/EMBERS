@@ -77,7 +77,7 @@ def power_ephem(
     '''Create power, alt, az arrays at constant cadence'''
 
     # Read .npz aligned file
-    ref_p, tile_p, times = read_aligned(ali_file=f)
+    ref_p, tile_p, times = read_aligned(ali_file=ali_file)
 
     # Scale noise floor to zero and determine noise threshold
     ref_p, ref_noise = noise_floor(sat_thresh, noi_thresh, ref_p)
@@ -106,24 +106,16 @@ def power_ephem(
             tile_c = tile_p[w_start:w_stop+1, sat_chan]
             times_c = times[w_start:w_stop+1]
             
-            times_sat = norad_ephem["time_array"]
-            
-            # Crop ephem of all sats to size of norad_id sat
-            intvl_ephem = time_filter(times_c[0], times_c[-1], np.asarray(times_sat))
-            
-            if intvl_ephem != None:
-                e_0, e_1 = intvl_ephem
-                    
-                alt = np.asarray(norad_ephem["sat_alt"][e_0:e_1+1])
-                az  = np.asarray(norad_ephem["sat_az"][e_0:e_1+1])
-               
-                # Apply noise criteria. In the window, where are ref_power and tile power
-                # above their respective thresholds?
-                if np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0] is not []: 
-                    good_ref    = ref_c[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
-                    good_tile   = tile_c[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
-                    good_alt    = alt[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
-                    good_az     = az[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
+            alt = np.asarray(norad_ephem["sat_alt"])
+            az  = np.asarray(norad_ephem["sat_az"])
+
+            # Apply noise criteria. In the window, where are ref_power and tile power
+            # above their respective thresholds?
+            if np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0] is not []: 
+                good_ref    = ref_c[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
+                good_tile   = tile_c[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
+                good_alt    = alt[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
+                good_az     = az[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
             
     return [good_ref, good_tile, good_alt, good_az]
 
@@ -220,26 +212,45 @@ if __name__=='__main__':
                
                 for pair in tile_pairs:
                     ref, tile = pair
-                    f = Path(f'{align_dir}/{dates[day]}/{timestamp}/{ref}_{tile}_{timestamp}_aligned.npz')
+                    ali_file = Path(f'{align_dir}/{dates[day]}/{timestamp}/{ref}_{tile}_{timestamp}_aligned.npz')
                     
                     # check if file exists
-                    if f.is_file():
-
-                        # Chrono Ephemeris file
-                        chrono_file = Path(f'{chrono_dir}/(timestamp).json')
+                    if ali_file.is_file():
 
                         # pointing at timestamp
                         point = check_pointing(timestamp, point_0, point_2, point_4)
-                            
-                        # Read .npz aligned file
-                        ref_p, tile_p, times = read_aligned(ali_file=f)
                         
-                        # Scale noise floor to zero and determine noise threshold
-                        ref_p, ref_noise = noise_floor(sat_thresh, noi_thresh, ref_p)
-                        tile_p, tile_noise = noise_floor(sat_thresh, noi_thresh, tile_p)
+                        # Chrono Ephemeris file
+                        chrono_file = Path(f'{chrono_dir}/{timestamp}.json')
+
+                        with open(chrono_file) as chrono:
+                            chrono_ephem = json.load(chrono)
+                        
+                            if chrono_ephem != []:
+                
+                                norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))]
+                                
+                                for sat in list(channel_map.keys()):
+                                                    
+                                    if int(sat) in norad_list and norad_list != []:
+
+                                        chans = channel_map[sat]
+                                        
+                                        for chan_num in chans:
+
+                                            sat_data = power_ephem(
+                                                    ali_file,
+                                                    chrono_file,
+                                                    int(sat),
+                                                    chan_num)
+                                            
+                                            ref_power, tile_power, alt, az = sat_data
+                                            print(ref_power.shape, tile_power.shape)
+                            
 
                     else:
                         print(f'Missing {ref}_{tile}_{timestamp}_aligned.npz')
+                        continue
     
     #with open(chrono_file) as chrono:
     #    chrono_ephem = json.load(chrono)
