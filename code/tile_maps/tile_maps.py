@@ -41,6 +41,25 @@ def read_aligned(ali_file=None):
 
     return [ref_p, tile_p, times]
 
+def noise_floor(sat_thresh, noi_thresh, data=None):
+    
+    # compute the standard deviation of data, and use it to identify occupied channels
+    σ = np.std(data)
+    
+    # Any channel with a max power >= σ has a satellite
+    sat_cut = sat_thresh*σ
+    chans_pow_max = np.amax(data, axis=0)
+    
+    # Exclude the channels with sats, to only have noise data
+    noise_chans = np.where(chans_pow_max < sat_cut)[0]
+    noise_data = data[:, noise_chans]
+    
+    # noise median, noise mad, noise threshold = μ + 3*σ
+    μ_noise = np.median(noise_data)
+    σ_noise = mad(noise_data, axis=None)
+    noise_threshold = μ_noise + noi_thresh*σ_noise
+
+
 
 if __name__=='__main__':
 
@@ -71,7 +90,7 @@ if __name__=='__main__':
     parser.add_argument('--start_date', metavar='\b', help='Date from which to start aligning data. Ex: 2019-10-10')
     parser.add_argument('--stop_date', metavar='\b', help='Date until which to align data. Ex: 2019-10-11')
     parser.add_argument('--noi_thresh', metavar='\b', default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
-    parser.add_argument('--sat_thresh', metavar='\b', default=3,help='3 σ threshold to detect sats Default=3.')
+    parser.add_argument('--sat_thresh', metavar='\b', default=1,help='3 σ threshold to detect sats Default=1.')
     parser.add_argument('--nside', metavar='\b', default=32,help='Healpix Nside. Default = 32')
     
     args = parser.parse_args()
