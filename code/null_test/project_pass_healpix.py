@@ -244,6 +244,7 @@ if __name__=='__main__':
     
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
+    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
 
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor() as executor:
