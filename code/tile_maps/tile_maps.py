@@ -120,8 +120,16 @@ if __name__=='__main__':
     tile_n  = tile_names()
     refs    = tile_n[:4]
     tiles   = tile_n[4:]
-
-    tile_batchs = [['rf0XX', tiles[::2]], ['rf0YY', tiles[1::2]], ['rf1XX', tiles[::2]], ['rf1YY', tiles[1::2]]]
+    
+    # All relevant tile pairs
+    tile_pairs = []
+    for ref in refs:
+        if 'XX' in ref:
+            for tile in [t for t in tiles if 'XX' in t]:
+                tile_pairs.append([ref, tile])
+        else:
+            for tile in [t for t in tiles if 'YY' in t]:
+                tile_pairs.append([ref,tile])
 
     # Read channel map file
     with open(chan_map) as map:
@@ -133,7 +141,6 @@ if __name__=='__main__':
         point_0 = obs_p['point_0'] 
         point_2 = obs_p['point_2'] 
         point_4 = obs_p['point_4']
-        #print(point_4)
   
 
     # dates: list of days
@@ -147,21 +154,23 @@ if __name__=='__main__':
             point = check_pointing(timestamp, point_0, point_2, point_4)
             
             if ((timestamp in point_0) or (timestamp in point_2) or (timestamp in point_4)):
-                
-                for batch in tile_batchs:
-                    ref = batch[0]
-                    
-                    for tile in batch[1]:
-                        f = Path(f'{align_dir}/{dates[day]}/{timestamp}/{ref}_{tile}_{timestamp}_aligned.npz')
-                        if f.is_file():
-                            point = check_pointing(timestamp, point_0, point_2, point_4)
-                            
-                            ref_p, tile_p, times = read_aligned(ali_file=f)
-                            ref_p, ref_noise = noise_floor(sat_thresh, noi_thresh, ref_p)
-                            tile_p, tile_noise = noise_floor(sat_thresh, noi_thresh, tile_p)
-                            print(ref_p.shape, tile_p.shape, times.shape)
-            else:
-                continue
+               
+                for pair in tile_pairs:
+                    ref, tile = pair
+                    f = Path(f'{align_dir}/{dates[day]}/{timestamp}/{ref}_{tile}_{timestamp}_aligned.npz')
+                    try:
+                        point = check_pointing(timestamp, point_0, point_2, point_4)
+                        
+                        # Read .npz aligned file
+                        ref_p, tile_p, times = read_aligned(ali_file=f)
+                       
+                        # Scale noise floor to zero and determine noise threshold
+                        ref_p, ref_noise = noise_floor(sat_thresh, noi_thresh, ref_p)
+                        tile_p, tile_noise = noise_floor(sat_thresh, noi_thresh, tile_p)
+
+                    except FileNotFoundError as e:
+                        print(e)
+
 
 
 
