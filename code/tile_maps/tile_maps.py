@@ -19,6 +19,7 @@ from rf_data import tile_names
 from colormap import spectral
 cmap = spectral()
 
+
 def check_pointing(timestamp, point_0, point_2, point_4):
     '''Check if timestamp is at pointing 0, 2, 4'''
     if timestamp in point_0:
@@ -32,7 +33,6 @@ def check_pointing(timestamp, point_0, point_2, point_4):
 
 def read_aligned(ali_file=None):
     '''Read aligned data npz file'''
-
     paired_data = np.load(ali_file, allow_pickle=True)
     
     ref_p   = paired_data['ref_p_aligned']
@@ -153,23 +153,47 @@ if __name__=='__main__':
             timestamp = date_time[day][window]
             point = check_pointing(timestamp, point_0, point_2, point_4)
             
+            # Check if at timestamp, reciever was pointed to 0,2,4 gridpointing
             if ((timestamp in point_0) or (timestamp in point_2) or (timestamp in point_4)):
                
                 for pair in tile_pairs:
                     ref, tile = pair
                     f = Path(f'{align_dir}/{dates[day]}/{timestamp}/{ref}_{tile}_{timestamp}_aligned.npz')
-                    try:
+                    
+                    # check if file exists
+                    if f.is_file():
+
+                        # pointing at timestamp
                         point = check_pointing(timestamp, point_0, point_2, point_4)
-                        
+                            
                         # Read .npz aligned file
                         ref_p, tile_p, times = read_aligned(ali_file=f)
-                       
+                        
                         # Scale noise floor to zero and determine noise threshold
                         ref_p, ref_noise = noise_floor(sat_thresh, noi_thresh, ref_p)
                         tile_p, tile_noise = noise_floor(sat_thresh, noi_thresh, tile_p)
 
-                    except FileNotFoundError as e:
-                        print(e)
+                        print(ref_p.shape)
+                    else:
+                        print(f'Missing {ref}_{tile}_{timestamp}_aligned.npz')
+    
+    #with open(chrono_file) as chrono:
+    #    chrono_ephem = json.load(chrono)
+    #
+    #    norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))]
+    #    
+    #    norad_index = norad_list.index(sat_id)
+    #    
+    #    norad_ephem = chrono_ephem[norad_index]
+    #        
+    #    rise_ephem  = norad_ephem["time_array"][0] 
+    #    set_ephem   = norad_ephem["time_array"][-1]
+    #    
+    #    intvl = time_filter(rise_ephem, set_ephem, np.asarray(times))
+    #    
+    #    if intvl != None:
+    #        
+    #        w_start, w_stop = intvl
 
 
 
