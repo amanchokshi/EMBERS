@@ -20,8 +20,23 @@ from colormap import spectral
 cmap = spectral()
 
 
+def check_pointing(timestamp, point_0, point_2, point_4):
+    '''Check if timestamp is at pointing 0, 2, 4'''
+    if timestamp in point_0:
+        point = 0
+    elif timestamp in point_2:
+        point = 2
+    elif timestamp in point_4:
+        point = 4
+    else:
+        point = None
+
+    return point
+
 def read_aligned(ali_file=None):
-    paired_data = np.load(ref_model, allow_pickle=True)
+    '''Read aligned data npz file'''
+
+    paired_data = np.load(ali_file, allow_pickle=True)
     
     ref_p   = paired_data['ref_p_aligned']
     tile_p  = paired_data['tile_p_aligned']
@@ -107,5 +122,11 @@ if __name__=='__main__':
     for day in range(len(dates)):
         for window in range(len(date_time[day])):
             timestamp = date_time[day][window]
-            if timestamp in (point_0 or point_2 or point_4):
-                print(timestamp)
+            
+            point = check_pointing(timestamp, point_0, point_2, point_4)
+            if point != None:
+                print(f'{timestamp}: {point}')
+
+
+
+
