@@ -135,8 +135,6 @@ if __name__=='__main__':
         point_4 = obs_p['point_4']
         #print(point_4)
   
-    #TODO Read in channel map and chrono files
-
 
     # dates: list of days
     # date_time = list of 30 min observation windows
@@ -157,8 +155,10 @@ if __name__=='__main__':
                         f = Path(f'{align_dir}/{dates[day]}/{timestamp}/{ref}_{tile}_{timestamp}_aligned.npz')
                         if f.is_file():
                             point = check_pointing(timestamp, point_0, point_2, point_4)
-                            #print(f'{point}: {f}')
+                            
                             ref_p, tile_p, times = read_aligned(ali_file=f)
+                            ref_p, ref_noise = noise_floor(sat_thresh, noi_thresh, ref_p)
+                            tile_p, tile_noise = noise_floor(sat_thresh, noi_thresh, tile_p)
                             print(ref_p.shape, tile_p.shape, times.shape)
             else:
                 continue
