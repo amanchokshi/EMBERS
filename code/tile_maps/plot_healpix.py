@@ -64,57 +64,65 @@ def map_plots(f):
     
     f_name, _ = f.name.split('.')
     tile, ref, _, _ = f_name.split('_')
-    
+   
+    pointings = ['0','2','4']
+
     # load data from map .npz file
     map_data = np.load(f, allow_pickle=True)
-    tile_map = map_data['healpix_map']
-    tile_counter = map_data['healpix_counter']
+    map_data = {key:map_data[key].item() for key in map_data}
+    tile_maps = map_data['healpix_maps']
+    tile_counters = map_data['healpix_counters']
+
+    for p in pointings:
+
+        tile_map = tile_maps[p]
+        tile_counter = tile_counters[p]
     
-    # Plot BEAM
-    # compute the median for every pixel array
-    tile_map_med = [(np.median(i) if i != [] else np.nan ) for i in tile_map]
-    vmin = np.nanmin(tile_map_med)
-    vmax = np.nanmax(tile_map_med)
+        # Plot BEAM
+        # compute the median for every pixel array
+        tile_map_med = [(np.median(i) if i != [] else np.nan ) for i in tile_map]
+        vmin = np.nanmin(tile_map_med)
+        vmax = np.nanmax(tile_map_med)
 
-    fig = plt.figure(figsize=(8,10))
-    fig.suptitle(f'{tile},{ref} Healpix Map', fontsize=16)
-    plot_healpix(data_map=np.asarray(tile_map_med),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
-    plt.savefig(f'{out_dir}/{tile}_{ref}_map.png',bbox_inches='tight')
-    plt.close()
-       
-    # Plot MAD 
-    tile_map_mad = []
-    for j in tile_map:
-        if j != []:
-            j = np.asarray(j)
-            j = j[~np.isnan(j)]
-            tile_map_mad.append(mad(j))
-        else:
-            tile_map_mad.append(np.nan)
+        fig = plt.figure(figsize=(8,10))
+        fig.suptitle(f'Healpix Map: {tile}/{ref} @ {p}', fontsize=16)
+        plot_healpix(data_map=np.asarray(tile_map_med),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
+        plt.savefig(f'{out_dir}/{tile}_{ref}_{p}_map.png',bbox_inches='tight')
+        plt.close()
+           
+        # Plot MAD 
+        tile_map_mad = []
+        for j in tile_map:
+            if j != []:
+                j = np.asarray(j)
+                j = j[~np.isnan(j)]
+                tile_map_mad.append(mad(j))
+            else:
+                tile_map_mad.append(np.nan)
 
-    tile_map_mad = np.asarray(tile_map_mad)
-    
-    tile_map_mad[np.where(tile_map_mad == np.nan)] = np.nanmean(tile_map_mad)
-
-
-    vmin = np.nanmin(tile_map_mad)
-    vmax = np.nanmax(tile_map_mad)
-
-    fig = plt.figure(figsize=(8,10))
-    fig.suptitle(f'Healpix MAD: {tile}, {ref}', fontsize=16)
-    plot_healpix(data_map=np.asarray(tile_map_mad),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
-    plt.savefig(f'{out_dir}/{tile}_{ref}_mad.png',bbox_inches='tight')
-    plt.close()
-
-
-    # Plot counts in pix
+        tile_map_mad = np.asarray(tile_map_mad)
         
-    fig = plt.figure(figsize=(8,10))
-    fig.suptitle(f'Healpix Pixel Counts: {tile},{ref}', fontsize=16)
-    plot_healpix(data_map=np.asarray(tile_counter),sub=(1,1,1), cmap=cmap, vmin=0, vmax=2400)
+        tile_map_mad[np.where(tile_map_mad == np.nan)] = np.nanmean(tile_map_mad)
 
-    plt.savefig(f'{out_dir}/{tile}_{ref}_counts.png',bbox_inches='tight')
-    plt.close()
+
+        vmin = np.nanmin(tile_map_mad)
+        vmax = np.nanmax(tile_map_mad)
+
+        fig = plt.figure(figsize=(8,10))
+        fig.suptitle(f'Healpix MAD: {tile}/{ref} @ {p}', fontsize=16)
+        plot_healpix(data_map=np.asarray(tile_map_mad),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
+        plt.savefig(f'{out_dir}/{tile}_{ref}_{p}_mad.png',bbox_inches='tight')
+        plt.close()
+
+
+        # Plot counts in pix
+            
+        fig = plt.figure(figsize=(8,10))
+        fig.suptitle(f'Healpix Pixel Counts: {tile}/{ref} @ {p}', fontsize=16)
+        plot_healpix(data_map=np.asarray(tile_counter),sub=(1,1,1), cmap=cmap, vmin=0, vmax=2400)
+
+        plt.savefig(f'{out_dir}/{tile}_{ref}_{p}_counts.png',bbox_inches='tight')
+        plt.close()
    
 
 if __name__=='__main__':
