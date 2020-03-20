@@ -229,8 +229,7 @@ def project_tile_healpix(tile_pair):
                     continue
 
     # Save map arrays to npz file
-    np.savez_compressed(f'{out_dir}/{tile}_{ref}_healpix_map.npz',
-            tile_data = tile_data)
+    np.savez_compressed(f'{out_dir}/{tile}_{ref}_healpix_map.npz', **tile_data)
 
 if __name__=='__main__':
 
