@@ -320,13 +320,13 @@ if __name__=='__main__':
     #sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
     
     
-    for tile_pair in tile_pairs:
-        project_tile_healpix(tile_pair)
-        break
+#    for tile_pair in tile_pairs:
+#        project_tile_healpix(tile_pair)
+#        break
          
-#    # Parallization magic happens here
-#    with concurrent.futures.ProcessPoolExecutor() as executor:
-#        results = executor.map(project_tile_healpix, tile_pairs)
+    # Parallization magic happens here
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(project_tile_healpix, tile_pairs)
     
 
 
