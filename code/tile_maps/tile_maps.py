@@ -133,6 +133,8 @@ def power_ephem(
 
 def project_tile_healpix(tile_pair):
 
+    ref, tile = tile_pair
+
     # Initialize an empty dictionary for tile data
     # The map is list of length 12288 of empty lists to append pixel values to
     # The counter is an array of zeros, to increment when a new values is added
@@ -149,15 +151,14 @@ def project_tile_healpix(tile_pair):
                 # pointing at timestamp
                 point = check_pointing(timestamp, point_0, point_2, point_4)
 
-                print(timestamp, point)
+                #print(timestamp, point)
                
-                ref, tile = tile_pair
                 ali_file = Path(f'{align_dir}/{dates[day]}/{timestamp}/{ref}_{tile}_{timestamp}_aligned.npz')
                 
                 # check if file exists
                 if ali_file.is_file():
 
-                    print(f'Exists {ref}_{tile}_{timestamp}_aligned.npz')
+                    #print(f'Exists {ref}_{tile}_{timestamp}_aligned.npz')
                     
                     # Chrono Ephemeris file
                     chrono_file = Path(f'{chrono_dir}/{timestamp}.json')
@@ -186,12 +187,50 @@ def project_tile_healpix(tile_pair):
                                         if sat_data != 0:
                                         
                                             ref_power, tile_power, alt, az = sat_data
-                                            print(ref_power.shape, tile_power.shape)
+                                           
+                                            # DIVIDE OUT SATS
+                                            # Here we divide satellite signal by reference signal
+                                            # In log space, this is subtraction
+                                            pass_power = tile_power - ref_power
+
+                                            # Altitude is in deg while az is in radians
+                                            # convert alt to radians
+                                            alt = np.radians(alt)
+                                            az  = np.asarray(az)
+
+                                            # To convert from Alt/Az to θ/ϕ spherical coordinates
+                                            # θ = 90 - Alt
+                                            # ɸ = 180 - Az
+
+                                            # Healpix uses sperical coordinates
+                                            θ = np.pi/2 - alt
+                                            ɸ = np.pi - az
+
+                                            # Since we need to slice along NS & EW, and nside = 32 healpix does not 
+                                            # straight lines of pixels vertically or horizontally, but it does have
+                                            # them diagonally. We rotate ɸ by 45° to be able to slice NS & EW
+                                            ɸ_rot = ɸ + (np.pi / 4)
+
+                                            # Now convert to healpix coordinates
+                                            healpix_index = hp.ang2pix(nside,θ, ɸ_rot)
+                                                    
+                                            # Append channel power to ref healpix map
+                                            for i in range(len(healpix_index)):
+                                                tile_data['healpix_map'][healpix_index[i]].append(pass_power[i])
+                                            #[ref_map[healpix_index[i]].append(channel_power[i]) for i in range(len(healpix_index))]
+                                             
+                                            
+                                            # Increment pix ounter to keep track of passes in each pix 
+                                            for i in healpix_index:
+                                                tile_data['healpix_counter'][i] += 1
                             
                 else:
                     print(f'Missing {ref}_{tile}_{timestamp}_aligned.npz')
                     continue
 
+    # Save map arrays to npz file
+    np.savez_compressed(f'{out_dir}/{tile}_{ref}_healpix_map.npz',
+            tile_data = tile_data)
 
 if __name__=='__main__':
 
@@ -275,6 +314,11 @@ if __name__=='__main__':
     # date_time = list of 30 min observation windows
     dates, date_time = time_tree(start_date, stop_date)
 
+    # Save logs 
+    Path(out_dir).mkdir(parents=True, exist_ok=True)
+    #sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+    
+    
     for tile_pair in tile_pairs:
         project_tile_healpix(tile_pair)
         break    
