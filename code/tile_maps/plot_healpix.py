@@ -60,6 +60,63 @@ def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None
     hp.projtext(90.0*(np.pi/180.0), 315.0*(np.pi/180.0), r'$W  $', coord='E',color='k', verticalalignment='top', horizontalalignment='left', fontsize=14)
 
 
+def map_plots(f):
+    
+    f_name, _ = f.name.split('.')
+    tile, ref, _, _ = f_name.split('_')
+    
+    # load data from map .npz file
+    map_data = np.load(f, allow_pickle=True)
+    tile_map = map_data['healpix_map']
+    tile_counter = map_data['healpix_counter']
+    
+    # Plot BEAM
+    # compute the median for every pixel array
+    tile_map_med = [(np.median(i) if i != [] else np.nan ) for i in tile_map]
+    vmin = np.nanmin(tile_map_med)
+    vmax = np.nanmax(tile_map_med)
+
+    fig = plt.figure(figsize=(8,10))
+    fig.suptitle(f'{tile},{ref} Healpix Map', fontsize=16)
+    plot_healpix(data_map=np.asarray(tile_map_med),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
+    plt.savefig(f'{out_dir}/{tile}_{ref}_map.png',bbox_inches='tight')
+    plt.close()
+       
+    # Plot MAD 
+    tile_map_mad = []
+    for j in tile_map:
+        if j != []:
+            j = np.asarray(j)
+            j = j[~np.isnan(j)]
+            tile_map_mad.append(mad(j))
+        else:
+            tile_map_mad.append(np.nan)
+
+    tile_map_mad = np.asarray(tile_map_mad)
+    
+    tile_map_mad[np.where(tile_map_mad == np.nan)] = np.nanmean(tile_map_mad)
+
+
+    vmin = np.nanmin(tile_map_mad)
+    vmax = np.nanmax(tile_map_mad)
+
+    fig = plt.figure(figsize=(8,10))
+    fig.suptitle(f'Healpix MAD: {tile}, {ref}', fontsize=16)
+    plot_healpix(data_map=np.asarray(tile_map_mad),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
+    plt.savefig(f'{out_dir}/{tile}_{ref}_mad.png',bbox_inches='tight')
+    plt.close()
+
+
+    # Plot counts in pix
+        
+    fig = plt.figure(figsize=(8,10))
+    fig.suptitle(f'Healpix Pixel Counts: {tile},{ref}', fontsize=16)
+    plot_healpix(data_map=np.asarray(tile_counter),sub=(1,1,1), cmap=cmap, vmin=0, vmax=2400)
+
+    plt.savefig(f'{out_dir}/{tile}_{ref}_counts.png',bbox_inches='tight')
+    plt.close()
+   
+
 if __name__=='__main__':
     
     import argparse
@@ -67,6 +124,7 @@ if __name__=='__main__':
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     from pathlib import Path
+    import concurrent.futures
     
     import sys
     sys.path.append('../decode_rf_data')
@@ -80,85 +138,96 @@ if __name__=='__main__':
         Plot healpix map of reference data
         """)
     
-    parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/tile_maps/',help='Output directory. Default=./../../outputs/tile_maps/')
+    parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/tile_maps/maps/',help='Output directory. Default=./../../outputs/tile_maps/maps/')
+    parser.add_argument('--map_dir', metavar='\b', default='./../../outputs/tile_maps/',help='Output directory. Default=./../../outputs/tile_maps/')
     
     args = parser.parse_args()
     
     out_dir = Path(args.out_dir)
-
-
-    # Plot beam map
-    for f in out_dir.glob('*.npz'):
-        f_name, _ = f.name.split('.')
-        tile, ref, _, _ = f_name.split('_')
-        
-        # load data from map .npz file
-        map_data = np.load(f, allow_pickle=True)
-        tile_map = map_data['healpix_map']
-        tile_counter = map_data['healpix_counter']
-        
-        # compute the median for every pixel array
-        tile_map_med = [(np.median(i) if i != [] else np.nan ) for i in tile_map]
-        vmin = np.nanmin(tile_map_med)
-        vmax = np.nanmax(tile_map_med)
-
-        fig = plt.figure(figsize=(8,10))
-        fig.suptitle(f'{tile},{ref} Healpix Map', fontsize=16)
-        plot_healpix(data_map=np.asarray(tile_map_med),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
-
-        plt.savefig(f'{out_dir}/{tile}_{ref}_map.png',bbox_inches='tight')
-
-
-    # Plot MAD
-    for f in out_dir.glob('*.npz'):
-        f_name, _ = f.name.split('.')
-        tile, ref, _, _ = f_name.split('_')
-        
-        # load data from map .npz file
-        map_data = np.load(f, allow_pickle=True)
-        tile_map = map_data['healpix_map']
-        tile_counter = map_data['healpix_counter']
-        
-        # compute the median for every pixel array
-        tile_map_med = [(np.median(i) if i != [] else np.nan ) for i in tile_map]
-
-        tile_map_mad = []
-        for j in tile_map:
-            if j != []:
-                j = np.asarray(j)
-                j = j[~np.isnan(j)]
-                tile_map_mad.append(mad(j))
-            else:
-                tile_map_mad.append(np.nan)
-
-        tile_map_mad = np.asarray(tile_map_mad)
-        
-        tile_map_mad[np.where(tile_map_mad == np.nan)] = np.nanmean(tile_map_mad)
-
-
-        vmin = np.nanmin(tile_map_mad)
-        vmax = np.nanmax(tile_map_mad)
-
-        fig = plt.figure(figsize=(8,10))
-        fig.suptitle(f'Healpix MAD: {tile}, {ref}', fontsize=16)
-        plot_healpix(data_map=np.asarray(tile_map_mad),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
-
-        plt.savefig(f'{out_dir}/{tile}_{ref}_mad.png',bbox_inches='tight')
-
+    map_dir = Path(args.map_dir)
     
-    # Plot counts in pix
-    for f in out_dir.glob('*.npz'):
-        f_name, _ = f.name.split('.')
-        tile, ref, _, _ = f_name.split('_')
-        
-        # load data from map .npz file
-        map_data = np.load(f, allow_pickle=True)
-        tile_map = map_data['healpix_map']
-        tile_counter = map_data['healpix_counter']
-        
-        fig = plt.figure(figsize=(8,10))
-        fig.suptitle(f'Healpix Pixel Counts: {tile},{ref}', fontsize=16)
-        plot_healpix(data_map=np.asarray(tile_counter),sub=(1,1,1), cmap=cmap, vmin=0, vmax=2400)
+    map_files = [item for item in map_dir.glob('*.npz')]
 
-        plt.savefig(f'{out_dir}/{tile}_{ref}_counts.png',bbox_inches='tight')
+    # Save logs 
+    Path(out_dir).mkdir(parents=True, exist_ok=True)
+    
+    # Parallization magic happens here
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(map_plots, map_files)
+
+
+#    # Plot beam map
+#    for f in out_dir.glob('*.npz'):
+#        f_name, _ = f.name.split('.')
+#        tile, ref, _, _ = f_name.split('_')
+#        
+#        # load data from map .npz file
+#        map_data = np.load(f, allow_pickle=True)
+#        tile_map = map_data['healpix_map']
+#        tile_counter = map_data['healpix_counter']
+#        
+#        # compute the median for every pixel array
+#        tile_map_med = [(np.median(i) if i != [] else np.nan ) for i in tile_map]
+#        vmin = np.nanmin(tile_map_med)
+#        vmax = np.nanmax(tile_map_med)
+#
+#        fig = plt.figure(figsize=(8,10))
+#        fig.suptitle(f'{tile},{ref} Healpix Map', fontsize=16)
+#        plot_healpix(data_map=np.asarray(tile_map_med),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
+#
+#        plt.savefig(f'{out_dir}/{tile}_{ref}_map.png',bbox_inches='tight')
+#
+#
+#    # Plot MAD
+#    for f in out_dir.glob('*.npz'):
+#        f_name, _ = f.name.split('.')
+#        tile, ref, _, _ = f_name.split('_')
+#        
+#        # load data from map .npz file
+#        map_data = np.load(f, allow_pickle=True)
+#        tile_map = map_data['healpix_map']
+#        tile_counter = map_data['healpix_counter']
+#        
+#        # compute the median for every pixel array
+#        tile_map_med = [(np.median(i) if i != [] else np.nan ) for i in tile_map]
+#
+#        tile_map_mad = []
+#        for j in tile_map:
+#            if j != []:
+#                j = np.asarray(j)
+#                j = j[~np.isnan(j)]
+#                tile_map_mad.append(mad(j))
+#            else:
+#                tile_map_mad.append(np.nan)
+#
+#        tile_map_mad = np.asarray(tile_map_mad)
+#        
+#        tile_map_mad[np.where(tile_map_mad == np.nan)] = np.nanmean(tile_map_mad)
+#
+#
+#        vmin = np.nanmin(tile_map_mad)
+#        vmax = np.nanmax(tile_map_mad)
+#
+#        fig = plt.figure(figsize=(8,10))
+#        fig.suptitle(f'Healpix MAD: {tile}, {ref}', fontsize=16)
+#        plot_healpix(data_map=np.asarray(tile_map_mad),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
+#
+#        plt.savefig(f'{out_dir}/{tile}_{ref}_mad.png',bbox_inches='tight')
+#
+#    
+#    # Plot counts in pix
+#    for f in out_dir.glob('*.npz'):
+#        f_name, _ = f.name.split('.')
+#        tile, ref, _, _ = f_name.split('_')
+#        
+#        # load data from map .npz file
+#        map_data = np.load(f, allow_pickle=True)
+#        tile_map = map_data['healpix_map']
+#        tile_counter = map_data['healpix_counter']
+#        
+#        fig = plt.figure(figsize=(8,10))
+#        fig.suptitle(f'Healpix Pixel Counts: {tile},{ref}', fontsize=16)
+#        plot_healpix(data_map=np.asarray(tile_counter),sub=(1,1,1), cmap=cmap, vmin=0, vmax=2400)
+#
+#        plt.savefig(f'{out_dir}/{tile}_{ref}_counts.png',bbox_inches='tight')
    
