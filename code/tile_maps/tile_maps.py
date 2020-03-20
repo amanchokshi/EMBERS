@@ -100,24 +100,35 @@ def power_ephem(
         if intvl != None:
             
             w_start, w_stop = intvl
-        
-            # Slice [crop] the ref/tile/times arrays to the times of sat pass and extract sat_chan
-            ref_c = ref_p[w_start:w_stop+1, sat_chan]
-            tile_c = tile_p[w_start:w_stop+1, sat_chan]
-            times_c = times[w_start:w_stop+1]
-            
-            alt = np.asarray(norad_ephem["sat_alt"])
-            az  = np.asarray(norad_ephem["sat_az"])
 
-            # Apply noise criteria. In the window, where are ref_power and tile power
-            # above their respective thresholds?
-            if np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0] is not []: 
-                good_ref    = ref_c[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
-                good_tile   = tile_c[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
-                good_alt    = alt[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
-                good_az     = az[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
+            # Only continue, if sat passes are longer then 120 sec
+            if (w_stop - w_start) >= 120:
+        
+                # Slice [crop] the ref/tile/times arrays to the times of sat pass and extract sat_chan
+                ref_c = ref_p[w_start:w_stop+1, sat_chan]
+                tile_c = tile_p[w_start:w_stop+1, sat_chan]
+                
+                alt = np.asarray(norad_ephem["sat_alt"])
+                az  = np.asarray(norad_ephem["sat_az"])
+
+                # Apply noise criteria. In the window, where are ref_power and tile power
+                # above their respective thresholds?
+                if np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0] is not []: 
+                    good_ref    = ref_c[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
+                    good_tile   = tile_c[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
+                    good_alt    = alt[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
+                    good_az     = az[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
             
-    return [good_ref, good_tile, good_alt, good_az]
+                    return [good_ref, good_tile, good_alt, good_az]
+                
+                else:
+                    return 0
+
+            else:
+                return 0
+
+        else:
+            return 0
 
 
 
@@ -205,10 +216,13 @@ if __name__=='__main__':
         
         for window in range(len(date_time[day])):
             timestamp = date_time[day][window]
-            point = check_pointing(timestamp, point_0, point_2, point_4)
             
             # Check if at timestamp, reciever was pointed to 0,2,4 gridpointing
             if ((timestamp in point_0) or (timestamp in point_2) or (timestamp in point_4)):
+            
+                point = check_pointing(timestamp, point_0, point_2, point_4)
+
+                print(timestamp, point)
                
                 for pair in tile_pairs:
                     ref, tile = pair
@@ -243,9 +257,11 @@ if __name__=='__main__':
                                                     chrono_file,
                                                     int(sat),
                                                     chan_num)
+
+                                            if sat_data != 0:
                                             
-                                            ref_power, tile_power, alt, az = sat_data
-                                            print(ref_power.shape, tile_power.shape)
+                                                ref_power, tile_power, alt, az = sat_data
+                                                print(ref_power.shape, tile_power.shape)
                             
 
                     else:
