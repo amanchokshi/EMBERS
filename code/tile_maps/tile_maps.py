@@ -135,10 +135,12 @@ def project_tile_healpix(tile_pair):
 
     ref, tile = tile_pair
 
+    pointings = ['0','2','4']
+
     # Initialize an empty dictionary for tile data
     # The map is list of length 12288 of empty lists to append pixel values to
     # The counter is an array of zeros, to increment when a new values is added
-    tile_data = {'healpix_map':[[] for pixel in range(hp.nside2npix(nside))], 'healpix_counter':np.zeros(hp.nside2npix(nside))}
+    tile_data = {'healpix_maps':{p:[[] for pixel in range(hp.nside2npix(nside))] for p in pointings}, 'healpix_counters':{p:np.zeros(hp.nside2npix(nside)) for p in pointings}}
     
     for day in range(len(dates)):
 
@@ -216,13 +218,13 @@ def project_tile_healpix(tile_pair):
                                                     
                                             # Append channel power to ref healpix map
                                             for i in range(len(healpix_index)):
-                                                tile_data['healpix_map'][healpix_index[i]].append(pass_power[i])
+                                                tile_data['healpix_maps'][f'{point}'][healpix_index[i]].append(pass_power[i])
                                             #[ref_map[healpix_index[i]].append(channel_power[i]) for i in range(len(healpix_index))]
                                              
                                             
                                             # Increment pix ounter to keep track of passes in each pix 
                                             for i in healpix_index:
-                                                tile_data['healpix_counter'][i] += 1
+                                                tile_data['healpix_counters'][f'{point}'][i] += 1
                             
                 else:
                     print(f'Missing {ref}_{tile}_{timestamp}_aligned.npz')
@@ -318,12 +320,13 @@ if __name__=='__main__':
     #sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
     
     
-    #for tile_pair in tile_pairs:
-    #    project_tile_healpix(tile_pair)
+    for tile_pair in tile_pairs:
+        project_tile_healpix(tile_pair)
+        break
          
-    # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(project_tile_healpix, tile_pairs)
+#    # Parallization magic happens here
+#    with concurrent.futures.ProcessPoolExecutor() as executor:
+#        results = executor.map(project_tile_healpix, tile_pairs)
     
 
 
