@@ -131,6 +131,67 @@ def power_ephem(
             return 0
 
 
+def project_tile_healpix(tile_pair):
+
+    # Initialize an empty dictionary for tile data
+    # The map is list of length 12288 of empty lists to append pixel values to
+    # The counter is an array of zeros, to increment when a new values is added
+    tile_data = {'healpix_map':[[] for pixel in range(hp.nside2npix(nside))], 'healpix_counter':np.zeros(hp.nside2npix(nside))}
+    
+    for day in range(len(dates)):
+
+        for window in range(len(date_time[day])):
+            timestamp = date_time[day][window]
+            
+            # Check if at timestamp, reciever was pointed to 0,2,4 gridpointing
+            if ((timestamp in point_0) or (timestamp in point_2) or (timestamp in point_4)):
+            
+                # pointing at timestamp
+                point = check_pointing(timestamp, point_0, point_2, point_4)
+
+                print(timestamp, point)
+               
+                ref, tile = tile_pair
+                ali_file = Path(f'{align_dir}/{dates[day]}/{timestamp}/{ref}_{tile}_{timestamp}_aligned.npz')
+                
+                # check if file exists
+                if ali_file.is_file():
+
+                    print(f'Exists {ref}_{tile}_{timestamp}_aligned.npz')
+                    
+                    # Chrono Ephemeris file
+                    chrono_file = Path(f'{chrono_dir}/{timestamp}.json')
+
+                    with open(chrono_file) as chrono:
+                        chrono_ephem = json.load(chrono)
+                    
+                        if chrono_ephem != []:
+                
+                            norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))]
+                            
+                            for sat in list(channel_map.keys()):
+                                                
+                                if int(sat) in norad_list and norad_list != []:
+
+                                    chans = channel_map[sat]
+                                    
+                                    for chan_num in chans:
+
+                                        sat_data = power_ephem(
+                                                ali_file,
+                                                chrono_file,
+                                                int(sat),
+                                                chan_num)
+
+                                        if sat_data != 0:
+                                        
+                                            ref_power, tile_power, alt, az = sat_data
+                                            print(ref_power.shape, tile_power.shape)
+                            
+                else:
+                    print(f'Missing {ref}_{tile}_{timestamp}_aligned.npz')
+                    continue
+
 
 if __name__=='__main__':
 
@@ -182,9 +243,8 @@ if __name__=='__main__':
     sat_list = [id for id in sat_ids.norad_ids.values()]
 
     # Tile names
-    tile_n  = tile_names()
-    refs    = tile_n[:4]
-    tiles   = tile_n[4:]
+    refs    = tile_names()[:4]
+    tiles   = tile_names()[4:]
     
     # All relevant tile pairs
     tile_pairs = []
@@ -196,6 +256,7 @@ if __name__=='__main__':
             for tile in [t for t in tiles if 'YY' in t]:
                 tile_pairs.append([ref,tile])
 
+
     # Read channel map file
     with open(chan_map) as map:
         channel_map = json.load(map)
@@ -206,86 +267,17 @@ if __name__=='__main__':
         point_0 = obs_p['point_0'] 
         point_2 = obs_p['point_2'] 
         point_4 = obs_p['point_4']
-  
+
+
+
 
     # dates: list of days
     # date_time = list of 30 min observation windows
     dates, date_time = time_tree(start_date, stop_date)
+
+    for tile_pair in tile_pairs:
+        project_tile_healpix(tile_pair)
+        break    
     
-    for day in range(len(dates)):
-        
-        for window in range(len(date_time[day])):
-            timestamp = date_time[day][window]
-            
-            # Check if at timestamp, reciever was pointed to 0,2,4 gridpointing
-            if ((timestamp in point_0) or (timestamp in point_2) or (timestamp in point_4)):
-            
-                point = check_pointing(timestamp, point_0, point_2, point_4)
-
-                print(timestamp, point)
-               
-                for pair in tile_pairs:
-                    ref, tile = pair
-                    ali_file = Path(f'{align_dir}/{dates[day]}/{timestamp}/{ref}_{tile}_{timestamp}_aligned.npz')
-                    
-                    # check if file exists
-                    if ali_file.is_file():
-
-                        # pointing at timestamp
-                        point = check_pointing(timestamp, point_0, point_2, point_4)
-                        
-                        # Chrono Ephemeris file
-                        chrono_file = Path(f'{chrono_dir}/{timestamp}.json')
-
-                        with open(chrono_file) as chrono:
-                            chrono_ephem = json.load(chrono)
-                        
-                            if chrono_ephem != []:
-                
-                                norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))]
-                                
-                                for sat in list(channel_map.keys()):
-                                                    
-                                    if int(sat) in norad_list and norad_list != []:
-
-                                        chans = channel_map[sat]
-                                        
-                                        for chan_num in chans:
-
-                                            sat_data = power_ephem(
-                                                    ali_file,
-                                                    chrono_file,
-                                                    int(sat),
-                                                    chan_num)
-
-                                            if sat_data != 0:
-                                            
-                                                ref_power, tile_power, alt, az = sat_data
-                                                print(ref_power.shape, tile_power.shape)
-                            
-
-                    else:
-                        print(f'Missing {ref}_{tile}_{timestamp}_aligned.npz')
-                        continue
-    
-    #with open(chrono_file) as chrono:
-    #    chrono_ephem = json.load(chrono)
-    #
-    #    norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))]
-    #    
-    #    norad_index = norad_list.index(sat_id)
-    #    
-    #    norad_ephem = chrono_ephem[norad_index]
-    #        
-    #    rise_ephem  = norad_ephem["time_array"][0] 
-    #    set_ephem   = norad_ephem["time_array"][-1]
-    #    
-    #    intvl = time_filter(rise_ephem, set_ephem, np.asarray(times))
-    #    
-    #    if intvl != None:
-    #        
-    #        w_start, w_stop = intvl
-
-
 
 
