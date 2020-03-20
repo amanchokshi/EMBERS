@@ -317,7 +317,7 @@ if __name__=='__main__':
 
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-    #sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
     
     
 #    for tile_pair in tile_pairs:
