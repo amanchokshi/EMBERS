@@ -56,6 +56,7 @@ def power_ephem(
         ref_file,
         chrono_file,
         sat_id,
+        date,
         timestamp
         ):
 
@@ -92,6 +93,11 @@ def power_ephem(
                 # Slice [crop] the power/times arrays to the times of sat pass
                 power_c = power[w_start:w_stop+1, :]
                 times_c = times[w_start:w_stop+1]
+                
+                plt_waterfall_pass(
+                        f'{plt_dir}/{date}/{timestamp}', power, sat_id,
+                        w_start, w_stop, [0],
+                        timestamp, cmap)
 
                 # Now we need to find the most suitable channel in this cropped power array
                 ##################################
@@ -115,32 +121,47 @@ def power_ephem(
                     # Only continue if there is signal for more than 80% of satellite pass
                     if (max(channel_power) >= arb_thresh and 
                             occ_thresh <= window_occupancy < 1.00):
-                     
-                        # fist and last 10 steps must be below the noise threshold
-                        if (all(p < noise_threshold for p in channel_power[:10]) and 
-                            all(p < noise_threshold for p in channel_power[-11:-1])) is True:
-
-
-                            # Center of gravity section
-                            # Checks how central the signal is within the window
-                            center, cog, frac_cen_offset = center_of_gravity(channel_power, times_c)
-
-                            # Another threshold
-                            # The Center of Gravity of signal is within 5% of center
-                            if frac_cen_offset <= cog_thresh:
-
-
+                        
+                        if times_c[0] == times[0]:
+                            if (all(p < noise_threshold for p in channel_power[-11:-1])) is True:
                                 occu_list.append(window_occupancy)
-                                
-                                if plots == 'True':
-                                    # Plots the channel with satellite pass
-                                    plt_channel(
-                                            f'{plt_dir}/{timestamp}', times_c, channel_power,
-                                            s_chan, min_s, max_s, noise_threshold,
-                                            arb_thresh,center, cog, cog_thresh,
-                                            sat_id, timestamp)
-                                
                                 possible_chans.append(s_chan)
+                        elif times_c[-1] == times[0]:
+                            if (all(p < noise_threshold for p in channel_power[:10])) is True:
+                                occu_list.append(window_occupancy)
+                                possible_chans.append(s_chan)
+                        else:
+                            if (all(p < noise_threshold for p in channel_power[:10]) and 
+                                all(p < noise_threshold for p in channel_power[-11:-1])) is True:
+                                occu_list.append(window_occupancy)
+                                possible_chans.append(s_chan)
+
+
+                        ## fist and last 10 steps must be below the noise threshold
+                        #if (all(p < noise_threshold for p in channel_power[:10]) and 
+                        #    all(p < noise_threshold for p in channel_power[-11:-1])) is True:
+
+
+                        #    # Center of gravity section
+                        #    # Checks how central the signal is within the window
+                        #    center, cog, frac_cen_offset = center_of_gravity(channel_power, times_c)
+
+                        #    # Another threshold
+                        #    # The Center of Gravity of signal is within 5% of center
+                        #    if frac_cen_offset <= cog_thresh:
+
+
+                        #        occu_list.append(window_occupancy)
+                        #        
+                        #        if plots == 'True':
+                        #            # Plots the channel with satellite pass
+                        #            plt_channel(
+                        #                    f'{plt_dir}/{date}/{timestamp}', times_c, channel_power,
+                        #                    s_chan, min_s, max_s, noise_threshold,
+                        #                    arb_thresh,center, cog, cog_thresh,
+                        #                    sat_id, timestamp)
+                        #        
+                        #        possible_chans.append(s_chan)
 
                     else:
                         continue
@@ -150,26 +171,17 @@ def power_ephem(
                 
                 if n_chans > 0:
                     
+                    # The most lightly channel is one with the highest occupation
+                    good_chan = possible_chans[occu_list.index(max(occu_list))]
+                    #return good_chan
+                
                     if plots == 'True':
                         # plot waterfall with sat window and all selected channels highlighted
                         plt_waterfall_pass(
-                                f'{plt_dir}/{timestamp}', power, sat_id,
+                                f'{plt_dir}/{date}/{timestamp}', power, sat_id,
                                 w_start, w_stop, possible_chans,
                                 timestamp, cmap)
                     
-                    # The most lightly channel is one with the highest occupation
-                    good_chan = possible_chans[occu_list.index(max(occu_list))]
-                    
-                    return good_chan
-
-                    channel_power = power_c[:, good_chan]
-
-                    times_sat = np.asarray(norad_ephem["time_array"])
-                    
-                    alt = np.asarray(norad_ephem["sat_alt"])
-                    az  = np.asarray(norad_ephem["sat_az"])
-                            
-                    if plots == 'True': 
                         # Plot ephemeris of lightly sats present in ephem window of norad_id
                         plt_ids = []
                         plt_alt = []
@@ -205,6 +217,8 @@ def power_ephem(
                                         other_passes.append(other_ephem)
 
 
+
+
                         other_passes = sorted(other_passes, key=lambda x: x[0])
                         if n_chans > 1:
                             for e in other_passes[-(n_chans-1):][::-1]:   # BEWARE!!!! If two elements have same lenght, are they switched by reversing??
@@ -213,11 +227,12 @@ def power_ephem(
                                 plt_az.append(e[3])
                         
                         # Plot sat ephemeris 
-                        sat_plot(f'{plt_dir}/{timestamp}', plt_ids, sat_id, plt_alt, plt_az, len(plt_ids), timestamp, 'passes')
-                    
+                        sat_plot(f'{plt_dir}/{date}/{timestamp}', plt_ids, sat_id, plt_alt, plt_az, len(plt_ids), timestamp, 'passes')
+                        
+                        return good_chan
 
                     else:
-                        return 0
+                        return good_chan
 
                 else:
                     return 0
@@ -233,6 +248,9 @@ def window_chan_map(obs_stamp):
 
     date, timestamp = obs_stamp
 
+    if plots == 'True':
+        Path(f'{plt_dir}/{date}/{timestamp}').mkdir(parents=True, exist_ok=True)
+    
     channel_map = {}
 
     ref_file = f'{ali_dir}/{date}/{timestamp}/rf0XX_S06XX_{timestamp}_aligned.npz'
@@ -256,22 +274,23 @@ def window_chan_map(obs_stamp):
                                 ref_file,
                                 chrono_file,
                                 sat,
+                                date,
                                 timestamp
                                 )
                         
                         if sat_data != 0:
                             sat_chan = sat_data
-
+                            
                             channel_map[f'{sat}'] = sat_chan
 
     
-    except Exception:
+    except Exception as e:
+        print(e)
         # Exception message is forwarded from ../decode_rf_data/rf_data.py
-        continue
 
     # Save channel map
-    with open(f'{out_dir}/{ref_tile}/channel_data/{int(norad_id)}.json','w') as f: 
-        json.dump(sat_data, f, indent=4) 
+    with open(f'{out_dir}/window_maps/{timestamp}.json','w') as f: 
+        json.dump(channel_map, f, indent=4) 
 
 
         
@@ -284,13 +303,13 @@ if __name__=='__main__':
     parser.add_argument('--start_date', metavar='\b', help='Date from which to start aligning data. Ex: 2019-10-10')
     parser.add_argument('--stop_date', metavar='\b', help='Date until which to align data. Ex: 2019-10-11')
     parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/sat_channels/',help='Output directory. Default=./../../outputs/sat_channels/')
-    parser.add_argument('--plt_dir', metavar='\b', default='./../../outputs/sat_channels/pass_plots',help='Output directory. Default=./../../outputs/sat_channels/pass_plots/')
+    parser.add_argument('--plt_dir', metavar='\b', default='./../../outputs/sat_channels/window_plots',help='Output directory. Default=./../../outputs/sat_channels/window_plots/')
     parser.add_argument('--ali_dir', metavar='\b', default='./../../outputs/align_data/',help='Output directory. Default=./../../outputs/align_data/')
     parser.add_argument('--chrono_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json',help='Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/')
     parser.add_argument('--noi_thresh', metavar='\b', default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
     parser.add_argument('--sat_thresh', metavar='\b', default=1,help='1 σ threshold to detect sats Default=1.')
     parser.add_argument('--arb_thresh', metavar='\b', default=12,help='Arbitrary Threshold to detect sats. Default=12 dB.')
-    parser.add_argument('--occ_thresh', metavar='\b', default=0.80,help='Occupation Threshold of sat in window. Default=0.70')
+    parser.add_argument('--occ_thresh', metavar='\b', default=0.80,help='Occupation Threshold of sat in window. Default=0.80')
     parser.add_argument('--cog_thresh', metavar='\b', default=0.05,help='Center of Gravity Threshold to detect sats. Default=0.05')
     parser.add_argument('--plots', metavar='\b', default=False,help='If True, create a gazzillion plots for each sat pass. Default = False')
     
@@ -302,31 +321,30 @@ if __name__=='__main__':
     out_dir =           args.out_dir
     plt_dir =           args.plt_dir
     ali_dir =           args.ali_dir
-    chan_map =          args.chan_map
     noi_thresh =        args.noi_thresh
     sat_thresh =        args.sat_thresh
     arb_thresh =        args.arb_thresh
     occ_thresh =        args.occ_thresh
     cog_thresh =        args.cog_thresh
-    nside =             args.nside
     plots =             args.plots
 
     ref_names=['rf0XX', 'rf0YY', 'rf1XX', 'rf1YY']
     
-    if plots == 'True':
-        Path(plt_dir).mkdir(parents=True, exist_ok=True)
     
     # Save logs 
-    Path(out_dir).mkdir(parents=True, exist_ok=True)
-    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+    Path(f'{out_dir}/window_maps').mkdir(parents=True, exist_ok=True)
+    #sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
 
     # Help traverse all 30 min obs b/w start & stop
     dates, date_time = time_tree(start_date, stop_date)
     obs_list = [[dates[d], date_time[d][dt]] for d in range(len(dates)) for dt in range(len(date_time[d]))]
 
+#    for o in obs_list:
+#        window_chan_map(o)
+
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(proj_ref_healpix, ref_names)
+        results = executor.map(window_chan_map, obs_list)
 
     
 
