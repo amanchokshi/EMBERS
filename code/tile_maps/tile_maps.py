@@ -113,7 +113,7 @@ def power_ephem(
 
                 # Apply noise criteria. In the window, where are ref_power and tile power
                 # above their respective thresholds?
-                if np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0] is not []: 
+                if np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0].size != 0: 
                     good_ref    = ref_c[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
                     good_tile   = tile_c[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
                     good_alt    = alt[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
