@@ -417,7 +417,7 @@ if __name__=="__main__":
     
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-    #sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
     
     # Import list of tile names from rf_data.py
     tiles = rf.tile_names()
