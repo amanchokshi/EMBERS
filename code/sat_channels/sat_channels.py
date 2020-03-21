@@ -134,6 +134,42 @@ def time_filter(s_rise, s_set, times):
     return intvl
 
 
+def read_aligned(ali_file=None):
+    '''Read aligned data npz file'''
+    paired_data = np.load(ali_file, allow_pickle=True)
+    
+    power   = paired_data['ref_p_aligned']
+    times   = paired_data['time_array']
+
+    return [power, times]
+
+
+def noise_floor(sat_thresh, noi_thresh, data=None):
+    '''Computes '''
+    
+    # compute the standard deviation of data, and use it to identify occupied channels
+    σ = np.std(data)
+    
+    # Any channel with a max power >= σ has a satellite
+    sat_cut = sat_thresh*σ
+    chans_pow_max = np.amax(data, axis=0)
+    
+    # Exclude the channels with sats, to only have noise data
+    noise_chans = np.where(chans_pow_max < sat_cut)[0]
+    noise_data = data[:, noise_chans]
+    
+    # noise median, noise mad, noise threshold = μ + 3*σ
+    μ_noise = np.median(noise_data)
+    σ_noise = mad(noise_data, axis=None)
+    # because we rescale power to have zero median
+    noise_threshold = (μ_noise-μ_noise) + noi_thresh*σ_noise
+    
+    # scale the data so that it has zero median
+    data = data - μ_noise
+    
+    return (data, noise_threshold)
+
+
 def find_sat_channel(norad_id):
     '''All the magic [filtering] happens here'''
 
@@ -156,23 +192,17 @@ def find_sat_channel(norad_id):
         # Loop through each 30 min obs in day
         for window in range(len(date_time[day])):
             
-            ref_file = f'{data_dir}/{ref_tile}/{dates[day]}/{ref_tile}_{date_time[day][window]}.txt'
+            ref_file = f'{ali_dir}/{dates[day]}/{date_time[day][window]}/rf0XX_S06XX_{date_time[day][window]}_aligned.npz'
             chrono_file = f'{chrono_dir}/{date_time[day][window]}.json'
             
             try:
                 if Path(ref_file).is_file() and Path(chrono_file).is_file():
     
-                    power, times = savgol_interp(ref_file, savgol_window, polyorder, interp_type, interp_freq )
+                    power, times = read_aligned(ali_file=ref_file)
+
+                    # Scale noise floor to zero and determine noise threshold
+                    power, noise_threshold = noise_floor(sat_thresh, noi_thresh, power)
                     
-                    # To first order, let us consider the median to be the noise floor
-                    noise_f = np.median(power)
-                    noise_mad = mad(power, axis=None)
-                    noise_threshold = noi_thresh*noise_mad
-                    arbitrary_threshold = 10 #dBm
-                    
-                    # Scale the power to bring the median noise floor down to zero
-                    power = power - noise_f
-            
             except Exception:
                 print(f'{date_time[day][window]}: ref file not found')
                 continue
@@ -252,7 +282,7 @@ def find_sat_channel(norad_id):
                                         plt_channel(
                                                 f'{plt_dir}/{norad_id}', times_c, power_c[:, s_chan],
                                                 s_chan, min_s, max_s, noise_threshold,
-                                                arbitrary_threshold,center, cog, cog_thresh,
+                                                arb_thresh,center, cog, cog_thresh,
                                                 norad_id, f'{date_time[day][window]}')
                                         
                                         possible_chans.append(s_chan)
@@ -356,19 +386,14 @@ if __name__=="__main__":
         Determines which channel each satellite occupies
         """)
     
-    parser.add_argument('--data_dir', metavar='\b', help='Dir where date is saved')
     parser.add_argument('--start_date', metavar='\b', help='Date from which to start aligning data. Ex: 2019-10-10')
     parser.add_argument('--stop_date', metavar='\b', help='Date until which to align data. Ex: 2019-10-11')
     parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/sat_channels/',help='Output directory. Default=./../../outputs/sat_channels/')
+    parser.add_argument('--ali_dir', metavar='\b', default='./../../outputs/align_data/',help='Output directory. Default=./../../outputs/align_data/')
     parser.add_argument('--plt_dir', metavar='\b', default='./../../outputs/sat_channels/sat_passes',help='Output directory. Default=./../../outputs/sat_channels/sat_passes')
     parser.add_argument('--chrono_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json',help='Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/')
-    parser.add_argument('--savgol_window', metavar='\b', default=151,help='Length of savgol window. Must be odd. Default=151')
-    parser.add_argument('--polyorder', metavar='\b', default=1,help='Order of polynomial to fit to savgol window. Default=1')
-    parser.add_argument('--interp_type', metavar='\b', default='cubic',help='Type of interpolation. Ex: cubic, linear, etc. Default=cubic')
-    parser.add_argument('--interp_freq', metavar='\b', default=1,help='Frequency at which to resample smoothed data, in Hertz. Default=2')
-    parser.add_argument('--parallel', metavar='\b', default=True,help='If parallel=False, paralellization will be disabled.')
-    
-    parser.add_argument('--noi_thresh', metavar='\b', default=10,help='Noise Threshold: Multiples of MAD. Default=10.')
+    parser.add_argument('--noi_thresh', metavar='\b', default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
+    parser.add_argument('--sat_thresh', metavar='\b', default=1,help='1 σ threshold to detect sats Default=1.')
     parser.add_argument('--arb_thresh', metavar='\b', default=12,help='Arbitrary Threshold to detect sats. Default=12 dB.')
     parser.add_argument('--alt_thresh', metavar='\b', default=20,help='Altitude Threshold to detect sats. Default=20 degrees.')
     parser.add_argument('--cog_thresh', metavar='\b', default=0.05,help='Center of Gravity Threshold to detect sats. Default=0.05')
@@ -377,26 +402,22 @@ if __name__=="__main__":
     
     args = parser.parse_args()
     
-    data_dir =          args.data_dir
     chrono_dir =        args.chrono_dir
     start_date =        args.start_date
     stop_date =         args.stop_date
     out_dir =           args.out_dir
+    ali_dir =           args.ali_dir
     plt_dir =           args.plt_dir
-    savgol_window =     args.savgol_window
-    polyorder =         args.polyorder
-    interp_type =       args.interp_type
-    interp_freq =       args.interp_freq
     noi_thresh =        args.noi_thresh 
+    sat_thresh =        args.sat_thresh 
     arb_thresh =        args.arb_thresh
     alt_thresh =        args.alt_thresh
     cog_thresh =        args.cog_thresh
     occ_thresh =        args.occ_thresh
-    parallel=           args.parallel
     
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+    #sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
     
     # Import list of tile names from rf_data.py
     tiles = rf.tile_names()
@@ -405,39 +426,15 @@ if __name__=="__main__":
     # Import list of Norad catalogue IDs
     sat_list = [id for id in sat_ids.norad_ids.values()]
     
-    
-    # Path to important locations
-    data_dir = Path(data_dir)
-    chrono_dir = Path(chrono_dir)
-    out_dir = Path(out_dir)
-    
     # dates: list of days
     # date_time = list of 30 min observation windows
     dates, date_time = time_tree(start_date, stop_date)
         
-    # Only using rf0XX for now
-    #ref_tile = tiles[0]
-    ref_tiles = tiles[0:4]
-
-    for ref_tile in ref_tiles:
+    # Parallization magic happens here
+    with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
+        results = executor.map(find_sat_channel, sat_list)
     
-        #norad_id = 41180
-        #find_sat_channel(norad_id)
-        
-        if parallel != True:
-            for norad_id in sat_list:
-                find_sat_channel(norad_id)
-                #break
-        
-        else:
-            try:
-            # Parallization magic happens here
-                with concurrent.futures.ProcessPoolExecutor(max_workers=40) as executor:
-                    results = executor.map(find_sat_channel, sat_list)
-            
-                for result in results:
-                    print(result)
-            except Exception:
-                print('Inssuficient Memory. Try using --parallel=False flag to run code serially')
+    for result in results:
+        print(result)
 
 
