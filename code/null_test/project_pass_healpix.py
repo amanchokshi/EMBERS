@@ -51,6 +51,7 @@ def noise_floor(sat_thresh, noi_thresh, data=None):
 
 
 def power_ephem(
+        ref,
         ref_file,
         chrono_file,
         sat_id,
@@ -131,15 +132,13 @@ def power_ephem(
                                 occu_list.append(window_occupancy)
                             
                                 # Plots the channel with satellite pass
-                                print('All thresholds passed, plotting channel')
                                 plt_channel(
-                                        plt_dir, times_c, channel_power,
+                                        f'{plt_dir}/{ref}', times_c, channel_power,
                                         s_chan, min_s, max_s, noise_threshold,
                                         arb_thresh,center, cog, cog_thresh,
                                         sat_id, date)
                                 
                                 possible_chans.append(s_chan)
-                                print(possible_chans)
 
                     else:
                         continue
@@ -149,11 +148,9 @@ def power_ephem(
                 
                 if n_chans > 0:
 
-                    print(possible_chans)
-
                     # plot waterfall with sat window and all selected channels highlighted
                     plt_waterfall_pass(
-                            plt_dir, power, sat_id,
+                            f'{plt_dir}/{ref}', power, sat_id,
                             w_start, w_stop, possible_chans,
                             date, cmap)
                     
@@ -166,7 +163,55 @@ def power_ephem(
                     
                     alt = np.asarray(norad_ephem["sat_alt"])
                     az  = np.asarray(norad_ephem["sat_az"])
-               
+                            
+                    #################
+                            
+                    # Plot ephemeris of lightly sats present in ephem window of norad_id
+                    plt_ids = []
+                    plt_alt = []
+                    plt_az  = []
+
+                    other_passes = []
+                    
+                    # loop through all sats in chrono_ephem
+                    for s in range(len(chrono_ephem)):
+                        times_sat = chrono_ephem[s]["time_array"]
+                        
+                        # Crop ephem of all sats to size of norad_id sat
+                        intvl_ephem = time_filter(times_c[0], times_c[-1], np.asarray(times_sat))
+                        
+                        if intvl_ephem != None:
+                            e_0, e_1 = intvl_ephem
+                            
+                            if len(chrono_ephem[s]["sat_alt"][e_0:e_1+1]) >= occ_thresh*len(times_c):
+                                
+                                if chrono_ephem[s]["sat_id"][0] == sat_id:
+                                
+                                    plt_ids.extend(chrono_ephem[s]["sat_id"])
+                                    plt_alt.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
+                                    plt_az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
+                                
+                                else:
+                                    other_ephem = []
+                                    other_ephem.append(len(chrono_ephem[s]['sat_alt'][e_0:e_1+1]))
+                                    other_ephem.extend(chrono_ephem[s]["sat_id"])
+                                    other_ephem.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
+                                    other_ephem.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
+
+                                    other_passes.append(other_ephem)
+
+
+                    other_passes = sorted(other_passes, key=lambda x: x[0])
+                    if n_chans > 1:
+                        for e in other_passes[-(n_chans-1):][::-1]:   # BEWARE!!!! If two elements have same lenght, are they switched by reversing??
+                            plt_ids.append(e[1])
+                            plt_alt.append(e[2])
+                            plt_az.append(e[3])
+                    
+                    # Plot sat ephemeris 
+                    sat_plot(f'{plt_dir}/{ref}', plt_ids, sat_id, plt_alt, plt_az, len(plt_ids), date, 'passes')
+                    
+                    ###################               
 
                     if np.where(channel_power >= noise_threshold)[0].size != 0: 
                         good_power = channel_power[np.where(channel_power >= noise_threshold)[0]]
@@ -189,6 +234,8 @@ def power_ephem(
                 
 
 def proj_ref_healpix(ref):
+    
+    Path(f'{plt_dir}/{ref}').mkdir(parents=True, exist_ok=True)
 
     # Initialize empty beam map and list
     # a list of empty lists to append values to
@@ -231,6 +278,7 @@ def proj_ref_healpix(ref):
                             for sat in norad_list:
 
                                 sat_data = power_ephem(
+                                        ref,
                                         ref_file,
                                         chrono_file,
                                         sat,
