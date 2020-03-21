@@ -4,6 +4,7 @@ import numpy as np
 import healpy as hp
 from pathlib import Path
 import concurrent.futures
+import matplotlib.pyplot as plt
 from scipy.stats import median_absolute_deviation as mad
 
 import sys
@@ -28,11 +29,48 @@ def read_aligned(ali_file=None):
 
     return [power, times]
 
+def plt_channel(
+        out_dir, times, channel_power, chan_num,
+        noise_threshold, sat_id, date):
+
+    '''Plot power in channel, with various thresholds'''
+    
+    plt.style.use('seaborn')
+
+    #min_s = np.amin(channel_power)
+    #max_s = np.amax(channel_power)
+
+    
+    # plt channel power
+    plt.plot(times, channel_power, linestyle='-', linewidth=2, alpha=1.0, color='#db3751', label='Data')
+    plt.fill_between(times, channel_power, color='#db3751', alpha=0.7)
+    
+    plt.axhline(noise_threshold, linestyle='-', linewidth=2, color='#5cb7a9',
+            label=f'Noise Cut: {noise_threshold:.2f} dBm')
+    plt.axhspan(-1, noise_threshold, color='#5cb7a9', alpha=0.4)
+    
+    #plt.ylim([min_s - 1, max_s + 1])
+    plt.xlim([times[0], times[-1]])
+    plt.ylabel('Power [dBm]')
+    plt.xlabel('Time [s]')
+    plt.title(f'Satellite Pass in Channel: [{chan_num}]')
+    plt.tight_layout()
+    leg = plt.legend(frameon=True)
+    leg.get_frame().set_facecolor('grey')
+    leg.get_frame().set_alpha(0.2)
+    for l in leg.legendHandles:
+        l.set_alpha(1)
+    plt.savefig(f'{out_dir}/{date}_{sat_id}_{chan_num}_channel.png')
+    plt.close()
+    #plt.rcParams.update(plt.rcParamsDefault)
+
 def power_ephem(
         ref_file,
         chrono_file,
         sat_id,
-        sat_chan
+        sat_chan,
+        date,
+        out_dir
         ):
 
     '''Create power, alt, az arrays at constant cadence'''
@@ -91,7 +129,7 @@ def power_ephem(
                 σ_noise = mad(noise_data, axis=None)
                 noise_threshold = μ_noise + noi_thresh*σ_noise
 
-                times_sat = norad_ephem["time_array"]
+                times_sat = np.asarray(norad_ephem["time_array"])
                 
                 alt = np.asarray(norad_ephem["sat_alt"])
                 az  = np.asarray(norad_ephem["sat_az"])
@@ -101,8 +139,35 @@ def power_ephem(
                     good_power = channel_power[np.where(channel_power >= noise_threshold)[0]]
                     good_alt = alt[np.where(channel_power >= noise_threshold)[0]]
                     good_az  = az[np.where(channel_power >= noise_threshold)[0]]
+                    good_times = times_sat[np.where(channel_power >= noise_threshold)[0]]
+                    #plt_channel(out_dir, good_times, good_power, sat_chan,
+                    #        noise_threshold, sat_id, date_time)
+                    #plt_channel(out_dir, good_timestimes, good_power, sat_chan, noise_threshold, sat_id, date)
+                    
+                    plt.style.use('seaborn')
+                    plt.plot(good_times, good_power, linestyle='-', linewidth=2, alpha=1.0, color='#db3751', label='Data')
+                    plt.fill_between(good_times, good_power, color='#db3751', alpha=0.7)
+                    
+                    plt.axhline(noise_threshold, linestyle='-', linewidth=2, color='#5cb7a9',
+                            label=f'Noise Cut: {noise_threshold:.2f} dBm')
+                    plt.axhspan(-1, noise_threshold, color='#5cb7a9', alpha=0.4)
+                    plt.ylim([0, 35])
+                    plt.xlim([times[0], times[-1]])
+                    plt.ylabel('Power [dBm]')
+                    plt.xlabel('Time [s]')
+                    plt.title(f'Satellite Pass in Channel: [{sat_chan}]')
+                    plt.tight_layout()
+                    leg = plt.legend(frameon=True)
+                    leg.get_frame().set_facecolor('grey')
+                    leg.get_frame().set_alpha(0.2)
+                    for l in leg.legendHandles:
+                        l.set_alpha(1)
+                    plt.savefig(f'{out_dir}/{date}_{sat_chan}.png')
+                    plt.close()
+
             
                     return [good_power, good_alt, good_az]
+                    
 
                 else:
                     return 0
@@ -168,7 +233,9 @@ def proj_ref_healpix(ref):
                                             ref_file,
                                             chrono_file,
                                             int(sat),
-                                            chan_num
+                                            chan_num,
+                                            date_time[day][window],
+                                            out_dir
                                             )
                                     
                                     if sat_data != 0:
