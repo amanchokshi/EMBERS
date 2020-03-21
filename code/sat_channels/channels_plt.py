@@ -38,7 +38,7 @@ def plt_waterfall_pass(out_dir, power, sat_id, start, stop, chs, date, cmap):
         ax.axvspan(ch-1.0, ch+0.6, alpha=0.2, color='white')
     
     #plt.show()
-    plt.savefig(f'{out_dir}/{date}_{sat_id}_waterfall.png')
+    plt.savefig(f'{out_dir}/{date}_{sat_id}_{chs}_waterfall.png')
     plt.close()
     plt.rcParams.update(plt.rcParamsDefault)
 
