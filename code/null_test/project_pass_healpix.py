@@ -63,42 +63,55 @@ def power_ephem(
         if intvl != None:
             
             w_start, w_stop = intvl
+            
+            # Only continue, if sat passes are longer then 120 sec
+            if (w_stop - w_start) >= 120:
 
         
-            # Slice [crop] the power/times arrays to the times of sat pass
-            power_c = power[w_start:w_stop+1, :]
-            channel_power = power_c[:, sat_chan]
-            times_c = times[w_start:w_stop+1]
-            
-            # the median of this data should already be very close to 0
-            # because we scaled the power array to the noise floor
-            # compute the standard deviation of data, and use it to identify occupied channels
-            σ = np.std(power_c)
-            
-            # Any channel with a max power >= 3σ has a satellite
-            sat_cut = sat_thresh*σ
-            chans_pow_max = np.amax(power_c, axis=0)
-            
-            # Exclude the channels with sats, to only have noise data
-            noise_chans = np.where(chans_pow_max < sat_cut)[0]
-            noise_data = power_c[:, noise_chans]
+                # Slice [crop] the power/times arrays to the times of sat pass
+                power_c = power[w_start:w_stop+1, :]
+                channel_power = power_c[:, sat_chan]
+                times_c = times[w_start:w_stop+1]
+                
+                # the median of this data should already be very close to 0
+                # because we scaled the power array to the noise floor
+                # compute the standard deviation of data, and use it to identify occupied channels
+                σ = np.std(power_c)
+                
+                # Any channel with a max power >= 3σ has a satellite
+                sat_cut = sat_thresh*σ
+                chans_pow_max = np.amax(power_c, axis=0)
+                
+                # Exclude the channels with sats, to only have noise data
+                noise_chans = np.where(chans_pow_max < sat_cut)[0]
+                noise_data = power_c[:, noise_chans]
            
-            # noise median, noise mad, noise threshold = μ + 3*σ
-            μ_noise = np.median(noise_data)
-            σ_noise = mad(noise_data, axis=None)
-            noise_threshold = μ_noise + noi_thresh*σ_noise
+                # noise median, noise mad, noise threshold = μ + 3*σ
+                μ_noise = np.median(noise_data)
+                σ_noise = mad(noise_data, axis=None)
+                noise_threshold = μ_noise + noi_thresh*σ_noise
 
-            times_sat = norad_ephem["time_array"]
+                times_sat = norad_ephem["time_array"]
+                
+                alt = np.asarray(norad_ephem["sat_alt"])
+                az  = np.asarray(norad_ephem["sat_az"])
+               
+
+                if np.where(channel_power >= noise_threshold)[0].size != 0: 
+                    good_power = channel_power[np.where(channel_power >= noise_threshold)[0]]
+                    good_alt = alt[np.where(channel_power >= noise_threshold)[0]]
+                    good_az  = az[np.where(channel_power >= noise_threshold)[0]]
             
-            alt = np.asarray(norad_ephem["sat_alt"])
-            az  = np.asarray(norad_ephem["sat_az"])
-            
-            if np.where(channel_power >= noise_threshold) != []: 
-                good_power = channel_power[np.where(channel_power >= noise_threshold)[0]]
-                good_alt = alt[np.where(channel_power >= noise_threshold)[0]]
-                good_az  = az[np.where(channel_power >= noise_threshold)[0]]
-            
-    return [good_power, good_alt, good_az]
+                    return [good_power, good_alt, good_az]
+
+                else:
+                    return 0
+
+            else:
+                return 0
+        
+        else:
+            return 0
                 
 
 def proj_ref_healpix(ref):
@@ -237,7 +250,7 @@ if __name__=='__main__':
     
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+    #sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
 
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor() as executor:
