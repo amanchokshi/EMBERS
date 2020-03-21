@@ -41,7 +41,8 @@ def noise_floor(sat_thresh, noi_thresh, data=None):
     # noise median, noise mad, noise threshold = μ + 3*σ
     μ_noise = np.median(noise_data)
     σ_noise = mad(noise_data, axis=None)
-    noise_threshold = μ_noise + noi_thresh*σ_noise
+    # because we rescale power to have zero median
+    noise_threshold = (μ_noise-μ_noise) + noi_thresh*σ_noise
     
     # scale the data so that it has zero median
     data = data - μ_noise
@@ -69,7 +70,7 @@ def power_ephem(
         norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))]
         
         norad_index = norad_list.index(sat_id)
-        
+
         norad_ephem = chrono_ephem[norad_index]
             
         rise_ephem  = norad_ephem["time_array"][0] 
@@ -83,6 +84,7 @@ def power_ephem(
             
             # length of sat pass. Only consider passes longer than 2 minutes
             window_len = w_stop - w_start + 1
+            
             if window_len >= 120:
         
                 # Slice [crop] the power/times arrays to the times of sat pass
@@ -102,6 +104,7 @@ def power_ephem(
                     
                     # Percentage of signal occupancy above noise threshold
                     window_occupancy = (np.where(channel_power >= noise_threshold))[0].size/window_len
+
             
                     max_s = np.amax(channel_power)
                     min_s = np.amin(channel_power)
@@ -115,6 +118,7 @@ def power_ephem(
                         if (all(p < noise_threshold for p in channel_power[:10]) and 
                             all(p < noise_threshold for p in channel_power[-11:-1])) is True:
 
+
                             # Center of gravity section
                             # Checks how central the signal is within the window
                             center, cog, frac_cen_offset = center_of_gravity(channel_power, times_c)
@@ -123,16 +127,19 @@ def power_ephem(
                             # The Center of Gravity of signal is within 5% of center
                             if frac_cen_offset <= cog_thresh:
 
+
                                 occu_list.append(window_occupancy)
                             
                                 # Plots the channel with satellite pass
+                                print('All thresholds passed, plotting channel')
                                 plt_channel(
-                                        plt_dir, times_c, power_c[:, s_chan],
+                                        plt_dir, times_c, channel_power,
                                         s_chan, min_s, max_s, noise_threshold,
                                         arb_thresh,center, cog, cog_thresh,
                                         sat_id, date)
                                 
                                 possible_chans.append(s_chan)
+                                print(possible_chans)
 
                     else:
                         continue
@@ -141,6 +148,8 @@ def power_ephem(
                 n_chans = len(possible_chans)
                 
                 if n_chans > 0:
+
+                    print(possible_chans)
 
                     # plot waterfall with sat window and all selected channels highlighted
                     plt_waterfall_pass(
@@ -205,6 +214,7 @@ def proj_ref_healpix(ref):
             
             #ref_file = f'{data_dir}/{ref}/{dates[day]}/{ref}_{date_time[day][window]}.txt'
             chrono_file = f'{chrono_dir}/{date_time[day][window]}.json'
+
             
             try:
                 Path(ref_file).is_file()
@@ -223,8 +233,7 @@ def proj_ref_healpix(ref):
                                 sat_data = power_ephem(
                                         ref_file,
                                         chrono_file,
-                                        int(sat),
-                                        chan_num,
+                                        sat,
                                         date_time[day][window]
                                         )
                                 
@@ -316,11 +325,13 @@ if __name__=='__main__':
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
     Path(plt_dir).mkdir(parents=True, exist_ok=True)
-    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+    #sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
 
-    # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(proj_ref_healpix, ref_names)
+#    # Parallization magic happens here
+#    with concurrent.futures.ProcessPoolExecutor() as executor:
+#        results = executor.map(proj_ref_healpix, ref_names)
+
+    proj_ref_healpix('rf0XX')
 
     
 
