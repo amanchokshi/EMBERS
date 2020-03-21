@@ -194,7 +194,7 @@ def plt_channel(
     plt.xlim([times[0], times[-1]])
     plt.ylabel('Power [dBm]')
     plt.xlabel('Time [s]')
-    plt.title(f'Satellite Pass in Channel: [{chan_num}]')
+    plt.title(f'Satellite Pass at {date} in Channel: [{chan_num}]')
     plt.tight_layout()
     leg = plt.legend(frameon=True)
     leg.get_frame().set_facecolor('grey')
