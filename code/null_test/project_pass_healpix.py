@@ -1,3 +1,4 @@
+import sys
 import json
 import argparse
 import numpy as np
@@ -6,19 +7,12 @@ from pathlib import Path
 import concurrent.futures
 import matplotlib.pyplot as plt
 from scipy.stats import median_absolute_deviation as mad
-
-import sys
-sys.path.append('../decode_rf_data')
-sys.path.append('../sat_ephemeris')
-sys.path.append('../sat_channels')
-import rf_data as rf
-from colormap import spectral
-from sat_channels import time_tree, savgol_interp, time_filter
-from channels_plt import plt_waterfall_pass, plt_channel, plt_hist, sat_plot
+from sat_channels import time_tree, time_filter, plt_waterfall_pass, plt_channel, sat_plot
 
 # Custom spectral colormap
+sys.path.append('../decode_rf_data')
+from colormap import spectral
 cmap = spectral()
-import sat_ids
 
 def read_aligned(ali_file=None):
     '''Read aligned data npz file'''
