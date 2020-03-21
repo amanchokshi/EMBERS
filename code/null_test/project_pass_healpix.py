@@ -32,16 +32,11 @@ def power_ephem(
         ref_file,
         chrono_file,
         sat_id,
-        sat_chan,
-        savgol_window,
-        polyorder,
-        interp_type,
-        interp_freq
+        sat_chan
         ):
 
     '''Create power, alt, az arrays at constant cadence'''
 
-    #power, times = savgol_interp(ref_file, savgol_window, polyorder, interp_type, interp_freq )
     power, times = read_aligned(ali_file=ref_file)
 
 
@@ -166,11 +161,7 @@ def proj_ref_healpix(ref):
                                             ref_file,
                                             chrono_file,
                                             int(sat),
-                                            chan_num,
-                                            savgol_window,
-                                            polyorder,
-                                            interp_type,
-                                            interp_freq
+                                            chan_num
                                             )
                                     
                                     if sat_data != 0:
@@ -226,34 +217,24 @@ if __name__=='__main__':
         Project a sat pass onto a healpix map using ephemeris data
         """)
     
-    parser.add_argument('--data_dir', metavar='\b', help='Dir where date is saved')
     parser.add_argument('--start_date', metavar='\b', help='Date from which to start aligning data. Ex: 2019-10-10')
     parser.add_argument('--stop_date', metavar='\b', help='Date until which to align data. Ex: 2019-10-11')
     parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/null_test/',help='Output directory. Default=./../../outputs/null_test/')
     parser.add_argument('--ali_dir', metavar='\b', default='./../../outputs/align_data/',help='Output directory. Default=./../../outputs/align_data/')
     parser.add_argument('--chan_map', metavar='\b', default='../../data/channel_map.json',help='Satellite channel map. Default=../../data/channel_map.json')
     parser.add_argument('--chrono_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json',help='Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/')
-    parser.add_argument('--savgol_window', metavar='\b', default=151,help='Length of savgol window. Must be odd. Default=151')
-    parser.add_argument('--polyorder', metavar='\b', default=1,help='Order of polynomial to fit to savgol window. Default=1')
-    parser.add_argument('--interp_type', metavar='\b', default='cubic',help='Type of interpolation. Ex: cubic, linear, etc. Default=cubic')
-    parser.add_argument('--interp_freq', metavar='\b', default=1,help='Frequency at which to resample smoothed data, in Hertz. Default=2')
     parser.add_argument('--noi_thresh', metavar='\b', default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
     parser.add_argument('--sat_thresh', metavar='\b', default=1,help='3 σ threshold to detect sats Default=1.')
     parser.add_argument('--nside', metavar='\b', default=32,help='Healpix Nside. Default = 32')
     
     args = parser.parse_args()
     
-    data_dir =          args.data_dir
     chrono_dir =        args.chrono_dir
     start_date =        args.start_date
     stop_date =         args.stop_date
     out_dir =           args.out_dir
     ali_dir =           args.ali_dir
     chan_map =          args.chan_map
-    savgol_window =     args.savgol_window
-    polyorder =         args.polyorder
-    interp_type =       args.interp_type
-    interp_freq =       args.interp_freq
     noi_thresh =        args.noi_thresh
     sat_thresh =        args.sat_thresh
     nside =             args.nside
