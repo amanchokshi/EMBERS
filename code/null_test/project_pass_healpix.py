@@ -90,19 +90,13 @@ def power_ephem(
 
             times_sat = norad_ephem["time_array"]
             
-            # Crop ephem of all sats to size of norad_id sat
-            intvl_ephem = time_filter(times_c[0], times_c[-1], np.asarray(times_sat))
+            alt = np.asarray(norad_ephem["sat_alt"])
+            az  = np.asarray(norad_ephem["sat_az"])
             
-            if intvl_ephem != None:
-                e_0, e_1 = intvl_ephem
-                    
-                alt = np.asarray(norad_ephem["sat_alt"][e_0:e_1+1])
-                az  = np.asarray(norad_ephem["sat_az"][e_0:e_1+1])
-                
-                if np.where(channel_power >= noise_threshold) != []: 
-                    good_power = channel_power[np.where(channel_power >= noise_threshold)[0]]
-                    good_alt = alt[np.where(channel_power >= noise_threshold)[0]]
-                    good_az  = az[np.where(channel_power >= noise_threshold)[0]]
+            if np.where(channel_power >= noise_threshold) != []: 
+                good_power = channel_power[np.where(channel_power >= noise_threshold)[0]]
+                good_alt = alt[np.where(channel_power >= noise_threshold)[0]]
+                good_az  = az[np.where(channel_power >= noise_threshold)[0]]
             
     return [good_power, good_alt, good_az]
                 
