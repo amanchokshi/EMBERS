@@ -143,7 +143,7 @@ def plt_waterfall_pass(out_dir, power, sat_id, start, stop, chs, date, cmap):
         ax.axvspan(ch-1.0, ch+0.6, alpha=0.2, color='white')
     
     #plt.show()
-    plt.savefig(f'{out_dir}/{sat_id}/{date}_{sat_id}_waterfall.png')
+    plt.savefig(f'{out_dir}/{date}_{sat_id}_waterfall.png')
     plt.close()
     plt.rcParams.update(plt.rcParamsDefault)
 
@@ -201,7 +201,7 @@ def plt_channel(
     leg.get_frame().set_alpha(0.2)
     for l in leg.legendHandles:
         l.set_alpha(1)
-    plt.savefig(f'{out_dir}/{sat_id}/{date}_{sat_id}_{chan_num}_channel.png')
+    plt.savefig(f'{out_dir}/{date}_{sat_id}_{chan_num}_channel.png')
     plt.close()
     plt.rcParams.update(plt.rcParamsDefault)
 
@@ -241,7 +241,7 @@ def sat_plot(out_dir, ids, norad_id, alt, az, num_passes, date, name):
         l.set_alpha(1)
     
     plt.tight_layout()
-    plt.savefig(f'{out_dir}/{norad_id}/{date}_{norad_id}_{name}.png')
+    plt.savefig(f'{out_dir}/{date}_{norad_id}_{name}.png')
     plt.close()
     plt.rcParams.update(plt.rcParamsDefault)
 
