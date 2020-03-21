@@ -203,7 +203,7 @@ def find_sat_channel(norad_id):
                 # Altitude threshold. Sats below 20 degrees are bound to be faint, and not register
                 if sat_alt_max >= alt_thresh:
                     
-                    Path(f'{out_dir}/{ref_tile}/{norad_id}').mkdir(parents=True, exist_ok=True)
+                    Path(f'{plt_dir}/{norad_id}').mkdir(parents=True, exist_ok=True)
                        
                     intvl = time_filter(rise_ephem, set_ephem, np.asarray(times))
 
@@ -250,7 +250,7 @@ def find_sat_channel(norad_id):
                                     
                                         # Plots the channel with satellite pass
                                         plt_channel(
-                                                out_dir/ref_tile, times_c, power_c[:, s_chan],
+                                                f'{plt_dir}/{norad_id}', times_c, power_c[:, s_chan],
                                                 s_chan, min_s, max_s, noise_threshold,
                                                 arbitrary_threshold,center, cog, cog_thresh,
                                                 norad_id, f'{date_time[day][window]}')
@@ -266,7 +266,7 @@ def find_sat_channel(norad_id):
                             
                             # plot waterfall with sat window and all selected channels highlighted
                             plt_waterfall_pass(
-                                    out_dir/ref_tile, power, norad_id,
+                                    f'{plt_dir}/{norad_id}', power, norad_id,
                                     w_start, w_stop, possible_chans,
                                     f'{date_time[day][window]}', cmap)
                             
@@ -320,7 +320,7 @@ def find_sat_channel(norad_id):
                                     plt_az.append(e[3])
                             
                             # Plot sat ephemeris 
-                            sat_plot(out_dir/ref_tile, plt_ids, norad_id, plt_alt, plt_az, len(plt_ids), f'{date_time[day][window]}', 'passes')
+                            sat_plot(f'{plt_dir}/{norad_id}', plt_ids, norad_id, plt_alt, plt_az, len(plt_ids), f'{date_time[day][window]}', 'passes')
                             sats.extend(plt_ids) 
 
     if chans != []:
@@ -338,9 +338,9 @@ def find_sat_channel(norad_id):
                 'sats': sats
                 }
                 
-        Path(f'{out_dir}/{ref_tile}/channel_data/').mkdir(parents=True, exist_ok=True)
+        Path(f'{out_dir}/channel_data/').mkdir(parents=True, exist_ok=True)
 
-        with open(f'{out_dir}/{ref_tile}/channel_data/{int(norad_id)}.json','w') as f: 
+        with open(f'{out_dir}/channel_data/{int(norad_id)}.json','w') as f: 
             json.dump(sat_data, f, indent=4) 
 
 if __name__=="__main__":
@@ -360,6 +360,7 @@ if __name__=="__main__":
     parser.add_argument('--start_date', metavar='\b', help='Date from which to start aligning data. Ex: 2019-10-10')
     parser.add_argument('--stop_date', metavar='\b', help='Date until which to align data. Ex: 2019-10-11')
     parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/sat_channels/',help='Output directory. Default=./../../outputs/sat_channels/')
+    parser.add_argument('--plt_dir', metavar='\b', default='./../../outputs/sat_channels/sat_passes',help='Output directory. Default=./../../outputs/sat_channels/sat_passes')
     parser.add_argument('--chrono_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json',help='Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/')
     parser.add_argument('--savgol_window', metavar='\b', default=151,help='Length of savgol window. Must be odd. Default=151')
     parser.add_argument('--polyorder', metavar='\b', default=1,help='Order of polynomial to fit to savgol window. Default=1')
@@ -381,6 +382,7 @@ if __name__=="__main__":
     start_date =        args.start_date
     stop_date =         args.stop_date
     out_dir =           args.out_dir
+    plt_dir =           args.plt_dir
     savgol_window =     args.savgol_window
     polyorder =         args.polyorder
     interp_type =       args.interp_type
