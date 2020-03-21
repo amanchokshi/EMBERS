@@ -7,7 +7,7 @@ from pathlib import Path
 import concurrent.futures
 import matplotlib.pyplot as plt
 from scipy.stats import median_absolute_deviation as mad
-from sat_channels import time_tree, time_filter, plt_waterfall_pass, plt_channel, sat_plot
+from sat_channels import time_tree, time_filter,center_of_gravity, plt_waterfall_pass, plt_channel, sat_plot
 
 # Custom spectral colormap
 sys.path.append('../decode_rf_data')
@@ -24,24 +24,45 @@ def read_aligned(ali_file=None):
     return [power, times]
 
 
+def noise_floor(sat_thresh, noi_thresh, data=None):
+    '''Computes '''
+    
+    # compute the standard deviation of data, and use it to identify occupied channels
+    σ = np.std(data)
+    
+    # Any channel with a max power >= σ has a satellite
+    sat_cut = sat_thresh*σ
+    chans_pow_max = np.amax(data, axis=0)
+    
+    # Exclude the channels with sats, to only have noise data
+    noise_chans = np.where(chans_pow_max < sat_cut)[0]
+    noise_data = data[:, noise_chans]
+    
+    # noise median, noise mad, noise threshold = μ + 3*σ
+    μ_noise = np.median(noise_data)
+    σ_noise = mad(noise_data, axis=None)
+    noise_threshold = μ_noise + noi_thresh*σ_noise
+    
+    # scale the data so that it has zero median
+    data = data - μ_noise
+    
+    return (data, noise_threshold)
+
+
 def power_ephem(
         ref_file,
         chrono_file,
         sat_id,
-        sat_chan
+        date
         ):
 
     '''Create power, alt, az arrays at constant cadence'''
 
     power, times = read_aligned(ali_file=ref_file)
 
+    # Scale noise floor to zero and determine noise threshold
+    power, noise_threshold = noise_floor(sat_thresh, noi_thresh, power)
 
-    # To first order, let us consider the median to be the noise floor
-    noise_f = np.median(power)
-    
-    # Scale the power to bring the median noise floor down to zero
-    power = power - noise_f
-    
     with open(chrono_file) as chrono:
         chrono_ephem = json.load(chrono)
     
@@ -66,26 +87,62 @@ def power_ephem(
         
                 # Slice [crop] the power/times arrays to the times of sat pass
                 power_c = power[w_start:w_stop+1, :]
-                channel_power = power_c[:, sat_chan]
                 times_c = times[w_start:w_stop+1]
+
+                # Now we need to find the most suitable channel in this cropped power array
+                ##################################
+
+                possible_chans = []
+
+                # Loop over every channel
+                for s_chan in range(len(power_c[0])):
+                    
+                    channel_power = power_c[:, s_chan]
+                    
+                    # Percentage of signal occupancy above noise threshold
+                    window_occupancy = (np.where(channel_power >= noise_threshold))[0].size/window_len
+            
+                    max_s = np.amax(channel_power)
+                    min_s = np.amin(channel_power)
+
+                    # Arbitrary threshold below which satellites aren't counted
+                    # Only continue if there is signal for more than 80% of satellite pass
+                    if (max(channel_power) >= arb_thresh and 
+                            occ_thresh <= window_occupancy < 1.00):
+                     
+                        # fist and last 10 steps must be below the noise threshold
+                        if (all(p < noise_threshold for p in channel_power[:10]) and 
+                            all(p < noise_threshold for p in channel_power[-11:-1])) is True:
+
+                            # Center of gravity section
+                            # Checks how central the signal is within the window
+                            center, cog, frac_cen_offset = center_of_gravity(channel_power, times_c)
+
+                            # Another threshold
+                            # The Center of Gravity of signal is within 5% of center
+                            if frac_cen_offset <= cog_thresh:
+                            
+                                # Plots the channel with satellite pass
+                                plt_channel(
+                                        plt_dir, times_c, power_c[:, s_chan],
+                                        s_chan, min_s, max_s, noise_threshold,
+                                        arb_thresh,center, cog, cog_thresh,
+                                        sat_id, date)
+                                
+                                possible_chans.append(s_chan)
                 
-                # the median of this data should already be very close to 0
-                # because we scaled the power array to the noise floor
-                # compute the standard deviation of data, and use it to identify occupied channels
-                σ = np.std(power_c)
+                # If channels are identified in the 30 min obs
+                n_chans = len(possible_chans)
                 
-                # Any channel with a max power >= 3σ has a satellite
-                sat_cut = sat_thresh*σ
-                chans_pow_max = np.amax(power_c, axis=0)
-                
-                # Exclude the channels with sats, to only have noise data
-                noise_chans = np.where(chans_pow_max < sat_cut)[0]
-                noise_data = power_c[:, noise_chans]
-           
-                # noise median, noise mad, noise threshold = μ + 3*σ
-                μ_noise = np.median(noise_data)
-                σ_noise = mad(noise_data, axis=None)
-                noise_threshold = μ_noise + noi_thresh*σ_noise
+                if n_chans > 0:
+
+                    # plot waterfall with sat window and all selected channels highlighted
+                    plt_waterfall_pass(
+                            plt_dir, power, sat_id,
+                            w_start, w_stop, possible_chans,
+                            date, cmap)
+
+                ##################################
 
                 times_sat = np.asarray(norad_ephem["time_array"])
                 
@@ -113,10 +170,6 @@ def power_ephem(
 
 def proj_ref_healpix(ref):
 
-    # Read channel map file
-    with open(chan_map) as map:
-        channel_map = json.load(map)
-    
     # Initialize empty beam map and list
     # a list of empty lists to append values to
     ref_map  = [[] for pixel in range(hp.nside2npix(nside))]
@@ -152,10 +205,12 @@ def proj_ref_healpix(ref):
                     if chrono_ephem != []:
                 
                         norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))]
+
+                        if norad_list != []:
                         
-                        for sat in list(channel_map.keys()):
-                                            
-                            if int(sat) in norad_list and norad_list != []:
+                            for sat in norad_list:
+
+                                ############################################
 
                                 chans = channel_map[sat]
                                 
@@ -165,7 +220,8 @@ def proj_ref_healpix(ref):
                                             ref_file,
                                             chrono_file,
                                             int(sat),
-                                            chan_num
+                                            chan_num,
+                                            date_time[day][window]
                                             )
                                     
                                     if sat_data != 0:
@@ -224,11 +280,15 @@ if __name__=='__main__':
     parser.add_argument('--start_date', metavar='\b', help='Date from which to start aligning data. Ex: 2019-10-10')
     parser.add_argument('--stop_date', metavar='\b', help='Date until which to align data. Ex: 2019-10-11')
     parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/null_test/',help='Output directory. Default=./../../outputs/null_test/')
+    parser.add_argument('--plt_dir', metavar='\b', default='./../../outputs/null_test/pass_plots/',help='Output directory. Default=./../../outputs/null_test/pass_plots/')
     parser.add_argument('--ali_dir', metavar='\b', default='./../../outputs/align_data/',help='Output directory. Default=./../../outputs/align_data/')
     parser.add_argument('--chan_map', metavar='\b', default='../../data/channel_map.json',help='Satellite channel map. Default=../../data/channel_map.json')
     parser.add_argument('--chrono_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json',help='Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/')
     parser.add_argument('--noi_thresh', metavar='\b', default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
-    parser.add_argument('--sat_thresh', metavar='\b', default=1,help='3 σ threshold to detect sats Default=1.')
+    parser.add_argument('--sat_thresh', metavar='\b', default=1,help='1 σ threshold to detect sats Default=1.')
+    parser.add_argument('--arb_thresh', metavar='\b', default=12,help='Arbitrary Threshold to detect sats. Default=12 dB.')
+    parser.add_argument('--occ_thresh', metavar='\b', default=0.80,help='Occupation Threshold of sat in window. Default=0.70')
+    parser.add_argument('--cog_thresh', metavar='\b', default=0.05,help='Center of Gravity Threshold to detect sats. Default=0.05')
     parser.add_argument('--nside', metavar='\b', default=32,help='Healpix Nside. Default = 32')
     
     args = parser.parse_args()
@@ -237,16 +297,21 @@ if __name__=='__main__':
     start_date =        args.start_date
     stop_date =         args.stop_date
     out_dir =           args.out_dir
+    plt_dir =           args.plt_dir
     ali_dir =           args.ali_dir
     chan_map =          args.chan_map
     noi_thresh =        args.noi_thresh
     sat_thresh =        args.sat_thresh
+    arb_thresh =        args.arb_thresh
+    occ_thresh =        args.occ_thresh
+    cog_thresh =        args.cog_thresh
     nside =             args.nside
 
     ref_names=['rf0XX', 'rf0YY', 'rf1XX', 'rf1YY']
     
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
+    Path(plt_dir).mkdir(parents=True, exist_ok=True)
     sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
 
     # Parallization magic happens here
