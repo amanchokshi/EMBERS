@@ -19,6 +19,14 @@ from channels_plt import plt_waterfall_pass, plt_channel, plt_hist, sat_plot
 cmap = spectral()
 import sat_ids
 
+def read_aligned(ali_file=None):
+    '''Read aligned data npz file'''
+    paired_data = np.load(ali_file, allow_pickle=True)
+    
+    power   = paired_data['ref_p_aligned']
+    times   = paired_data['time_array']
+
+    return [power, times]
 
 def power_ephem(
         ref_file,
@@ -33,7 +41,9 @@ def power_ephem(
 
     '''Create power, alt, az arrays at constant cadence'''
 
-    power, times = savgol_interp(ref_file, savgol_window, polyorder, interp_type, interp_freq )
+    #power, times = savgol_interp(ref_file, savgol_window, polyorder, interp_type, interp_freq )
+    power, times = read_aligned(ali_file=ref_file)
+
 
     # To first order, let us consider the median to be the noise floor
     noise_f = np.median(power)
@@ -124,7 +134,13 @@ def proj_ref_healpix(ref):
         # Loop through each 30 min obs in day
         for window in range(len(date_time[day])):
             
-            ref_file = f'{data_dir}/{ref}/{dates[day]}/{ref}_{date_time[day][window]}.txt'
+            if 'XX' in ref:
+                ref_file = f'{ali_dir}/{dates[day]}/{date_time[day][window]}/{ref}_S06XX_{date_time[day][window]}_aligned.npz'
+            else:
+                ref_file = f'{ali_dir}/{dates[day]}/{date_time[day][window]}/{ref}_S06YY_{date_time[day][window]}_aligned.npz'
+            
+            
+            #ref_file = f'{data_dir}/{ref}/{dates[day]}/{ref}_{date_time[day][window]}.txt'
             chrono_file = f'{chrono_dir}/{date_time[day][window]}.json'
             
             try:
@@ -214,6 +230,7 @@ if __name__=='__main__':
     parser.add_argument('--start_date', metavar='\b', help='Date from which to start aligning data. Ex: 2019-10-10')
     parser.add_argument('--stop_date', metavar='\b', help='Date until which to align data. Ex: 2019-10-11')
     parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/null_test/',help='Output directory. Default=./../../outputs/null_test/')
+    parser.add_argument('--ali_dir', metavar='\b', default='./../../outputs/align_data/',help='Output directory. Default=./../../outputs/align_data/')
     parser.add_argument('--chan_map', metavar='\b', default='../../data/channel_map.json',help='Satellite channel map. Default=../../data/channel_map.json')
     parser.add_argument('--chrono_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json',help='Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/')
     parser.add_argument('--savgol_window', metavar='\b', default=151,help='Length of savgol window. Must be odd. Default=151')
@@ -231,6 +248,7 @@ if __name__=='__main__':
     start_date =        args.start_date
     stop_date =         args.stop_date
     out_dir =           args.out_dir
+    ali_dir =           args.ali_dir
     chan_map =          args.chan_map
     savgol_window =     args.savgol_window
     polyorder =         args.polyorder
