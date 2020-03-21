@@ -131,7 +131,7 @@ def power_ephem(
 
                                 occu_list.append(window_occupancy)
                                 
-                                if plots is True:
+                                if plots == 'True':
                                     # Plots the channel with satellite pass
                                     plt_channel(
                                             f'{plt_dir}/{ref}', times_c, channel_power,
@@ -149,7 +149,7 @@ def power_ephem(
                 
                 if n_chans > 0:
                     
-                    if plots is True:
+                    if plots == 'True':
                         # plot waterfall with sat window and all selected channels highlighted
                         plt_waterfall_pass(
                                 f'{plt_dir}/{ref}', power, sat_id,
@@ -166,7 +166,7 @@ def power_ephem(
                     alt = np.asarray(norad_ephem["sat_alt"])
                     az  = np.asarray(norad_ephem["sat_az"])
                             
-                    if plots is True: 
+                    if plots == 'True': 
                         # Plot ephemeris of lightly sats present in ephem window of norad_id
                         plt_ids = []
                         plt_alt = []
@@ -235,7 +235,7 @@ def power_ephem(
 
 def proj_ref_healpix(ref):
     
-    if plots is True:
+    if plots == 'True':
         Path(f'{plt_dir}/{ref}').mkdir(parents=True, exist_ok=True)
 
     # Initialize empty beam map and list
@@ -373,7 +373,7 @@ if __name__=='__main__':
 
     ref_names=['rf0XX', 'rf0YY', 'rf1XX', 'rf1YY']
     
-    if plots is True:
+    if plots == 'True':
         Path(plt_dir).mkdir(parents=True, exist_ok=True)
     
     # Save logs 
