@@ -130,13 +130,14 @@ def power_ephem(
 
 
                                 occu_list.append(window_occupancy)
-                            
-                                # Plots the channel with satellite pass
-                                plt_channel(
-                                        f'{plt_dir}/{ref}', times_c, channel_power,
-                                        s_chan, min_s, max_s, noise_threshold,
-                                        arb_thresh,center, cog, cog_thresh,
-                                        sat_id, date)
+                                
+                                if plots is True:
+                                    # Plots the channel with satellite pass
+                                    plt_channel(
+                                            f'{plt_dir}/{ref}', times_c, channel_power,
+                                            s_chan, min_s, max_s, noise_threshold,
+                                            arb_thresh,center, cog, cog_thresh,
+                                            sat_id, date)
                                 
                                 possible_chans.append(s_chan)
 
@@ -147,12 +148,13 @@ def power_ephem(
                 n_chans = len(possible_chans)
                 
                 if n_chans > 0:
-
-                    # plot waterfall with sat window and all selected channels highlighted
-                    plt_waterfall_pass(
-                            f'{plt_dir}/{ref}', power, sat_id,
-                            w_start, w_stop, possible_chans,
-                            date, cmap)
+                    
+                    if plots is True:
+                        # plot waterfall with sat window and all selected channels highlighted
+                        plt_waterfall_pass(
+                                f'{plt_dir}/{ref}', power, sat_id,
+                                w_start, w_stop, possible_chans,
+                                date, cmap)
                     
                     # The most lightly channel is one with the highest occupation
                     good_chan = possible_chans[occu_list.index(max(occu_list))]
@@ -164,55 +166,53 @@ def power_ephem(
                     alt = np.asarray(norad_ephem["sat_alt"])
                     az  = np.asarray(norad_ephem["sat_az"])
                             
-                    #################
-                            
-                    # Plot ephemeris of lightly sats present in ephem window of norad_id
-                    plt_ids = []
-                    plt_alt = []
-                    plt_az  = []
+                    if plots is True: 
+                        # Plot ephemeris of lightly sats present in ephem window of norad_id
+                        plt_ids = []
+                        plt_alt = []
+                        plt_az  = []
 
-                    other_passes = []
-                    
-                    # loop through all sats in chrono_ephem
-                    for s in range(len(chrono_ephem)):
-                        times_sat = chrono_ephem[s]["time_array"]
+                        other_passes = []
                         
-                        # Crop ephem of all sats to size of norad_id sat
-                        intvl_ephem = time_filter(times_c[0], times_c[-1], np.asarray(times_sat))
-                        
-                        if intvl_ephem != None:
-                            e_0, e_1 = intvl_ephem
+                        # loop through all sats in chrono_ephem
+                        for s in range(len(chrono_ephem)):
+                            times_sat = chrono_ephem[s]["time_array"]
                             
-                            if len(chrono_ephem[s]["sat_alt"][e_0:e_1+1]) >= occ_thresh*len(times_c):
+                            # Crop ephem of all sats to size of norad_id sat
+                            intvl_ephem = time_filter(times_c[0], times_c[-1], np.asarray(times_sat))
+                            
+                            if intvl_ephem != None:
+                                e_0, e_1 = intvl_ephem
                                 
-                                if chrono_ephem[s]["sat_id"][0] == sat_id:
-                                
-                                    plt_ids.extend(chrono_ephem[s]["sat_id"])
-                                    plt_alt.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
-                                    plt_az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
-                                
-                                else:
-                                    other_ephem = []
-                                    other_ephem.append(len(chrono_ephem[s]['sat_alt'][e_0:e_1+1]))
-                                    other_ephem.extend(chrono_ephem[s]["sat_id"])
-                                    other_ephem.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
-                                    other_ephem.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
+                                if len(chrono_ephem[s]["sat_alt"][e_0:e_1+1]) >= occ_thresh*len(times_c):
+                                    
+                                    if chrono_ephem[s]["sat_id"][0] == sat_id:
+                                    
+                                        plt_ids.extend(chrono_ephem[s]["sat_id"])
+                                        plt_alt.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
+                                        plt_az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
+                                    
+                                    else:
+                                        other_ephem = []
+                                        other_ephem.append(len(chrono_ephem[s]['sat_alt'][e_0:e_1+1]))
+                                        other_ephem.extend(chrono_ephem[s]["sat_id"])
+                                        other_ephem.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
+                                        other_ephem.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
 
-                                    other_passes.append(other_ephem)
+                                        other_passes.append(other_ephem)
 
 
-                    other_passes = sorted(other_passes, key=lambda x: x[0])
-                    if n_chans > 1:
-                        for e in other_passes[-(n_chans-1):][::-1]:   # BEWARE!!!! If two elements have same lenght, are they switched by reversing??
-                            plt_ids.append(e[1])
-                            plt_alt.append(e[2])
-                            plt_az.append(e[3])
+                        other_passes = sorted(other_passes, key=lambda x: x[0])
+                        if n_chans > 1:
+                            for e in other_passes[-(n_chans-1):][::-1]:   # BEWARE!!!! If two elements have same lenght, are they switched by reversing??
+                                plt_ids.append(e[1])
+                                plt_alt.append(e[2])
+                                plt_az.append(e[3])
+                        
+                        # Plot sat ephemeris 
+                        sat_plot(f'{plt_dir}/{ref}', plt_ids, sat_id, plt_alt, plt_az, len(plt_ids), date, 'passes')
                     
-                    # Plot sat ephemeris 
-                    sat_plot(f'{plt_dir}/{ref}', plt_ids, sat_id, plt_alt, plt_az, len(plt_ids), date, 'passes')
-                    
-                    ###################               
-
+                    # Determine good data above noise threshold 
                     if np.where(channel_power >= noise_threshold)[0].size != 0: 
                         good_power = channel_power[np.where(channel_power >= noise_threshold)[0]]
                         good_alt = alt[np.where(channel_power >= noise_threshold)[0]]
@@ -235,7 +235,8 @@ def power_ephem(
 
 def proj_ref_healpix(ref):
     
-    Path(f'{plt_dir}/{ref}').mkdir(parents=True, exist_ok=True)
+    if plots is True:
+        Path(f'{plt_dir}/{ref}').mkdir(parents=True, exist_ok=True)
 
     # Initialize empty beam map and list
     # a list of empty lists to append values to
@@ -351,6 +352,7 @@ if __name__=='__main__':
     parser.add_argument('--occ_thresh', metavar='\b', default=0.80,help='Occupation Threshold of sat in window. Default=0.70')
     parser.add_argument('--cog_thresh', metavar='\b', default=0.05,help='Center of Gravity Threshold to detect sats. Default=0.05')
     parser.add_argument('--nside', metavar='\b', default=32,help='Healpix Nside. Default = 32')
+    parser.add_argument('--plots', metavar='\b', default=False,help='If True, create a gazzillion plots for each sat pass. Default = False')
     
     args = parser.parse_args()
     
@@ -367,19 +369,20 @@ if __name__=='__main__':
     occ_thresh =        args.occ_thresh
     cog_thresh =        args.cog_thresh
     nside =             args.nside
+    plots =             args.plots
 
     ref_names=['rf0XX', 'rf0YY', 'rf1XX', 'rf1YY']
     
+    if plots is True:
+        Path(plt_dir).mkdir(parents=True, exist_ok=True)
+    
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-    Path(plt_dir).mkdir(parents=True, exist_ok=True)
-    #sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
 
-#    # Parallization magic happens here
-#    with concurrent.futures.ProcessPoolExecutor() as executor:
-#        results = executor.map(proj_ref_healpix, ref_names)
-
-    proj_ref_healpix('rf0XX')
+    # Parallization magic happens here
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(proj_ref_healpix, ref_names)
 
     
 
