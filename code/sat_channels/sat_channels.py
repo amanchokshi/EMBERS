@@ -227,131 +227,132 @@ def find_sat_channel(norad_id):
                 rise_ephem  = norad_ephem["time_array"][0] 
                 set_ephem   = norad_ephem["time_array"][-1]
                 
-                # Max altitude that the sat attains
-                sat_alt_max = np.amax(norad_ephem["sat_alt"])
+                ## Max altitude that the sat attains
+                #sat_alt_max = np.amax(norad_ephem["sat_alt"])
             
-                # Altitude threshold. Sats below 20 degrees are bound to be faint, and not register
-                if sat_alt_max >= alt_thresh:
+                ## Altitude threshold. Sats below 20 degrees are bound to be faint, and not register
+                #if sat_alt_max >= alt_thresh:
                     
-                    Path(f'{plt_dir}/{norad_id}').mkdir(parents=True, exist_ok=True)
+                Path(f'{plt_dir}/{norad_id}').mkdir(parents=True, exist_ok=True)
+                   
+                intvl = time_filter(rise_ephem, set_ephem, np.asarray(times))
+
+                if intvl != None:
+                    
+                    w_start, w_stop = intvl
+            
+                    # length of sat pass. Only consider passes longer than 2 minutes
+                    window_len = w_stop - w_start + 1
+                    
+                    # Slice [crop] the power/times arrays to the times of sat pass
+                    power_c = power[w_start:w_stop+1, :]
+                    times_c = times[w_start:w_stop+1]
+                    
+                    possible_chans = []
+
+                    # Loop over every channel
+                    for s_chan in range(len(power_c[0])):
+                        
+                        channel_power = power_c[:, s_chan]
+                        
+                        # Percentage of signal occupancy above noise threshold
+                        window_occupancy = (np.where(channel_power >= noise_threshold))[0].size/window_len
+            
+                        max_s = np.amax(channel_power)
+                        min_s = np.amin(channel_power)
+
+                        # Arbitrary threshold below which satellites aren't counted
+                        # Only continue if there is signal for more than 80% of satellite pass
+                        if (max(channel_power) >= arb_thresh and 
+                                occ_thresh <= window_occupancy < 1.00):
+                         
+                            ## fist and last 10 steps must be below the noise threshold
+                            #if (all(p < noise_threshold for p in channel_power[:10]) and 
+                            #    all(p < noise_threshold for p in channel_power[-11:-1])) is True:
+
+                            #    # Center of gravity section
+                            #    # Checks how central the signal is within the window
+                            #    center, cog, frac_cen_offset = center_of_gravity(channel_power, times_c)
+
+                            #    # Another threshold
+                            #    # The Center of Gravity of signal is within 5% of center
+                            #    if frac_cen_offset <= cog_thresh:
+                            #    
+                            #        # Plots the channel with satellite pass
+                            #        plt_channel(
+                            #                f'{plt_dir}/{norad_id}', times_c, power_c[:, s_chan],
+                            #                s_chan, min_s, max_s, noise_threshold,
+                            #                arb_thresh,center, cog, cog_thresh,
+                            #                norad_id, f'{date_time[day][window]}')
+                            #        
+                            #        possible_chans.append(s_chan)
+                            possible_chans.append(s_chan)
+                    
+                    # If channels are identified in the 30 min obs
+                    n_chans = len(possible_chans)
+                    
+                    if n_chans > 0:
+
+                        sat_count += 1
+                        
+                        # plot waterfall with sat window and all selected channels highlighted
+                        plt_waterfall_pass(
+                                f'{plt_dir}/{norad_id}', power, norad_id,
+                                w_start, w_stop, possible_chans,
+                                f'{date_time[day][window]}', cmap)
+                        
+                        # Add possible chans to ultimate list of chans, for histogram
+                        chans.extend(possible_chans)
+
+                        ## Plot ephemeris of lighly sats present in ephem window of norad_id
+                        #plt_ids = []
+                        #plt_alt = []
+                        #plt_az  = []
+
+                        #other_passes = []
                        
-                    intvl = time_filter(rise_ephem, set_ephem, np.asarray(times))
+                        ## loop through all sats in chrono_ephem
+                        #for s in range(len(chrono_ephem)):
+                        #    times_sat = chrono_ephem[s]["time_array"]
+                        #    
+                        #    # Crop ephem of all sats to size of norad_id sat
+                        #    intvl_ephem = time_filter(times_c[0], times_c[-1], np.asarray(times_sat))
+                        #    
+                        #    if intvl_ephem != None:
+                        #        e_0, e_1 = intvl_ephem
+                        #        
+                        #        # altittude and occupancy filters
+                        #        sat_alt_max = np.amax(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
+                        #        if sat_alt_max >= alt_thresh:
+                        #           
+                        #            if len(chrono_ephem[s]["sat_alt"][e_0:e_1+1]) >= occ_thresh*len(times_c):
+                        #                
+                        #                if chrono_ephem[s]["sat_id"][0] == norad_id:
+                        #                
+                        #                    plt_ids.extend(chrono_ephem[s]["sat_id"])
+                        #                    plt_alt.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
+                        #                    plt_az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
+                        #                
+                        #                else:
+                        #                    other_ephem = []
+                        #                    other_ephem.append(len(chrono_ephem[s]['sat_alt'][e_0:e_1+1]))
+                        #                    other_ephem.extend(chrono_ephem[s]["sat_id"])
+                        #                    other_ephem.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
+                        #                    other_ephem.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
 
-                    if intvl != None:
-                        
-                        w_start, w_stop = intvl
-            
-                        # length of sat pass. Only consider passes longer than 2 minutes
-                        window_len = w_stop - w_start + 1
-                        
-                        # Slice [crop] the power/times arrays to the times of sat pass
-                        power_c = power[w_start:w_stop+1, :]
-                        times_c = times[w_start:w_stop+1]
-                        
-                        possible_chans = []
-
-                        # Loop over every channel
-                        for s_chan in range(len(power_c[0])):
-                            
-                            channel_power = power_c[:, s_chan]
-                            
-                            # Percentage of signal occupancy above noise threshold
-                            window_occupancy = (np.where(channel_power >= noise_threshold))[0].size/window_len
-            
-                            max_s = np.amax(channel_power)
-                            min_s = np.amin(channel_power)
-
-                            # Arbitrary threshold below which satellites aren't counted
-                            # Only continue if there is signal for more than 80% of satellite pass
-                            if (max(channel_power) >= arb_thresh and 
-                                    occ_thresh <= window_occupancy < 1.00):
-                             
-                                # fist and last 10 steps must be below the noise threshold
-                                if (all(p < noise_threshold for p in channel_power[:10]) and 
-                                    all(p < noise_threshold for p in channel_power[-11:-1])) is True:
-
-                                    # Center of gravity section
-                                    # Checks how central the signal is within the window
-                                    center, cog, frac_cen_offset = center_of_gravity(channel_power, times_c)
-
-                                    # Another threshold
-                                    # The Center of Gravity of signal is within 5% of center
-                                    if frac_cen_offset <= cog_thresh:
-                                    
-                                        # Plots the channel with satellite pass
-                                        plt_channel(
-                                                f'{plt_dir}/{norad_id}', times_c, power_c[:, s_chan],
-                                                s_chan, min_s, max_s, noise_threshold,
-                                                arb_thresh,center, cog, cog_thresh,
-                                                norad_id, f'{date_time[day][window]}')
-                                        
-                                        possible_chans.append(s_chan)
-                        
-                        # If channels are identified in the 30 min obs
-                        n_chans = len(possible_chans)
-                        
-                        if n_chans > 0:
-
-                            sat_count += 1
-                            
-                            # plot waterfall with sat window and all selected channels highlighted
-                            plt_waterfall_pass(
-                                    f'{plt_dir}/{norad_id}', power, norad_id,
-                                    w_start, w_stop, possible_chans,
-                                    f'{date_time[day][window]}', cmap)
-                            
-                            # Add possible chans to ultimate list of chans, for histogram
-                            chans.extend(possible_chans)
-
-                            # Plot ephemeris of lighly sats present in ephem window of norad_id
-                            plt_ids = []
-                            plt_alt = []
-                            plt_az  = []
-
-                            other_passes = []
-                           
-                            # loop through all sats in chrono_ephem
-                            for s in range(len(chrono_ephem)):
-                                times_sat = chrono_ephem[s]["time_array"]
-                                
-                                # Crop ephem of all sats to size of norad_id sat
-                                intvl_ephem = time_filter(times_c[0], times_c[-1], np.asarray(times_sat))
-                                
-                                if intvl_ephem != None:
-                                    e_0, e_1 = intvl_ephem
-                                    
-                                    # altittude and occupancy filters
-                                    sat_alt_max = np.amax(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
-                                    if sat_alt_max >= alt_thresh:
-                                       
-                                        if len(chrono_ephem[s]["sat_alt"][e_0:e_1+1]) >= occ_thresh*len(times_c):
-                                            
-                                            if chrono_ephem[s]["sat_id"][0] == norad_id:
-                                            
-                                                plt_ids.extend(chrono_ephem[s]["sat_id"])
-                                                plt_alt.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
-                                                plt_az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
-                                            
-                                            else:
-                                                other_ephem = []
-                                                other_ephem.append(len(chrono_ephem[s]['sat_alt'][e_0:e_1+1]))
-                                                other_ephem.extend(chrono_ephem[s]["sat_id"])
-                                                other_ephem.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
-                                                other_ephem.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
-
-                                                other_passes.append(other_ephem)
+                        #                    other_passes.append(other_ephem)
 
 
-                            other_passes = sorted(other_passes, key=lambda x: x[0])
-                            if n_chans > 1:
-                                for e in other_passes[-(n_chans-1):][::-1]:   # BEWARE!!!! If two elements have same lenght, are they switched by reversing??
-                                    plt_ids.append(e[1])
-                                    plt_alt.append(e[2])
-                                    plt_az.append(e[3])
-                            
-                            # Plot sat ephemeris 
-                            sat_plot(f'{plt_dir}/{norad_id}', plt_ids, norad_id, plt_alt, plt_az, len(plt_ids), f'{date_time[day][window]}', 'passes')
-                            sats.extend(plt_ids) 
+                        #other_passes = sorted(other_passes, key=lambda x: x[0])
+                        #if n_chans > 1:
+                        #    for e in other_passes[-(n_chans-1):][::-1]:   # BEWARE!!!! If two elements have same lenght, are they switched by reversing??
+                        #        plt_ids.append(e[1])
+                        #        plt_alt.append(e[2])
+                        #        plt_az.append(e[3])
+                        #
+                        ## Plot sat ephemeris 
+                        #sat_plot(f'{plt_dir}/{norad_id}', plt_ids, norad_id, plt_alt, plt_az, len(plt_ids), f'{date_time[day][window]}', 'passes')
+                        sats.extend(plt_ids) 
 
     if chans != []:
 
