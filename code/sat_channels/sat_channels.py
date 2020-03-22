@@ -266,6 +266,17 @@ def find_sat_channel(norad_id):
                         if (max(channel_power) >= arb_thresh and 
                                 occ_thresh <= window_occupancy < 1.00):
                          
+                            if times_c[0] == times[0]:
+                                if (all(p < noise_threshold for p in channel_power[-11:-1])) is True:
+                                    possible_chans.append(s_chan)
+                            elif times_c[-1] == times[0]:
+                                if (all(p < noise_threshold for p in channel_power[:10])) is True:
+                                    possible_chans.append(s_chan)
+                            else:
+                                if (all(p < noise_threshold for p in channel_power[:10]) and 
+                                    all(p < noise_threshold for p in channel_power[-11:-1])) is True:
+                                    possible_chans.append(s_chan)
+
                             ## fist and last 10 steps must be below the noise threshold
                             #if (all(p < noise_threshold for p in channel_power[:10]) and 
                             #    all(p < noise_threshold for p in channel_power[-11:-1])) is True:
@@ -286,7 +297,7 @@ def find_sat_channel(norad_id):
                             #                norad_id, f'{date_time[day][window]}')
                             #        
                             #        possible_chans.append(s_chan)
-                            possible_chans.append(s_chan)
+                            #possible_chans.append(s_chan)
                     
                     # If channels are identified in the 30 min obs
                     n_chans = len(possible_chans)
@@ -304,53 +315,53 @@ def find_sat_channel(norad_id):
                         # Add possible chans to ultimate list of chans, for histogram
                         chans.extend(possible_chans)
 
-                        ## Plot ephemeris of lighly sats present in ephem window of norad_id
-                        #plt_ids = []
-                        #plt_alt = []
-                        #plt_az  = []
+                        # Plot ephemeris of lighly sats present in ephem window of norad_id
+                        plt_ids = []
+                        plt_alt = []
+                        plt_az  = []
 
-                        #other_passes = []
+                        other_passes = []
                        
-                        ## loop through all sats in chrono_ephem
-                        #for s in range(len(chrono_ephem)):
-                        #    times_sat = chrono_ephem[s]["time_array"]
-                        #    
-                        #    # Crop ephem of all sats to size of norad_id sat
-                        #    intvl_ephem = time_filter(times_c[0], times_c[-1], np.asarray(times_sat))
-                        #    
-                        #    if intvl_ephem != None:
-                        #        e_0, e_1 = intvl_ephem
-                        #        
-                        #        # altittude and occupancy filters
-                        #        sat_alt_max = np.amax(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
-                        #        if sat_alt_max >= alt_thresh:
-                        #           
-                        #            if len(chrono_ephem[s]["sat_alt"][e_0:e_1+1]) >= occ_thresh*len(times_c):
-                        #                
-                        #                if chrono_ephem[s]["sat_id"][0] == norad_id:
-                        #                
-                        #                    plt_ids.extend(chrono_ephem[s]["sat_id"])
-                        #                    plt_alt.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
-                        #                    plt_az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
-                        #                
-                        #                else:
-                        #                    other_ephem = []
-                        #                    other_ephem.append(len(chrono_ephem[s]['sat_alt'][e_0:e_1+1]))
-                        #                    other_ephem.extend(chrono_ephem[s]["sat_id"])
-                        #                    other_ephem.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
-                        #                    other_ephem.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
+                        # loop through all sats in chrono_ephem
+                        for s in range(len(chrono_ephem)):
+                            times_sat = chrono_ephem[s]["time_array"]
+                            
+                            # Crop ephem of all sats to size of norad_id sat
+                            intvl_ephem = time_filter(times_c[0], times_c[-1], np.asarray(times_sat))
+                            
+                            if intvl_ephem != None:
+                                e_0, e_1 = intvl_ephem
+                                
+                                # altittude and occupancy filters
+                                sat_alt_max = np.amax(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
+                                if sat_alt_max >= alt_thresh:
+                                   
+                                    if len(chrono_ephem[s]["sat_alt"][e_0:e_1+1]) >= occ_thresh*len(times_c):
+                                        
+                                        if chrono_ephem[s]["sat_id"][0] == norad_id:
+                                        
+                                            plt_ids.extend(chrono_ephem[s]["sat_id"])
+                                            plt_alt.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
+                                            plt_az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
+                                        
+                                        else:
+                                            other_ephem = []
+                                            other_ephem.append(len(chrono_ephem[s]['sat_alt'][e_0:e_1+1]))
+                                            other_ephem.extend(chrono_ephem[s]["sat_id"])
+                                            other_ephem.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
+                                            other_ephem.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
 
-                        #                    other_passes.append(other_ephem)
+                                            other_passes.append(other_ephem)
 
 
-                        #other_passes = sorted(other_passes, key=lambda x: x[0])
-                        #if n_chans > 1:
-                        #    for e in other_passes[-(n_chans-1):][::-1]:   # BEWARE!!!! If two elements have same lenght, are they switched by reversing??
-                        #        plt_ids.append(e[1])
-                        #        plt_alt.append(e[2])
-                        #        plt_az.append(e[3])
-                        #
-                        ## Plot sat ephemeris 
+                        other_passes = sorted(other_passes, key=lambda x: x[0])
+                        if n_chans > 1:
+                            for e in other_passes[-(n_chans-1):][::-1]:   # BEWARE!!!! If two elements have same lenght, are they switched by reversing??
+                                plt_ids.append(e[1])
+                                plt_alt.append(e[2])
+                                plt_az.append(e[3])
+                        
+                        # Plot sat ephemeris 
                         #sat_plot(f'{plt_dir}/{norad_id}', plt_ids, norad_id, plt_alt, plt_az, len(plt_ids), f'{date_time[day][window]}', 'passes')
                         sats.extend(plt_ids) 
 
