@@ -52,24 +52,24 @@ if __name__=="__main__":
                         'Channel Number',
                         'Number of Passes', 
                         f'Probable Transmission Channel of Sat {sat_id}: {pop_chans}',
-                        f'{out_dir}/histograms/{sat_id}_channels_histo_{sat_count}_passes_{pop_chans}.png',
+                        f'{out_dir}/histograms/{sat_id}_channels_histo_{sum(counts)}_passes_{pop_chans}.png',
                         'GnBu_d')
                 
-            if sats != []:
-                s_values, s_counts = np.unique(sats, return_counts=True)
+            #if sats != []:
+            #    s_values, s_counts = np.unique(sats, return_counts=True)
         
-                # only plot sat if it has more than 3 counts
+            #    # only plot sat if it has more than 3 counts
         
-                s_values = s_values[np.where(s_counts>2)]
-                s_counts = s_counts[np.where(s_counts>2)]
-                
-                #plt_hist(out_dir, values, counts, norad_id)
-                plt_hist(s_values, s_counts,
-                        'Norad Catalogue ID',
-                        'Number of Passes', 
-                        f'Possible Satellites in {sat_id} Window',
-                        f'{out_dir}/histograms/{sat_id}_sats_histo.png',
-                        'rocket')
+            #    s_values = s_values[np.where(s_counts>2)]
+            #    s_counts = s_counts[np.where(s_counts>2)]
+            #    
+            #    #plt_hist(out_dir, values, counts, norad_id)
+            #    plt_hist(s_values, s_counts,
+            #            'Norad Catalogue ID',
+            #            'Number of Passes', 
+            #            f'Possible Satellites in {sat_id} Window',
+            #            f'{out_dir}/histograms/{sat_id}_sats_histo.png',
+            #            'rocket')
 
 
     sat_channels = dict(zip(norad_ids, channels))
