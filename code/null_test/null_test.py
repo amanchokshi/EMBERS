@@ -230,6 +230,8 @@ if __name__=='__main__':
     import argparse
     import numpy as np
     from pathlib import Path
+    import matplotlib
+    matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     import matplotlib.gridspec as gs
     from mpl_toolkits.axes_grid1 import make_axes_locatable
