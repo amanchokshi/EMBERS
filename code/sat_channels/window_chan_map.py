@@ -91,11 +91,6 @@ def power_ephem(
             power_c = power[w_start:w_stop+1, :]
             times_c = times[w_start:w_stop+1]
 
-            #plt_waterfall_pass(
-            #        f'{plt_dir}/{date}/{timestamp}', power, sat_id,
-            #        w_start, w_stop, [0],
-            #        timestamp, cmap)
-            
             possible_chans = []
             occu_list = []
             
