@@ -182,9 +182,9 @@ def proj_ref_healpix(ref):
             timestamp = date_time[day][window]
             
             if 'XX' in ref:
-                ref_file = f'{ali_dir}/{date}/{timestamp}/{ref}_S06XX_{timestamp}_aligned.npz'
+                ref_file = f'{ali_dir}/{date}/{timestamp}/{ref}_S07XX_{timestamp}_aligned.npz'
             else:
-                ref_file = f'{ali_dir}/{date}/{timestamp}/{ref}_S06YY_{timestamp}_aligned.npz'
+                ref_file = f'{ali_dir}/{date}/{timestamp}/{ref}_S07YY_{timestamp}_aligned.npz'
             
             
             chrono_file = f'{chrono_dir}/{timestamp}.json'
