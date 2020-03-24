@@ -8,7 +8,7 @@ import concurrent.futures
 import matplotlib.pyplot as plt
 from scipy.stats import median_absolute_deviation as mad
 from sat_channels import time_tree, time_filter,center_of_gravity
-from channels_plt import plt_waterfall_pass, plt_channel, sat_plot
+from channels_plt import plt_waterfall_pass, plt_channel_basic, sat_plot
 
 # Custom spectral colormap
 sys.path.append('../decode_rf_data')
@@ -85,23 +85,20 @@ def power_ephem(
             
             w_start, w_stop = intvl
             
-            # length of sat pass. Only consider passes longer than 2 minutes
             window_len = w_stop - w_start + 1
             
-            #if window_len >= 120:
-        
             # Slice [crop] the power/times arrays to the times of sat pass
             power_c = power[w_start:w_stop+1, :]
             times_c = times[w_start:w_stop+1]
-            
-            plt_waterfall_pass(
-                    f'{plt_dir}/{date}/{timestamp}', power, sat_id,
-                    w_start, w_stop, [0],
-                    timestamp, cmap)
 
+            #plt_waterfall_pass(
+            #        f'{plt_dir}/{date}/{timestamp}', power, sat_id,
+            #        w_start, w_stop, [0],
+            #        timestamp, cmap)
+            
             possible_chans = []
             occu_list = []
-
+            
             # Loop over every channel
             for s_chan in range(len(power_c[0])):
                 
@@ -109,7 +106,6 @@ def power_ephem(
                 
                 # Percentage of signal occupancy above noise threshold
                 window_occupancy = (np.where(channel_power >= noise_threshold))[0].size/window_len
-
             
                 max_s = np.amax(channel_power)
                 min_s = np.amin(channel_power)
@@ -118,124 +114,82 @@ def power_ephem(
                 # Only continue if there is signal for more than 80% of satellite pass
                 if (max(channel_power) >= arb_thresh and 
                         occ_thresh <= window_occupancy < 1.00):
-                    
-                    if times_c[0] == times[0]:
+
+                    if (times[0] == times_c[0]):
                         if (all(p < noise_threshold for p in channel_power[-11:-1])) is True:
                             occu_list.append(window_occupancy)
                             possible_chans.append(s_chan)
-                    elif times_c[-1] == times[0]:
+                            #print(f'{sat_id}: {s_chan} {window_occupancy}')
+                            
+                            if plots == 'True':
+                                plt_channel_basic(
+                                        f'{plt_dir}/{date}/{timestamp}', times_c, channel_power,
+                                        s_chan, min_s, max_s, noise_threshold,
+                                        arb_thresh, sat_id, timestamp)
+
+                    elif (times[-1] == times_c[-1]):
                         if (all(p < noise_threshold for p in channel_power[:10])) is True:
                             occu_list.append(window_occupancy)
                             possible_chans.append(s_chan)
+                            #print(f'{sat_id}: {s_chan} {window_occupancy}')
+                
+                            if plots == 'True':
+                                plt_channel_basic(
+                                        f'{plt_dir}/{date}/{timestamp}', times_c, channel_power,
+                                        s_chan, min_s, max_s, noise_threshold,
+                                        arb_thresh, sat_id, timestamp)
+
                     else:
                         if (all(p < noise_threshold for p in channel_power[:10]) and 
                             all(p < noise_threshold for p in channel_power[-11:-1])) is True:
                             occu_list.append(window_occupancy)
                             possible_chans.append(s_chan)
+                            #print(f'{sat_id}: {s_chan} {window_occupancy}')
+                
+                            if plots == 'True':
+                                plt_channel_basic(
+                                        f'{plt_dir}/{date}/{timestamp}', times_c, channel_power,
+                                        s_chan, min_s, max_s, noise_threshold,
+                                        arb_thresh, sat_id, timestamp)
+                    
+                   # occu_list.append(window_occupancy)
+                   # possible_chans.append(s_chan)
+                   # #print(f'{sat_id}: {s_chan} {window_occupancy}')
+                
+                   # plt_channel_basic(
+                   #         f'{plt_dir}/{date}/{timestamp}', times_c, channel_power,
+                   #         s_chan, min_s, max_s, noise_threshold,
+                   #         arb_thresh, sat_id, timestamp)
 
-
-                    ## first and last 10 steps must be below the noise threshold
-                    #if (all(p < noise_threshold for p in channel_power[:10]) and 
-                    #    all(p < noise_threshold for p in channel_power[-11:-1])) is True:
-
-
-                    ## Center of gravity section
-                    ## Checks how central the signal is within the window
-                    #center, cog, frac_cen_offset = center_of_gravity(channel_power, times_c)
-
-                    ## Another threshold
-                    ## The Center of Gravity of signal is within 5% of center
-                    #if frac_cen_offset <= cog_thresh:
-
-
-                    #    occu_list.append(window_occupancy)
-                    #    
-                    #    if plots == 'True':
-                    #        # Plots the channel with satellite pass
-                    #        plt_channel(
-                    #                f'{plt_dir}/{date}/{timestamp}', times_c, channel_power,
-                    #                s_chan, min_s, max_s, noise_threshold,
-                    #                arb_thresh,center, cog, cog_thresh,
-                    #                sat_id, timestamp)
-                    #    
-                    #    possible_chans.append(s_chan)
-
-                #else:
-                #    continue
-
+            
+            
             # If channels are identified in the 30 min obs
             n_chans = len(possible_chans)
-            
+
             if n_chans > 0:
                 
                 # The most lightly channel is one with the highest occupation
                 good_chan = possible_chans[occu_list.index(max(occu_list))]
-                #return good_chan
-            
-                if plots == 'True':
-                    # plot waterfall with sat window and all selected channels highlighted
-                    plt_waterfall_pass(
-                            f'{plt_dir}/{date}/{timestamp}', power, sat_id,
-                            w_start, w_stop, possible_chans,
-                            timestamp, cmap)
                 
-                    # Plot ephemeris of lightly sats present in ephem window of norad_id
-                    plt_ids = []
-                    plt_alt = []
-                    plt_az  = []
+                if plots == 'True':
+                    plt_waterfall_pass(
+                            power, sat_id, w_start, w_stop, timestamp, cmap, 
+                            chs=possible_chans, good_ch=good_chan, out_dir=f'{plt_dir}/{date}/{timestamp}', )
+                
+                return good_chan
 
-                    other_passes = []
-                    
-                    # loop through all sats in chrono_ephem
-                    for s in range(len(chrono_ephem)):
-                        times_sat = chrono_ephem[s]["time_array"]
-                        
-                        # Crop ephem of all sats to size of norad_id sat
-                        intvl_ephem = time_filter(times_c[0], times_c[-1], np.asarray(times_sat))
-                        
-                        if intvl_ephem != None:
-                            e_0, e_1 = intvl_ephem
-                            
-                            if len(chrono_ephem[s]["sat_alt"][e_0:e_1+1]) >= occ_thresh*len(times_c):
-                                
-                                if chrono_ephem[s]["sat_id"][0] == sat_id:
-                                
-                                    plt_ids.extend(chrono_ephem[s]["sat_id"])
-                                    plt_alt.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
-                                    plt_az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
-                                
-                                else:
-                                    other_ephem = []
-                                    other_ephem.append(len(chrono_ephem[s]['sat_alt'][e_0:e_1+1]))
-                                    other_ephem.extend(chrono_ephem[s]["sat_id"])
-                                    other_ephem.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
-                                    other_ephem.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
-
-                                    other_passes.append(other_ephem)
-
-
-
-
-                    other_passes = sorted(other_passes, key=lambda x: x[0])
-                    if n_chans > 1:
-                        for e in other_passes[-(n_chans-1):][::-1]:   # BEWARE!!!! If two elements have same lenght, are they switched by reversing??
-                            plt_ids.append(e[1])
-                            plt_alt.append(e[2])
-                            plt_az.append(e[3])
-                    
-                    # Plot sat ephemeris 
-                    sat_plot(f'{plt_dir}/{date}/{timestamp}', plt_ids, sat_id, plt_alt, plt_az, len(plt_ids), timestamp, 'passes')
-                    
-                    return good_chan
-
-                else:
-                    return good_chan
-            
             else:
+                if plots == 'True':
+                    plt_waterfall_pass(
+                            power, sat_id, w_start, w_stop, timestamp, cmap, 
+                            chs=None, good_ch=None, out_dir=f'{plt_dir}/{date}/{timestamp}', )
                 return 0
-        
+
         else:
             return 0
+
+
+
                 
 
 def window_chan_map(obs_stamp):
@@ -271,7 +225,7 @@ def window_chan_map(obs_stamp):
                                 date,
                                 timestamp
                                 )
-                        
+                       
                         if sat_data != 0:
                             sat_chan = sat_data
                             
@@ -304,7 +258,6 @@ if __name__=='__main__':
     parser.add_argument('--sat_thresh', metavar='\b', default=1,help='1 σ threshold to detect sats Default=1.')
     parser.add_argument('--arb_thresh', metavar='\b', default=10,help='Arbitrary Threshold to detect sats. Default=12 dB.')
     parser.add_argument('--occ_thresh', metavar='\b', default=0.80,help='Occupation Threshold of sat in window. Default=0.80')
-    parser.add_argument('--cog_thresh', metavar='\b', default=0.05,help='Center of Gravity Threshold to detect sats. Default=0.05')
     parser.add_argument('--plots', metavar='\b', default=False,help='If True, create a gazzillion plots for each sat pass. Default = False')
     
     args = parser.parse_args()
@@ -319,7 +272,6 @@ if __name__=='__main__':
     sat_thresh =        args.sat_thresh
     arb_thresh =        args.arb_thresh
     occ_thresh =        args.occ_thresh
-    cog_thresh =        args.cog_thresh
     plots =             args.plots
 
     ref_names=['rf0XX', 'rf0YY', 'rf1XX', 'rf1YY']
@@ -334,7 +286,9 @@ if __name__=='__main__':
     obs_list = [[dates[d], date_time[d][dt]] for d in range(len(dates)) for dt in range(len(date_time[d]))]
 
 #    for o in obs_list:
+#        print(o)
 #        window_chan_map(o)
+#        break
 
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor() as executor:

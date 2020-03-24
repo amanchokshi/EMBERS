@@ -307,10 +307,10 @@ def find_sat_channel(norad_id):
                         sat_count += 1
                         
                         # plot waterfall with sat window and all selected channels highlighted
-                        plt_waterfall_pass(
-                                f'{plt_dir}/{norad_id}', power, norad_id,
-                                w_start, w_stop, possible_chans,
-                                f'{date_time[day][window]}', cmap)
+                        #plt_waterfall_pass(
+                        #        f'{plt_dir}/{norad_id}', power, norad_id,
+                        #        w_start, w_stop, possible_chans,
+                        #        f'{date_time[day][window]}', cmap)
                         
                         # Add possible chans to ultimate list of chans, for histogram
                         chans.extend(possible_chans)
