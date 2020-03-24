@@ -35,9 +35,6 @@ if __name__=="__main__":
             pop_chans = chan_data["pop_chans"]
             chans = chan_data["chans"]
 
-            norad_ids.append(sat_id)
-            channels.append(pop_chans)
-
             if chans != []:
         
                 values, counts = np.unique(chans, return_counts=True)
