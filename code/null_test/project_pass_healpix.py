@@ -7,7 +7,9 @@ from pathlib import Path
 import concurrent.futures
 import matplotlib.pyplot as plt
 from scipy.stats import median_absolute_deviation as mad
-from sat_channels import time_tree, time_filter,center_of_gravity, plt_waterfall_pass, plt_channel, sat_plot
+
+sys.path.append('../sat_channels')
+from sat_channels import time_tree, time_filter
 
 # Custom spectral colormap
 sys.path.append('../decode_rf_data')
@@ -50,13 +52,59 @@ def noise_floor(sat_thresh, noi_thresh, data=None):
     return (data, noise_threshold)
 
 
+def plt_channel(
+        out_dir, times, channel_power,
+        chan_num, min_s, max_s, noise_threshold,
+        sat_id, date):
+
+    '''Plot power in channel, with various thresholds
+    
+    Args:
+        times:          Time array
+        channel_power:  Power in channel
+        chan_num:       Channel Number
+        min_s:          Minimum signal in channel_power
+        max_s:          Maximum signal in channel_power
+        noise_threshold: Noise Threshold (n*MAD)
+        sat_id:         Norad Cat ID
+        date:           Date of observation
+        '''
+    
+    
+    plt.style.use('seaborn')
+    
+    # plt channel power
+    plt.plot(times, channel_power, linestyle='-', linewidth=2, alpha=1.0, color='#729d39', label='Data')
+    plt.fill_between(times, channel_power, color='#83b271', alpha=0.7)
+    
+    plt.axhline(noise_threshold, linestyle='-', linewidth=2, color='#ff6138',
+            label=f'Noise Cut: {noise_threshold:.2f} dBm')
+    plt.axhspan(-1, noise_threshold, color='#ff895d', alpha=0.4)
+    
+    plt.ylim([min_s - 1, max_s + 1])
+    plt.xlim([times[0], times[-1]])
+    plt.ylabel('Power [dBm]')
+    plt.xlabel('Time [s]')
+    plt.title(f'Satellite [{sat_id}] Pass @ {date} in Channel: [{chan_num}]')
+    plt.tight_layout()
+    leg = plt.legend(frameon=True)
+    leg.get_frame().set_facecolor('grey')
+    leg.get_frame().set_alpha(0.2)
+    for l in leg.legendHandles:
+        l.set_alpha(1)
+    plt.savefig(f'{out_dir}/{date}_{sat_id}_{chan_num}_channel.png')
+    plt.close()
+    plt.rcParams.update(plt.rcParamsDefault)
+
+
+
 def power_ephem(
         ref,
         ref_file,
         chrono_file,
         sat_id,
         chan,
-        date
+        timestamp
         ):
 
     '''Create power, alt, az arrays at constant cadence'''
@@ -84,31 +132,27 @@ def power_ephem(
             
             w_start, w_stop = intvl
             
-            # length of sat pass. Only consider passes longer than 2 minutes
-            window_len = w_stop - w_start + 1
-            
-            if window_len >= 120:
-        
-                # Slice [crop] the power/times arrays to the times of sat pass
-                channel_power = power[w_start:w_stop+1, chan]
-                times_c = times[w_start:w_stop+1]
+            # Slice [crop] the power/times arrays to the times of sat pass
+            channel_power = power[w_start:w_stop+1, chan]
+            times_c = times[w_start:w_stop+1]
 
-                alt = np.asarray(norad_ephem["sat_alt"])
-                az  = np.asarray(norad_ephem["sat_az"])
+            alt = np.asarray(norad_ephem["sat_alt"])
+            az  = np.asarray(norad_ephem["sat_az"])
 
-                if np.where(channel_power >= noise_threshold)[0].size != 0: 
-                    good_power = channel_power[np.where(channel_power >= noise_threshold)[0]]
-                    good_alt = alt[np.where(channel_power >= noise_threshold)[0]]
-                    good_az  = az[np.where(channel_power >= noise_threshold)[0]]
-
-                    return [good_power, good_alt, good_az]
-
-                else:
-                    return 0
+            if np.where(channel_power >= noise_threshold)[0].size != 0: 
+                good_power = channel_power[np.where(channel_power >= noise_threshold)[0]]
+                good_alt = alt[np.where(channel_power >= noise_threshold)[0]]
+                good_az  = az[np.where(channel_power >= noise_threshold)[0]]
+                
+                
+                if plots == 'True':
+                    plt_channel(f'{plt_dir}/{ref}', times_c, channel_power, chan, min(channel_power), max(channel_power), noise_threshold, sat_id, timestamp )
+                
+                return [good_power, good_alt, good_az]
 
             else:
                 return 0
-        
+
         else:
             return 0
                 
