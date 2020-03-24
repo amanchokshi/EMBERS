@@ -55,6 +55,7 @@ def power_ephem(
         ref_file,
         chrono_file,
         sat_id,
+        chan,
         date
         ):
 
@@ -89,139 +90,18 @@ def power_ephem(
             if window_len >= 120:
         
                 # Slice [crop] the power/times arrays to the times of sat pass
-                power_c = power[w_start:w_stop+1, :]
+                channel_power = power[w_start:w_stop+1, chan]
                 times_c = times[w_start:w_stop+1]
 
-                # Now we need to find the most suitable channel in this cropped power array
-                ##################################
+                alt = np.asarray(norad_ephem["sat_alt"])
+                az  = np.asarray(norad_ephem["sat_az"])
 
-                possible_chans = []
-                occu_list = []
+                if np.where(channel_power >= noise_threshold)[0].size != 0: 
+                    good_power = channel_power[np.where(channel_power >= noise_threshold)[0]]
+                    good_alt = alt[np.where(channel_power >= noise_threshold)[0]]
+                    good_az  = az[np.where(channel_power >= noise_threshold)[0]]
 
-                # Loop over every channel
-                for s_chan in range(len(power_c[0])):
-                    
-                    channel_power = power_c[:, s_chan]
-                    
-                    # Percentage of signal occupancy above noise threshold
-                    window_occupancy = (np.where(channel_power >= noise_threshold))[0].size/window_len
-
-            
-                    max_s = np.amax(channel_power)
-                    min_s = np.amin(channel_power)
-
-                    # Arbitrary threshold below which satellites aren't counted
-                    # Only continue if there is signal for more than 80% of satellite pass
-                    if (max(channel_power) >= arb_thresh and 
-                            occ_thresh <= window_occupancy < 1.00):
-                     
-                        # fist and last 10 steps must be below the noise threshold
-                        if (all(p < noise_threshold for p in channel_power[:10]) and 
-                            all(p < noise_threshold for p in channel_power[-11:-1])) is True:
-
-
-                            # Center of gravity section
-                            # Checks how central the signal is within the window
-                            center, cog, frac_cen_offset = center_of_gravity(channel_power, times_c)
-
-                            # Another threshold
-                            # The Center of Gravity of signal is within 5% of center
-                            if frac_cen_offset <= cog_thresh:
-
-
-                                occu_list.append(window_occupancy)
-                                
-                                if plots == 'True':
-                                    # Plots the channel with satellite pass
-                                    plt_channel(
-                                            f'{plt_dir}/{ref}', times_c, channel_power,
-                                            s_chan, min_s, max_s, noise_threshold,
-                                            arb_thresh,center, cog, cog_thresh,
-                                            sat_id, date)
-                                
-                                possible_chans.append(s_chan)
-
-                    else:
-                        continue
-
-                # If channels are identified in the 30 min obs
-                n_chans = len(possible_chans)
-                
-                if n_chans > 0:
-                    
-                    if plots == 'True':
-                        # plot waterfall with sat window and all selected channels highlighted
-                        plt_waterfall_pass(
-                                f'{plt_dir}/{ref}', power, sat_id,
-                                w_start, w_stop, possible_chans,
-                                date, cmap)
-                    
-                    # The most lightly channel is one with the highest occupation
-                    good_chan = possible_chans[occu_list.index(max(occu_list))]
-
-                    channel_power = power_c[:, good_chan]
-
-                    times_sat = np.asarray(norad_ephem["time_array"])
-                    
-                    alt = np.asarray(norad_ephem["sat_alt"])
-                    az  = np.asarray(norad_ephem["sat_az"])
-                            
-                    if plots == 'True': 
-                        # Plot ephemeris of lightly sats present in ephem window of norad_id
-                        plt_ids = []
-                        plt_alt = []
-                        plt_az  = []
-
-                        other_passes = []
-                        
-                        # loop through all sats in chrono_ephem
-                        for s in range(len(chrono_ephem)):
-                            times_sat = chrono_ephem[s]["time_array"]
-                            
-                            # Crop ephem of all sats to size of norad_id sat
-                            intvl_ephem = time_filter(times_c[0], times_c[-1], np.asarray(times_sat))
-                            
-                            if intvl_ephem != None:
-                                e_0, e_1 = intvl_ephem
-                                
-                                if len(chrono_ephem[s]["sat_alt"][e_0:e_1+1]) >= occ_thresh*len(times_c):
-                                    
-                                    if chrono_ephem[s]["sat_id"][0] == sat_id:
-                                    
-                                        plt_ids.extend(chrono_ephem[s]["sat_id"])
-                                        plt_alt.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
-                                        plt_az.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
-                                    
-                                    else:
-                                        other_ephem = []
-                                        other_ephem.append(len(chrono_ephem[s]['sat_alt'][e_0:e_1+1]))
-                                        other_ephem.extend(chrono_ephem[s]["sat_id"])
-                                        other_ephem.append(chrono_ephem[s]["sat_alt"][e_0:e_1+1])
-                                        other_ephem.append(chrono_ephem[s]["sat_az"][e_0:e_1+1])
-
-                                        other_passes.append(other_ephem)
-
-
-                        other_passes = sorted(other_passes, key=lambda x: x[0])
-                        if n_chans > 1:
-                            for e in other_passes[-(n_chans-1):][::-1]:   # BEWARE!!!! If two elements have same lenght, are they switched by reversing??
-                                plt_ids.append(e[1])
-                                plt_alt.append(e[2])
-                                plt_az.append(e[3])
-                        
-                        # Plot sat ephemeris 
-                        sat_plot(f'{plt_dir}/{ref}', plt_ids, sat_id, plt_alt, plt_az, len(plt_ids), date, 'passes')
-                    
-                    # Determine good data above noise threshold 
-                    if np.where(channel_power >= noise_threshold)[0].size != 0: 
-                        good_power = channel_power[np.where(channel_power >= noise_threshold)[0]]
-                        good_alt = alt[np.where(channel_power >= noise_threshold)[0]]
-                        good_az  = az[np.where(channel_power >= noise_threshold)[0]]
-                        
-                        return [good_power, good_alt, good_az]
-
-                    else:
-                        return 0
+                    return [good_power, good_alt, good_az]
 
                 else:
                     return 0
@@ -253,15 +133,18 @@ def proj_ref_healpix(ref):
         
         # Loop through each 30 min obs in day
         for window in range(len(date_time[day])):
+
+            date = dates[day]
+            timestamp = date_time[day][window]
             
             if 'XX' in ref:
-                ref_file = f'{ali_dir}/{dates[day]}/{date_time[day][window]}/{ref}_S06XX_{date_time[day][window]}_aligned.npz'
+                ref_file = f'{ali_dir}/{date}/{timestamp}/{ref}_S06XX_{timestamp}_aligned.npz'
             else:
-                ref_file = f'{ali_dir}/{dates[day]}/{date_time[day][window]}/{ref}_S06YY_{date_time[day][window]}_aligned.npz'
+                ref_file = f'{ali_dir}/{date}/{timestamp}/{ref}_S06YY_{timestamp}_aligned.npz'
             
             
-            #ref_file = f'{data_dir}/{ref}/{dates[day]}/{ref}_{date_time[day][window]}.txt'
-            chrono_file = f'{chrono_dir}/{date_time[day][window]}.json'
+            chrono_file = f'{chrono_dir}/{timestamp}.json'
+            channel_map = f'{map_dir}/{timestamp}.json'
 
             
             try:
@@ -275,51 +158,61 @@ def proj_ref_healpix(ref):
                         norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))]
 
                         if norad_list != []:
+
+                            with open(channel_map) as ch_map:
+                                chan_map = json.load(ch_map)
+
+                                chan_sat_ids = [int(i) for i in list(chan_map.keys())]
                         
-                            for sat in norad_list:
+                                for sat in chan_sat_ids:
 
-                                sat_data = power_ephem(
-                                        ref,
-                                        ref_file,
-                                        chrono_file,
-                                        sat,
-                                        date_time[day][window]
-                                        )
-                                
-                                if sat_data != 0:
-                                    channel_power, alt, az = sat_data
+                                    if sat in norad_list:
 
-                                    # Altitude is in deg while az is in radians
-                                    # convert alt to radians
-                                    alt = np.radians(alt)
-                                    az  = np.asarray(az)
+                                        chan = chan_map[f'{sat}']
 
-                                    # To convert from Alt/Az to θ/ϕ spherical coordinates
-                                    # Jack's convention, not sure about ɸ
-                                    # θ = 90 - Alt
-                                    # ɸ = 180 - Az
+                                        sat_data = power_ephem(
+                                                ref,
+                                                ref_file,
+                                                chrono_file,
+                                                sat,
+                                                chan,
+                                                timestamp
+                                                )
+                                        
+                                        if sat_data != 0:
+                                            channel_power, alt, az = sat_data
 
-                                    # Healpix uses sperical coordinates
-                                    θ = np.pi/2 - alt
-                                    ɸ = np.pi - az
+                                            # Altitude is in deg while az is in radians
+                                            # convert alt to radians
+                                            alt = np.radians(alt)
+                                            az  = np.asarray(az)
 
-                                    # Since we need to slice along NS & EW, and nside = 32 healpix does not 
-                                    # straight lines of pixels vertically or horizontally, but it does have
-                                    # them diagonally. We rotate ɸ by 45° to be able to slice NS & EW
-                                    ɸ_rot = ɸ + (np.pi / 4)
+                                            # To convert from Alt/Az to θ/ϕ spherical coordinates
+                                            # Jack's convention, not sure about ɸ
+                                            # θ = 90 - Alt
+                                            # ɸ = 180 - Az
 
-                                    # Now convert to healpix coordinates
-                                    healpix_index = hp.ang2pix(nside,θ, ɸ_rot)
+                                            # Healpix uses sperical coordinates
+                                            θ = np.pi/2 - alt
+                                            ɸ = np.pi - az
+
+                                            # Since we need to slice along NS & EW, and nside = 32 healpix does not 
+                                            # straight lines of pixels vertically or horizontally, but it does have
+                                            # them diagonally. We rotate ɸ by 45° to be able to slice NS & EW
+                                            ɸ_rot = ɸ + (np.pi / 4)
+
+                                            # Now convert to healpix coordinates
+                                            healpix_index = hp.ang2pix(nside,θ, ɸ_rot)
+                                                    
+                                            # Append channel power to ref healpix map
+                                            for i in range(len(healpix_index)):
+                                                ref_map[healpix_index[i]].append(channel_power[i])
+                                            #[ref_map[healpix_index[i]].append(channel_power[i]) for i in range(len(healpix_index))]
+                                             
                                             
-                                    # Append channel power to ref healpix map
-                                    for i in range(len(healpix_index)):
-                                        ref_map[healpix_index[i]].append(channel_power[i])
-                                    #[ref_map[healpix_index[i]].append(channel_power[i]) for i in range(len(healpix_index))]
-                                     
-                                    
-                                    # Increment pix ounter to keep track of passes in each pix 
-                                    for i in healpix_index:
-                                        ref_counter[i] += 1
+                                            # Increment pix ounter to keep track of passes in each pix 
+                                            for i in healpix_index:
+                                                ref_counter[i] += 1
         
             except Exception:
                 # Exception message is forwarded from ../decode_rf_data/rf_data.py
@@ -344,7 +237,7 @@ if __name__=='__main__':
     parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/null_test/',help='Output directory. Default=./../../outputs/null_test/')
     parser.add_argument('--plt_dir', metavar='\b', default='./../../outputs/null_test/pass_plots/',help='Output directory. Default=./../../outputs/null_test/pass_plots/')
     parser.add_argument('--ali_dir', metavar='\b', default='./../../outputs/align_data/',help='Output directory. Default=./../../outputs/align_data/')
-    parser.add_argument('--chan_map', metavar='\b', default='../../data/channel_map.json',help='Satellite channel map. Default=../../data/channel_map.json')
+    parser.add_argument('--map_dir', metavar='\b', default='../../outputs/sat_channels/window_maps/',help='Satellite channel map. Default=../../outputs/sat_channels/window_maps/')
     parser.add_argument('--chrono_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json',help='Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/')
     parser.add_argument('--noi_thresh', metavar='\b', default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
     parser.add_argument('--sat_thresh', metavar='\b', default=1,help='1 σ threshold to detect sats Default=1.')
@@ -362,7 +255,7 @@ if __name__=='__main__':
     out_dir =           args.out_dir
     plt_dir =           args.plt_dir
     ali_dir =           args.ali_dir
-    chan_map =          args.chan_map
+    map_dir =           args.map_dir
     noi_thresh =        args.noi_thresh
     sat_thresh =        args.sat_thresh
     arb_thresh =        args.arb_thresh
