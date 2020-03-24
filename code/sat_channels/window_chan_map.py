@@ -147,15 +147,6 @@ def power_ephem(
                                         s_chan, min_s, max_s, noise_threshold,
                                         arb_thresh, sat_id, timestamp)
                     
-                   # occu_list.append(window_occupancy)
-                   # possible_chans.append(s_chan)
-                   # #print(f'{sat_id}: {s_chan} {window_occupancy}')
-                
-                   # plt_channel_basic(
-                   #         f'{plt_dir}/{date}/{timestamp}', times_c, channel_power,
-                   #         s_chan, min_s, max_s, noise_threshold,
-                   #         arb_thresh, sat_id, timestamp)
-
             
             
             # If channels are identified in the 30 min obs
@@ -183,9 +174,6 @@ def power_ephem(
         else:
             return 0
 
-
-
-                
 
 def window_chan_map(obs_stamp):
 
