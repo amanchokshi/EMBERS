@@ -25,9 +25,6 @@ if __name__=="__main__":
 
     Path(f'{out_dir}/histograms').mkdir(parents=True, exist_ok=True)
 
-    norad_ids = []
-    channels = []
-
     chan_dir = Path(f'{out_dir}/channel_data')
     
     for f in chan_dir.glob('*.json'):
@@ -36,12 +33,7 @@ if __name__=="__main__":
 
             sat_id = chan_data["sat_id"]
             pop_chans = chan_data["pop_chans"]
-            sat_count = chan_data["sat_count"]
             chans = chan_data["chans"]
-            sats = chan_data["sats"]
-
-            norad_ids.append(sat_id)
-            channels.append(pop_chans)
 
             if chans != []:
         
@@ -55,25 +47,4 @@ if __name__=="__main__":
                         f'{out_dir}/histograms/{sat_id}_channels_histo_{sum(counts)}_passes_{pop_chans}.png',
                         'GnBu_d')
                 
-            #if sats != []:
-            #    s_values, s_counts = np.unique(sats, return_counts=True)
-        
-            #    # only plot sat if it has more than 3 counts
-        
-            #    s_values = s_values[np.where(s_counts>2)]
-            #    s_counts = s_counts[np.where(s_counts>2)]
-            #    
-            #    #plt_hist(out_dir, values, counts, norad_id)
-            #    plt_hist(s_values, s_counts,
-            #            'Norad Catalogue ID',
-            #            'Number of Passes', 
-            #            f'Possible Satellites in {sat_id} Window',
-            #            f'{out_dir}/histograms/{sat_id}_sats_histo.png',
-            #            'rocket')
-
-
-    sat_channels = dict(zip(norad_ids, channels))
-                
-    with open(f'{out_dir}/channel_map.json','w') as f: 
-        json.dump(sat_channels, f) 
 
