@@ -201,7 +201,7 @@ def window_chan_map(obs_stamp):
     
     channel_map = {}
 
-    ref_file = f'{ali_dir}/{date}/{timestamp}/rf0XX_S06XX_{timestamp}_aligned.npz'
+    ref_file = f'{ali_dir}/{date}/{timestamp}/rf0XX_S07XX_{timestamp}_aligned.npz'
     chrono_file = f'{chrono_dir}/{timestamp}.json'
     
     try:
@@ -279,7 +279,7 @@ if __name__=='__main__':
     
     # Save logs 
     Path(f'{out_dir}/window_maps').mkdir(parents=True, exist_ok=True)
-    #sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
 
     # Help traverse all 30 min obs b/w start & stop
     dates, date_time = time_tree(start_date, stop_date)
