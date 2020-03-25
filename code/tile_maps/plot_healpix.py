@@ -80,13 +80,14 @@ def map_plots(f):
     
         # Plot BEAM
         # compute the median for every pixel array
-        tile_map_med = [(np.median(i) if i != [] else np.nan ) for i in tile_map]
-        vmin = np.nanmin(tile_map_med)
-        vmax = np.nanmax(tile_map_med)
+        tile_map_mean = [(np.mean(i) if i != [] else np.nan ) for i in tile_map]
+        tile_map_mean_scaled = [(i - np.nanmax(tile_map_mean)) for i in tile_map_mean]
+        vmin = np.nanmin(tile_map_mean_scaled)
+        vmax = np.nanmax(tile_map_mean_scaled)
 
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Healpix Map: {tile}/{ref} @ {p}', fontsize=16)
-        plot_healpix(data_map=np.asarray(tile_map_med),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
+        plot_healpix(data_map=np.asarray(tile_map_mean_scaled),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
         plt.savefig(f'{out_dir}/{tile}_{ref}_{p}_map.png',bbox_inches='tight')
         plt.close()
            
@@ -146,7 +147,7 @@ if __name__=='__main__':
         Plot healpix map of reference data
         """)
     
-    parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/tile_maps/maps/',help='Output directory. Default=./../../outputs/tile_maps/maps/')
+    parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/tile_maps/beam_maps/',help='Output directory. Default=./../../outputs/tile_maps/beam_maps/')
     parser.add_argument('--map_dir', metavar='\b', default='./../../outputs/tile_maps/',help='Output directory. Default=./../../outputs/tile_maps/')
     
     args = parser.parse_args()
