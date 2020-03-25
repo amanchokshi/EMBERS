@@ -81,7 +81,7 @@ def map_plots(f):
         # Plot BEAM
         # compute the median for every pixel array
         tile_map_mean = [(np.mean(i) if i != [] else np.nan ) for i in tile_map]
-        tile_map_mean_scaled = [(i - np.nanmax(tile_map_mean)) for i in tile_map_mean]
+        tile_map_mean_scaled = np.asarray([(i - np.nanmax(tile_map_mean)) for i in tile_map_mean])
         vmin = np.nanmin(tile_map_mean_scaled)
         vmax = np.nanmax(tile_map_mean_scaled)
 
