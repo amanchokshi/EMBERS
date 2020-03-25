@@ -63,6 +63,22 @@ def slice_map(hp_map):
 
     return [NS_data, EW_data]
 
+def nan_mad(ref_map):
+    '''Compute mad while ignoring nans'''
+    ref_map_mad = []
+    for j in ref_map:
+        if j != []:
+            j = np.asarray(j)
+            j = j[~np.isnan(j)]
+            ref_map_mad.append(mad(j))
+        else:
+            ref_map_mad.append(np.nan)
+
+    ref_map_mad = np.asarray(ref_map_mad)
+    ref_map_mad[np.where(ref_map_mad == np.nan)] = np.nanmean(ref_map_mad)
+
+    return ref_map_mad
+
 
 def ref_map_slice(out_dir, ref_tile):
     '''slices ref healpix map along NS & EW'''
@@ -77,13 +93,15 @@ def ref_map_slice(out_dir, ref_tile):
     ref_med_map_NS = np.asarray([(np.nanmean(i) if i != [] else np.nan) for i in ref_map_NS[0]])
     # Scale mean map such that the max value is 0
     ref_med_map_scaled_NS = np.asarray([i-np.nanmax(ref_med_map_NS) for i in ref_med_map_NS])
-    ref_mad_map_NS = np.asarray([mad(i) for i in ref_map_NS[0]])
+    #ref_mad_map_NS = np.asarray([mad(i) for i in ref_map_NS[0]])
+    ref_mad_map_NS = np.asarray(nan_mad(ref_map_NS[0]))
     za_NS = ref_map_NS[1]
 
     ref_med_map_EW = np.asarray([(np.nanmean(i) if i != [] else np.nan) for i in ref_map_EW[0]])
     # Scale mean map such that the max value is 0
     ref_med_map_scaled_EW = np.asarray([i-np.nanmax(ref_med_map_EW) for i in ref_med_map_EW])
-    ref_mad_map_EW = np.asarray([mad(i) for i in ref_map_EW[0]])
+    #ref_mad_map_EW = np.asarray([mad(i) for i in ref_map_EW[0]])
+    ref_mad_map_EW = np.asarray(nan_mad(ref_map_EW[0]))
     za_EW = ref_map_EW[1]
     
     NS_data = [ref_med_map_scaled_NS, ref_mad_map_NS, za_NS]
