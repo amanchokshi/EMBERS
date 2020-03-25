@@ -102,6 +102,8 @@ def power_ephem(
         ref,
         ref_file,
         chrono_file,
+        arb_thresh,
+        occ_thresh,
         sat_id,
         chan,
         timestamp
@@ -144,53 +146,91 @@ def power_ephem(
             # Percentage of signal occupancy above noise threshold
             window_occupancy = (np.where(channel_power >= noise_threshold))[0].size/window_len
             
-            # Arbitrary threshold below which satellites aren't counted
-            # Only continue if there is signal for more than 80% of satellite pass
-            if (max(channel_power) >= arb_thresh and 
-                    occ_thresh <= window_occupancy < 1.00):
+            ## Arbitrary threshold below which satellites aren't counted
+            ## Only continue if there is signal for more than 80% of satellite pass
+            #if (max(channel_power) >= arb_thresh and 
+            #        occ_thresh <= window_occupancy < 1.00):
 
-                if (times[0] == times_c[0]):
-                    if (all(p < noise_threshold for p in channel_power[-11:-1])) is True:
-                        
-                        if np.where(channel_power >= noise_threshold)[0].size != 0: 
-                            good_power = channel_power[np.where(channel_power >= noise_threshold)[0]]
-                            good_alt = alt[np.where(channel_power >= noise_threshold)[0]]
-                            good_az  = az[np.where(channel_power >= noise_threshold)[0]]
-                
-                
-                            if plots == 'True':
-                                plt_channel(f'{plt_dir}/{ref}', times_c, channel_power, chan, min(channel_power), max(channel_power), noise_threshold, sat_id, timestamp )
-                            
-                            return [good_power, good_alt, good_az]
+            #    if (times[0] == times_c[0]):
+            #        if (all(p < noise_threshold for p in channel_power[-11:-1])) is True:
+            #            
+            #            if np.where(channel_power >= noise_threshold)[0].size != 0: 
+            #                good_power = channel_power[np.where(channel_power >= noise_threshold)[0]]
+            #                good_alt = alt[np.where(channel_power >= noise_threshold)[0]]
+            #                good_az  = az[np.where(channel_power >= noise_threshold)[0]]
+            #    
+            #    
+            #                if plots == 'True':
+            #                    plt_channel(f'{plt_dir}/{ref}', times_c, channel_power, chan, min(channel_power), max(channel_power), noise_threshold, sat_id, timestamp )
+            #                
+            #                return [good_power, good_alt, good_az]
 
-                elif (times[-1] == times_c[-1]):
-                    if (all(p < noise_threshold for p in channel_power[:10])) is True:
-                        
-                        if np.where(channel_power >= noise_threshold)[0].size != 0: 
-                            good_power = channel_power[np.where(channel_power >= noise_threshold)[0]]
-                            good_alt = alt[np.where(channel_power >= noise_threshold)[0]]
-                            good_az  = az[np.where(channel_power >= noise_threshold)[0]]
-                
-                
-                            if plots == 'True':
-                                plt_channel(f'{plt_dir}/{ref}', times_c, channel_power, chan, min(channel_power), max(channel_power), noise_threshold, sat_id, timestamp )
-                            
-                            return [good_power, good_alt, good_az]
+            #            else:
+            #                return 0
+            #        
+            #        else:
+            #            return 0
+            #    
+            #    elif (times[-1] == times_c[-1]):
+            #        if (all(p < noise_threshold for p in channel_power[:10])) is True:
+            #            
+            #            if np.where(channel_power >= noise_threshold)[0].size != 0: 
+            #                good_power = channel_power[np.where(channel_power >= noise_threshold)[0]]
+            #                good_alt = alt[np.where(channel_power >= noise_threshold)[0]]
+            #                good_az  = az[np.where(channel_power >= noise_threshold)[0]]
+            #    
+            #    
+            #                if plots == 'True':
+            #                    plt_channel(f'{plt_dir}/{ref}', times_c, channel_power, chan, min(channel_power), max(channel_power), noise_threshold, sat_id, timestamp )
+            #                
+            #                return [good_power, good_alt, good_az]
+
+            #            else:
+            #                return 0
+            #        
+            #        else:
+            #            return 0
+
+            #    else:
+            #        if (all(p < noise_threshold for p in channel_power[:10]) and 
+            #            all(p < noise_threshold for p in channel_power[-11:-1])) is True:
+
+            #            if np.where(channel_power >= noise_threshold)[0].size != 0: 
+            #                good_power = channel_power[np.where(channel_power >= noise_threshold)[0]]
+            #                good_alt = alt[np.where(channel_power >= noise_threshold)[0]]
+            #                good_az  = az[np.where(channel_power >= noise_threshold)[0]]
+            #    
+            #    
+            #                if plots == 'True':
+            #                    plt_channel(f'{plt_dir}/{ref}', times_c, channel_power, chan, min(channel_power), max(channel_power), noise_threshold, sat_id, timestamp )
+            #                
+            #                return [good_power, good_alt, good_az]
+            #            
+            #            else:
+            #                return 0
+
+            #        else:
+            #            return 0
+
+            #else:
+            #    return 0
+            
+            
+            if (max(channel_power) >= arb_thresh):
            
-                else:
-                    if (all(p < noise_threshold for p in channel_power[:10]) and 
-                        all(p < noise_threshold for p in channel_power[-11:-1])) is True:
+                if np.where(channel_power >= noise_threshold)[0].size != 0: 
+                    good_power = channel_power[np.where(channel_power >= noise_threshold)[0]]
+                    good_alt = alt[np.where(channel_power >= noise_threshold)[0]]
+                    good_az  = az[np.where(channel_power >= noise_threshold)[0]]
+                
+                
+                    if plots == 'True':
+                        plt_channel(f'{plt_dir}/{ref}', times_c, channel_power, chan, min(channel_power), max(channel_power), noise_threshold, sat_id, timestamp )
+                    
+                    return [good_power, good_alt, good_az]
 
-                        if np.where(channel_power >= noise_threshold)[0].size != 0: 
-                            good_power = channel_power[np.where(channel_power >= noise_threshold)[0]]
-                            good_alt = alt[np.where(channel_power >= noise_threshold)[0]]
-                            good_az  = az[np.where(channel_power >= noise_threshold)[0]]
-                
-                
-                            if plots == 'True':
-                                plt_channel(f'{plt_dir}/{ref}', times_c, channel_power, chan, min(channel_power), max(channel_power), noise_threshold, sat_id, timestamp )
-                            
-                            return [good_power, good_alt, good_az]
+                else:
+                    return 0
 
             else:
                 return 0
@@ -260,6 +300,8 @@ def proj_ref_healpix(ref):
                                                 ref,
                                                 ref_file,
                                                 chrono_file,
+                                                arb_thresh,
+                                                occ_thresh,
                                                 sat,
                                                 chan,
                                                 timestamp
@@ -328,6 +370,7 @@ if __name__=='__main__':
     parser.add_argument('--noi_thresh', metavar='\b', default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
     parser.add_argument('--sat_thresh', metavar='\b', default=1,help='1 σ threshold to detect sats Default=1.')
     parser.add_argument('--arb_thresh', metavar='\b', default=10,help='Arbitrary Threshold to detect sats. Default=12 dB.')
+    parser.add_argument('--occ_thresh', metavar='\b', default=0.80,help='Occupation Threshold of sat in window. Default=0.80')
     parser.add_argument('--nside', metavar='\b', default=32,help='Healpix Nside. Default = 32')
     parser.add_argument('--plots', metavar='\b', default=False,help='If True, create a gazzillion plots for each sat pass. Default = False')
     
@@ -343,6 +386,7 @@ if __name__=='__main__':
     noi_thresh =        args.noi_thresh
     sat_thresh =        args.sat_thresh
     arb_thresh =        args.arb_thresh
+    occ_thresh =        args.occ_thresh
     nside =             args.nside
     plots =             args.plots
 
