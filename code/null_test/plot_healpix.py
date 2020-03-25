@@ -72,7 +72,7 @@ def map_plots(f):
     ref_counter = map_data['ref_counter']
     
     # compute the median for every pixel array
-    ref_map_med = [(np.median(i) if i != [] else np.nan ) for i in ref_map]
+    ref_map_med = [(np.mean(i) if i != [] else np.nan ) for i in ref_map]
     vmin = np.nanmin(ref_map_med)
     vmax = np.nanmax(ref_map_med)
 

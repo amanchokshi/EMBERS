@@ -74,11 +74,11 @@ def ref_map_slice(out_dir, ref_tile):
    
     ref_map_NS, ref_map_EW = slice_map(ref_map)
 
-    ref_med_map_NS = np.asarray([(np.nanmedian(i) if i != [] else np.nan) for i in ref_map_NS[0]])
+    ref_med_map_NS = np.asarray([(np.nanmean(i) if i != [] else np.nan) for i in ref_map_NS[0]])
     ref_mad_map_NS = np.asarray([mad(i) for i in ref_map_NS[0]])
     za_NS = ref_map_NS[1]
 
-    ref_med_map_EW = np.asarray([(np.nanmedian(i) if i != [] else np.nan) for i in ref_map_EW[0]])
+    ref_med_map_EW = np.asarray([(np.nanmean(i) if i != [] else np.nan) for i in ref_map_EW[0]])
     ref_mad_map_EW = np.asarray([mad(i) for i in ref_map_EW[0]])
     za_EW = ref_map_EW[1]
     
