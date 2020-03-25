@@ -88,7 +88,7 @@ def map_plots(f):
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Healpix Map: {tile}/{ref} @ {p}', fontsize=16)
         plot_healpix(data_map=np.asarray(tile_map_mean_scaled),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
-        plt.savefig(f'{out_dir}/{tile}_{ref}_{p}_map.png',bbox_inches='tight')
+        plt.savefig(f'{out_dir}/tile_maps/{tile}_{ref}_{p}_map.png',bbox_inches='tight')
         plt.close()
            
         # Plot MAD 
@@ -112,7 +112,7 @@ def map_plots(f):
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Healpix MAD: {tile}/{ref} @ {p}', fontsize=16)
         plot_healpix(data_map=np.asarray(tile_map_mad),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
-        plt.savefig(f'{out_dir}/{tile}_{ref}_{p}_mad.png',bbox_inches='tight')
+        plt.savefig(f'{out_dir}/tile_counts/{tile}_{ref}_{p}_mad.png',bbox_inches='tight')
         plt.close()
 
 
@@ -122,7 +122,7 @@ def map_plots(f):
         fig.suptitle(f'Healpix Pixel Counts: {tile}/{ref} @ {p}', fontsize=16)
         plot_healpix(data_map=np.asarray(tile_counter),sub=(1,1,1), cmap=cmap, vmin=0, vmax=2400)
 
-        plt.savefig(f'{out_dir}/{tile}_{ref}_{p}_counts.png',bbox_inches='tight')
+        plt.savefig(f'{out_dir}/tile_errors/{tile}_{ref}_{p}_counts.png',bbox_inches='tight')
         plt.close()
    
 
@@ -147,7 +147,7 @@ if __name__=='__main__':
         Plot healpix map of reference data
         """)
     
-    parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/tile_maps/beam_maps/',help='Output directory. Default=./../../outputs/tile_maps/beam_maps/')
+    parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/tile_maps/healpix_maps/',help='Output directory. Default=./../../outputs/tile_maps/healpix_maps/')
     parser.add_argument('--map_dir', metavar='\b', default='./../../outputs/tile_maps/',help='Output directory. Default=./../../outputs/tile_maps/')
     
     args = parser.parse_args()
@@ -158,7 +158,9 @@ if __name__=='__main__':
     map_files = [item for item in map_dir.glob('*.npz')]
 
     # Save logs 
-    Path(out_dir).mkdir(parents=True, exist_ok=True)
+    Path(f'{out_dir}/tile_maps/').mkdir(parents=True, exist_ok=True)
+    Path(f'{out_dir}/tile_counts/').mkdir(parents=True, exist_ok=True)
+    Path(f'{out_dir}/tile_errors/').mkdir(parents=True, exist_ok=True)
     
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor() as executor:
