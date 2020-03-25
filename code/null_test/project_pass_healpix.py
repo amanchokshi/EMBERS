@@ -103,7 +103,6 @@ def power_ephem(
         ref_file,
         chrono_file,
         arb_thresh,
-        occ_thresh,
         sat_id,
         chan,
         timestamp
@@ -134,8 +133,6 @@ def power_ephem(
             
             w_start, w_stop = intvl
             
-            window_len = w_stop - w_start + 1
-            
             # Slice [crop] the power/times arrays to the times of sat pass
             channel_power = power[w_start:w_stop+1, chan]
             times_c = times[w_start:w_stop+1]
@@ -143,10 +140,6 @@ def power_ephem(
             alt = np.asarray(norad_ephem["sat_alt"])
             az  = np.asarray(norad_ephem["sat_az"])
 
-            # Percentage of signal occupancy above noise threshold
-            window_occupancy = (np.where(channel_power >= noise_threshold))[0].size/window_len
-            
-            
             if (max(channel_power) >= arb_thresh):
            
                 if np.where(channel_power >= noise_threshold)[0].size != 0: 
@@ -232,7 +225,6 @@ def proj_ref_healpix(ref):
                                                 ref_file,
                                                 chrono_file,
                                                 arb_thresh,
-                                                occ_thresh,
                                                 sat,
                                                 chan,
                                                 timestamp
@@ -300,7 +292,7 @@ if __name__=='__main__':
     parser.add_argument('--chrono_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json',help='Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/')
     parser.add_argument('--noi_thresh', metavar='\b', default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
     parser.add_argument('--sat_thresh', metavar='\b', default=1,help='1 σ threshold to detect sats Default=1.')
-    parser.add_argument('--arb_thresh', metavar='\b', default=10,help='Arbitrary Threshold to detect sats. Default=12 dB.')
+    parser.add_argument('--arb_thresh', metavar='\b', default=10,help='Arbitrary Threshold to detect sats. Default=10 dB.')
     parser.add_argument('--nside', metavar='\b', default=32,help='Healpix Nside. Default = 32')
     parser.add_argument('--plots', metavar='\b', default=False,help='If True, create a gazzillion plots for each sat pass. Default = False')
     
