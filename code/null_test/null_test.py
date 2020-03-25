@@ -75,15 +75,19 @@ def ref_map_slice(out_dir, ref_tile):
     ref_map_NS, ref_map_EW = slice_map(ref_map)
 
     ref_med_map_NS = np.asarray([(np.nanmean(i) if i != [] else np.nan) for i in ref_map_NS[0]])
+    # Scale mean map such that the max value is 0
+    ref_med_map_scaled_NS = np.asarray([i-np.nanmax(ref_med_map_NS) for i in ref_med_map_NS])
     ref_mad_map_NS = np.asarray([mad(i) for i in ref_map_NS[0]])
     za_NS = ref_map_NS[1]
 
     ref_med_map_EW = np.asarray([(np.nanmean(i) if i != [] else np.nan) for i in ref_map_EW[0]])
+    # Scale mean map such that the max value is 0
+    ref_med_map_scaled_EW = np.asarray([i-np.nanmax(ref_med_map_EW) for i in ref_med_map_EW])
     ref_mad_map_EW = np.asarray([mad(i) for i in ref_map_EW[0]])
     za_EW = ref_map_EW[1]
     
-    NS_data = [ref_med_map_NS, ref_mad_map_NS, za_NS]
-    EW_data = [ref_med_map_EW, ref_mad_map_EW, za_EW]
+    NS_data = [ref_med_map_scaled_NS, ref_mad_map_NS, za_NS]
+    EW_data = [ref_med_map_scaled_EW, ref_mad_map_EW, za_EW]
 
     return [NS_data, EW_data]
 
@@ -215,7 +219,7 @@ def plt_null_test(
     
     ax.plot(zen_angle,del_fit, color='#ff8264', linewidth=1.2, alpha=0.9, label=fit_label)
     
-    ax.plot(zen_angle,np.full(len(zen_angle), 0), color='#5c94bd', linewidth=1.2, alpha=0.9, label='Null')
+    #ax.plot(zen_angle,np.full(len(zen_angle), 0), color='#5c94bd', linewidth=1.2, alpha=0.9, label='Null')
 
     ax.set_ylabel('Power (dB)')
     ax.set_xlabel('Zenith Angle (degrees)')
