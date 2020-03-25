@@ -71,23 +71,25 @@ def map_plots(f):
     ref_map = map_data['ref_map']
     ref_counter = map_data['ref_counter']
     
-    # compute the median for every pixel array
-    ref_map_med = [(np.mean(i) if i != [] else np.nan ) for i in ref_map]
-    vmin = np.nanmin(ref_map_med)
-    vmax = np.nanmax(ref_map_med)
+    # compute the mean for every pixel array
+    ref_map_mean = [(np.mean(i) if i != [] else np.nan ) for i in ref_map]
+    vmax = np.nanmax(ref_map_mean)
+
+    # Scale mean map such that the max value is 0
+    ref_map_scaled = [i-vmax for i in ref_map_mean]
+
+    vmin = np.nanmin(ref_map_scaled)
+    vmax = np.nanmax(ref_map_scaled)
 
     fig = plt.figure(figsize=(8,10))
     fig.suptitle(f'Reference Beam Healpix: {ref}', fontsize=16)
-    plot_healpix(data_map=np.asarray(ref_map_med),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
+    plot_healpix(data_map=np.asarray(ref_map_scaled),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
 
     plt.savefig(f'{out_dir}/{f_name}.png',bbox_inches='tight')
     plt.close()
 
 
     # Plot MAD
-    # compute the median for every pixel array
-    ref_map_med = [(np.median(i) if i != [] else np.nan ) for i in ref_map]
-
     ref_map_mad = []
     for j in ref_map:
         if j != []:
@@ -151,7 +153,6 @@ if __name__=='__main__':
     out_dir = Path(args.out_dir)
 
     map_files = [item for item in out_dir.glob('*.npz')]
-    print(map_files)
 
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor() as executor:
