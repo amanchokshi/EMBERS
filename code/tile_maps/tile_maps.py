@@ -132,12 +132,12 @@ def plt_channel(
     
     plt.tight_layout()
     plt.subplots_adjust(top=0.94)
-    plt.savefig(f'{out_dir}/{date}_{sat_id}_{point}_{chan_num}_channel.png')
+    plt.savefig(f'{out_dir}/{date}_{sat_id}_{chan_num}_channel.png')
     plt.close()
 
 
 def power_ephem(
-        tile,
+        ref, tile,
         ali_file,
         chrono_file,
         sat_id,
@@ -193,7 +193,7 @@ def power_ephem(
                     good_az     = az[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
 
                     if plots == 'True':
-                        plt_channel(f'{plt_dir}/{tile}/{point}', times_c, ref_c, tile_c, ref_noise, tile_noise, sat_chan, sat_id, point, timestamp, point)
+                        plt_channel(f'{plt_dir}/{tile}_{ref}/{point}', times_c, ref_c, tile_c, ref_noise, tile_noise, sat_chan, sat_id, point, timestamp, point)
                 
                     return [good_ref, good_tile, good_alt, good_az]
 
@@ -214,9 +214,9 @@ def project_tile_healpix(tile_pair):
     pointings = ['0','2','4']
     
     if plots == 'True':
-        Path(f'{plt_dir}/{tile}/0').mkdir(parents=True, exist_ok=True)
-        Path(f'{plt_dir}/{tile}/2').mkdir(parents=True, exist_ok=True)
-        Path(f'{plt_dir}/{tile}/4').mkdir(parents=True, exist_ok=True)
+        Path(f'{plt_dir}/{tile}_{ref}/0').mkdir(parents=True, exist_ok=True)
+        Path(f'{plt_dir}/{tile}_{ref}/2').mkdir(parents=True, exist_ok=True)
+        Path(f'{plt_dir}/{tile}_{ref}/4').mkdir(parents=True, exist_ok=True)
 
     # Initialize an empty dictionary for tile data
     # The map is list of length 12288 of empty lists to append pixel values to
@@ -265,7 +265,7 @@ def project_tile_healpix(tile_pair):
 
                             
                                             sat_data = power_ephem(
-                                                    tile,
+                                                    ref, tile,
                                                     ali_file,
                                                     chrono_file,
                                                     sat,
@@ -422,13 +422,13 @@ if __name__=='__main__':
     Path(out_dir).mkdir(parents=True, exist_ok=True)
     sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
-    for tile_pair in tile_pairs:
-        project_tile_healpix(tile_pair)
-        break
+#    for tile_pair in tile_pairs:
+#        project_tile_healpix(tile_pair)
+#        break
          
     # Parallization magic happens here
-    #with concurrent.futures.ProcessPoolExecutor() as executor:
-    #    results = executor.map(project_tile_healpix, tile_pairs)
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(project_tile_healpix, tile_pairs)
     
 
 
