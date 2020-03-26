@@ -239,7 +239,7 @@ if __name__=='__main__':
     parser.add_argument('--chrono_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json',help='Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/')
     parser.add_argument('--noi_thresh', metavar='\b', default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
     parser.add_argument('--sat_thresh', metavar='\b', default=1,help='1 σ threshold to detect sats Default=1.')
-    parser.add_argument('--arb_thresh', metavar='\b', default=10,help='Arbitrary Threshold to detect sats. Default=12 dB.')
+    parser.add_argument('--arb_thresh', metavar='\b', default=10,help='Arbitrary Threshold to detect sats. Default=10 dB.')
     parser.add_argument('--occ_thresh', metavar='\b', default=0.80,help='Occupation Threshold of sat in window. Default=0.80')
     parser.add_argument('--plots', metavar='\b', default=False,help='If True, create a gazzillion plots for each sat pass. Default = False')
     
