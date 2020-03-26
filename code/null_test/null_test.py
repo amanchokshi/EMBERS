@@ -166,14 +166,12 @@ def fit_gain(map_data=None,map_error=None,beam=None):
 def poly_fit(x, y, map_data, order):
     '''Fit polynominal of order to data'''
     
-    #print(len(x), len(y))
     x = np.asarray(x)
     y = np.asarray(y)
 
     bad_values = np.isnan(map_data)
     x_good = x[~bad_values]
     y_good = y[~bad_values]
-    #print(len(x), len(y))
     coefs = poly.polyfit(x_good, y_good, order)
     fit = poly.polyval(x, coefs)
     return fit
@@ -238,8 +236,6 @@ def plt_null_test(
     
     ax.plot(zen_angle,del_fit, color='#ff8264', linewidth=1.2, alpha=0.9, label=fit_label)
     
-    #ax.plot(zen_angle,np.full(len(zen_angle), 0), color='#5c94bd', linewidth=1.2, alpha=0.9, label='Null')
-
     ax.set_ylabel('Power (dB)')
     ax.set_xlabel('Zenith Angle (degrees)')
     ax.legend()
