@@ -4,6 +4,8 @@
 import numpy as np
 import healpy as hp
 from pathlib import Path
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from scipy import interpolate
 from scipy.interpolate import RectSphereBivariateSpline,SmoothSphereBivariateSpline
@@ -70,6 +72,9 @@ def create_model(file_name=None):
     # Evaluate the interpolated function at healpix gridpoints
     # Use spline to map beam into healpixels
     beam_response = lut.ev(theta_rad, phi_rad)
+    
+    # rescale beam response to have peak value of 0 dB
+    beam_response = beam_response - np.nanmax(beam_response)
 
     return beam_response,theta_mesh,phi_mesh,power,theta
 
@@ -150,8 +155,8 @@ im2 = ax2.pcolormesh(phi_mesh*(np.pi/180.0),
 ax2.set_title('Ref YY', y=1.1)
 ax2.grid(color='k',alpha=0.3)
 
-plot_healpix(beam_map=healpix_XX,sub=(2,2,3),title=None,vmin=-40,vmax=-20, cmap=cmap)
-plot_healpix(beam_map=healpix_YY,sub=(2,2,4),title=None,vmin=-40,vmax=-20, cmap=cmap)
+plot_healpix(beam_map=healpix_XX,sub=(2,2,3),title=None,vmin=-20,vmax=0, cmap=cmap)
+plot_healpix(beam_map=healpix_YY,sub=(2,2,4),title=None,vmin=-20,vmax=0, cmap=cmap)
 
 ax3 = fig.add_subplot(2,2,3)
 ax3.axis('off')

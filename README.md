@@ -159,79 +159,75 @@ python chrono_ephem.py --help
 
 As access to the ORBCOMM interface box was not available, the channels in which each satellite transimits can be determined with a careful analysis of the RF data and satellite ephemeris.
 
-We use reference data to detect satellite channels and it is much less noisy. For any given reference RF data file, we use it's corresponding chrono_ephem file. This gives us the raw data as well as all the satellite which we expect to be present in the given 30 minute observation. The chrono_ephem.json file containes the ephemeris for each of these satellites.
+We use reference data to detect satellite channels and it is much less noisy. Pairings a reference RF data file, with it's corresponding chrono_ephem file gives us the raw data as well as all the satellite which we expect to be present in 30 minute observation window. The chrono_ephem.json file containes the ephemeris for each of these satellites.
 
-We first smooth the rf data using a savgol filter, and interpolate it to a `1Hz` frequency to match the cadence of the chrono_ephem data. Choosing one satellite present in the data, we identify the temporal region of the rf data where we expect to see its signal. Let us call this the *window*. We now use a series of thresholding criteria to help identify the correct channel.
+We initially chose 72 satellites, which we hoped transimited in our frequency band. We need to verify whether this is actually the case, and eliminate satellite which are out of our band.
+
+Looping over all satellites, we identify when each is present in the data and select the temporal region of the rf data where we expect to see its signal. Let us call this the *window*. We now use a series of thresholding criteria to help identify the most probable channel.
 
 #### Channel Filtering 
 
 The following thresholds were used to identify the correct channel:
 
 * Arbitrary threshold
+* Noise threshold
 * Window Occupancy
-* Center of Gravity 
-* Noise floor
-* Altitude
 
-The peak signal in our data is `~ 30 dB` above the noise floor. We define an arbitrary threshold at `12 dB` and require that the maximum signal in a channel must exceed this value, if it contains a satellit. As our rf power array is sparsely populated with satellite signals, to first order, the median value of the data gives us an estimate of the noise floor. We calculate the Median Average Deviation [MAD] of our signal, and assign a multiple of this to be our noise cutoff. By default we use `10 * MAD` as our noise threshold, and demand that the signal at the edges of the *window* be below the noise threshold. This ensures that the satellite begins and ends within the expected region. A fractional occupancy of the window is computed by finding length of signal above the noise floor and dividing it by the window length. We require that `0.8 ≤ occupancy < 1.0`. By requiring that occupancy is less than `1.0`, we ensure that satellite passes longer than the window are not classified as potential channels. A center of gravity [CoG] method is used as a measure of how centrally distributed the data is. We require that the CoG be within `± 5 %` of the physical center of the window. The last criteria that the signal has to meet to be classified as a potential channel is altitude. Satellite passes near the horizon result in very weak signal, due to the beam shape of the antennas. By requiring that the ephemeris of satellites must exceed `20°` in altitude, we ensure that these beam edge effects don't effect our classification.
 
-The code generates many diagnostic plots and a `Satellite_Channels.txt` file in the `/outputs/sat_channels` directory.
+The peak signal in our data is `~ 30 dB` above the noise floor. We define an arbitrary threshold at `10 dB` and require that the maximum signal in a channel must exceed this value, if it contains a satellit.
+
+Our observation windows are sparesely populated with satellite signal. We classify any channel with a maximum signal below *1σ* to be *noisy data*. We find the *median [μ_noise]* of the *noisy data* and it *Median Absolute Deviatio [σ_noise]*. Using these we construct a noise threshold of *μ_noise + N x σ_noise*. By default N = 3. We now use this noise threshold to more rigorously choose channels with satellites present.
+
+We also demand that the signal at the edges of the *window* be below the noise threshold. This ensures that the satellite begins and ends within the expected region. 
+
+A fractional occupancy of the window is computed by finding length of signal above the noise floor and dividing it by the window length. We require that *0.8 ≤ occupancy < 1.0*. By requiring that occupancy is less than `1.0`, we ensure that satellite passes longer than the window are not classified as potential channels.
+
+We use `sat_channels.py` to determine all the possible channels that each satellite occupies, and the total number of passes in each channel. This data is saved as json files in `/outputs/sat_channels/channel_data`. `channel_occupancy.py` uses the json files to plot histograms of occupied channels for each satellite in `/outputs/sat_channels/histograms`.
 
 ```
 cd ../sat_channels
 
 python sat_channels.py --help
+
+python channel_occupancy.py
 ```
 
-In the `/outputs/sat_channels` directory, `sat_channels.py` generates a folder for each satellite. For every identified *window* a plot of each channels which meet our thresholding criteria is created. This plot shows the signal strength within the window, with all the thresholds used in its classification. For example, in the observation at `2019-10-04-16:00`, while searching for satellite `41180`, two potential channels `[41, 52]` were identified.  
-
-
 <p float="left">
-  <img src="./docs/2019-10-04-16:00_41180_41_channel.png" width="100%" />
+  <img src="./docs/41189_channels_histo_1903_passes_[41].png" width="49%" />
+  <img src="./docs/44387_channels_histo_969_passes_[59].png" width="49%" />
 </p>
 
 <p float="left">
-  <img src="./docs/2019-10-04-16:00_41180_52_channel.png" width="100%" />
+  <img src="./docs/23545_channels_histo_46_passes_[8].png" width="49%" />
+  <img src="./docs/23546_channels_histo_52_passes_[8, 13].png" width="49%" />
 </p>
 
-A waterfall plot of the rf data is also created. It has the window and potential channels highlighted. The channel plots of channels `[41, 52]` seem very similar and led us to question whether satellite may emit in more that one frequency. By plotting the ephemeris of other satellites in the *window*, we were able to rule this out, intead showing that two satellites with incredibly simillar ephemeri exist. While plotting the satellite tracks, we implemented an altitude and occupancy cut, identical to those above. 
+From the ephemeris plots, we know that we expect at least hundreds of passes per satellite. In the first two histograms we have more than 1000 passes each. The top right histogram is of a NOAA Weather satellite, which emits in multiple frequencies. The bottom two histograms have less than hundred passes each, which indicates that the satellite probably emits outside our band, and the passes identified in the histogram were misclassified. Using the histograms, we identify satellites with less than hundred passes and remove them from our satellite list `/sat_ephemeris/sat_ids.py`. This reduces the computation and complexity in the future. Based on our data, 17 satellites were found to not emit in our frequency band. 
 
-`sat_channels.py` creates the plots and saved the relevant data to a json file in `/outputs/sat_channels/channel_data/`.
+#### Window Channel Maps
 
-
-<p float="left">
-  <img src="./docs/2019-10-04-16:00_41180_waterfall.png" height="460" />
-  <img src="./docs/2019-10-04-16:00_41180_passes.png" height="460" />
-</p>
+Since our satellites did not constantly emit in one frequency channel over the 5 month period of our experiment, we make a *window map* for every half hour observation using `window_chan_map.py`. Each map identified the channels of all satellites in the 30 minute observation using similar criteria as above - noise, arbitrary and occupation thresholds. if the `--plots=True` argparse option is used, a waterfall plot of each observation is generated, with the time window of the satellite and possible channels highlighted. The most probable channel is highlighted in green, as seen below.
 
 ```
-python export_channel_info.py
+python window_chan_map.py --help
 ```
-
-For each satellite, a list of all potential channels is compiled. As it is inevitable that we will mis-identify some channels, we plot a histogram of the number of classifications of each channel. This gives us a good idea of which channel the satellite occupies. Using the ephemeris data, we also plot a histogram of potential satellites. This helps us identify the other satellites which generated the false positives in channel identification.
 
 
 <p float="left">
-  <img src="./docs/channels_histo_41180_[52].png" width="49%" />
-  <img src="./docs/sats_histo_41180.png" width="49%" />
+  <img src="./docs/2019-09-20-05:00_25478_[8, 13]_waterfall.png" width="49%" />
+  <img src="./docs/2019-09-20-10:00_41187_[25, 45]_waterfall.png" width="49%" />
 </p>
 
-These plots tell us that satellite `41180` transimits in channel number `52`. We can also guess that channel number `41` must be the transimition channel of satellite `41189`.
-
-Once the code does this for all satellite, it compites a list of channels that each satellite occupies in `/outputs/channel_map.json`. Looking at this list shows some obvious problems. For my first test, I used 3 months of data between `2019-10-01 to 2020-02-01`. In this period, I expect each satellite to pass over the MWA hundreds of times. In the sat channel data some satellites have only registered 10s of passes. To me this indicates that the satellite probably transmits in a frequency channel outside our experiment. 
-
-We need to now look at a gazzilion plots and determine by eye, which satellites to ignore, and attempt to resolve any ambiguity in the channels identified. By setting an abitrary criteria that the most popular channel in the histogram plots should have more than 5 counts, we rule out the satellites which are obviously not in our frequency window. 
-
-Emperically, we expect ORBCOMM satellites to only emit in one frequency channel, while the NOAA weather satellites emit in two consecutive channels and the Meteor satellite emits in 5 consecutive channels. I modify `channel_map.json` and save it to the data folder, to used later.
-
-After looking at all the plots, `channel_map.json` has only 35 remaining satellites of the original 71. I used this information to modify my `sat_ids.py` list, which will massively reduce processing time when I run all my data.
-
+<p float="left">
+  <img src="./docs/2019-09-20-05:00_25478_8_channel.png" width="49%" />
+  <img src="./docs/2019-09-20-10:00_41187_45_channel.png" width="49%" />
+</p>
 
 
 &nbsp;
 ### Reproject Reference Beam Models
 
-FEKO simulations were run to generate FEE beam models for the reference antennas. A model was generated for the XX & YY polarization of the reference antennas and is saved in `/data/FEE_Reference_Models/`. The `.ffe` files generated by FEKO need to be converted to something that we can use. `project_beam2healpix.py` finds the power in the beam, interpolates and rotates it into a healpix projection.
+FEKO simulations were run to generate FEE beam models for the reference antennas. A model was generated for the XX & YY polarization of the reference antennas and is saved in `/data/FEE_Reference_Models/`. The `.ffe` files generated by FEKO need to be converted to something that we can use. `project_beam2healpix.py` finds the power in the beam, interpolates and rotates it into a healpix projection. The FEE beam is scaled such that its power at zenith is 0 dB.
 
 ```
 cd ../reproject_ref
@@ -250,7 +246,7 @@ This will create `ref_dipole_models.npz` and a diagnostic plot of the beams in t
 &nbsp;
 ### Null Test
 
-In this section we perform a sanity check, to make sure that both our reference antennas have the same performance. `project_pass_healpix.py` projects all satellite passes detected in the reference data to a healpix map. The script looks in each ref data file between two dates, and using the corresponding chrono ephem .json files with the channel_map, detects each satellite pass. A more complex noise criteria is applied at this stage. We slice the power array to the time interval of the satellite pass. Using a 3σ threshold, we classify all channels occupied by satellites. The remaining channels are considered to be noisy. We compute the mean noise (*μ_noise*) and the Median Absolute Deviation (*σ_noise*) and create a noise threshold (*μ_noise + 3σ*). Signal above this threshold is considered good, and their corresponding altitude and azimuth are determined from the ephem file. These are projected to a healpix map. The healpix map is rotated by (π/4), so that the cardinal axes (NS, EW), lie on rows of healpix pixels. This will be essential when we look at the profiles of the beam shape. Two arrays are created - `ref_map` & `ref_map_counter`. In `ref_map`, each row represents a healpix pixel, with its values being a list of power from all passes over that pixel. `ref_map_counter` holds a count of the number of passes at each healpix pixel. These arrays are saved to an `.npz` file in the `/outputs/null_test` directory.
+In this section we perform a sanity check, to make sure that both our reference antennas have the same performance. `project_pass_healpix.py` projects all satellite passes detected in the reference data to a healpix map. The script looks in each ref data file between two dates, and using the corresponding chrono ephem .json files with the window maps, detects each satellite pass. We use the arbitrary and noise threshold described in the satellite channel section. Signal which pass both thresholds are considered good, and their corresponding altitude and azimuth are determined from the ephem file. These are projected to a healpix map. The healpix map is rotated by (π/4), so that the cardinal axes (NS, EW), lie on rows of healpix pixels. This will be essential when we look at the profiles of the beam shape. Two arrays are created - `ref_map` & `ref_map_counter`. In `ref_map`, each row represents a healpix pixel, with its values being a list of power from all passes over that pixel. `ref_map_counter` holds a count of the number of passes at each healpix pixel. These arrays are saved to an `.npz` file in the `/outputs/null_test` directory.
 
 ```
 cd ../null_test
@@ -264,13 +260,18 @@ The code is parallelized, and loops over the four reference antennas, creating f
 python plot_healpix.py
 ```
 
+<p float="left">
+  <img src="./docs/rf0XX_map_healpix.png" width="49%" />
+  <img src="./docs/rf0YY_map_healpix.png" width="49%" />
+</p>
+
 Perform the actual null test and create some interesting plots with
 
 ```
 python null_test.py --help
 ```
 
-We now compare corresponding EW and NS slices of both reference antennas. The four reference maps we created above are slices along the two cardinal axes. We compute the meadian value of each pixel, and estimate it's error using the Median Absolute Deviation. We rotate our FEE models by (π/4), to match the rotation of our data, and slice it along NS & EW. We use a least square minimization to determine a single gain factor which will best fit out model to our data. We plot the residuals to see if it has any significant structure. The null test is performed by subtracting corresponding data from one ref with the other. For Example, in the plot below, consider the first column. The first plot shows the NS slice of the rf0XX beam, with the NS slice of the rf1XX beam below it. The green points represent out data and errors, while the crimson curve represents the FEE model fitted to the data. The blue data points are the residuals between our data and the FEE model, while the orange curve is a 3rd order polynomial fit to it. The last plot displays the difference between the two earlier plots. 
+We now compare corresponding EW and NS slices of both reference antennas. The four reference maps we created above are slices along the two cardinal axes. We compute the meadian value of each pixel, and estimate it's error using the Median Absolute Deviation. We rotate our FEE models by (π/4), to match the rotation of our data, and slice it along NS & EW. We use a least square minimization to determine a single gain factor which will best fit out model to our data. We plot the residuals to see if it has any significant structure. The null test is performed by subtracting corresponding data from one ref with the other. For Example, in the plot below, consider the first column. The first plot shows the NS slice of the rf0XX beam, with the NS slice of the rf1XX beam below it. The green points represent our data and errors, while the crimson curve represents the FEE model fitted to the data. The blue data points are the residuals between our data and the FEE model, while the orange curve is a 3rd order polynomial fit to it. The last plot displays the difference between the two plots above it. 
 
 <p float="left">
   <img src="./docs/null_test_XX_slices.png" width="100%" />

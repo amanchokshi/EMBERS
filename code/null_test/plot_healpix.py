@@ -60,6 +60,71 @@ def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None
     hp.projtext(90.0*(np.pi/180.0), 315.0*(np.pi/180.0), r'$W  $', coord='E',color='k', verticalalignment='top', horizontalalignment='left', fontsize=14)
 
 
+
+def map_plots(f):
+    
+    f_name, _ = f.name.split('.')
+    ref, _, _ = f_name.split('_')
+
+    # Plot beam map
+    map_data = np.load(f, allow_pickle=True)
+    ref_map = map_data['ref_map']
+    ref_counter = map_data['ref_counter']
+    
+    # compute the mean for every pixel array
+    ref_map_mean = [(np.mean(i) if i != [] else np.nan ) for i in ref_map]
+    vmax = np.nanmax(ref_map_mean)
+
+    # Scale mean map such that the max value is 0
+    ref_map_scaled = [i-vmax for i in ref_map_mean]
+
+    vmin = np.nanmin(ref_map_scaled)
+    vmax = np.nanmax(ref_map_scaled)
+
+    fig = plt.figure(figsize=(8,10))
+    fig.suptitle(f'Reference Beam Healpix: {ref}', fontsize=16)
+    plot_healpix(data_map=np.asarray(ref_map_scaled),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
+
+    plt.savefig(f'{out_dir}/{f_name}.png',bbox_inches='tight')
+    plt.close()
+
+
+    # Plot MAD
+    ref_map_mad = []
+    for j in ref_map:
+        if j != []:
+            j = np.asarray(j)
+            j = j[~np.isnan(j)]
+            ref_map_mad.append(mad(j))
+        else:
+            ref_map_mad.append(np.nan)
+
+    ref_map_mad = np.asarray(ref_map_mad)
+    
+    ref_map_mad[np.where(ref_map_mad == np.nan)] = np.nanmean(ref_map_mad)
+
+
+    vmin = np.nanmin(ref_map_mad)
+    vmax = np.nanmax(ref_map_mad)
+
+    fig = plt.figure(figsize=(8,10))
+    fig.suptitle(f'Healpix MAD: {ref}', fontsize=16)
+    plot_healpix(data_map=np.asarray(ref_map_mad),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
+
+    plt.savefig(f'{out_dir}/{f_name}_mad.png',bbox_inches='tight')
+    plt.close()
+
+    
+    # Plot counts in pix
+    fig = plt.figure(figsize=(8,10))
+    fig.suptitle(f'Healpix Pixel Counts: {ref}', fontsize=16)
+    plot_healpix(data_map=np.asarray(ref_counter),sub=(1,1,1), cmap=cmap, vmin=0, vmax=2400)
+
+    plt.savefig(f'{out_dir}/{f_name}_counts.png',bbox_inches='tight')
+    plt.close()
+
+
+
 if __name__=='__main__':
     
     import argparse
@@ -67,6 +132,7 @@ if __name__=='__main__':
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     from pathlib import Path
+    import concurrent.futures
     
     import sys
     sys.path.append('../decode_rf_data')
@@ -86,78 +152,10 @@ if __name__=='__main__':
     
     out_dir = Path(args.out_dir)
 
+    map_files = [item for item in out_dir.glob('*.npz')]
 
-    # Plot beam map
-    for f in out_dir.glob('*.npz'):
-        f_name, _ = f.name.split('.')
-        ref, _, _ = f_name.split('_')
-        
-        # load data from map .npz file
-        map_data = np.load(f, allow_pickle=True)
-        ref_map = map_data['ref_map']
-        ref_counter = map_data['ref_counter']
-        
-        # compute the median for every pixel array
-        ref_map_med = [(np.median(i) if i != [] else np.nan ) for i in ref_map]
-        vmin = np.nanmin(ref_map_med)
-        vmax = np.nanmax(ref_map_med)
-
-        fig = plt.figure(figsize=(8,10))
-        fig.suptitle(f'Reference Beam Healpix: {ref}', fontsize=16)
-        plot_healpix(data_map=np.asarray(ref_map_med),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
-
-        plt.savefig(f'{out_dir}/{f_name}.png',bbox_inches='tight')
+    # Parallization magic happens here
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(map_plots, map_files)
 
 
-    # Plot MAD
-    for f in out_dir.glob('*.npz'):
-        f_name, _ = f.name.split('.')
-        ref, _, _ = f_name.split('_')
-        
-        # load data from map .npz file
-        map_data = np.load(f, allow_pickle=True)
-        ref_map = map_data['ref_map']
-        ref_counter = map_data['ref_counter']
-        
-        # compute the median for every pixel array
-        ref_map_med = [(np.median(i) if i != [] else np.nan ) for i in ref_map]
-
-        ref_map_mad = []
-        for j in ref_map:
-            if j != []:
-                j = np.asarray(j)
-                j = j[~np.isnan(j)]
-                ref_map_mad.append(mad(j))
-            else:
-                ref_map_mad.append(np.nan)
-
-        ref_map_mad = np.asarray(ref_map_mad)
-        
-        ref_map_mad[np.where(ref_map_mad == np.nan)] = np.nanmean(ref_map_mad)
-
-
-        vmin = np.nanmin(ref_map_mad)
-        vmax = np.nanmax(ref_map_mad)
-
-        fig = plt.figure(figsize=(8,10))
-        fig.suptitle(f'Healpix MAD: {ref}', fontsize=16)
-        plot_healpix(data_map=np.asarray(ref_map_mad),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
-
-        plt.savefig(f'{out_dir}/{f_name}_mad.png',bbox_inches='tight')
-
-    
-    # Plot counts in pix
-    for f in out_dir.glob('*.npz'):
-        f_name, _ = f.name.split('.')
-        ref, _, _ = f_name.split('_')
-        
-        # load data from map .npz file
-        map_data = np.load(f, allow_pickle=True)
-        ref_counter = map_data['ref_counter']
-        
-        fig = plt.figure(figsize=(8,10))
-        fig.suptitle(f'Healpix Pixel Counts: {ref}', fontsize=16)
-        plot_healpix(data_map=np.asarray(ref_counter),sub=(1,1,1), cmap=cmap, vmin=0, vmax=2400)
-
-        plt.savefig(f'{out_dir}/{f_name}_counts.png',bbox_inches='tight')
-    
