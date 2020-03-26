@@ -219,8 +219,6 @@ def find_sat_channel(norad_id):
                 rise_ephem  = norad_ephem["time_array"][0] 
                 set_ephem   = norad_ephem["time_array"][-1]
                 
-                Path(f'{plt_dir}/{norad_id}').mkdir(parents=True, exist_ok=True)
-                   
                 intvl = time_filter(rise_ephem, set_ephem, np.asarray(times))
 
                 if intvl != None:
@@ -244,9 +242,6 @@ def find_sat_channel(norad_id):
                         # Percentage of signal occupancy above noise threshold
                         window_occupancy = (np.where(channel_power >= noise_threshold))[0].size/window_len
             
-                        max_s = np.amax(channel_power)
-                        min_s = np.amin(channel_power)
-
                         # Arbitrary threshold below which satellites aren't counted
                         # Only continue if there is signal for more than 80% of satellite pass
                         if (max(channel_power) >= arb_thresh and 
@@ -296,7 +291,6 @@ if __name__=="__main__":
     import argparse
     from pathlib import Path
     import concurrent.futures
-    from channels_plt import plt_waterfall_pass, plt_channel, plt_hist, sat_plot
     
     
     parser = argparse.ArgumentParser(description="""
@@ -307,13 +301,10 @@ if __name__=="__main__":
     parser.add_argument('--stop_date', metavar='\b', help='Date until which to align data. Ex: 2019-10-11')
     parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/sat_channels/',help='Output directory. Default=./../../outputs/sat_channels/')
     parser.add_argument('--ali_dir', metavar='\b', default='./../../outputs/align_data/',help='Output directory. Default=./../../outputs/align_data/')
-    parser.add_argument('--plt_dir', metavar='\b', default='./../../outputs/sat_channels/sat_passes',help='Output directory. Default=./../../outputs/sat_channels/sat_passes')
     parser.add_argument('--chrono_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json',help='Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/')
     parser.add_argument('--noi_thresh', metavar='\b', default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
     parser.add_argument('--sat_thresh', metavar='\b', default=1,help='1 σ threshold to detect sats Default=1.')
     parser.add_argument('--arb_thresh', metavar='\b', default=12,help='Arbitrary Threshold to detect sats. Default=12 dB.')
-    parser.add_argument('--alt_thresh', metavar='\b', default=20,help='Altitude Threshold to detect sats. Default=20 degrees.')
-    parser.add_argument('--cog_thresh', metavar='\b', default=0.05,help='Center of Gravity Threshold to detect sats. Default=0.05')
     parser.add_argument('--occ_thresh', metavar='\b', default=0.80,help='Occupation Threshold of sat in window. Default=0.80')
 
     
@@ -324,12 +315,9 @@ if __name__=="__main__":
     stop_date =         args.stop_date
     out_dir =           args.out_dir
     ali_dir =           args.ali_dir
-    plt_dir =           args.plt_dir
     noi_thresh =        args.noi_thresh 
     sat_thresh =        args.sat_thresh 
     arb_thresh =        args.arb_thresh
-    alt_thresh =        args.alt_thresh
-    cog_thresh =        args.cog_thresh
     occ_thresh =        args.occ_thresh
     
     # Save logs 
