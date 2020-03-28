@@ -60,19 +60,6 @@ def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None
     hp.projtext(90.0*(np.pi/180.0), 315.0*(np.pi/180.0), r'$W  $', coord='E',color='k', verticalalignment='top', horizontalalignment='left', fontsize=14)
 
 
-def outliers_iqr(ys):
-    quartile_1, quartile_3 = np.percentile(ys, [25, 75])
-    iqr = quartile_3 - quartile_1
-    lower_bound = quartile_1 - (iqr * 0)
-    upper_bound = quartile_3 + (iqr * 0)
-    return np.where((ys > upper_bound) | (ys < lower_bound))
-
-def clean_outliers(data):
-    outliers = outliers_iqr(data)
-    clean_data = np.delete(data, outliers)
-    return clean_data
-
-
 def map_plots(f):
     
     f_name, _ = f.name.split('.')
@@ -81,19 +68,19 @@ def map_plots(f):
     # Plot beam map
     map_data = np.load(f, allow_pickle=True)
     ref_map = map_data['ref_map']
-    ref_map = np.asarray([clean_outliers(i) for i in ref_map])
-    ref_counter = np.asarray([len(i) for i in ref_map])
-    #ref_counter = map_data['ref_counter']
+
+    ref_counter = map_data['ref_counter']
     
     # compute the mean for every pixel array
     ref_map_med = [(np.median(i) if i != [] else np.nan ) for i in ref_map]
-    vmax = np.nanmax(ref_map_med[:2000])
+    vmax = np.nanmax(ref_map_med[:5000])
 
     # Scale mean map such that the max value is 0
     ref_map_scaled = [i-vmax for i in ref_map_med]
 
     vmin = np.nanmin(ref_map_scaled)
-    vmax = np.nanmax(ref_map_scaled)
+    vmax = 0
+    #vmax = np.nanmax(ref_map_scaled)
 
     fig = plt.figure(figsize=(8,10))
     fig.suptitle(f'Reference Beam Healpix: {ref}', fontsize=16)
