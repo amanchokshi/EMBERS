@@ -308,12 +308,12 @@ def project_tile_healpix(tile_pair):
                                                         
                                                 # Append channel power to ref healpix map
                                                 for i in range(len(healpix_index)):
-                                                    tile_data['healpix_maps'][f'{point}'][healpix_index[i]].append(sat)
+                                                    tile_data['healpix_maps'][f'{point}'][healpix_index[i]].append(pass_power[i])
                                                  
                                                 
                                                 # Keep track of sats in each healpix pixel
                                                 for i in range(len(healpix_index)):
-                                                    tile_data['sat_maps'][f'{point}'][healpix_index[i]].append(pass_power[i])
+                                                    tile_data['sat_maps'][f'{point}'][healpix_index[i]].append(sat)
                             
                 else:
                     print(f'Missing {ref}_{tile}_{timestamp}_aligned.npz')
