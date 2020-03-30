@@ -313,7 +313,7 @@ def project_tile_healpix(tile_pair):
                                                 
                                                 # Keep track of sats in each healpix pixel
                                                 for i in range(len(healpix_index)):
-                                                    tile_data['sat_maps'][f'{point}'][healpix_index[i]].append(sat)
+                                                    tile_data['sat_map'][f'{point}'][healpix_index[i]].append(sat)
                             
                 else:
                     print(f'Missing {ref}_{tile}_{timestamp}_aligned.npz')
