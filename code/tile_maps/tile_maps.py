@@ -221,7 +221,8 @@ def project_tile_healpix(tile_pair):
     # Initialize an empty dictionary for tile data
     # The map is list of length 12288 of empty lists to append pixel values to
     # The counter is an array of zeros, to increment when a new values is added
-    tile_data = {'healpix_maps':{p:[[] for pixel in range(hp.nside2npix(nside))] for p in pointings}, 'healpix_counters':{p:np.zeros(hp.nside2npix(nside)) for p in pointings}}
+    # keep track of which satellites contributed which data
+    tile_data = {'healpix_maps':{p:[[] for pixel in range(hp.nside2npix(nside))] for p in pointings}, 'sat_map':{p:[[] for pixel in range(hp.nside2npix(nside))] for p in pointings}}
     
     for day in range(len(dates)):
 
@@ -307,13 +308,12 @@ def project_tile_healpix(tile_pair):
                                                         
                                                 # Append channel power to ref healpix map
                                                 for i in range(len(healpix_index)):
-                                                    tile_data['healpix_maps'][f'{point}'][healpix_index[i]].append(pass_power[i])
-                                                #[ref_map[healpix_index[i]].append(channel_power[i]) for i in range(len(healpix_index))]
+                                                    tile_data['healpix_maps'][f'{point}'][healpix_index[i]].append(sat)
                                                  
                                                 
-                                                # Increment pix ounter to keep track of passes in each pix 
-                                                for i in healpix_index:
-                                                    tile_data['healpix_counters'][f'{point}'][i] += 1
+                                                # Keep track of sats in each healpix pixel
+                                                for i in range(len(healpix_index)):
+                                                    tile_data['sat_maps'][f'{point}'][healpix_index[i]].append(pass_power[i])
                             
                 else:
                     print(f'Missing {ref}_{tile}_{timestamp}_aligned.npz')
