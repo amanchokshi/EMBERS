@@ -247,7 +247,7 @@ if __name__=='__main__':
     parser.add_argument('--sat_thresh', metavar='\b', default=1,help='1 σ threshold to detect sats Default=1.')
     parser.add_argument('--pow_thresh', metavar='\b', default=20,help='Power Threshold to detect sats. Default=20 dB.')
     parser.add_argument('--occ_thresh', metavar='\b', default=0.80,help='Occupation Threshold of sat in window. Default=0.80')
-    parser.add_argument('--alt_thresh', metavar='\b', default=20,help='Altitude Threshold of sat in window. Default=20 degrees')
+    parser.add_argument('--alt_thresh', metavar='\b', default=0,help='Altitude Threshold of sat in window. Default=0 degrees')
     parser.add_argument('--plots', metavar='\b', default=False,help='If True, create a gazzillion plots for each sat pass. Default = False')
     
     args = parser.parse_args()
