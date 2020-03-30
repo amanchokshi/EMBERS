@@ -69,7 +69,8 @@ def map_plots(f):
     map_data = np.load(f, allow_pickle=True)
     ref_map = map_data['ref_map']
 
-    ref_counter = map_data['ref_counter']
+    #ref_counter = map_data['ref_counter']
+    ref_counter = np.asarray([len(i) for i in ref_map])
     
     # compute the mean for every pixel array
     ref_map_med = [(np.median(i) if i != [] else np.nan ) for i in ref_map]

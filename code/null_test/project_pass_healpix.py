@@ -171,9 +171,12 @@ def proj_ref_healpix(ref):
     # Initialize empty beam map and list
     # a list of empty lists to append values to
     ref_map  = [[] for pixel in range(hp.nside2npix(nside))]
+    
+    # keep track of which satellites contributed which data
+    sat_map  = [[] for pixel in range(hp.nside2npix(nside))]
 
-    # a list of zeros, to increment when a new values is added
-    ref_counter=np.zeros(hp.nside2npix(nside))
+    ## a list of zeros, to increment when a new values is added
+    #ref_counter=np.zeros(hp.nside2npix(nside))
     
     # Help traverse all 30 min obs b/w start & stop
     dates, date_time = time_tree(start_date, stop_date)
@@ -260,10 +263,13 @@ def proj_ref_healpix(ref):
                                                 ref_map[healpix_index[i]].append(channel_power[i])
                                             #[ref_map[healpix_index[i]].append(channel_power[i]) for i in range(len(healpix_index))]
                                              
+                                            # add sat_id to correct healpix indices of sat_map
+                                            for i in range(len(healpix_index)):
+                                                sat_map[healpix_index[i]].append(sat)
                                             
-                                            # Increment pix ounter to keep track of passes in each pix 
-                                            for i in healpix_index:
-                                                ref_counter[i] += 1
+                                            ## Increment pix ounter to keep track of passes in each pix 
+                                            #for i in healpix_index:
+                                            #    ref_counter[i] += 1
         
             except Exception:
                 # Exception message is forwarded from ../decode_rf_data/rf_data.py
@@ -272,7 +278,8 @@ def proj_ref_healpix(ref):
     # Save map arrays to npz file
     np.savez_compressed(f'{out_dir}/{ref}_map_healpix.npz',
             ref_map = ref_map,
-            ref_counter = ref_counter
+            sat_map = sat_map
+            #ref_counter = ref_counter
             )
 
 
