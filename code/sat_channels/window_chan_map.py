@@ -78,97 +78,103 @@ def power_ephem(
             
         rise_ephem  = norad_ephem["time_array"][0] 
         set_ephem   = norad_ephem["time_array"][-1]
+        sat_alt     = norad_ephem["sat_alt"]
+
+        if max(sat_alt) >= alt_thresh:
         
-        intvl = time_filter(rise_ephem, set_ephem, np.asarray(times))
-        
-        if intvl != None:
+            intvl = time_filter(rise_ephem, set_ephem, np.asarray(times))
             
-            w_start, w_stop = intvl
-            
-            window_len = w_stop - w_start + 1
-            
-            # Slice [crop] the power/times arrays to the times of sat pass
-            power_c = power[w_start:w_stop+1, :]
-            times_c = times[w_start:w_stop+1]
-
-            possible_chans = []
-            occu_list = []
-            
-            # Loop over every channel
-            for s_chan in range(len(power_c[0])):
+            if intvl != None:
                 
-                channel_power = power_c[:, s_chan]
+                w_start, w_stop = intvl
                 
-                # Percentage of signal occupancy above noise threshold
-                window_occupancy = (np.where(channel_power >= noise_threshold))[0].size/window_len
-            
-                max_s = np.amax(channel_power)
-                min_s = np.amin(channel_power)
-
-                # Arbitrary threshold below which satellites aren't counted
-                # Only continue if there is signal for more than 80% of satellite pass
-                if (max(channel_power) >= arb_thresh and 
-                        occ_thresh <= window_occupancy < 1.00):
-
-                    if (times[0] == times_c[0]):
-                        if (all(p < noise_threshold for p in channel_power[-11:-1])) is True:
-                            occu_list.append(window_occupancy)
-                            possible_chans.append(s_chan)
-                            #print(f'{sat_id}: {s_chan} {window_occupancy}')
-                            
-                            if plots == 'True':
-                                plt_channel_basic(
-                                        f'{plt_dir}/{date}/{timestamp}', times_c, channel_power,
-                                        s_chan, min_s, 32, noise_threshold,
-                                        arb_thresh, sat_id, timestamp)
-
-                    elif (times[-1] == times_c[-1]):
-                        if (all(p < noise_threshold for p in channel_power[:10])) is True:
-                            occu_list.append(window_occupancy)
-                            possible_chans.append(s_chan)
-                            #print(f'{sat_id}: {s_chan} {window_occupancy}')
+                window_len = w_stop - w_start + 1
                 
-                            if plots == 'True':
-                                plt_channel_basic(
-                                        f'{plt_dir}/{date}/{timestamp}', times_c, channel_power,
-                                        s_chan, min_s, 32, noise_threshold,
-                                        arb_thresh, sat_id, timestamp)
+                # Slice [crop] the power/times arrays to the times of sat pass
+                power_c = power[w_start:w_stop+1, :]
+                times_c = times[w_start:w_stop+1]
 
-                    else:
-                        if (all(p < noise_threshold for p in channel_power[:10]) and 
-                            all(p < noise_threshold for p in channel_power[-11:-1])) is True:
-                            occu_list.append(window_occupancy)
-                            possible_chans.append(s_chan)
-                            #print(f'{sat_id}: {s_chan} {window_occupancy}')
+                possible_chans = []
+                occu_list = []
                 
-                            if plots == 'True':
-                                plt_channel_basic(
-                                        f'{plt_dir}/{date}/{timestamp}', times_c, channel_power,
-                                        s_chan, min_s, 32, noise_threshold,
-                                        arb_thresh, sat_id, timestamp)
+                # Loop over every channel
+                for s_chan in range(len(power_c[0])):
                     
-            
-            
-            # If channels are identified in the 30 min obs
-            n_chans = len(possible_chans)
+                    channel_power = power_c[:, s_chan]
+                    
+                    # Percentage of signal occupancy above noise threshold
+                    window_occupancy = (np.where(channel_power >= noise_threshold))[0].size/window_len
+                
+                    max_s = np.amax(channel_power)
+                    min_s = np.amin(channel_power)
 
-            if n_chans > 0:
+                    # Arbitrary threshold below which satellites aren't counted
+                    # Only continue if there is signal for more than 80% of satellite pass
+                    if (max(channel_power) >= pow_thresh and 
+                            occ_thresh <= window_occupancy < 1.00):
+
+                        if (times[0] == times_c[0]):
+                            if (all(p < noise_threshold for p in channel_power[-11:-1])) is True:
+                                occu_list.append(window_occupancy)
+                                possible_chans.append(s_chan)
+                                #print(f'{sat_id}: {s_chan} {window_occupancy}')
+                                
+                                if plots == 'True':
+                                    plt_channel_basic(
+                                            f'{plt_dir}/{date}/{timestamp}', times_c, channel_power,
+                                            s_chan, min_s, 32, noise_threshold,
+                                            arb_thresh, sat_id, timestamp)
+
+                        elif (times[-1] == times_c[-1]):
+                            if (all(p < noise_threshold for p in channel_power[:10])) is True:
+                                occu_list.append(window_occupancy)
+                                possible_chans.append(s_chan)
+                                #print(f'{sat_id}: {s_chan} {window_occupancy}')
+                    
+                                if plots == 'True':
+                                    plt_channel_basic(
+                                            f'{plt_dir}/{date}/{timestamp}', times_c, channel_power,
+                                            s_chan, min_s, 32, noise_threshold,
+                                            arb_thresh, sat_id, timestamp)
+
+                        else:
+                            if (all(p < noise_threshold for p in channel_power[:10]) and 
+                                all(p < noise_threshold for p in channel_power[-11:-1])) is True:
+                                occu_list.append(window_occupancy)
+                                possible_chans.append(s_chan)
+                                #print(f'{sat_id}: {s_chan} {window_occupancy}')
+                    
+                                if plots == 'True':
+                                    plt_channel_basic(
+                                            f'{plt_dir}/{date}/{timestamp}', times_c, channel_power,
+                                            s_chan, min_s, 32, noise_threshold,
+                                            arb_thresh, sat_id, timestamp)
+                        
                 
-                # The most lightly channel is one with the highest occupation
-                good_chan = possible_chans[occu_list.index(max(occu_list))]
                 
-                if plots == 'True':
-                    plt_waterfall_pass(
-                            power, sat_id, w_start, w_stop, timestamp, cmap, 
-                            chs=possible_chans, good_ch=good_chan, out_dir=f'{plt_dir}/{date}/{timestamp}', )
-                
-                return good_chan
+                # If channels are identified in the 30 min obs
+                n_chans = len(possible_chans)
+
+                if n_chans > 0:
+                    
+                    # The most lightly channel is one with the highest occupation
+                    good_chan = possible_chans[occu_list.index(max(occu_list))]
+                    
+                    if plots == 'True':
+                        plt_waterfall_pass(
+                                power, sat_id, w_start, w_stop, timestamp, cmap, 
+                                chs=possible_chans, good_ch=good_chan, out_dir=f'{plt_dir}/{date}/{timestamp}', )
+                    
+                    return good_chan
+
+                else:
+                    if plots == 'True':
+                        plt_waterfall_pass(
+                                power, sat_id, w_start, w_stop, timestamp, cmap, 
+                                chs=None, good_ch=None, out_dir=f'{plt_dir}/{date}/{timestamp}', )
+                    return 0
 
             else:
-                if plots == 'True':
-                    plt_waterfall_pass(
-                            power, sat_id, w_start, w_stop, timestamp, cmap, 
-                            chs=None, good_ch=None, out_dir=f'{plt_dir}/{date}/{timestamp}', )
                 return 0
 
         else:
@@ -239,8 +245,9 @@ if __name__=='__main__':
     parser.add_argument('--chrono_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json',help='Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/')
     parser.add_argument('--noi_thresh', metavar='\b', default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
     parser.add_argument('--sat_thresh', metavar='\b', default=1,help='1 σ threshold to detect sats Default=1.')
-    parser.add_argument('--arb_thresh', metavar='\b', default=20,help='Arbitrary Threshold to detect sats. Default=20 dB.')
+    parser.add_argument('--pow_thresh', metavar='\b', default=20,help='Power Threshold to detect sats. Default=20 dB.')
     parser.add_argument('--occ_thresh', metavar='\b', default=0.80,help='Occupation Threshold of sat in window. Default=0.80')
+    parser.add_argument('--alt_thresh', metavar='\b', default=20,help='Altitude Threshold of sat in window. Default=20 degrees')
     parser.add_argument('--plots', metavar='\b', default=False,help='If True, create a gazzillion plots for each sat pass. Default = False')
     
     args = parser.parse_args()
@@ -253,8 +260,9 @@ if __name__=='__main__':
     ali_dir =           args.ali_dir
     noi_thresh =        args.noi_thresh
     sat_thresh =        args.sat_thresh
-    arb_thresh =        args.arb_thresh
+    pow_thresh =        args.pow_thresh
     occ_thresh =        args.occ_thresh
+    alt_thresh =        args.alt_thresh
     plots =             args.plots
 
     ref_names=['rf0XX', 'rf0YY', 'rf1XX', 'rf1YY']
