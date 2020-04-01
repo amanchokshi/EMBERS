@@ -265,7 +265,7 @@ if __name__=='__main__':
     alt_thresh =        args.alt_thresh
     plots =             args.plots
 
-    ref_names=['rf0XX', 'rf0YY', 'rf1XX', 'rf1YY']
+    ref_names=['rf0XX', 'rf1XX']
     
     
     # Save logs 

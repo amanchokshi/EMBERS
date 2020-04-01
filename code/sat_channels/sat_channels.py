@@ -184,7 +184,7 @@ def find_sat_channel(norad_id):
         # Loop through each 30 min obs in day
         for window in range(len(date_time[day])):
             
-            ref_file = f'{ali_dir}/{dates[day]}/{date_time[day][window]}/rf0XX_S06XX_{date_time[day][window]}_aligned.npz'
+            ref_file = f'{ali_dir}/{dates[day]}/{date_time[day][window]}/rf0XX_S21XX_{date_time[day][window]}_aligned.npz'
             chrono_file = f'{chrono_dir}/{date_time[day][window]}.json'
             
             try:
@@ -204,7 +204,7 @@ def find_sat_channel(norad_id):
                     chrono_ephem = json.load(chrono)
             
             except Exception:
-                print(f'{date_time[day][window]}: chrono file not found')
+                print(f'{chrono_dir}/{date_time[day][window]}: chrono file not found')
                 continue
 
             num_passes = len(chrono_ephem)

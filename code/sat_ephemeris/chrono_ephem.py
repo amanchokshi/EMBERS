@@ -71,7 +71,7 @@ for i in range(n_days+1):
     
     # loop over 48x30 minute obs in a day
     for j in range(48):
-        t_delta = datetime.strptime(date,'%Y-%m-%d') + timedelta(minutes=30*j)
+        t_delta = datetime.strptime(date,'%Y-%m-%d') + timedelta(minutes=20 + 30*j)
         # convert t_delta to a readable string YYYY-MM-DD-HH:MM
         d_time = t_delta.strftime('%Y-%m-%d-%H:%M')
         
