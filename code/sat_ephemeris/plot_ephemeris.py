@@ -2,6 +2,7 @@ import os
 import json
 import sat_ids
 import argparse
+from pathlib import Path
 import concurrent.futures
 from sat_ephemeris import sat_plot
 
@@ -19,7 +20,8 @@ out_dir =   args.out_dir
 json_dir =  args.json_dir
 
 # Create output directory
-os.makedirs(os.path.dirname(out_dir), exist_ok=True) 
+Path(out_dir).mkdir(parents=True, exist_ok=True)
+#os.makedirs(os.path.dirname(out_dir), exist_ok=True) 
 
 # Load list of satellites (Nodar ids)
 sat_list = list(sat_ids.norad_ids.values())
