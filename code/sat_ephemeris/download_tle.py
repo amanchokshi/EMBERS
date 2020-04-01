@@ -25,9 +25,9 @@ if os.environ.get('ST_USER') != None:
     stop_date = args.stop_date
     out_dir = args.out_dir
     
-    Path(out_dir).mkdir(parents=True, exist_ok=True)
     
     #make a TLE directory
+    Path(out_dir).mkdir(parents=True, exist_ok=True)
     os.makedirs(os.path.dirname(out_dir), exist_ok=True)
     
     print('Starting TLE download')
