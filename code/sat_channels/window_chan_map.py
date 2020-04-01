@@ -123,7 +123,7 @@ def power_ephem(
                                     plt_channel_basic(
                                             f'{plt_dir}/{date}/{timestamp}', times_c, channel_power,
                                             s_chan, min_s, 32, noise_threshold,
-                                            arb_thresh, sat_id, timestamp)
+                                            pow_thresh, sat_id, timestamp)
 
                         elif (times[-1] == times_c[-1]):
                             if (all(p < noise_threshold for p in channel_power[:10])) is True:
@@ -135,7 +135,7 @@ def power_ephem(
                                     plt_channel_basic(
                                             f'{plt_dir}/{date}/{timestamp}', times_c, channel_power,
                                             s_chan, min_s, 32, noise_threshold,
-                                            arb_thresh, sat_id, timestamp)
+                                            pow_thresh, sat_id, timestamp)
 
                         else:
                             if (all(p < noise_threshold for p in channel_power[:10]) and 
@@ -148,7 +148,7 @@ def power_ephem(
                                     plt_channel_basic(
                                             f'{plt_dir}/{date}/{timestamp}', times_c, channel_power,
                                             s_chan, min_s, 32, noise_threshold,
-                                            arb_thresh, sat_id, timestamp)
+                                            pow_thresh, sat_id, timestamp)
                         
                 
                 
