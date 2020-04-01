@@ -1,6 +1,7 @@
 import os
 import time
 import argparse
+from pathlib import Path
 from sat_ids import norad_ids
 import spacetrack.operators as op
 from spacetrack import SpaceTrackClient
@@ -24,6 +25,7 @@ if os.environ.get('ST_USER') != None:
     stop_date = args.stop_date
     out_dir = args.out_dir
     
+    Path(out_dir).mkdir(parents=True, exist_ok=True)
     
     #make a TLE directory
     os.makedirs(os.path.dirname(out_dir), exist_ok=True)
