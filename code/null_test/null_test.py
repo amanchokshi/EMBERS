@@ -281,30 +281,24 @@ if __name__=='__main__':
     ref_model = args.ref_model
     nside   = args.nside
     
-    ref_tiles = ['rf0XX', 'rf0YY', 'rf1XX', 'rf1YY']
+    ref_tiles = ['rf0XX', 'rf1XX']
 
     # NS, EW slices of all four reference tiles 
     rf0XX_NS, rf0XX_EW = ref_map_slice(out_dir, ref_tiles[0])
-    rf0YY_NS, rf0YY_EW = ref_map_slice(out_dir, ref_tiles[1])
-    rf1XX_NS, rf1XX_EW = ref_map_slice(out_dir, ref_tiles[2])
-    rf1YY_NS, rf1YY_EW = ref_map_slice(out_dir, ref_tiles[3])
+    rf1XX_NS, rf1XX_EW = ref_map_slice(out_dir, ref_tiles[1])
 
     # Null test diff in power b/w rf0 & rf1
     ref01_XX_NS = rf0XX_NS[0] - rf1XX_NS[0]
     ref01_XX_EW = rf0XX_EW[0] - rf1XX_EW[0]
-    ref01_YY_NS = rf0YY_NS[0] - rf1YY_NS[0]
-    ref01_YY_EW = rf0YY_EW[0] - rf1YY_EW[0]
     
     # Error propogation in null test
     error_ref01_XX_NS = np.sqrt((rf0XX_NS[1])**2 + (rf1XX_NS[1])**2 )
     error_ref01_XX_EW = np.sqrt((rf0XX_EW[1])**2 + (rf1XX_EW[1])**2 )
-    error_ref01_YY_NS = np.sqrt((rf0YY_NS[1])**2 + (rf1YY_NS[1])**2 )
-    error_ref01_YY_EW = np.sqrt((rf0YY_EW[1])**2 + (rf1YY_EW[1])**2 )
     
     # Load reference FEE model
     ref_fee_model = np.load(ref_model, allow_pickle=True)
-    beam_XX = ref_fee_model['XX']
-    beam_YY = ref_fee_model['YY']
+    beam_XX = ref_fee_model['XX'] # East
+    beam_YY = ref_fee_model['YY'] # West
    
     # Rotate beam models by pi/4 to match rotation of data
     rotated_XX = rotate(angle=+(1*np.pi)/4.0,healpix_array=beam_XX)
@@ -327,26 +321,16 @@ if __name__=='__main__':
     YY_EW_slice, za_EW = YY_EW
 
     # Gain offsets for the 8 combinations of data and beam slices
-    gain_ref0_XX_NS = fit_gain(map_data=rf0XX_NS[0], map_error=rf0XX_NS[1], beam=XX_NS_slice)
-    gain_ref0_XX_EW = fit_gain(map_data=rf0XX_EW[0], map_error=rf0XX_EW[1], beam=XX_EW_slice)
+    gain_ref0_XX_NS = fit_gain(map_data=rf0XX_NS[0], map_error=rf0XX_NS[1], beam=YY_NS_slice)
+    gain_ref0_XX_EW = fit_gain(map_data=rf0XX_EW[0], map_error=rf0XX_EW[1], beam=YY_EW_slice)
     gain_ref1_XX_NS = fit_gain(map_data=rf1XX_NS[0], map_error=rf1XX_NS[1], beam=XX_NS_slice)
     gain_ref1_XX_EW = fit_gain(map_data=rf1XX_EW[0], map_error=rf1XX_EW[1], beam=XX_EW_slice)
     
-    gain_ref0_YY_NS = fit_gain(map_data=rf0YY_NS[0], map_error=rf0YY_NS[1], beam=YY_NS_slice)
-    gain_ref0_YY_EW = fit_gain(map_data=rf0YY_EW[0], map_error=rf0YY_EW[1], beam=YY_EW_slice)
-    gain_ref1_YY_NS = fit_gain(map_data=rf1YY_NS[0], map_error=rf1YY_NS[1], beam=YY_NS_slice)
-    gain_ref1_YY_EW = fit_gain(map_data=rf1YY_EW[0], map_error=rf1YY_EW[1], beam=YY_EW_slice)
-    
-   
     # Scale the data so that it best fits the beam slice
     rf0XX_NS = rf0XX_NS - gain_ref0_XX_NS
     rf0XX_EW = rf0XX_EW - gain_ref0_XX_EW
-    rf0YY_NS = rf0YY_NS - gain_ref0_YY_NS
-    rf0YY_EW = rf0YY_EW - gain_ref0_YY_EW
     rf1XX_NS = rf1XX_NS - gain_ref1_XX_NS
     rf1XX_EW = rf1XX_EW - gain_ref1_XX_EW
-    rf1YY_NS = rf1YY_NS - gain_ref1_YY_NS
-    rf1YY_EW = rf1YY_EW - gain_ref1_YY_EW
     
     # Difference b/w beam model slices. 
     # Always 0 because we have only one model for both rf0, rf1 
@@ -354,18 +338,15 @@ if __name__=='__main__':
     beam_ref01_XX_EW = XX_EW_slice - XX_EW_slice
     beam_ref01_YY_NS = YY_NS_slice - YY_NS_slice
     beam_ref01_YY_EW = YY_EW_slice - YY_EW_slice
+    beam_NS_err = YY_NS_slice - XX_NS_slice
+    beam_EW_err = YY_EW_slice - XX_EW_slice
    
     # delta powers
-    del_pow_ref0_XX_NS = rf0XX_NS[0] - XX_NS_slice 
-    del_pow_ref0_XX_EW = rf0XX_EW[0] - XX_EW_slice
+    del_pow_ref0_XX_NS = rf0XX_NS[0] - YY_NS_slice 
+    del_pow_ref0_XX_EW = rf0XX_EW[0] - YY_EW_slice
     del_pow_ref1_XX_NS = rf1XX_NS[0] - XX_NS_slice
     del_pow_ref1_XX_EW = rf1XX_EW[0] - XX_EW_slice
    
-    del_pow_ref0_YY_NS = rf0YY_NS[0] - YY_NS_slice
-    del_pow_ref0_YY_EW = rf0YY_EW[0] - YY_EW_slice
-    del_pow_ref1_YY_NS = rf1YY_NS[0] - YY_NS_slice
-    del_pow_ref1_YY_EW = rf1YY_EW[0] - YY_EW_slice
-
 
     # 3rd order poly fits for residuals
     fit_ref0_XX_NS = poly_fit(za_NS, del_pow_ref0_XX_NS,rf0XX_NS[0], 3)  
@@ -373,18 +354,10 @@ if __name__=='__main__':
     fit_ref1_XX_NS = poly_fit(za_NS, del_pow_ref1_XX_NS,rf1XX_NS[0], 3) 
     fit_ref1_XX_EW = poly_fit(za_EW, del_pow_ref1_XX_EW,rf1XX_EW[0], 3) 
     
-    fit_ref0_YY_NS = poly_fit(za_NS, del_pow_ref0_YY_NS,rf0YY_NS[0], 3) 
-    fit_ref0_YY_EW = poly_fit(za_EW, del_pow_ref0_YY_EW,rf0YY_EW[0], 3) 
-    fit_ref1_YY_NS = poly_fit(za_NS, del_pow_ref1_YY_NS,rf1YY_NS[0], 3) 
-    fit_ref1_YY_EW = poly_fit(za_EW, del_pow_ref1_YY_EW,rf1YY_EW[0], 3) 
-
-
+    
     # Difference of power b/w ref0 & ref1 fits
     fit_ref01_XX_NS = fit_ref0_XX_NS - fit_ref1_XX_NS
     fit_ref01_XX_EW = fit_ref0_XX_EW - fit_ref1_XX_EW
-    fit_ref01_YY_NS = fit_ref0_YY_NS - fit_ref1_YY_NS
-    fit_ref01_YY_EW = fit_ref0_YY_EW - fit_ref1_YY_EW
-
 
 
     plt.style.use('seaborn')
@@ -393,16 +366,16 @@ if __name__=='__main__':
     ax1 = plt_slice(
             fig=fig1, sub=321,
             zen_angle=za_NS, map_slice=rf0XX_NS[0],
-            map_error=rf0XX_NS[1], model_slice=XX_NS_slice,
+            map_error=rf0XX_NS[1], model_slice=YY_NS_slice,
             delta_pow=del_pow_ref0_XX_NS, pow_fit=fit_ref0_XX_NS, 
-            slice_label='ref0XX NS', model_label='FEE XX NS')
+            slice_label='ref0XX NS', model_label='FEE West NS')
 
     ax2 = plt_slice(
             fig=fig1, sub=322,
             zen_angle=za_EW, map_slice=rf0XX_EW[0],
-            map_error=rf0XX_EW[1], model_slice=XX_EW_slice,
+            map_error=rf0XX_EW[1], model_slice=YY_EW_slice,
             delta_pow=del_pow_ref0_XX_EW, pow_fit=fit_ref0_XX_EW,
-            slice_label='ref0XX EW', model_label='FEE XX EW')
+            slice_label='ref0XX EW', model_label='FEE West EW')
 
     ax3 = plt_slice(
             fig=fig1, sub=323,
@@ -410,26 +383,26 @@ if __name__=='__main__':
             map_error=rf1XX_NS[1], model_slice=XX_NS_slice,
             delta_pow=del_pow_ref1_XX_NS, pow_fit=fit_ref1_XX_NS,
 
-            slice_label='ref1XX NS', model_label='FEE XX NS')
+            slice_label='ref1XX NS', model_label='FEE East NS')
 
     ax4 = plt_slice(
             fig=fig1, sub=324,
             zen_angle=za_EW, map_slice=rf1XX_EW[0],
             map_error=rf1XX_EW[1], model_slice=XX_EW_slice,
             delta_pow=del_pow_ref1_XX_EW, pow_fit=fit_ref1_XX_EW,
-            slice_label='ref1XX EW', model_label='FEE XX EW')
+            slice_label='ref1XX EW', model_label='FEE East EW')
 
     ax5 = plt_null_test(
             fig=fig1,sub=325, 
             zen_angle=za_NS, del_pow=ref01_XX_NS, 
-            del_err=error_ref01_XX_NS, del_beam=beam_ref01_XX_NS, 
+            del_err=error_ref01_XX_NS, del_beam=beam_NS_err, 
             del_fit=fit_ref01_XX_NS, null_label='NS rf0-rf1', 
             beam_label='FEE Null', fit_label='Fit rf0-rf1') 
     
     ax6 = plt_null_test(
             fig=fig1,sub=326, 
             zen_angle=za_EW, del_pow=ref01_XX_EW, 
-            del_err=error_ref01_XX_EW, del_beam=beam_ref01_XX_EW, 
+            del_err=error_ref01_XX_EW, del_beam=beam_EW_err, 
             del_fit=fit_ref01_XX_EW, null_label='EW rf0-rf1', 
             beam_label='FEE Null', fit_label='Fit rf0-rf1')
 
@@ -437,54 +410,211 @@ if __name__=='__main__':
     plt.tight_layout()
     fig1.savefig(f'{out_dir}/null_test_XX_slices.png')
    
-
-    fig2 = plt.figure(figsize=(8,10))
     
-    ax7 = plt_slice(
-            fig=fig2, sub=321,
-            zen_angle=za_NS, map_slice=rf0YY_NS[0],
-            map_error=rf0YY_NS[1], model_slice=YY_NS_slice,
-            delta_pow=del_pow_ref0_YY_NS, pow_fit=fit_ref0_YY_NS,
-            slice_label='ref0YY NS', model_label='FEE YY NS')
-    
-    ax8 = plt_slice(
-            fig=fig2, sub=322,
-            zen_angle=za_EW, map_slice=rf0YY_EW[0],
-            map_error=rf0YY_EW[1], model_slice=YY_EW_slice,
-            delta_pow=del_pow_ref0_YY_EW, pow_fit=fit_ref0_YY_EW,
-            slice_label='ref0YY EW', model_label='FEE YY EW')
-    
-    ax9 = plt_slice(
-            fig=fig2, sub=323,
-            zen_angle=za_NS, map_slice=rf1YY_NS[0],
-            map_error=rf1YY_NS[1], model_slice=YY_NS_slice,
-            delta_pow=del_pow_ref1_YY_NS, pow_fit=fit_ref1_YY_NS,
-            slice_label='ref1YY NS', model_label='FEE YY NS')
-    
-    ax10 = plt_slice(
-            fig=fig2, sub=324,
-            zen_angle=za_EW, map_slice=rf1YY_EW[0],
-            map_error=rf1YY_EW[1], model_slice=YY_EW_slice,
-            delta_pow=del_pow_ref1_YY_EW, pow_fit=fit_ref1_YY_EW,
-            slice_label='ref1YY EW', model_label='FEE YY EW')
-    
-    ax11 = plt_null_test(
-            fig=fig2,sub=325, 
-            zen_angle=za_NS, del_pow=ref01_YY_NS, 
-            del_err=error_ref01_YY_NS, del_beam=beam_ref01_YY_NS, 
-            del_fit=fit_ref01_YY_NS, null_label='NS rf0-rf1', 
-            beam_label='FEE Null', fit_label='Fit rf0-rf1')
-    
-    ax12 = plt_null_test(
-            fig=fig2,sub=326, 
-            zen_angle=za_EW, del_pow=ref01_YY_EW, 
-            del_err=error_ref01_YY_EW, del_beam=beam_ref01_YY_EW, 
-            del_fit=fit_ref01_YY_EW, null_label='EW rf0-rf1', 
-            beam_label='FEE Null', fit_label='Fit rf0-rf1')
-
-    plt.tight_layout()
-    fig2.savefig(f'{out_dir}/null_test_YY_slices.png')
-
-
-
-
+#    ref_tiles = ['rf0XX', 'rf0YY', 'rf1XX', 'rf1YY']
+#
+#    # NS, EW slices of all four reference tiles 
+#    rf0XX_NS, rf0XX_EW = ref_map_slice(out_dir, ref_tiles[0])
+#    rf0YY_NS, rf0YY_EW = ref_map_slice(out_dir, ref_tiles[1])
+#    rf1XX_NS, rf1XX_EW = ref_map_slice(out_dir, ref_tiles[2])
+#    rf1YY_NS, rf1YY_EW = ref_map_slice(out_dir, ref_tiles[3])
+#
+#    # Null test diff in power b/w rf0 & rf1
+#    ref01_XX_NS = rf0XX_NS[0] - rf1XX_NS[0]
+#    ref01_XX_EW = rf0XX_EW[0] - rf1XX_EW[0]
+#    ref01_YY_NS = rf0YY_NS[0] - rf1YY_NS[0]
+#    ref01_YY_EW = rf0YY_EW[0] - rf1YY_EW[0]
+#    
+#    # Error propogation in null test
+#    error_ref01_XX_NS = np.sqrt((rf0XX_NS[1])**2 + (rf1XX_NS[1])**2 )
+#    error_ref01_XX_EW = np.sqrt((rf0XX_EW[1])**2 + (rf1XX_EW[1])**2 )
+#    error_ref01_YY_NS = np.sqrt((rf0YY_NS[1])**2 + (rf1YY_NS[1])**2 )
+#    error_ref01_YY_EW = np.sqrt((rf0YY_EW[1])**2 + (rf1YY_EW[1])**2 )
+#    
+#    # Load reference FEE model
+#    ref_fee_model = np.load(ref_model, allow_pickle=True)
+#    beam_XX = ref_fee_model['XX'] # East
+#    beam_YY = ref_fee_model['YY'] # West
+#   
+#    # Rotate beam models by pi/4 to match rotation of data
+#    rotated_XX = rotate(angle=+(1*np.pi)/4.0,healpix_array=beam_XX)
+#    rotated_YY = rotate(angle=+(1*np.pi)/4.0,healpix_array=beam_YY)
+#    
+#    # These plots show that the pi/4 rotation was correct
+#    #plot_healpix(data_map=rotated_XX,sub=(1,1,1), cmap=cmap, vmin=-40, vmax=-20)
+#    #plot_healpix(data_map=rotated_YY,sub=(1,1,1), cmap=cmap, vmin=-40, vmax=-20)
+#    #plt.show()
+#    
+#    # slice the XX rotated map along NS, EW
+#    XX_NS, XX_EW = slice_map(rotated_XX)
+#    XX_NS_slice, za_NS = XX_NS
+#    XX_EW_slice, za_EW = XX_EW
+#    
+#
+#    # slice the YY rotated map along NS, EW
+#    YY_NS, YY_EW = slice_map(rotated_YY)
+#    YY_NS_slice, za_NS = YY_NS
+#    YY_EW_slice, za_EW = YY_EW
+#
+#    # Gain offsets for the 8 combinations of data and beam slices
+#    gain_ref0_XX_NS = fit_gain(map_data=rf0XX_NS[0], map_error=rf0XX_NS[1], beam=XX_NS_slice)
+#    gain_ref0_XX_EW = fit_gain(map_data=rf0XX_EW[0], map_error=rf0XX_EW[1], beam=XX_EW_slice)
+#    gain_ref1_XX_NS = fit_gain(map_data=rf1XX_NS[0], map_error=rf1XX_NS[1], beam=XX_NS_slice)
+#    gain_ref1_XX_EW = fit_gain(map_data=rf1XX_EW[0], map_error=rf1XX_EW[1], beam=XX_EW_slice)
+#    
+#    gain_ref0_YY_NS = fit_gain(map_data=rf0YY_NS[0], map_error=rf0YY_NS[1], beam=YY_NS_slice)
+#    gain_ref0_YY_EW = fit_gain(map_data=rf0YY_EW[0], map_error=rf0YY_EW[1], beam=YY_EW_slice)
+#    gain_ref1_YY_NS = fit_gain(map_data=rf1YY_NS[0], map_error=rf1YY_NS[1], beam=YY_NS_slice)
+#    gain_ref1_YY_EW = fit_gain(map_data=rf1YY_EW[0], map_error=rf1YY_EW[1], beam=YY_EW_slice)
+#    
+#   
+#    # Scale the data so that it best fits the beam slice
+#    rf0XX_NS = rf0XX_NS - gain_ref0_XX_NS
+#    rf0XX_EW = rf0XX_EW - gain_ref0_XX_EW
+#    rf0YY_NS = rf0YY_NS - gain_ref0_YY_NS
+#    rf0YY_EW = rf0YY_EW - gain_ref0_YY_EW
+#    rf1XX_NS = rf1XX_NS - gain_ref1_XX_NS
+#    rf1XX_EW = rf1XX_EW - gain_ref1_XX_EW
+#    rf1YY_NS = rf1YY_NS - gain_ref1_YY_NS
+#    rf1YY_EW = rf1YY_EW - gain_ref1_YY_EW
+#    
+#    # Difference b/w beam model slices. 
+#    # Always 0 because we have only one model for both rf0, rf1 
+#    beam_ref01_XX_NS = XX_NS_slice - XX_NS_slice
+#    beam_ref01_XX_EW = XX_EW_slice - XX_EW_slice
+#    beam_ref01_YY_NS = YY_NS_slice - YY_NS_slice
+#    beam_ref01_YY_EW = YY_EW_slice - YY_EW_slice
+#   
+#    # delta powers
+#    del_pow_ref0_XX_NS = rf0XX_NS[0] - XX_NS_slice 
+#    del_pow_ref0_XX_EW = rf0XX_EW[0] - XX_EW_slice
+#    del_pow_ref1_XX_NS = rf1XX_NS[0] - XX_NS_slice
+#    del_pow_ref1_XX_EW = rf1XX_EW[0] - XX_EW_slice
+#   
+#    del_pow_ref0_YY_NS = rf0YY_NS[0] - YY_NS_slice
+#    del_pow_ref0_YY_EW = rf0YY_EW[0] - YY_EW_slice
+#    del_pow_ref1_YY_NS = rf1YY_NS[0] - YY_NS_slice
+#    del_pow_ref1_YY_EW = rf1YY_EW[0] - YY_EW_slice
+#
+#
+#    # 3rd order poly fits for residuals
+#    fit_ref0_XX_NS = poly_fit(za_NS, del_pow_ref0_XX_NS,rf0XX_NS[0], 3)  
+#    fit_ref0_XX_EW = poly_fit(za_EW, del_pow_ref0_XX_EW,rf0XX_EW[0], 3) 
+#    fit_ref1_XX_NS = poly_fit(za_NS, del_pow_ref1_XX_NS,rf1XX_NS[0], 3) 
+#    fit_ref1_XX_EW = poly_fit(za_EW, del_pow_ref1_XX_EW,rf1XX_EW[0], 3) 
+#    
+#    fit_ref0_YY_NS = poly_fit(za_NS, del_pow_ref0_YY_NS,rf0YY_NS[0], 3) 
+#    fit_ref0_YY_EW = poly_fit(za_EW, del_pow_ref0_YY_EW,rf0YY_EW[0], 3) 
+#    fit_ref1_YY_NS = poly_fit(za_NS, del_pow_ref1_YY_NS,rf1YY_NS[0], 3) 
+#    fit_ref1_YY_EW = poly_fit(za_EW, del_pow_ref1_YY_EW,rf1YY_EW[0], 3) 
+#
+#
+#    # Difference of power b/w ref0 & ref1 fits
+#    fit_ref01_XX_NS = fit_ref0_XX_NS - fit_ref1_XX_NS
+#    fit_ref01_XX_EW = fit_ref0_XX_EW - fit_ref1_XX_EW
+#    fit_ref01_YY_NS = fit_ref0_YY_NS - fit_ref1_YY_NS
+#    fit_ref01_YY_EW = fit_ref0_YY_EW - fit_ref1_YY_EW
+#
+#
+#
+#    plt.style.use('seaborn')
+#    fig1 = plt.figure(figsize=(8,10))
+#
+#    ax1 = plt_slice(
+#            fig=fig1, sub=321,
+#            zen_angle=za_NS, map_slice=rf0XX_NS[0],
+#            map_error=rf0XX_NS[1], model_slice=XX_NS_slice,
+#            delta_pow=del_pow_ref0_XX_NS, pow_fit=fit_ref0_XX_NS, 
+#            slice_label='ref0XX NS', model_label='FEE XX NS')
+#
+#    ax2 = plt_slice(
+#            fig=fig1, sub=322,
+#            zen_angle=za_EW, map_slice=rf0XX_EW[0],
+#            map_error=rf0XX_EW[1], model_slice=XX_EW_slice,
+#            delta_pow=del_pow_ref0_XX_EW, pow_fit=fit_ref0_XX_EW,
+#            slice_label='ref0XX EW', model_label='FEE XX EW')
+#
+#    ax3 = plt_slice(
+#            fig=fig1, sub=323,
+#            zen_angle=za_NS, map_slice=rf1XX_NS[0],
+#            map_error=rf1XX_NS[1], model_slice=XX_NS_slice,
+#            delta_pow=del_pow_ref1_XX_NS, pow_fit=fit_ref1_XX_NS,
+#
+#            slice_label='ref1XX NS', model_label='FEE XX NS')
+#
+#    ax4 = plt_slice(
+#            fig=fig1, sub=324,
+#            zen_angle=za_EW, map_slice=rf1XX_EW[0],
+#            map_error=rf1XX_EW[1], model_slice=XX_EW_slice,
+#            delta_pow=del_pow_ref1_XX_EW, pow_fit=fit_ref1_XX_EW,
+#            slice_label='ref1XX EW', model_label='FEE XX EW')
+#
+#    ax5 = plt_null_test(
+#            fig=fig1,sub=325, 
+#            zen_angle=za_NS, del_pow=ref01_XX_NS, 
+#            del_err=error_ref01_XX_NS, del_beam=beam_ref01_XX_NS, 
+#            del_fit=fit_ref01_XX_NS, null_label='NS rf0-rf1', 
+#            beam_label='FEE Null', fit_label='Fit rf0-rf1') 
+#    
+#    ax6 = plt_null_test(
+#            fig=fig1,sub=326, 
+#            zen_angle=za_EW, del_pow=ref01_XX_EW, 
+#            del_err=error_ref01_XX_EW, del_beam=beam_ref01_XX_EW, 
+#            del_fit=fit_ref01_XX_EW, null_label='EW rf0-rf1', 
+#            beam_label='FEE Null', fit_label='Fit rf0-rf1')
+#
+#
+#    plt.tight_layout()
+#    fig1.savefig(f'{out_dir}/null_test_XX_slices.png')
+#   
+#
+#    fig2 = plt.figure(figsize=(8,10))
+#    
+#    ax7 = plt_slice(
+#            fig=fig2, sub=321,
+#            zen_angle=za_NS, map_slice=rf0YY_NS[0],
+#            map_error=rf0YY_NS[1], model_slice=YY_NS_slice,
+#            delta_pow=del_pow_ref0_YY_NS, pow_fit=fit_ref0_YY_NS,
+#            slice_label='ref0YY NS', model_label='FEE YY NS')
+#    
+#    ax8 = plt_slice(
+#            fig=fig2, sub=322,
+#            zen_angle=za_EW, map_slice=rf0YY_EW[0],
+#            map_error=rf0YY_EW[1], model_slice=YY_EW_slice,
+#            delta_pow=del_pow_ref0_YY_EW, pow_fit=fit_ref0_YY_EW,
+#            slice_label='ref0YY EW', model_label='FEE YY EW')
+#    
+#    ax9 = plt_slice(
+#            fig=fig2, sub=323,
+#            zen_angle=za_NS, map_slice=rf1YY_NS[0],
+#            map_error=rf1YY_NS[1], model_slice=YY_NS_slice,
+#            delta_pow=del_pow_ref1_YY_NS, pow_fit=fit_ref1_YY_NS,
+#            slice_label='ref1YY NS', model_label='FEE YY NS')
+#    
+#    ax10 = plt_slice(
+#            fig=fig2, sub=324,
+#            zen_angle=za_EW, map_slice=rf1YY_EW[0],
+#            map_error=rf1YY_EW[1], model_slice=YY_EW_slice,
+#            delta_pow=del_pow_ref1_YY_EW, pow_fit=fit_ref1_YY_EW,
+#            slice_label='ref1YY EW', model_label='FEE YY EW')
+#    
+#    ax11 = plt_null_test(
+#            fig=fig2,sub=325, 
+#            zen_angle=za_NS, del_pow=ref01_YY_NS, 
+#            del_err=error_ref01_YY_NS, del_beam=beam_ref01_YY_NS, 
+#            del_fit=fit_ref01_YY_NS, null_label='NS rf0-rf1', 
+#            beam_label='FEE Null', fit_label='Fit rf0-rf1')
+#    
+#    ax12 = plt_null_test(
+#            fig=fig2,sub=326, 
+#            zen_angle=za_EW, del_pow=ref01_YY_EW, 
+#            del_err=error_ref01_YY_EW, del_beam=beam_ref01_YY_EW, 
+#            del_fit=fit_ref01_YY_EW, null_label='EW rf0-rf1', 
+#            beam_label='FEE Null', fit_label='Fit rf0-rf1')
+#
+#    plt.tight_layout()
+#    fig2.savefig(f'{out_dir}/null_test_YY_slices.png')
+#
+#
+#
+#
