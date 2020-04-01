@@ -110,7 +110,9 @@ def power_ephem(
 
     '''Create power, alt, az arrays at constant cadence'''
 
-    power, times = read_aligned(ali_file=ref_file)
+    powr, times = read_aligned(ali_file=ref_file)
+
+    power = np.delete(powr, 85, 1)
 
     # Scale noise floor to zero and determine noise threshold
     power, noise_threshold = noise_floor(sat_thresh, noi_thresh, power)
@@ -190,86 +192,84 @@ def proj_ref_healpix(ref):
             date = dates[day]
             timestamp = date_time[day][window]
             
-            if 'XX' in ref:
-                ref_file = f'{ali_dir}/{date}/{timestamp}/{ref}_S07XX_{timestamp}_aligned.npz'
-            else:
-                ref_file = f'{ali_dir}/{date}/{timestamp}/{ref}_S07YY_{timestamp}_aligned.npz'
+            ref_file = f'{ali_dir}/{date}/{timestamp}/{ref}_S21XX_{timestamp}_aligned.npz'
             
             
             chrono_file = f'{chrono_dir}/{timestamp}.json'
             channel_map = f'{map_dir}/{timestamp}.json'
+            #print(Path(ref_file).is_file())
 
             
             try:
-                Path(ref_file).is_file()
+                if Path(ref_file).is_file() is True:
 
-                with open(chrono_file) as chrono:
-                    chrono_ephem = json.load(chrono)
+                    with open(chrono_file) as chrono:
+                        chrono_ephem = json.load(chrono)
 
-                    if chrono_ephem != []:
-                
-                        norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))]
+                        if chrono_ephem != []:
+                    
+                            norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))]
+                            
+                            if norad_list != []:
 
-                        if norad_list != []:
+                                with open(channel_map) as ch_map:
+                                    chan_map = json.load(ch_map)
 
-                            with open(channel_map) as ch_map:
-                                chan_map = json.load(ch_map)
+                                    chan_sat_ids = [int(i) for i in list(chan_map.keys())]
+                            
+                                    for sat in chan_sat_ids:
 
-                                chan_sat_ids = [int(i) for i in list(chan_map.keys())]
-                        
-                                for sat in chan_sat_ids:
+                                        if sat in norad_list:
 
-                                    if sat in norad_list:
+                                            chan = chan_map[f'{sat}']
 
-                                        chan = chan_map[f'{sat}']
-
-                                        sat_data = power_ephem(
-                                                ref,
-                                                ref_file,
-                                                chrono_file,
-                                                arb_thresh,
-                                                sat,
-                                                chan,
-                                                timestamp
-                                                )
-                                        
-                                        if sat_data != 0:
-                                            channel_power, alt, az = sat_data
-
-                                            # Altitude is in deg while az is in radians
-                                            # convert alt to radians
-                                            alt = np.radians(alt)
-                                            az  = np.asarray(az)
-
-                                            # To convert from Alt/Az to θ/ϕ spherical coordinates
-                                            # Jack's convention, not sure about ɸ
-                                            # θ = 90 - Alt
-                                            # ɸ = 180 - Az
-
-                                            # Healpix uses sperical coordinates
-                                            θ = np.pi/2 - alt
-                                            ɸ = np.pi - az
-
-                                            # Since we need to slice along NS & EW, and nside = 32 healpix does not 
-                                            # straight lines of pixels vertically or horizontally, but it does have
-                                            # them diagonally. We rotate ɸ by 45° to be able to slice NS & EW
-                                            ɸ_rot = ɸ + (np.pi / 4)
-
-                                            # Now convert to healpix coordinates
-                                            healpix_index = hp.ang2pix(nside,θ, ɸ_rot)
-                                                    
-                                            # Append channel power to ref healpix map
-                                            for i in range(len(healpix_index)):
-                                                ref_map[healpix_index[i]].append(channel_power[i])
-                                            #[ref_map[healpix_index[i]].append(channel_power[i]) for i in range(len(healpix_index))]
-                                             
-                                            # add sat_id to correct healpix indices of sat_map
-                                            for i in range(len(healpix_index)):
-                                                sat_map[healpix_index[i]].append(sat)
+                                            sat_data = power_ephem(
+                                                    ref,
+                                                    ref_file,
+                                                    chrono_file,
+                                                    arb_thresh,
+                                                    sat,
+                                                    chan,
+                                                    timestamp
+                                                    )
                                             
-                                            ## Increment pix ounter to keep track of passes in each pix 
-                                            #for i in healpix_index:
-                                            #    ref_counter[i] += 1
+                                            if sat_data != 0:
+                                                channel_power, alt, az = sat_data
+
+                                                # Altitude is in deg while az is in radians
+                                                # convert alt to radians
+                                                alt = np.radians(alt)
+                                                az  = np.asarray(az)
+
+                                                # To convert from Alt/Az to θ/ϕ spherical coordinates
+                                                # Jack's convention, not sure about ɸ
+                                                # θ = 90 - Alt
+                                                # ɸ = 180 - Az
+
+                                                # Healpix uses sperical coordinates
+                                                θ = np.pi/2 - alt
+                                                ɸ = np.pi - az
+
+                                                # Since we need to slice along NS & EW, and nside = 32 healpix does not 
+                                                # straight lines of pixels vertically or horizontally, but it does have
+                                                # them diagonally. We rotate ɸ by 45° to be able to slice NS & EW
+                                                ɸ_rot = ɸ + (np.pi / 4)
+
+                                                # Now convert to healpix coordinates
+                                                healpix_index = hp.ang2pix(nside,θ, ɸ_rot)
+                                                        
+                                                # Append channel power to ref healpix map
+                                                for i in range(len(healpix_index)):
+                                                    ref_map[healpix_index[i]].append(channel_power[i])
+                                                #[ref_map[healpix_index[i]].append(channel_power[i]) for i in range(len(healpix_index))]
+                                                 
+                                                # add sat_id to correct healpix indices of sat_map
+                                                for i in range(len(healpix_index)):
+                                                    sat_map[healpix_index[i]].append(sat)
+                                                
+                                                ## Increment pix ounter to keep track of passes in each pix 
+                                                #for i in healpix_index:
+                                                #    ref_counter[i] += 1
         
             except Exception:
                 # Exception message is forwarded from ../decode_rf_data/rf_data.py
@@ -299,7 +299,7 @@ if __name__=='__main__':
     parser.add_argument('--chrono_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json',help='Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/')
     parser.add_argument('--noi_thresh', metavar='\b', default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
     parser.add_argument('--sat_thresh', metavar='\b', default=1,help='1 σ threshold to detect sats Default=1.')
-    parser.add_argument('--arb_thresh', metavar='\b', default=10,help='Arbitrary Threshold to detect sats. Default=10 dB.')
+    parser.add_argument('--arb_thresh', metavar='\b', default=4,help='Arbitrary Threshold to detect sats. Default=10 dB.')
     parser.add_argument('--nside', metavar='\b', default=32,help='Healpix Nside. Default = 32')
     parser.add_argument('--plots', metavar='\b', default=False,help='If True, create a gazzillion plots for each sat pass. Default = False')
     
@@ -318,7 +318,7 @@ if __name__=='__main__':
     nside =             args.nside
     plots =             args.plots
 
-    ref_names=['rf0XX', 'rf0YY', 'rf1XX', 'rf1YY']
+    ref_names=['rf0XX', 'rf1XX']
     
     if plots == 'True':
         Path(plt_dir).mkdir(parents=True, exist_ok=True)

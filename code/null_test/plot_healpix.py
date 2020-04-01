@@ -120,7 +120,7 @@ def map_plots(f):
     # Plot counts in pix
     fig = plt.figure(figsize=(8,10))
     fig.suptitle(f'Healpix Pixel Counts: {ref}', fontsize=16)
-    plot_healpix(data_map=np.asarray(ref_counter),sub=(1,1,1), cmap=cmap, vmin=0, vmax=2400)
+    plot_healpix(data_map=np.asarray(ref_counter),sub=(1,1,1), cmap=cmap, vmin=0, vmax=200)
 
     plt.savefig(f'{out_dir}/{f_name}_counts.png',bbox_inches='tight')
     plt.close()
