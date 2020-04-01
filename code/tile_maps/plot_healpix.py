@@ -67,21 +67,23 @@ def map_plots(f):
    
     pointings = ['0','2','4']
 
+    
     # load data from map .npz file
     map_data = np.load(f, allow_pickle=True)
     map_data = {key:map_data[key].item() for key in map_data}
     tile_maps = map_data['healpix_maps']
-    tile_counters = map_data['healpix_counters']
+    #tile_counters = map_data['healpix_counters']
 
     for p in pointings:
 
         tile_map = tile_maps[p]
-        tile_counter = tile_counters[p]
+        #tile_counter = tile_counters[p]
+        tile_counter = [len(m) for m in tile_map]
     
         # Plot BEAM
         # compute the median for every pixel array
         tile_map_mean = [(np.mean(i) if i != [] else np.nan ) for i in tile_map]
-        tile_map_mean_scaled = np.asarray([(i - np.nanmax(tile_map_mean[:4])) for i in tile_map_mean])
+        tile_map_mean_scaled = np.asarray([(i - np.nanmax(tile_map_mean[:5000])) for i in tile_map_mean])
         vmin = np.nanmin(tile_map_mean_scaled)
         #vmax = np.nanmax(tile_map_mean_scaled)
         vmax = 0
@@ -121,7 +123,7 @@ def map_plots(f):
             
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Healpix Pixel Counts: {tile}/{ref} @ {p}', fontsize=16)
-        plot_healpix(data_map=np.asarray(tile_counter),sub=(1,1,1), cmap=cmap, vmin=0, vmax=2400)
+        plot_healpix(data_map=np.asarray(tile_counter),sub=(1,1,1), cmap=cmap, vmin=0, vmax=400)
 
         plt.savefig(f'{out_dir}/tile_counts/{tile}_{ref}_{p}_counts.png',bbox_inches='tight')
         plt.close()
