@@ -282,7 +282,7 @@ if __name__=='__main__':
     #    window_chan_map(o)
     #    break
 
-     Parallization magic happens here
+    # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor() as executor:
         results = executor.map(window_chan_map, obs_list)
 
