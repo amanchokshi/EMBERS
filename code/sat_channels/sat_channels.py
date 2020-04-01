@@ -37,7 +37,7 @@ def time_tree(start_date, stop_date):
         
         # Every 30 min in the day
         for j in range(48):
-            t_delta = datetime.strptime(date,'%Y-%m-%d') + timedelta(minutes=30*j)
+            t_delta = datetime.strptime(date,'%Y-%m-%d') + timedelta(minutes=20 + 30*j)
             d_time = t_delta.strftime('%Y-%m-%d-%H:%M')
             d_t.append(d_time)
     
