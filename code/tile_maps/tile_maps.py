@@ -14,7 +14,7 @@ sys.path.append('../sat_ephemeris')
 import sat_ids
 
 sys.path.append('../sat_channels')
-from sat_channels import time_tree, savgol_interp, time_filter
+from sat_channels import time_tree, time_filter
 
 # Custom spectral colormap
 sys.path.append('../decode_rf_data')
@@ -23,16 +23,16 @@ from colormap import spectral
 cmap = spectral()
 
 
-def check_pointing(timestamp, point_0, point_2, point_4):
-    '''Check if timestamp is at pointing 0, 2, 4'''
-    if timestamp in point_0:
-        point = 0
-    elif timestamp in point_2:
-        point = 2
-    else:
-        point = 4
-    
-    return point
+#def check_pointing(timestamp, point_0, point_2, point_4):
+#    '''Check if timestamp is at pointing 0, 2, 4'''
+#    if timestamp in point_0:
+#        point = 0
+#    elif timestamp in point_2:
+#        point = 2
+#    else:
+#        point = 4
+#    
+#    return point
 
 def read_aligned(ali_file=None):
     '''Read aligned data npz file'''
@@ -211,12 +211,12 @@ def project_tile_healpix(tile_pair):
 
     ref, tile = tile_pair
 
-    pointings = ['0','2','4']
+    pointings = ['0']
     
     if plots == 'True':
         Path(f'{plt_dir}/{tile}_{ref}/0').mkdir(parents=True, exist_ok=True)
-        Path(f'{plt_dir}/{tile}_{ref}/2').mkdir(parents=True, exist_ok=True)
-        Path(f'{plt_dir}/{tile}_{ref}/4').mkdir(parents=True, exist_ok=True)
+        #Path(f'{plt_dir}/{tile}_{ref}/2').mkdir(parents=True, exist_ok=True)
+        #Path(f'{plt_dir}/{tile}_{ref}/4').mkdir(parents=True, exist_ok=True)
 
     # Initialize an empty dictionary for tile data
     # The map is list of length 12288 of empty lists to append pixel values to
@@ -229,95 +229,96 @@ def project_tile_healpix(tile_pair):
         for window in range(len(date_time[day])):
             timestamp = date_time[day][window]
             
-            # Check if at timestamp, reciever was pointed to 0,2,4 gridpointing
-            if ((timestamp in point_0) or (timestamp in point_2) or (timestamp in point_4)):
-            
-                # pointing at timestamp
-                point = check_pointing(timestamp, point_0, point_2, point_4)
+            ## Check if at timestamp, reciever was pointed to 0,2,4 gridpointing
+            #if ((timestamp in point_0) or (timestamp in point_2) or (timestamp in point_4)):
+            #
+            #    # pointing at timestamp
+            #    point = check_pointing(timestamp, point_0, point_2, point_4)
 
-                ali_file = Path(f'{align_dir}/{dates[day]}/{timestamp}/{ref}_{tile}_{timestamp}_aligned.npz')
+            point = 0
+            ali_file = Path(f'{align_dir}/{dates[day]}/{timestamp}/{ref}_{tile}_{timestamp}_aligned.npz')
 
-                # check if file exists
-                if ali_file.is_file():
+            # check if file exists
+            if ali_file.is_file():
 
-                    # Chrono and map Ephemeris file
-                    chrono_file = Path(f'{chrono_dir}/{timestamp}.json')
-                    channel_map = f'{map_dir}/{timestamp}.json'
+                # Chrono and map Ephemeris file
+                chrono_file = Path(f'{chrono_dir}/{timestamp}.json')
+                channel_map = f'{map_dir}/{timestamp}.json'
 
-                    with open(chrono_file) as chrono:
-                        chrono_ephem = json.load(chrono)
-                    
-                        if chrono_ephem != []:
+                with open(chrono_file) as chrono:
+                    chrono_ephem = json.load(chrono)
                 
-                            norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))]
+                    if chrono_ephem != []:
+            
+                        norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))]
 
-                            if norad_list != []:
+                        if norad_list != []:
 
-                                with open(channel_map) as ch_map:
-                                    chan_map = json.load(ch_map)
-                                
-                                    chan_sat_ids = [int(i) for i in list(chan_map.keys())]
+                            with open(channel_map) as ch_map:
+                                chan_map = json.load(ch_map)
+                            
+                                chan_sat_ids = [int(i) for i in list(chan_map.keys())]
+                    
+                                for sat in chan_sat_ids:
+
+                                    if sat in norad_list:
+
+                                        chan = chan_map[f'{sat}']
+
                         
-                                    for sat in chan_sat_ids:
+                                        sat_data = power_ephem(
+                                                ref, tile,
+                                                ali_file,
+                                                chrono_file,
+                                                sat,
+                                                chan,
+                                                point,
+                                                arb_thresh,
+                                                timestamp
+                                                )
 
-                                        if sat in norad_list:
+                                        if sat_data != 0:
+                                        
+                                            ref_power, tile_power, alt, az = sat_data
 
-                                            chan = chan_map[f'{sat}']
+                                            # DIVIDE OUT SATS
+                                            # Here we divide satellite signal by reference signal
+                                            # In log space, this is subtraction
+                                            pass_power = tile_power - ref_power
 
-                            
-                                            sat_data = power_ephem(
-                                                    ref, tile,
-                                                    ali_file,
-                                                    chrono_file,
-                                                    sat,
-                                                    chan,
-                                                    point,
-                                                    arb_thresh,
-                                                    timestamp
-                                                    )
+                                            # Altitude is in deg while az is in radians
+                                            # convert alt to radians
+                                            alt = np.radians(alt)
+                                            az  = np.asarray(az)
 
-                                            if sat_data != 0:
+                                            # To convert from Alt/Az to θ/ϕ spherical coordinates
+                                            # θ = 90 - Alt
+                                            # ɸ = 180 - Az
+
+                                            # Healpix uses sperical coordinates
+                                            θ = np.pi/2 - alt
+                                            ɸ = np.pi - az
+
+                                            # Since we need to slice along NS & EW, and nside = 32 healpix does not 
+                                            # straight lines of pixels vertically or horizontally, but it does have
+                                            # them diagonally. We rotate ɸ by 45° to be able to slice NS & EW
+                                            ɸ_rot = ɸ + (np.pi / 4)
+
+                                            # Now convert to healpix coordinates
+                                            healpix_index = hp.ang2pix(nside,θ, ɸ_rot)
+                                                    
+                                            # Append channel power to ref healpix map
+                                            for i in range(len(healpix_index)):
+                                                tile_data['healpix_maps'][f'{point}'][healpix_index[i]].append(pass_power[i])
+                                             
                                             
-                                                ref_power, tile_power, alt, az = sat_data
-
-                                                # DIVIDE OUT SATS
-                                                # Here we divide satellite signal by reference signal
-                                                # In log space, this is subtraction
-                                                pass_power = tile_power - ref_power
-
-                                                # Altitude is in deg while az is in radians
-                                                # convert alt to radians
-                                                alt = np.radians(alt)
-                                                az  = np.asarray(az)
-
-                                                # To convert from Alt/Az to θ/ϕ spherical coordinates
-                                                # θ = 90 - Alt
-                                                # ɸ = 180 - Az
-
-                                                # Healpix uses sperical coordinates
-                                                θ = np.pi/2 - alt
-                                                ɸ = np.pi - az
-
-                                                # Since we need to slice along NS & EW, and nside = 32 healpix does not 
-                                                # straight lines of pixels vertically or horizontally, but it does have
-                                                # them diagonally. We rotate ɸ by 45° to be able to slice NS & EW
-                                                ɸ_rot = ɸ + (np.pi / 4)
-
-                                                # Now convert to healpix coordinates
-                                                healpix_index = hp.ang2pix(nside,θ, ɸ_rot)
-                                                        
-                                                # Append channel power to ref healpix map
-                                                for i in range(len(healpix_index)):
-                                                    tile_data['healpix_maps'][f'{point}'][healpix_index[i]].append(pass_power[i])
-                                                 
-                                                
-                                                # Keep track of sats in each healpix pixel
-                                                for i in range(len(healpix_index)):
-                                                    tile_data['sat_map'][f'{point}'][healpix_index[i]].append(sat)
+                                            # Keep track of sats in each healpix pixel
+                                            for i in range(len(healpix_index)):
+                                                tile_data['sat_map'][f'{point}'][healpix_index[i]].append(sat)
                             
-                else:
-                    print(f'Missing {ref}_{tile}_{timestamp}_aligned.npz')
-                    continue
+            else:
+                print(f'Missing {ref}_{tile}_{timestamp}_aligned.npz')
+                continue
 
     # Save map arrays to npz file
     np.savez_compressed(f'{out_dir}/{tile}_{ref}_healpix_map.npz', **tile_data)
@@ -340,13 +341,13 @@ if __name__=='__main__':
             '--plt_dir', metavar='\b', default='./../../outputs/tile_maps/pass_plots/',
             help='Output directory. Default=./../../outputs/tile_maps/pass_plots/')
 
-    parser.add_argument(
-            '--chan_map', metavar='\b', default='../../data/channel_map.json',
-            help='Satellite channel map. Default=../../data/channel_map.json')
+    #parser.add_argument(
+    #        '--chan_map', metavar='\b', default='../../data/channel_map.json',
+    #        help='Satellite channel map. Default=../../data/channel_map.json')
     
-    parser.add_argument(
-            '--obs_point', metavar='\b', default='../../outputs/beam_pointings/obs_pointings.json',
-            help='Observation pointing lists. Default=../../outputs/beam_pointings/obs_pointings.json')
+    #parser.add_argument(
+    #        '--obs_point', metavar='\b', default='../../outputs/beam_pointings/obs_pointings.json',
+    #        help='Observation pointing lists. Default=../../outputs/beam_pointings/obs_pointings.json')
 
     parser.add_argument(
             '--chrono_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json',
@@ -368,8 +369,8 @@ if __name__=='__main__':
     
     start_date      = args.start_date
     stop_date       = args.stop_date
-    chan_map        = args.chan_map
-    obs_point       = args.obs_point
+    #chan_map        = args.chan_map
+    #obs_point       = args.obs_point
     noi_thresh      = args.noi_thresh
     sat_thresh      = args.sat_thresh
     arb_thresh      = args.arb_thresh
@@ -386,30 +387,25 @@ if __name__=='__main__':
     sat_list = [id for id in sat_ids.norad_ids.values()]
 
     # Tile names
-    refs    = tile_names()[:4]
-    tiles   = tile_names()[4:]
+    refs    = tile_names()[:2]
+    tiles   = tile_names()[2:]
     
     # All relevant tile pairs
     tile_pairs = []
     for ref in refs:
-        if 'XX' in ref:
-            for tile in [t for t in tiles if 'XX' in t]:
+            for tile in tiles:
                 tile_pairs.append([ref, tile])
-        else:
-            for tile in [t for t in tiles if 'YY' in t]:
-                tile_pairs.append([ref,tile])
 
-
-    # Read channel map file
-    with open(chan_map) as map:
-        channel_map = json.load(map)
+    ## Read channel map file
+    #with open(chan_map) as map:
+    #    channel_map = json.load(map)
 
     # Read observation pointing list
-    with open(obs_point) as point:
-        obs_p = json.load(point)
-        point_0 = obs_p['point_0'] 
-        point_2 = obs_p['point_2'] 
-        point_4 = obs_p['point_4']
+    #with open(obs_point) as point:
+    #    obs_p = json.load(point)
+    #    point_0 = obs_p['point_0'] 
+    #    point_2 = obs_p['point_2'] 
+    #    point_4 = obs_p['point_4']
 
 
 
@@ -422,9 +418,9 @@ if __name__=='__main__':
     Path(out_dir).mkdir(parents=True, exist_ok=True)
     sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
-#    for tile_pair in tile_pairs:
-#        project_tile_healpix(tile_pair)
-#        break
+    #for tile_pair in tile_pairs:
+    #    project_tile_healpix(tile_pair)
+    #    break
          
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor() as executor:
