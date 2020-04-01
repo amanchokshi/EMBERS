@@ -65,7 +65,7 @@ def map_plots(f):
     f_name, _ = f.name.split('.')
     tile, ref, _, _ = f_name.split('_')
    
-    pointings = ['0','2','4']
+    pointings = ['0']
 
     
     # load data from map .npz file
