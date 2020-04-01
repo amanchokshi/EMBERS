@@ -65,8 +65,10 @@ def power_ephem(
     power, times = read_aligned(ali_file=ref_file)
 
     # Scale noise floor to zero and determine noise threshold
-    power, noise_threshold = noise_floor(sat_thresh, noi_thresh, power)
+    powr, noise_threshold = noise_floor(sat_thresh, noi_thresh, power)
 
+    power = np.delete(powr, np.array([85]), 1)
+    
     with open(chrono_file) as chrono:
         chrono_ephem = json.load(chrono)
     
@@ -123,7 +125,7 @@ def power_ephem(
                                     plt_channel_basic(
                                             f'{plt_dir}/{date}/{timestamp}', times_c, channel_power,
                                             s_chan, min_s, 32, noise_threshold,
-                                            arb_thresh, sat_id, timestamp)
+                                            pow_thresh, sat_id, timestamp)
 
                         elif (times[-1] == times_c[-1]):
                             if (all(p < noise_threshold for p in channel_power[:10])) is True:
@@ -135,7 +137,7 @@ def power_ephem(
                                     plt_channel_basic(
                                             f'{plt_dir}/{date}/{timestamp}', times_c, channel_power,
                                             s_chan, min_s, 32, noise_threshold,
-                                            arb_thresh, sat_id, timestamp)
+                                            pow_thresh, sat_id, timestamp)
 
                         else:
                             if (all(p < noise_threshold for p in channel_power[:10]) and 
@@ -148,7 +150,7 @@ def power_ephem(
                                     plt_channel_basic(
                                             f'{plt_dir}/{date}/{timestamp}', times_c, channel_power,
                                             s_chan, min_s, 32, noise_threshold,
-                                            arb_thresh, sat_id, timestamp)
+                                            pow_thresh, sat_id, timestamp)
                         
                 
                 
@@ -190,7 +192,7 @@ def window_chan_map(obs_stamp):
     
     channel_map = {}
 
-    ref_file = f'{ali_dir}/{date}/{timestamp}/rf0XX_S21XX_{timestamp}_aligned.npz'
+    ref_file = f'{ali_dir}/{date}/{timestamp}/rf1XX_S21XX_{timestamp}_aligned.npz'
     chrono_file = f'{chrono_dir}/{timestamp}.json'
     
     try:
@@ -245,7 +247,7 @@ if __name__=='__main__':
     parser.add_argument('--chrono_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json',help='Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/')
     parser.add_argument('--noi_thresh', metavar='\b', default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
     parser.add_argument('--sat_thresh', metavar='\b', default=1,help='1 σ threshold to detect sats Default=1.')
-    parser.add_argument('--pow_thresh', metavar='\b', default=20,help='Power Threshold to detect sats. Default=20 dB.')
+    parser.add_argument('--pow_thresh', metavar='\b', default=8,help='Power Threshold to detect sats. Default=20 dB.')
     parser.add_argument('--occ_thresh', metavar='\b', default=0.80,help='Occupation Threshold of sat in window. Default=0.80')
     parser.add_argument('--alt_thresh', metavar='\b', default=0,help='Altitude Threshold of sat in window. Default=0 degrees')
     parser.add_argument('--plots', metavar='\b', default=False,help='If True, create a gazzillion plots for each sat pass. Default = False')
@@ -270,18 +272,17 @@ if __name__=='__main__':
     
     # Save logs 
     Path(f'{out_dir}/window_maps').mkdir(parents=True, exist_ok=True)
-    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+    #sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
 
     # Help traverse all 30 min obs b/w start & stop
     dates, date_time = time_tree(start_date, stop_date)
     obs_list = [[dates[d], date_time[d][dt]] for d in range(len(dates)) for dt in range(len(date_time[d]))]
 
-#    for o in obs_list:
-#        print(o)
-#        window_chan_map(o)
-#        break
+    #for o in obs_list:
+    #    window_chan_map(o)
+    #    break
 
-    # Parallization magic happens here
+     Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor() as executor:
         results = executor.map(window_chan_map, obs_list)
 
