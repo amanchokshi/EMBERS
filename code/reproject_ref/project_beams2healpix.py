@@ -122,15 +122,17 @@ len_empty_healpix = hp.nside2npix(nside)   #12288
 epsilon = 1.e-12
 
 # Reference FEE models in XX & YY pols
-refXX = '../../data/FEE_Reference_Models/MWA_reference_tile_FarField_XX.ffe'
-refYY = '../../data/FEE_Reference_Models/MWA_reference_tile_FarField_YY.ffe'
+#refXX = '../../data/FEE_Reference_Models/MWA_reference_tile_FarField_XX.ffe'
+#refYY = '../../data/FEE_Reference_Models/MWA_reference_tile_FarField_YY.ffe'
+refEast = '../../../jacks_data/FEE_models/MWA_single_dipole_finite_gnd_Eastern_FarField1.ffe'
+refWest = '../../../jacks_data/FEE_models/MWA_single_dipole_finite_gnd_Western_FarField1.ffe'
 
 # Output directory
-out_dir = '../../outputs/reproject_ref'
+out_dir = '../../../jacks_data/outputs/reproject_ref'
 Path(out_dir).mkdir(parents=True, exist_ok=True)
 
-healpix_XX,theta_mesh,phi_mesh,power_XX,theta = create_model(file_name=refXX)
-healpix_YY,theta_mesh,phi_mesh,power_YY,theta = create_model(file_name=refYY)
+healpix_XX,theta_mesh,phi_mesh,power_XX,theta = create_model(file_name=refEast)
+healpix_YY,theta_mesh,phi_mesh,power_YY,theta = create_model(file_name=refWest)
 
 # Plot the things to sanity check and save results
 fig = plt.figure(figsize=(10,10))
@@ -141,18 +143,18 @@ ax2 = fig.add_subplot(222,projection='polar')
 ax2.set_rgrids([10,30,50,70,90], angle=22)
 
 im1 = ax1.pcolormesh(phi_mesh*(np.pi/180.0),
-        theta_mesh,power_XX,label='XX',
+        theta_mesh,power_XX,label='East',
         vmin=-40,vmax=-20, cmap=cmap)
 
-ax1.set_title('Ref XX', y=1.1)
+ax1.set_title('Ref East', y=1.1)
 ax1.grid(color='k',alpha=0.3)
 
 
 im2 = ax2.pcolormesh(phi_mesh*(np.pi/180.0),
-        theta_mesh,power_YY,label='YY',
+        theta_mesh,power_YY,label='West',
         vmin=-40,vmax=-20, cmap=cmap)
 
-ax2.set_title('Ref YY', y=1.1)
+ax2.set_title('Ref West', y=1.1)
 ax2.grid(color='k',alpha=0.3)
 
 plot_healpix(beam_map=healpix_XX,sub=(2,2,3),title=None,vmin=-20,vmax=0, cmap=cmap)
