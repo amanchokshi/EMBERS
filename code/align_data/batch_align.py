@@ -47,26 +47,15 @@ sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
 # Import list of tile names from rf_data.py
 tiles = rf.tile_names()
 
-refs = tiles[:4]
-AUTS = tiles[4:]
-
-# Split the list into XX and YY lists
-refs_XX = refs[::2]
-refs_YY = refs[1::2]
-
-AUTS_XX = AUTS[::2]
-AUTS_YY = AUTS[1::2]
+refs = tiles[:2]
+AUTS = tiles[2:]
 
 
 # Create a list of pairs of tiles to be aligned. 
 # Essentially all possible combinations of Refs, AUTS
 align_pairs = []
-for pair in list(product(refs_XX, AUTS_XX)):
+for pair in list(product(refs, AUTS)):
     align_pairs.append(pair)
-
-for pair in list(product(refs_YY, AUTS_YY)):
-    align_pairs.append(pair)
-
 
 # Time stuff to help traverse data dir tree.
 t_start = datetime.strptime(start_date, '%Y-%m-%d')
@@ -83,7 +72,7 @@ for i in range(n_days+1):
     d_t = []
     
     for j in range(48):
-        t_delta = datetime.strptime(date,'%Y-%m-%d') + timedelta(minutes=30*j)
+        t_delta = datetime.strptime(date,'%Y-%m-%d') + timedelta(minutes=20 + 30*j)
         d_time = t_delta.strftime('%Y-%m-%d-%H:%M')
         d_t.append(d_time)
 
