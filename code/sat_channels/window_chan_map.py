@@ -7,7 +7,7 @@ from pathlib import Path
 import concurrent.futures
 import matplotlib.pyplot as plt
 from scipy.stats import median_absolute_deviation as mad
-from sat_channels import time_tree, time_filter,center_of_gravity
+from sat_channels import time_tree, time_filter
 from channels_plt import plt_waterfall_pass, plt_channel_basic, sat_plot
 
 # Custom spectral colormap
@@ -190,7 +190,7 @@ def window_chan_map(obs_stamp):
     
     channel_map = {}
 
-    ref_file = f'{ali_dir}/{date}/{timestamp}/rf0XX_S07XX_{timestamp}_aligned.npz'
+    ref_file = f'{ali_dir}/{date}/{timestamp}/rf0XX_S21XX_{timestamp}_aligned.npz'
     chrono_file = f'{chrono_dir}/{timestamp}.json'
     
     try:

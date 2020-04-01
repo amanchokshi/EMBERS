@@ -46,55 +46,6 @@ def time_tree(start_date, stop_date):
     return (dates, date_time)
 
 
-def savgol_interp(ref, savgol_window =None, polyorder=None, interp_type=None, interp_freq=None):
-    """Smooth and interpolate the power array with a savgol filter
-    
-    Args:
-        ref:            Path to reference data file
-        savgol_window:  Window size of savgol filer. Must be odd. Default = 151
-        polyorder:      Order of polynomial to fit to savgol_window. Default = 1
-        interp_type:    Type of interpolation. Ex: 'cubic', 'linear'. Default = cubic
-        interp_freq:    The freqency to which power array is interpolated. Default = 6 Hz
-
-    Returns:
-        power_smooth:   Aligned reference power array
-        time_smooth:    Time array corresponding to power arrays
-    """
-    
-    
-    power, times = rf.read_data(ref)
-    savgol_pow = savgol_filter(power, savgol_window, polyorder, axis=0)
-    time_smooth = np.arange(math.ceil(times[0]), math.floor(times[-1]), (1 / interp_freq))
-    ref_sav_interp = interpolate.interp1d(times, savgol_pow, axis=0, kind=interp_type)
-    power_smooth = ref_sav_interp(time_smooth)
-    
-    return (power_smooth, time_smooth)
-
-
-def center_of_gravity(channel_power, times_c):
-    '''Determine center of gravity of channel power
-    
-    Args:
-        channel_power:  Power in one channel
-        times_c:        Corresponding time array
-    '''
-
-    # a list of indices for a column, and the center of this list
-    #t = np.arange(channel_power.shape[0])
-    center = times_c[(len(times_c) - 1)//2]
-   
-    # We determine the center of gravity for each of the possible sat channels
-    cog = np.round(np.sum(channel_power * times_c) / np.sum(channel_power), 1)
-    
-    # Delta c. distance b/w cog and center
-    del_c = np.absolute(cog - center)
-
-    # Fractional offset from center
-    frac_cen_offset = del_c/(channel_power.shape[0])
-
-    return (center, cog, frac_cen_offset)
-
-
 def time_filter(s_rise, s_set, times):
     '''Slice obs window to size of ephem of norad sat
     Args:
@@ -189,83 +140,91 @@ def find_sat_channel(norad_id):
             
             try:
                 if Path(ref_file).is_file() and Path(chrono_file).is_file():
-    
+
                     power, times = read_aligned(ali_file=ref_file)
 
                     # Scale noise floor to zero and determine noise threshold
                     power, noise_threshold = noise_floor(sat_thresh, noi_thresh, power)
                     
+            #except Exception:
+            #    print(f'{date_time[day][window]}: ref file not found')
+            #    continue
+
+            #try:    
+            #    with open(chrono_file) as chrono:
+            #        chrono_ephem = json.load(chrono)
+            #
+            #except Exception:
+            #    print(f'{chrono_dir}/{date_time[day][window]}: chrono file not found')
+            #    continue
+                    with open(chrono_file) as chrono:
+                        chrono_ephem = json.load(chrono)
+
+                        num_passes = len(chrono_ephem)
+
+    
+                        norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(num_passes)]
+
+                        if norad_id in norad_list:
+                            norad_index = norad_list.index(norad_id)
+                        
+                            norad_ephem = chrono_ephem[norad_index]
+                                
+                            rise_ephem  = norad_ephem["time_array"][0] 
+                            set_ephem   = norad_ephem["time_array"][-1]
+                            
+                            intvl = time_filter(rise_ephem, set_ephem, np.asarray(times))
+
+                            
+                            if intvl != None:
+
+                                w_start, w_stop = intvl
+                        
+                                # length of sat pass. Only consider passes longer than 2 minutes
+                                window_len = w_stop - w_start + 1
+                                
+                                # Slice [crop] the power/times arrays to the times of sat pass
+                                power_c = power[w_start:w_stop+1, :]
+                                times_c = times[w_start:w_stop+1]
+                                
+                                possible_chans = []
+
+                                # Loop over every channel
+                                for s_chan in range(len(power_c[0])):
+                                    
+                                    channel_power = power_c[:, s_chan]
+                                    
+                                    # Percentage of signal occupancy above noise threshold
+                                    window_occupancy = (np.where(channel_power >= noise_threshold))[0].size/window_len
+                        
+                                    # Arbitrary threshold below which satellites aren't counted
+                                    # Only continue if there is signal for more than 80% of satellite pass
+                                    if (max(channel_power) >= arb_thresh and 
+                                            occ_thresh <= window_occupancy < 1.00):
+                                     
+                                        if times_c[0] == times[0]:
+                                            if (all(p < noise_threshold for p in channel_power[-11:-1])) is True:
+                                                possible_chans.append(s_chan)
+                                        elif times_c[-1] == times[0]:
+                                            if (all(p < noise_threshold for p in channel_power[:10])) is True:
+                                                possible_chans.append(s_chan)
+                                        else:
+                                            if (all(p < noise_threshold for p in channel_power[:10]) and 
+                                                all(p < noise_threshold for p in channel_power[-11:-1])) is True:
+                                                possible_chans.append(s_chan)
+
+                                
+                                # If channels are identified in the 30 min obs
+                                n_chans = len(possible_chans)
+                                
+                                if n_chans > 0:
+
+                                    # Add possible chans to ultimate list of chans, for histogram
+                                    chans.extend(possible_chans)
+
             except Exception:
                 print(f'{date_time[day][window]}: ref file not found')
                 continue
-
-            try:    
-                with open(chrono_file) as chrono:
-                    chrono_ephem = json.load(chrono)
-            
-            except Exception:
-                print(f'{chrono_dir}/{date_time[day][window]}: chrono file not found')
-                continue
-
-            num_passes = len(chrono_ephem)
-    
-            norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(num_passes)]
-
-            if norad_id in norad_list:
-                norad_index = norad_list.index(norad_id)
-            
-                norad_ephem = chrono_ephem[norad_index]
-                    
-                rise_ephem  = norad_ephem["time_array"][0] 
-                set_ephem   = norad_ephem["time_array"][-1]
-                
-                intvl = time_filter(rise_ephem, set_ephem, np.asarray(times))
-
-                if intvl != None:
-                    
-                    w_start, w_stop = intvl
-            
-                    # length of sat pass. Only consider passes longer than 2 minutes
-                    window_len = w_stop - w_start + 1
-                    
-                    # Slice [crop] the power/times arrays to the times of sat pass
-                    power_c = power[w_start:w_stop+1, :]
-                    times_c = times[w_start:w_stop+1]
-                    
-                    possible_chans = []
-
-                    # Loop over every channel
-                    for s_chan in range(len(power_c[0])):
-                        
-                        channel_power = power_c[:, s_chan]
-                        
-                        # Percentage of signal occupancy above noise threshold
-                        window_occupancy = (np.where(channel_power >= noise_threshold))[0].size/window_len
-            
-                        # Arbitrary threshold below which satellites aren't counted
-                        # Only continue if there is signal for more than 80% of satellite pass
-                        if (max(channel_power) >= arb_thresh and 
-                                occ_thresh <= window_occupancy < 1.00):
-                         
-                            if times_c[0] == times[0]:
-                                if (all(p < noise_threshold for p in channel_power[-11:-1])) is True:
-                                    possible_chans.append(s_chan)
-                            elif times_c[-1] == times[0]:
-                                if (all(p < noise_threshold for p in channel_power[:10])) is True:
-                                    possible_chans.append(s_chan)
-                            else:
-                                if (all(p < noise_threshold for p in channel_power[:10]) and 
-                                    all(p < noise_threshold for p in channel_power[-11:-1])) is True:
-                                    possible_chans.append(s_chan)
-
-                    
-                    # If channels are identified in the 30 min obs
-                    n_chans = len(possible_chans)
-                    
-                    if n_chans > 0:
-
-                        # Add possible chans to ultimate list of chans, for histogram
-                        chans.extend(possible_chans)
 
     if chans != []:
 
