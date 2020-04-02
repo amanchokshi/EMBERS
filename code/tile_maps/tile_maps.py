@@ -195,7 +195,7 @@ def power_ephem(
                     if plots == 'True':
                         plt_channel(f'{plt_dir}/{tile}_{ref}/{point}', times_c, ref_c, tile_c, ref_noise, tile_noise, sat_chan, sat_id, point, timestamp, point)
                 
-                    return [good_ref, good_tile, good_alt, good_az]
+                    return [good_ref, good_tile, good_alt, good_az, times_c]
 
                 else:
                     return 0
@@ -222,7 +222,11 @@ def project_tile_healpix(tile_pair):
     # The map is list of length 12288 of empty lists to append pixel values to
     # The counter is an array of zeros, to increment when a new values is added
     # keep track of which satellites contributed which data
-    tile_data = {'healpix_maps':{p:[[] for pixel in range(hp.nside2npix(nside))] for p in pointings}, 'sat_map':{p:[[] for pixel in range(hp.nside2npix(nside))] for p in pointings}}
+    tile_data = {
+            'healpix_maps':{p:[[] for pixel in range(hp.nside2npix(nside))] for p in pointings}, 
+            'sat_map':{p:[[] for pixel in range(hp.nside2npix(nside))] for p in pointings},
+            'times':{p:[[] for pixel in range(hp.nside2npix(nside))] for p in pointings}
+            }
     
     for day in range(len(dates)):
 
@@ -278,7 +282,7 @@ def project_tile_healpix(tile_pair):
 
                                             if sat_data != 0:
                                             
-                                                ref_power, tile_power, alt, az = sat_data
+                                                ref_power, tile_power, alt, az, times = sat_data
 
                                                 # DIVIDE OUT SATS
                                                 # Here we divide satellite signal by reference signal
@@ -314,6 +318,10 @@ def project_tile_healpix(tile_pair):
                                                 # Keep track of sats in each healpix pixel
                                                 for i in range(len(healpix_index)):
                                                     tile_data['sat_map'][f'{point}'][healpix_index[i]].append(sat)
+                                                
+                                                # Keep track of times when each datapoint was recorded in each healpix pixel
+                                                for i in range(len(healpix_index)):
+                                                    tile_data['times'][f'{point}'][healpix_index[i]].append(times[i])
                             
                 else:
                     print(f'Missing {ref}_{tile}_{timestamp}_aligned.npz')
