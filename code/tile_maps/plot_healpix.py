@@ -168,8 +168,7 @@ if __name__=='__main__':
     Path(f'{out_dir}/tile_errors/').mkdir(parents=True, exist_ok=True)
     
     # Parallization magic happens here
-    #with concurrent.futures.ProcessPoolExecutor() as executor:
-    #    results = executor.map(map_plots, map_files)
-    map_plots(map_files[0])
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(map_plots, map_files)
 
 
