@@ -87,11 +87,12 @@ def map_plots(f):
         vmin = np.nanmin(tile_map_mean_scaled)
         #vmax = np.nanmax(tile_map_mean_scaled)
         vmax = 0
+        #vmin = -30
 
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Healpix Map: {tile}/{ref} @ {p}', fontsize=16)
         plot_healpix(data_map=np.asarray(tile_map_mean_scaled),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
-        plt.savefig(f'{out_dir}/tile_maps/{tile}_{ref}_{p}_map.png',bbox_inches='tight')
+        plt.savefig(f'{out_dir}/tile_maps/{ref}/{tile}_{ref}_{p}_map.png',bbox_inches='tight')
         plt.close()
            
         # Plot MAD 
@@ -115,7 +116,7 @@ def map_plots(f):
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Healpix MAD: {tile}/{ref} @ {p}', fontsize=16)
         plot_healpix(data_map=np.asarray(tile_map_mad),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
-        plt.savefig(f'{out_dir}/tile_errors/{tile}_{ref}_{p}_mad.png',bbox_inches='tight')
+        plt.savefig(f'{out_dir}/tile_errors/{ref}/{tile}_{ref}_{p}_mad.png',bbox_inches='tight')
         plt.close()
 
 
@@ -123,9 +124,9 @@ def map_plots(f):
             
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Healpix Pixel Counts: {tile}/{ref} @ {p}', fontsize=16)
-        plot_healpix(data_map=np.asarray(tile_counter),sub=(1,1,1), cmap=cmap, vmin=0, vmax=400)
+        plot_healpix(data_map=np.asarray(tile_counter),sub=(1,1,1), cmap=cmap, vmin=0, vmax=200)
 
-        plt.savefig(f'{out_dir}/tile_counts/{tile}_{ref}_{p}_counts.png',bbox_inches='tight')
+        plt.savefig(f'{out_dir}/tile_counts/{ref}/{tile}_{ref}_{p}_counts.png',bbox_inches='tight')
         plt.close()
    
 
@@ -144,7 +145,6 @@ if __name__=='__main__':
     
     # Custom spectral colormap
     cmap = spectral()
-    
 
     parser = argparse.ArgumentParser(description="""
         Plot healpix map of reference data
@@ -161,9 +161,12 @@ if __name__=='__main__':
     map_files = [item for item in map_dir.glob('*.npz')]
 
     # Save logs 
-    Path(f'{out_dir}/tile_maps/').mkdir(parents=True, exist_ok=True)
-    Path(f'{out_dir}/tile_counts/').mkdir(parents=True, exist_ok=True)
-    Path(f'{out_dir}/tile_errors/').mkdir(parents=True, exist_ok=True)
+    Path(f'{out_dir}/tile_maps/rf0XX/').mkdir(parents=True, exist_ok=True)
+    Path(f'{out_dir}/tile_counts/rf0XX/').mkdir(parents=True, exist_ok=True)
+    Path(f'{out_dir}/tile_errors/rf0XX/').mkdir(parents=True, exist_ok=True)
+    Path(f'{out_dir}/tile_maps/rf1XX/').mkdir(parents=True, exist_ok=True)
+    Path(f'{out_dir}/tile_counts/rf1XX/').mkdir(parents=True, exist_ok=True)
+    Path(f'{out_dir}/tile_errors/rf1XX/').mkdir(parents=True, exist_ok=True)
     
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor() as executor:
