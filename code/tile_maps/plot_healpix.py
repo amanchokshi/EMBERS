@@ -90,7 +90,7 @@ def map_plots(f):
 
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Healpix Map: {tile}/{ref} @ {p}', fontsize=16)
-        plot_healpix(data_map=np.asarray(tile_map_mean_scaled),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
+        plot_healpix(data_map=np.asarray(tile_map_mean_scaled),sub=(1,1,1), cmap=jade, vmin=vmin, vmax=vmax)
         plt.savefig(f'{out_dir}/tile_maps/{tile}_{ref}_{p}_map.png',bbox_inches='tight')
         plt.close()
            
@@ -114,7 +114,7 @@ def map_plots(f):
 
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Healpix MAD: {tile}/{ref} @ {p}', fontsize=16)
-        plot_healpix(data_map=np.asarray(tile_map_mad),sub=(1,1,1), cmap=cmap, vmin=vmin, vmax=vmax)
+        plot_healpix(data_map=np.asarray(tile_map_mad),sub=(1,1,1), cmap=jade, vmin=vmin, vmax=vmax)
         plt.savefig(f'{out_dir}/tile_errors/{tile}_{ref}_{p}_mad.png',bbox_inches='tight')
         plt.close()
 
@@ -123,7 +123,7 @@ def map_plots(f):
             
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Healpix Pixel Counts: {tile}/{ref} @ {p}', fontsize=16)
-        plot_healpix(data_map=np.asarray(tile_counter),sub=(1,1,1), cmap=cmap, vmin=0, vmax=400)
+        plot_healpix(data_map=np.asarray(tile_counter),sub=(1,1,1), cmap=jade, vmin=0, vmax=400)
 
         plt.savefig(f'{out_dir}/tile_counts/{tile}_{ref}_{p}_counts.png',bbox_inches='tight')
         plt.close()
@@ -140,10 +140,12 @@ if __name__=='__main__':
     
     import sys
     sys.path.append('../decode_rf_data')
-    from colormap import spectral
+    from colormap import spectral, jade, kelp
     
     # Custom spectral colormap
-    cmap = spectral()
+    spec = spectral()
+    jade, _ = jade()
+    kelp, _ = kelp()
     
 
     parser = argparse.ArgumentParser(description="""
@@ -166,7 +168,8 @@ if __name__=='__main__':
     Path(f'{out_dir}/tile_errors/').mkdir(parents=True, exist_ok=True)
     
     # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(map_plots, map_files)
+    #with concurrent.futures.ProcessPoolExecutor() as executor:
+    #    results = executor.map(map_plots, map_files)
+    map_plots(map_files[0])
 
 
