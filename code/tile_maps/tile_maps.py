@@ -224,6 +224,8 @@ def project_tile_healpix(tile_pair):
     # keep track of which satellites contributed which data
     tile_data = {
             'healpix_maps':{p:[[] for pixel in range(hp.nside2npix(nside))] for p in pointings}, 
+            'ref_maps':{p:[[] for pixel in range(hp.nside2npix(nside))] for p in pointings}, 
+            'tile_maps':{p:[[] for pixel in range(hp.nside2npix(nside))] for p in pointings}, 
             'sat_map':{p:[[] for pixel in range(hp.nside2npix(nside))] for p in pointings},
             'times':{p:[[] for pixel in range(hp.nside2npix(nside))] for p in pointings}
             }
@@ -310,10 +312,17 @@ def project_tile_healpix(tile_pair):
                                                 # Now convert to healpix coordinates
                                                 healpix_index = hp.ang2pix(nside,θ, ɸ_rot)
                                                         
-                                                # Append channel power to ref healpix map
+                                                # Append channel power to healpix map
                                                 for i in range(len(healpix_index)):
                                                     tile_data['healpix_maps'][f'{point}'][healpix_index[i]].append(pass_power[i])
                                                  
+                                                # Append channel power to ref healpix map
+                                                for i in range(len(healpix_index)):
+                                                    tile_data['ref_maps'][f'{point}'][healpix_index[i]].append(ref_power[i])
+                                                
+                                                # Append channel power to tile healpix map
+                                                for i in range(len(healpix_index)):
+                                                    tile_data['tile_maps'][f'{point}'][healpix_index[i]].append(tile_power[i])
                                                 
                                                 # Keep track of sats in each healpix pixel
                                                 for i in range(len(healpix_index)):
