@@ -43,7 +43,7 @@ if __name__=="__main__":
                 plt_hist(values, counts,
                         'Channel Number',
                         'Number of Passes', 
-                        f'Probable Transmission Channel of Sat {sat_id}: {pop_chans}',
+                        f'Total Passes: {sum(counts)}, Probable Transmission Channel of Sat {sat_id}: {pop_chans}',
                         f'{out_dir}/histograms/{sat_id}_channels_histo_{sum(counts)}_passes_{pop_chans}.png',
                         'GnBu_d')
                 
