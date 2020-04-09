@@ -377,7 +377,7 @@ if __name__=='__main__':
     parser.add_argument('--stop_date', metavar='\b', help='Date until which to align data. Ex: 2019-10-11')
     parser.add_argument('--noi_thresh', metavar='\b', default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
     parser.add_argument('--sat_thresh', metavar='\b', default=1,help='3 σ threshold to detect sats Default=1.')
-    parser.add_argument('--arb_thresh', metavar='\b', default=10,help='Arbitrary Threshold to detect sats. Default=10 dB.')
+    parser.add_argument('--pow_thresh', metavar='\b', default=10,help='Power Threshold to detect sats. Default=10 dB.')
     parser.add_argument('--nside', metavar='\b', default=32,help='Healpix Nside. Default = 32')
     parser.add_argument('--plots', metavar='\b', default=False,help='If True, create a gazzillion plots for each sat pass. Default = False')
     
@@ -389,7 +389,7 @@ if __name__=='__main__':
     obs_point       = args.obs_point
     noi_thresh      = args.noi_thresh
     sat_thresh      = args.sat_thresh
-    arb_thresh      = args.arb_thresh
+    pow_thresh      = args.pow_thresh
     nside           = args.nside
     plots           = args.plots
     
