@@ -143,7 +143,7 @@ def power_ephem(
         sat_id,
         sat_chan,
         point,
-        arb_thresh,
+        pow_thresh,
         timestamp
         ):
 
@@ -182,7 +182,7 @@ def power_ephem(
             alt = np.asarray(norad_ephem["sat_alt"])
             az  = np.asarray(norad_ephem["sat_az"])
 
-            if ((max(ref_c) >= arb_thresh) and (max(tile_c) >= arb_thresh)):
+            if ((max(ref_c) >= pow_thresh) and (max(tile_c) >= pow_thresh)):
 
                 # Apply noise criteria. In the window, where are ref_power and tile power
                 # above their respective thresholds?
@@ -278,7 +278,7 @@ def project_tile_healpix(tile_pair):
                                                     sat,
                                                     chan,
                                                     point,
-                                                    arb_thresh,
+                                                    pow_thresh,
                                                     timestamp
                                                     )
 
@@ -377,7 +377,7 @@ if __name__=='__main__':
     parser.add_argument('--stop_date', metavar='\b', help='Date until which to align data. Ex: 2019-10-11')
     parser.add_argument('--noi_thresh', metavar='\b', type=int, default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
     parser.add_argument('--sat_thresh', metavar='\b', type=int, default=1,help='3 σ threshold to detect sats Default=1.')
-    parser.add_argument('--pow_thresh', metavar='\b', type=int, default=10,help='Power Threshold to detect sats. Default=10 dB.')
+    parser.add_argument('--pow_thresh', metavar='\b', type=int, default=5,help='Power Threshold to detect sats. Default=10 dB.')
     parser.add_argument('--nside', metavar='\b', type=int,  default=32,help='Healpix Nside. Default = 32')
     parser.add_argument('--plots', metavar='\b', default=False,help='If True, create a gazzillion plots for each sat pass. Default = False')
     
