@@ -33,14 +33,16 @@ time_map    = np.asarray(map_data['times'][pointings[0]])
 
 ratio_sat_data = {s:[(np.asarray(ratio_map[i])[np.where(np.asarray(sat_map[i]) == s)]).tolist() for i in range(len(ratio_map))] for s in sat_ids}
 
-fig = plt.figure(figsize=(8,10))
-#fig.suptitle(f'Healpix Map: {tile}/{ref} @ {p}', fontsize=16)
-ratio_sat_med = [(np.median(i) if i != [] else np.nan ) for i in ratio_sat_data[41188]]
-ratio_sat_scaled = np.asarray([(i - np.nanmax(ratio_sat_med[:5000])) for i in ratio_sat_med])
-plot_healpix(data_map=ratio_sat_scaled, sub=(1,1,1), cmap=jade, vmin=-30, vmax=0)
-#plt.savefig(f'{out_dir}/tile_maps/{tile}_{ref}_{p}_map.png',bbox_inches='tight')
-plt.show()
-plt.close()
+for s in sat_ids:
+
+    fig = plt.figure(figsize=(8,10))
+    #fig.suptitle(f'Healpix Map: {tile}/{ref} @ {p}', fontsize=16)
+    ratio_sat_med = [(np.median(i) if i != [] else np.nan ) for i in ratio_sat_data[s]]
+    ratio_sat_scaled = np.asarray([(i - np.nanmax(ratio_sat_med[:5000])) for i in ratio_sat_med])
+    plot_healpix(data_map=ratio_sat_scaled, sub=(1,1,1), cmap=jade, vmin=-30, vmax=0)
+    plt.savefig(f'maps/{s}.png',bbox_inches='tight')
+    #plt.show()
+    plt.close()
 
 #print(ratio_sat_data[41188])
 
