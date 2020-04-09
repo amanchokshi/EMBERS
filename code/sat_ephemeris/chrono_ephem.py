@@ -22,7 +22,7 @@ parser = argparse.ArgumentParser(description="""
 parser.add_argument('--json_dir', metavar='\b', default='./../../outputs/sat_ephemeris/ephem_json/', help='Directory where ephem json files live. Default=./../../outputs/sat_ephemeris/ephem_json/')
 parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json/', help='Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/')
 parser.add_argument('--interp_type', metavar='\b', default='cubic', help='Type of interpolation. Ex: Cubic,Linear. Default=cubic')
-parser.add_argument('--interp_freq', metavar='\b', default=1, help='Frequency at which to interpolate, in Hertz. Must be the same as used in align_data.py. Default=1')
+parser.add_argument('--interp_freq', metavar='\b', type=int, default=1, help='Frequency at which to interpolate, in Hertz. Must be the same as used in align_data.py. Default=1')
 parser.add_argument('--start_date', metavar='\b', help='Date from which to determine sat ephemeris. Ex: 2019-10-10')
 parser.add_argument('--stop_date', metavar='\b', help='Date until which to determine sat ephemeris. Ex: 2019-10-11')
 parser.add_argument('--time_zone', metavar='\b', default='Australia/Perth', help='Time zone where data was recorded. Default=Australia/Perth')

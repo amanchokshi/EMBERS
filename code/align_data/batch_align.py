@@ -22,10 +22,10 @@ parser.add_argument('--data_dir', metavar='\b', help='Dir where date is saved')
 parser.add_argument('--start_date', metavar='\b', help='Date from which to start aligning data. Ex: 2019-10-10')
 parser.add_argument('--stop_date', metavar='\b', help='Date until which to align data. Ex: 2019-10-11')
 parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/align_data/',help='Output directory. Default=./../../outputs/align_data/')
-parser.add_argument('--savgol_window', metavar='\b', default=151,help='Length of savgol window. Must be odd. Default=151')
-parser.add_argument('--polyorder', metavar='\b', default=1,help='Order of polynomial to fit to savgol window. Default=1')
+parser.add_argument('--savgol_window', metavar='\b', type=int,  default=151,help='Length of savgol window. Must be odd. Default=151')
+parser.add_argument('--polyorder', metavar='\b', type=int,  default=1,help='Order of polynomial to fit to savgol window. Default=1')
 parser.add_argument('--interp_type', metavar='\b', default='cubic',help='Type of interpolation. Ex: cubic, linear, etc. Default=cubic')
-parser.add_argument('--interp_freq', metavar='\b', default=1,help='Frequency at which to resample smoothed data, in Hertz. Default=1')
+parser.add_argument('--interp_freq', metavar='\b', type=int,  default=1,help='Frequency at which to resample smoothed data, in Hertz. Default=1')
 
 
 args = parser.parse_args()

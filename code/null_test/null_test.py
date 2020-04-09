@@ -272,7 +272,7 @@ if __name__=='__main__':
             help='Output directory. Default=../../outputs/null_test/')
     parser.add_argument('--ref_model', metavar='\b', default='../../outputs/reproject_ref/ref_dipole_models.npz',
             help='Healpix reference FEE model file. default=../../outputs/reproject_ref/ref_dipole_models.npz')
-    parser.add_argument('--nside', metavar='\b', default=32,help='Healpix Nside. Default = 32')
+    parser.add_argument('--nside', metavar='\b',type=int, default=32,help='Healpix Nside. Default = 32')
     
     
     args = parser.parse_args()

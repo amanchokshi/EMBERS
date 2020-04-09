@@ -302,10 +302,10 @@ if __name__=="__main__":
     parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/sat_channels/',help='Output directory. Default=./../../outputs/sat_channels/')
     parser.add_argument('--ali_dir', metavar='\b', default='./../../outputs/align_data/',help='Output directory. Default=./../../outputs/align_data/')
     parser.add_argument('--chrono_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json',help='Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/')
-    parser.add_argument('--noi_thresh', metavar='\b', default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
-    parser.add_argument('--sat_thresh', metavar='\b', default=1,help='1 σ threshold to detect sats Default=1.')
-    parser.add_argument('--pow_thresh', metavar='\b', default=20,help='Power Threshold to detect sats. Default=20 dB.')
-    parser.add_argument('--occ_thresh', metavar='\b', default=0.80,help='Occupation Threshold of sat in window. Default=0.80')
+    parser.add_argument('--noi_thresh', metavar='\b', type=int, default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
+    parser.add_argument('--sat_thresh', metavar='\b', type=int, default=1,help='1 σ threshold to detect sats Default=1.')
+    parser.add_argument('--pow_thresh', metavar='\b', type=int, default=20,help='Power Threshold to detect sats. Default=20 dB.')
+    parser.add_argument('--occ_thresh', metavar='\b', type=int, default=0.80,help='Occupation Threshold of sat in window. Default=0.80')
 
     
     args = parser.parse_args()
