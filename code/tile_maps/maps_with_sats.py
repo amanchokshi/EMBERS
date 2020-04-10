@@ -12,7 +12,7 @@ sys.path.append('../decode_rf_data')
 from colormap import spectral, jade, kelp
 jade, _ = jade()
 
-map_data = np.load('../../outputs/tile_maps/S08XX_rf0XX_healpix_map.npz', allow_pickle=True)
+map_data = np.load('../../outputs/tile_maps/S07XX_rf0XX_healpix_map.npz', allow_pickle=True)
 map_data = {key:map_data[key].item() for key in map_data}
 
 nside = 32
@@ -51,21 +51,16 @@ ratio_sat_data = {s:[(np.asarray(ratio_map[i])[np.where(np.asarray(sat_map[i]) =
 #    plt.close()
 
 
-#good_map = np.asarray([[] for pixel in range(hp.nside2npix(nside))])
-#for sats in good_sats:
-#    np.concatenate()
+good_map = [[] for pixel in range(hp.nside2npix(nside))]
 
-print(len(ratio_sat_data[good_sats[0]]))
-print(len(ratio_sat_data[good_sats[1]]))
-
-good_map = np.concatenate((ratio_sat_data[good_sats[0]], ratio_sat_data[good_sats[1]]),axis=1)
+for sat in good_sats:
+    for p in range(hp.nside2npix(nside)):
+        good_map[p].extend(ratio_sat_data[sat][p])
 
 good_map_med = [(np.median(i) if i != [] else np.nan ) for i in good_map]
 good_map_scaled = np.asarray([(i - np.nanmax(good_map_med[:5000])) for i in good_map_med])
-plot_healpix(data_map=good_map_scaled, sub=(1,1,1), cmap=jade, vmin=-30, vmax=0)
-plt.savefig(f'maps/good_map.png',bbox_inches='tight')
-#plt.show()
+plot_healpix(data_map=good_map_scaled, sub=(1,1,1), cmap=jade, vmin=np.nanmin(good_map_scaled), vmax=0)
+#plt.savefig(f'maps/good_map.png',bbox_inches='tight')
+plt.show()
 plt.close()
-
-#print(ratio_sat_data[41188])
 
