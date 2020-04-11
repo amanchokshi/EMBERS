@@ -131,7 +131,7 @@ def map_plots(f):
         plt.close()
 
 
-def good_maps(f)
+def good_maps(f):
     
     f_name, _ = f.name.split('.')
     tile, ref, _, _ = f_name.split('_')
@@ -227,14 +227,12 @@ def sat_maps(f)
     for p in pointings:
         for s in sat_ids:
 
-            Path(f'{out_dir}/{tile}_{ref}_{p}_sats').mkdir(parents=True, exist_ok=True)
-            
             fig = plt.figure(figsize=(8,10))
             fig.suptitle(f'Satellite [{s}]: {tile}/{ref} @ {p}', fontsize=16)
             ratio_sat_med = [(np.median(i) if i != [] else np.nan ) for i in tile_data['ratio_map'][p][s]]
             ratio_sat_scaled = np.asarray([(i - np.nanmax(ratio_sat_med[:5000])) for i in ratio_sat_med])
             plot_healpix(data_map=ratio_sat_scaled, sub=(1,1,1), cmap=jade)
-            plt.savefig(f'{out_dir}/sat_maps/{p}/{sat}_{p}_{tile}_{ref}_passes.png',bbox_inches='tight')
+            plt.savefig(f'{out_dir}/sat_maps/{p}/{s}_{p}_{tile}_{ref}_passes.png',bbox_inches='tight')
             plt.close()
 
 
@@ -279,9 +277,17 @@ if __name__=='__main__':
         Path(f'{out_dir}/good_maps/{p}/tile_counts/').mkdir(parents=True, exist_ok=True)
         Path(f'{out_dir}/good_maps/{p}/tile_errors/').mkdir(parents=True, exist_ok=True)
         Path(f'{out_dir}/sat_maps/{p}/').mkdir(parents=True, exist_ok=True)
-    
-    # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(map_plots, map_files)
 
+     # Depreciated: plotting maps from all data   
+#    # Parallization magic happens here
+#    with concurrent.futures.ProcessPoolExecutor() as executor:
+#        results = executor.map(map_plots, map_files)
+
+#    # Parallization magic happens here
+#    with concurrent.futures.ProcessPoolExecutor() as executor:
+#        results = executor.map(good_maps, map_files)
+
+    # plot maps for all sats, for only one tile_ref pair
+    # S08XX has good time coverage
+    sat_maps(Path(f'{map_dir}/S08XX_rf0XX_sat_maps.npz'))
 
