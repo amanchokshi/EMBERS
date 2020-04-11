@@ -25,13 +25,6 @@ def sort_sat_map(npz_map):
     # list of all possible satellites
     sat_ids = list(norad_ids.values())
     
-    #ratio_map   = np.asarray(map_data['healpix_maps'][pointings[0]])
-    #ref_map     = np.asarray(map_data['ref_maps'][pointings[0]])
-    #tile_map    = np.asarray(map_data['tile_maps'][pointings[0]])
-    #sat_map     = np.asarray(map_data['sat_map'][pointings[0]])
-    #time_map    = np.asarray(map_data['times'][pointings[0]])
-   
-   
     # Empty dictionaries for various maps
     # Fist level keys are pointings with dictionaty values
     # Second level keys are satellite ids with healpix map lists
@@ -46,12 +39,24 @@ def sort_sat_map(npz_map):
         ref_map     = np.asarray(map_data['ref_maps'][p])
         sat_map     = np.asarray(map_data['sat_map'][p])
         time_map    = np.asarray(map_data['times'][p])
-        
-        ratio_sat_data[p]   = {s:[(np.asarray(ratio_map[i])[np.where(np.asarray(sat_map[i]) == s)]).tolist() for i in range(len(ratio_map))] for s in sat_ids}
-        ref_sat_data[p]     = {s:[(np.asarray(ref_map[i])[np.where(np.asarray(sat_map[i]) == s)]).tolist() for i in range(len(ratio_map))] for s in sat_ids}
-        tile_sat_data[p]    = {s:[(np.asarray(tile_map[i])[np.where(np.asarray(sat_map[i]) == s)]).tolist() for i in range(len(ratio_map))] for s in sat_ids}
-        time_sat_data[p]    = {s:[(np.asarray(time_map[i])[np.where(np.asarray(sat_map[i]) == s)]).tolist() for i in range(len(ratio_map))] for s in sat_ids}
 
+        for s in sat_ids:
+            ratio_sat_data[p]   = {}
+            ref_sat_data[p]     = {}
+            tile_sat_data[p]    = {}
+            time_sat_data[p]    = {}
+
+            for i in range(len(ratio_map)):
+                sat_idx = np.where(np.asarray(sat_map[i]) == s) 
+                ratio_sat_data[p][s]    = [(np.asarray(ratio_map[i])[sat_idx]).tolist()]
+                ref_sat_data[p][s]      = [(np.asarray(ref_map[i])[sat_idx]).tolist()]
+                tile_sat_data[p][s]     = [(np.asarray(tile_map[i])[sat_idx]).tolist()]
+                time_sat_data[p][s]     = [(np.asarray(time_map[i])[sat_idx]).tolist()]
+        
+        #ratio_sat_data[p]   = {s:[(np.asarray(ratio_map[i])[np.where(np.asarray(sat_map[i]) == s)]).tolist() for i in range(len(ratio_map))] for s in sat_ids}
+        #ref_sat_data[p]     = {s:[(np.asarray(ref_map[i])[np.where(np.asarray(sat_map[i]) == s)]).tolist() for i in range(len(ratio_map))] for s in sat_ids}
+        #tile_sat_data[p]    = {s:[(np.asarray(tile_map[i])[np.where(np.asarray(sat_map[i]) == s)]).tolist() for i in range(len(ratio_map))] for s in sat_ids}
+        #time_sat_data[p]    = {s:[(np.asarray(time_map[i])[np.where(np.asarray(sat_map[i]) == s)]).tolist() for i in range(len(ratio_map))] for s in sat_ids}
     print('Done!')
     
         
