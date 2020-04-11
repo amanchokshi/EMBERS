@@ -9,23 +9,54 @@ from sat_ids import norad_ids
 from plot_healpix import plot_healpix 
 
 sys.path.append('../decode_rf_data')
-from colormap import spectral, jade, kelp
+from colormap import jade
 jade, _ = jade()
 
-map_data = np.load('../../outputs/tile_maps/10dB_1sigma/S07XX_rf0XX_healpix_map.npz', allow_pickle=True)
-map_data = {key:map_data[key].item() for key in map_data}
 
+def sort_sat_map(npz_map):
 
-sat_ids = list(norad_ids.values())
+    # pointings at which to make maps
+    pointings = ['0', '2', '4']
+   
+    # read npz map data
+    map_data = np.load(npz_map, allow_pickle=True)
+    map_data = {key:map_data[key].item() for key in map_data}
+   
+    # list of all possible satellites
+    sat_ids = list(norad_ids.values())
+    
+    #ratio_map   = np.asarray(map_data['healpix_maps'][pointings[0]])
+    #ref_map     = np.asarray(map_data['ref_maps'][pointings[0]])
+    #tile_map    = np.asarray(map_data['tile_maps'][pointings[0]])
+    #sat_map     = np.asarray(map_data['sat_map'][pointings[0]])
+    #time_map    = np.asarray(map_data['times'][pointings[0]])
+   
+   
+    # Empty dictionaries for various maps
+    # Fist level keys are pointings with dictionaty values
+    # Second level keys are satellite ids with healpix map lists
+    ratio_sat_data = {}
+    ref_sat_data = {}
+    tile_sat_data = {}
+    time_sat_data = {}
 
-ratio_map   = np.asarray(map_data['healpix_maps'][pointings[0]])
-ref_map     = np.asarray(map_data['ref_maps'][pointings[0]])
-tile_map    = np.asarray(map_data['tile_maps'][pointings[0]])
-sat_map     = np.asarray(map_data['sat_map'][pointings[0]])
-time_map    = np.asarray(map_data['times'][pointings[0]])
+    for p in pointings:
+        ratio_map   = np.asarray(map_data['healpix_maps'][p])
+        tile_map    = np.asarray(map_data['tile_maps'][p])
+        ref_map     = np.asarray(map_data['ref_maps'][p])
+        sat_map     = np.asarray(map_data['sat_map'][p])
+        time_map    = np.asarray(map_data['times'][p])
+        
+        ratio_sat_data[p]   = {s:[(np.asarray(ratio_map[i])[np.where(np.asarray(sat_map[i]) == s)]).tolist() for i in range(len(ratio_map))] for s in sat_ids}
+        ref_sat_data[p]     = {s:[(np.asarray(ref_map[i])[np.where(np.asarray(sat_map[i]) == s)]).tolist() for i in range(len(ratio_map))] for s in sat_ids}
+        tile_sat_data[p]    = {s:[(np.asarray(tile_map[i])[np.where(np.asarray(sat_map[i]) == s)]).tolist() for i in range(len(ratio_map))] for s in sat_ids}
+        time_sat_data[p]    = {s:[(np.asarray(time_map[i])[np.where(np.asarray(sat_map[i]) == s)]).tolist() for i in range(len(ratio_map))] for s in sat_ids}
 
-# create a dictionary, with the keys being sat_ids and the values being healpix maps of data from those sats
-ratio_sat_data = {s:[(np.asarray(ratio_map[i])[np.where(np.asarray(sat_map[i]) == s)]).tolist() for i in range(len(ratio_map))] for s in sat_ids}
+    print('Done!')
+    
+        
+    ## create a dictionary, with the keys being sat_ids and the values being healpix maps of data from those sats
+    #ratio_sat_data = {s:[(np.asarray(ratio_map[i])[np.where(np.asarray(sat_map[i]) == s)]).tolist() for i in range(len(ratio_map))] for s in sat_ids}
 
 
 #for s in sat_ids:
@@ -64,7 +95,9 @@ if __name__=='__main__':
     import concurrent.futures
     
     parser = argparse.ArgumentParser(description="""
-        Plot healpix map of reference data
+        Sort the projected healipix data according to satellites.
+        This enables us to determine good satellites and also make
+        tile maps with a subset of sat data.
         """)
     
     parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/tile_maps/tile_maps_sats/',help='Output directory. Default=./../../outputs/tile_maps/tile_maps_sats/')
@@ -81,8 +114,6 @@ if __name__=='__main__':
 
     Path(f'{out_dir}').mkdir(parents=True, exist_ok=True)
    
-    # pointings at which to make maps
-    pointings = ['0', '2', '4']
    
     # Good sats from which to make plots
     good_sats = [
@@ -94,7 +125,10 @@ if __name__=='__main__':
             41189, 44387
             ]
 
-    # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(map_plots, map_files)
+#    # Parallization magic happens here
+#    with concurrent.futures.ProcessPoolExecutor() as executor:
+#        results = executor.map(map_plots, map_files)
+
+sort_sat_map('../../outputs/tile_maps/S08XX_rf0XX_healpix_map.npz')
+
 
