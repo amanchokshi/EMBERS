@@ -209,7 +209,7 @@ def good_maps(f):
         plt.close()
 
 
-def sat_maps(f)
+def sat_maps(f):
     
     f_name, _ = f.name.split('.')
     tile, ref, _, _ = f_name.split('_')
