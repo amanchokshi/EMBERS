@@ -14,6 +14,9 @@ jade, _ = jade()
 
 
 def sort_sat_map(npz_map):
+    '''
+    Sorts map data by sat id
+    '''
 
     # pointings at which to make maps
     pointings = ['0', '2', '4']
@@ -25,7 +28,7 @@ def sort_sat_map(npz_map):
     # list of all possible satellites
     sat_ids = list(norad_ids.values())
     
-    # Empty dictionaries for various maps
+    # create a dictionary, with the keys being sat_ids and the values being healpix maps of data from those sats
     # Fist level keys are pointings with dictionaty values
     # Second level keys are satellite ids with healpix map lists
     ratio_sat_data = {}
@@ -33,6 +36,7 @@ def sort_sat_map(npz_map):
     tile_sat_data = {}
     time_sat_data = {}
 
+    # loop over pointings for all maps
     for p in pointings:
         ratio_map   = np.asarray(map_data['healpix_maps'][p])
         tile_map    = np.asarray(map_data['tile_maps'][p])
@@ -40,30 +44,29 @@ def sort_sat_map(npz_map):
         sat_map     = np.asarray(map_data['sat_map'][p])
         time_map    = np.asarray(map_data['times'][p])
 
+        # loop over all sats
         for s in sat_ids:
             ratio_sat_data[p]   = {}
             ref_sat_data[p]     = {}
             tile_sat_data[p]    = {}
             time_sat_data[p]    = {}
 
+            # loop over every healpix pixel
             for i in range(len(ratio_map)):
+
+                # Find subset of data for each sat
                 sat_idx = np.where(np.asarray(sat_map[i]) == s) 
                 ratio_sat_data[p][s]    = [(np.asarray(ratio_map[i])[sat_idx]).tolist()]
                 ref_sat_data[p][s]      = [(np.asarray(ref_map[i])[sat_idx]).tolist()]
                 tile_sat_data[p][s]     = [(np.asarray(tile_map[i])[sat_idx]).tolist()]
                 time_sat_data[p][s]     = [(np.asarray(time_map[i])[sat_idx]).tolist()]
-        
-        #ratio_sat_data[p]   = {s:[(np.asarray(ratio_map[i])[np.where(np.asarray(sat_map[i]) == s)]).tolist() for i in range(len(ratio_map))] for s in sat_ids}
-        #ref_sat_data[p]     = {s:[(np.asarray(ref_map[i])[np.where(np.asarray(sat_map[i]) == s)]).tolist() for i in range(len(ratio_map))] for s in sat_ids}
-        #tile_sat_data[p]    = {s:[(np.asarray(tile_map[i])[np.where(np.asarray(sat_map[i]) == s)]).tolist() for i in range(len(ratio_map))] for s in sat_ids}
-        #time_sat_data[p]    = {s:[(np.asarray(time_map[i])[np.where(np.asarray(sat_map[i]) == s)]).tolist() for i in range(len(ratio_map))] for s in sat_ids}
+    
+    # Save map arrays to npz file
+    tile_data = {'ratio_map':ratio_sat_data, 'ref_map':ref_sat_data, 'tile_map':tile_sat_data, 'time_map':time_sat_data} 
+    np.savez_compressed(f'./sat_healpix_map.npz', **tile_data)
     print('Done!')
     
         
-    ## create a dictionary, with the keys being sat_ids and the values being healpix maps of data from those sats
-    #ratio_sat_data = {s:[(np.asarray(ratio_map[i])[np.where(np.asarray(sat_map[i]) == s)]).tolist() for i in range(len(ratio_map))] for s in sat_ids}
-
-
 #for s in sat_ids:
 #
 #    fig = plt.figure(figsize=(8,10))
