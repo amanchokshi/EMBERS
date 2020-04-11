@@ -140,7 +140,7 @@ def good_maps(f):
 
     # load data from map .npz file
     tile_data = np.load(f, allow_pickle=True)
-    tile_data = {key:map_data[key].item() for key in tile_data}
+    tile_data = {key:tile_data[key].item() for key in tile_data}
     ratio_map = tile_data['ratio_map']  
     
     # Good sats from which to make plots
@@ -221,7 +221,7 @@ def sat_maps(f):
     
     # load data from map .npz file
     tile_data = np.load(f, allow_pickle=True)
-    tile_data = {key:map_data[key].item() for key in tile_data}
+    tile_data = {key:tile_data[key].item() for key in tile_data}
     ratio_map = tile_data['ratio_map']  
     
     for p in pointings:
@@ -283,9 +283,9 @@ if __name__=='__main__':
 #    with concurrent.futures.ProcessPoolExecutor() as executor:
 #        results = executor.map(map_plots, map_files)
 
-#    # Parallization magic happens here
-#    with concurrent.futures.ProcessPoolExecutor() as executor:
-#        results = executor.map(good_maps, map_files)
+    # Parallization magic happens here
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(good_maps, map_files)
 
     # plot maps for all sats, for only one tile_ref pair
     # S08XX has good time coverage
