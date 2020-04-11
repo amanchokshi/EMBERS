@@ -130,7 +130,7 @@ def map_plots(f):
         plt.savefig(f'{out_dir}/tile_counts/{tile}_{ref}_{p}_counts.png',bbox_inches='tight')
         plt.close()
 
-
+#TODO This doesn't seem to work. Check it
 def good_maps(f):
     
     f_name, _ = f.name.split('.')
