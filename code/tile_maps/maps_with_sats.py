@@ -71,10 +71,16 @@ def sort_sat_map(npz_map):
                 tile_sat_data[p][s].append((np.asarray(tile_map[i])[sat_idx]).tolist())
                 time_sat_data[p][s].append((np.asarray(time_map[i])[sat_idx]).tolist())
 
-            
+    # Save map arrays to npz file
+    tile_data = {'ratio_map':ratio_sat_data, 'ref_map':ref_sat_data, 'tile_map':tile_sat_data, 'time_map':time_sat_data}
+    np.savez_compressed(f'{out_dir}/{tile}_{ref}_sat_maps.npz', **tile_data)
+    
+    for p in pointings:
+        for s in sat_ids:
+
             Path(f'{out_dir}/{tile}_{ref}_{p}_sats').mkdir(parents=True, exist_ok=True)
             
-            plt.figure(figsize=(8,10))
+            fig = plt.figure(figsize=(8,10))
             fig.suptitle(f'Satellite [{s}]: {tile}/{ref} @ {p}', fontsize=16)
             ratio_sat_med = [(np.median(i) if i != [] else np.nan ) for i in tile_data['ratio_map'][p][s]]
             ratio_sat_scaled = np.asarray([(i - np.nanmax(ratio_sat_med[:5000])) for i in ratio_sat_med])
@@ -82,9 +88,6 @@ def sort_sat_map(npz_map):
             plt.savefig(f'{out_dir}/{tile}_{ref}_{p}_sats/{s}_{tile}_{ref}_passes.png',bbox_inches='tight')
             plt.close()
     
-    # Save map arrays to npz file
-    tile_data = {'ratio_map':ratio_sat_data, 'ref_map':ref_sat_data, 'tile_map':tile_sat_data, 'time_map':time_sat_data}
-    np.savez_compressed(f'{out_dir}/{tile}_{ref}_sat_maps.npz', **tile_data)
     
         
 
