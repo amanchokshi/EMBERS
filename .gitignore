@@ -7,4 +7,4 @@ conda_env_export.sh
 /code/sat_ephemeris/deltat.data
 /code/sat_ephemeris/deltat.preds
 /code/tile_maps/outlier_tests/.ipynb_checkpoints
-
+/code/tile_maps/batch_maps.sh
