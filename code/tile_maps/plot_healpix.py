@@ -134,33 +134,18 @@ def map_plots(f):
         plt.close()
 
 
-def map_sats(f)
+def good_maps(f)
     
     f_name, _ = f.name.split('.')
     tile, ref, _, _ = f_name.split('_')
    
     pointings = ['0','2','4']
 
-    
     # load data from map .npz file
     tile_data = np.load(f, allow_pickle=True)
     tile_data = {key:map_data[key].item() for key in tile_data}
     ratio_map = tile_data['ratio_map']  
     
-#    for p in pointings:
-#        for s in sat_ids:
-#
-#            Path(f'{out_dir}/{tile}_{ref}_{p}_sats').mkdir(parents=True, exist_ok=True)
-#            
-#            fig = plt.figure(figsize=(8,10))
-#            fig.suptitle(f'Satellite [{s}]: {tile}/{ref} @ {p}', fontsize=16)
-#            ratio_sat_med = [(np.median(i) if i != [] else np.nan ) for i in tile_data['ratio_map'][p][s]]
-#            ratio_sat_scaled = np.asarray([(i - np.nanmax(ratio_sat_med[:5000])) for i in ratio_sat_med])
-#            plot_healpix(data_map=ratio_sat_scaled, sub=(1,1,1), cmap=jade)
-#            plt.savefig(f'{out_dir}/{tile}_{ref}_{p}_sats/{s}_{tile}_{ref}_passes.png',bbox_inches='tight')
-#            plt.close()
-    
-
     # Good sats from which to make plots
     good_sats = [
             25338, 25984, 25985,
@@ -170,18 +155,88 @@ def map_sats(f)
             41185, 41187, 41188,
             41189, 44387
             ]
+    
+    for p in pointings:
+        
+        # Empty good map
+        good_map = [[] for pixel in range(hp.nside2npix(nside))]
+        
+        # append to good map from all good sat data
+        for sat in good_sats:
+            for pix in range(hp.nside2npix(nside)):
+                good_map[pix].extend(ratio_map[p][sat][pix])
+        
+        good_map_med = [(np.median(i) if i != [] else np.nan ) for i in good_map]
+        good_map_scaled = np.asarray([(i - np.nanmax(good_map_med[:5000])) for i in good_map_med])
 
-    good_map = [[] for pixel in range(hp.nside2npix(nside))]
+        
+        fig = plt.figure(figsize=(8,10))
+        fig.suptitle(f'Good Map: {tile}/{ref} @ {p}', fontsize=16)
+        plot_healpix(data_map=good_map_scaled, sub=(1,1,1), cmap=jade, vmin=np.nanmin(good_map_scaled), vmax=0)
+        plt.savefig(f'{out_dir}/good_maps/{p}/{tile}_{ref}_{p}_good_map.png',bbox_inches='tight')
+        plt.close()
+
+
+        # Plot MAD 
+        good_map_mad = []
+        for j in good_map:
+            if j != []:
+                j = np.asarray(j)
+                j = j[~np.isnan(j)]
+                good_map_mad.append(mad(j))
+            else:
+                good_map_mad.append(np.nan)
+
+        good_map_mad = np.asarray(tile_map_mad)
+        
+        good_map_mad[np.where(good_map_mad == np.nan)] = np.nanmedian(good_map_mad)
+
+        vmin = np.nanmin(tile_map_mad)
+        vmax = np.nanmax(tile_map_mad)
+
+        fig = plt.figure(figsize=(8,10))
+        fig.suptitle(f'Good Map MAD: {tile}/{ref} @ {p}', fontsize=16)
+        plot_healpix(data_map=np.asarray(tile_map_mad),sub=(1,1,1), cmap=jade, vmin=vmin, vmax=vmax)
+        plt.savefig(f'{out_dir}/tile_errors/{tile}_{ref}_{p}_mad.png',bbox_inches='tight')
+        plt.close()
+
+
+        # Plot counts in pix
+            
+        good_map_counts = [len(i) for i in good_map]
+        
+        fig = plt.figure(figsize=(8,10))
+        fig.suptitle(f'Good Map Counts: {tile}/{ref} @ {p}', fontsize=16)
+        plot_healpix(data_map=np.asarray(tile_counter),sub=(1,1,1), cmap=jade, vmin=0, vmax=400)
+        plt.savefig(f'{out_dir}/tile_counts/{tile}_{ref}_{p}_counts.png',bbox_inches='tight')
+        plt.close()
+
+def sat_maps(f)
     
-    for sat in good_sats:
-        for p in range(hp.nside2npix(nside)):
-            good_map[p].extend(ratio_map[sat][p])
+    f_name, _ = f.name.split('.')
+    tile, ref, _, _ = f_name.split('_')
+   
+    pointings = ['0','2','4']
+
+    # load data from map .npz file
+    tile_data = np.load(f, allow_pickle=True)
+    tile_data = {key:map_data[key].item() for key in tile_data}
+    ratio_map = tile_data['ratio_map']  
     
-    good_map_med = [(np.median(i) if i != [] else np.nan ) for i in good_map]
-    good_map_scaled = np.asarray([(i - np.nanmax(good_map_med[:5000])) for i in good_map_med])
-    plot_healpix(data_map=good_map_scaled, sub=(1,1,1), cmap=jade, vmin=np.nanmin(good_map_scaled), vmax=0)
-    plt.savefig(f'{out_dir}/{s}_{tile}_{ref}_passes.png',bbox_inches='tight')
-    plt.close()
+    for p in pointings:
+        for s in sat_ids:
+
+            Path(f'{out_dir}/{tile}_{ref}_{p}_sats').mkdir(parents=True, exist_ok=True)
+            
+            fig = plt.figure(figsize=(8,10))
+            fig.suptitle(f'Satellite [{s}]: {tile}/{ref} @ {p}', fontsize=16)
+            ratio_sat_med = [(np.median(i) if i != [] else np.nan ) for i in tile_data['ratio_map'][p][s]]
+            ratio_sat_scaled = np.asarray([(i - np.nanmax(ratio_sat_med[:5000])) for i in ratio_sat_med])
+            plot_healpix(data_map=ratio_sat_scaled, sub=(1,1,1), cmap=jade)
+            plt.savefig(f'{out_dir}/{tile}_{ref}_{p}_sats/{s}_{tile}_{ref}_passes.png',bbox_inches='tight')
+            plt.close()
+
+
 
 if __name__=='__main__':
     
@@ -206,17 +261,18 @@ if __name__=='__main__':
         Plot healpix map of reference data
         """)
     
-    parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/tile_maps/healpix_maps/',help='Output directory. Default=./../../outputs/tile_maps/healpix_maps/')
-    parser.add_argument('--map_dir', metavar='\b', default='./../../outputs/tile_maps/',help='Output directory. Default=./../../outputs/tile_maps/')
+    parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/tile_maps/',help='Output directory. Default=./../../outputs/tile_maps/')
+    parser.add_argument('--map_dir', metavar='\b', default='./../../outputs/tile_maps/tile_maps_sats',help='Output directory. Default=./../../outputs/tile_maps/tile_maps_sats')
     
     args = parser.parse_args()
     
     out_dir = Path(args.out_dir)
     map_dir = Path(args.map_dir)
     
+    pointings = ['0','2','4']
     map_files = [item for item in map_dir.glob('*.npz')]
 
-    # Save logs 
+    # Create output directory tree
     Path(f'{out_dir}/tile_maps/').mkdir(parents=True, exist_ok=True)
     Path(f'{out_dir}/tile_counts/').mkdir(parents=True, exist_ok=True)
     Path(f'{out_dir}/tile_errors/').mkdir(parents=True, exist_ok=True)
