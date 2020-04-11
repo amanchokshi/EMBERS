@@ -1,1 +1,1 @@
-*.ipynb linguist-documentation
+./code/tile_maps/outlier_tests/*.ipynb linguist-documentation
