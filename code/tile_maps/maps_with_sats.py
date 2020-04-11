@@ -17,6 +17,9 @@ def sort_sat_map(npz_map):
     '''
     Sorts map data by sat id
     '''
+    
+    f_name, _ = npz_map.name.split('.')
+    tile, ref, _, _ = f_name.split('_')
 
     # pointings at which to make maps
     pointings = ['0', '2', '4']
@@ -44,39 +47,45 @@ def sort_sat_map(npz_map):
         sat_map     = np.asarray(map_data['sat_map'][p])
         time_map    = np.asarray(map_data['times'][p])
 
+        ratio_sat_data[p]   = {}
+        ref_sat_data[p]     = {}
+        tile_sat_data[p]    = {}
+        time_sat_data[p]    = {}
+        
         # loop over all sats
         for s in sat_ids:
-            ratio_sat_data[p]   = {}
-            ref_sat_data[p]     = {}
-            tile_sat_data[p]    = {}
-            time_sat_data[p]    = {}
+
+            ratio_sat_data[p][s]    = [] 
+            ref_sat_data[p][s]      = [] 
+            tile_sat_data[p][s]     = [] 
+            time_sat_data[p][s]     = [] 
+            
 
             # loop over every healpix pixel
             for i in range(len(ratio_map)):
 
                 # Find subset of data for each sat
-                sat_idx = np.where(np.asarray(sat_map[i]) == s) 
-                ratio_sat_data[p][s]    = [(np.asarray(ratio_map[i])[sat_idx]).tolist()]
-                ref_sat_data[p][s]      = [(np.asarray(ref_map[i])[sat_idx]).tolist()]
-                tile_sat_data[p][s]     = [(np.asarray(tile_map[i])[sat_idx]).tolist()]
-                time_sat_data[p][s]     = [(np.asarray(time_map[i])[sat_idx]).tolist()]
+                sat_idx = np.where(np.asarray(sat_map[i]) == s)
+                ratio_sat_data[p][s].append((np.asarray(ratio_map[i])[sat_idx]).tolist())
+                ref_sat_data[p][s].append((np.asarray(ref_map[i])[sat_idx]).tolist())
+                tile_sat_data[p][s].append((np.asarray(tile_map[i])[sat_idx]).tolist())
+                time_sat_data[p][s].append((np.asarray(time_map[i])[sat_idx]).tolist())
+
     
     # Save map arrays to npz file
-    tile_data = {'ratio_map':ratio_sat_data, 'ref_map':ref_sat_data, 'tile_map':tile_sat_data, 'time_map':time_sat_data} 
-    np.savez_compressed(f'./sat_healpix_map.npz', **tile_data)
-    print('Done!')
+    tile_data = {'ratio_map':ratio_sat_data, 'ref_map':ref_sat_data, 'tile_map':tile_sat_data, 'time_map':time_sat_data}
+    np.savez_compressed(f'{out_dir}/{tile}_{ref}_sat_maps.npz', **tile_data)
     
         
-#for s in sat_ids:
-#
-#    fig = plt.figure(figsize=(8,10))
-#    #fig.suptitle(f'Healpix Map: {tile}/{ref} @ {p}', fontsize=16)
-#    ratio_sat_med = [(np.median(i) if i != [] else np.nan ) for i in ratio_sat_data[s]]
-#    ratio_sat_scaled = np.asarray([(i - np.nanmax(ratio_sat_med[:5000])) for i in ratio_sat_med])
-#    plot_healpix(data_map=ratio_sat_scaled, sub=(1,1,1), cmap=jade)
-#    plt.savefig(f'maps_II/{s}.png',bbox_inches='tight')
-#    #plt.show()
-#    plt.close()
+    for s in sat_ids:
+    
+        plt.figure(figsize=(8,10))
+        #fig.suptitle(f'Healpix Map: {tile}/{ref} @ {p}', fontsize=16)
+        ratio_sat_med = [(np.median(i) if i != [] else np.nan ) for i in tile_data['ratio_map']['0'][s]]
+        ratio_sat_scaled = np.asarray([(i - np.nanmax(ratio_sat_med[:5000])) for i in ratio_sat_med])
+        plot_healpix(data_map=ratio_sat_scaled, sub=(1,1,1), cmap=jade)
+        plt.savefig(f'{out_dir}/{s}_{tile}_{ref}_passes.png',bbox_inches='tight')
+        plt.close()
 
 
 #good_map = [[] for pixel in range(hp.nside2npix(nside))]
@@ -137,6 +146,6 @@ if __name__=='__main__':
 #    with concurrent.futures.ProcessPoolExecutor() as executor:
 #        results = executor.map(map_plots, map_files)
 
-sort_sat_map('../../outputs/tile_maps/S08XX_rf0XX_healpix_map.npz')
+sort_sat_map(map_files[0])
 
 
