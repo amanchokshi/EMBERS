@@ -1,10 +1,13 @@
 # Healpix plotting script adapted from Dr. Jack Line's code
 # https://github.com/JLBLine/MWA_ORBCOMM
 
+import sys
 import numpy as np
 import healpy as hp
 from scipy.stats import median_absolute_deviation as mad
 
+sys.path.append('../sat_ephemeris')
+from sat_ids import norad_ids
 
 def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None):
     '''Yeesh do some healpix magic to plot the thing'''
@@ -67,6 +70,8 @@ def map_plots(f):
    
     pointings = ['0','2','4']
 
+    # list of all possible satellites
+    sat_ids = list(norad_ids.values())
     
     # load data from map .npz file
     map_data = np.load(f, allow_pickle=True)
@@ -127,7 +132,56 @@ def map_plots(f):
 
         plt.savefig(f'{out_dir}/tile_counts/{tile}_{ref}_{p}_counts.png',bbox_inches='tight')
         plt.close()
+
+
+def map_sats(f)
+    
+    f_name, _ = f.name.split('.')
+    tile, ref, _, _ = f_name.split('_')
    
+    pointings = ['0','2','4']
+
+    
+    # load data from map .npz file
+    tile_data = np.load(f, allow_pickle=True)
+    tile_data = {key:map_data[key].item() for key in tile_data}
+    ratio_map = tile_data['ratio_map']  
+    
+#    for p in pointings:
+#        for s in sat_ids:
+#
+#            Path(f'{out_dir}/{tile}_{ref}_{p}_sats').mkdir(parents=True, exist_ok=True)
+#            
+#            fig = plt.figure(figsize=(8,10))
+#            fig.suptitle(f'Satellite [{s}]: {tile}/{ref} @ {p}', fontsize=16)
+#            ratio_sat_med = [(np.median(i) if i != [] else np.nan ) for i in tile_data['ratio_map'][p][s]]
+#            ratio_sat_scaled = np.asarray([(i - np.nanmax(ratio_sat_med[:5000])) for i in ratio_sat_med])
+#            plot_healpix(data_map=ratio_sat_scaled, sub=(1,1,1), cmap=jade)
+#            plt.savefig(f'{out_dir}/{tile}_{ref}_{p}_sats/{s}_{tile}_{ref}_passes.png',bbox_inches='tight')
+#            plt.close()
+    
+
+    # Good sats from which to make plots
+    good_sats = [
+            25338, 25984, 25985,
+            28654, 40086, 40087,
+            40091, 41179, 41180,
+            41182, 41183, 41184,
+            41185, 41187, 41188,
+            41189, 44387
+            ]
+
+    good_map = [[] for pixel in range(hp.nside2npix(nside))]
+    
+    for sat in good_sats:
+        for p in range(hp.nside2npix(nside)):
+            good_map[p].extend(ratio_map[sat][p])
+    
+    good_map_med = [(np.median(i) if i != [] else np.nan ) for i in good_map]
+    good_map_scaled = np.asarray([(i - np.nanmax(good_map_med[:5000])) for i in good_map_med])
+    plot_healpix(data_map=good_map_scaled, sub=(1,1,1), cmap=jade, vmin=np.nanmin(good_map_scaled), vmax=0)
+    plt.savefig(f'{out_dir}/{s}_{tile}_{ref}_passes.png',bbox_inches='tight')
+    plt.close()
 
 if __name__=='__main__':
     
