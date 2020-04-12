@@ -291,13 +291,12 @@ if __name__=='__main__':
 #        results = executor.map(map_plots, map_files)
 
     # Parallization magic happens here
-    #with concurrent.futures.ProcessPoolExecutor() as executor:
-    #    results = executor.map(good_maps, map_files)
-    good_maps(map_files[0])
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(good_maps, map_files)
 
     # plot maps for all sats, for only one tile_ref pair
     # S08XX has good time coverage
-    #with concurrent.futures.ProcessPoolExecutor() as executor:
-    #    results = executor.map(sat_maps, sat_ids)
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(sat_maps, sat_ids)
 
 
