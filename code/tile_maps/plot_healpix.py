@@ -122,6 +122,8 @@ def map_plots(f):
 
 
         # Plot counts in pix
+
+
             
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Healpix Pixel Counts: {tile}/{ref} @ {p}', fontsize=16)
@@ -183,16 +185,16 @@ def good_maps(f):
             else:
                 good_map_mad.append(np.nan)
 
-        good_map_mad = np.asarray(tile_map_mad)
+        good_map_mad = np.asarray(good_map_mad)
         
         good_map_mad[np.where(good_map_mad == np.nan)] = np.nanmedian(good_map_mad)
 
-        vmin = np.nanmin(tile_map_mad)
-        vmax = np.nanmax(tile_map_mad)
+        vmin = np.nanmin(good_map_mad)
+        vmax = np.nanmax(good_map_mad)
 
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Good Map MAD: {tile}/{ref} @ {p}', fontsize=16)
-        plot_healpix(data_map=np.asarray(tile_map_mad),sub=(1,1,1), cmap=jade, vmin=vmin, vmax=vmax)
+        plot_healpix(data_map=np.asarray(good_map_mad),sub=(1,1,1), cmap=jade, vmin=vmin, vmax=vmax)
         plt.savefig(f'{out_dir}/good_maps/{p}/tile_errors/{tile}_{ref}_{p}_good_map_errors.png',bbox_inches='tight')
         plt.close()
 
@@ -203,7 +205,7 @@ def good_maps(f):
         
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Good Map Counts: {tile}/{ref} @ {p}', fontsize=16)
-        plot_healpix(data_map=np.asarray(tile_counter),sub=(1,1,1), cmap=jade, vmin=0, vmax=300)
+        plot_healpix(data_map=np.asarray(good_map_counts),sub=(1,1,1), cmap=jade, vmin=0, vmax=300)
         plt.savefig(f'{out_dir}/good_maps/{p}/tile_counts/{tile}_{ref}_{p}_good_map_counts.png',bbox_inches='tight')
         plt.close()
 
@@ -291,14 +293,11 @@ if __name__=='__main__':
     # Parallization magic happens here
     #with concurrent.futures.ProcessPoolExecutor() as executor:
     #    results = executor.map(good_maps, map_files)
+    good_maps(map_files[0])
 
     # plot maps for all sats, for only one tile_ref pair
     # S08XX has good time coverage
+    #with concurrent.futures.ProcessPoolExecutor() as executor:
+    #    results = executor.map(sat_maps, sat_ids)
 
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(sat_maps, sat_ids)
-    #sat_maps(Path(f'{map_dir}/S08XX_rf0XX_sat_maps.npz'))
-
-#    for sat in sat_ids:
-#        sat_maps(sat)
 
