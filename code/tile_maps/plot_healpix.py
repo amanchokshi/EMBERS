@@ -130,7 +130,6 @@ def map_plots(f):
         plt.savefig(f'{out_dir}/tile_counts/{tile}_{ref}_{p}_counts.png',bbox_inches='tight')
         plt.close()
 
-#TODO This doesn't seem to work. Check it
 def good_maps(f):
     
     f_name, _ = f.name.split('.')
@@ -262,11 +261,13 @@ if __name__=='__main__':
     
     parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/tile_maps/',help='Output directory. Default=./../../outputs/tile_maps/')
     parser.add_argument('--map_dir', metavar='\b', default='./../../outputs/tile_maps/tile_maps_sats',help='Output directory. Default=./../../outputs/tile_maps/tile_maps_sats')
+    parser.add_argument('--nside', metavar='\b', type=int,  default=32,help='Healpix Nside. Default = 32')
     
     args = parser.parse_args()
     
     out_dir = Path(args.out_dir)
     map_dir = Path(args.map_dir)
+    nside   = args.nside
     
     pointings = ['0','2','4']
     map_files = [item for item in map_dir.glob('*.npz')]
