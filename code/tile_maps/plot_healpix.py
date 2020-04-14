@@ -262,7 +262,7 @@ if __name__=='__main__':
         """)
     
     parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/tile_maps/',help='Output directory. Default=./../../outputs/tile_maps/')
-    parser.add_argument('--map_dir', metavar='\b', default='./../../outputs/tile_maps/tile_maps_sats',help='Output directory. Default=./../../outputs/tile_maps/tile_maps_sats')
+    parser.add_argument('--map_dir', metavar='\b', default='./../../outputs/tile_maps/tile_map_data',help='Output directory. Default=./../../outputs/tile_maps/tile_map_data')
     parser.add_argument('--nside', metavar='\b', type=int,  default=32,help='Healpix Nside. Default = 32')
     
     args = parser.parse_args()
@@ -286,9 +286,9 @@ if __name__=='__main__':
         Path(f'{out_dir}/sat_maps/{p}/').mkdir(parents=True, exist_ok=True)
 
      # Depreciated: plotting maps from all data   
-#    # Parallization magic happens here
-#    with concurrent.futures.ProcessPoolExecutor() as executor:
-#        results = executor.map(map_plots, map_files)
+    # Parallization magic happens here
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(map_plots, map_files)
 
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor() as executor:
@@ -298,5 +298,6 @@ if __name__=='__main__':
     # S08XX has good time coverage
     with concurrent.futures.ProcessPoolExecutor() as executor:
         results = executor.map(sat_maps, sat_ids)
+
 
 

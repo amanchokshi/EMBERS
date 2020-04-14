@@ -384,7 +384,7 @@ def project_tile_healpix(tile_pair):
 
     # Save map arrays to npz file
     tile_sat_data = {'ratio_map':ratio_sat_data, 'ref_map':ref_sat_data, 'tile_map':tile_sat_data, 'time_map':time_sat_data}
-    np.savez_compressed(f'{out_dir}/{tile}_{ref}_sat_maps.npz', **tile_data)
+    np.savez_compressed(f'{out_dir}/{tile}_{ref}_sat_maps.npz', **tile_sat_data)
 
 if __name__=='__main__':
 
