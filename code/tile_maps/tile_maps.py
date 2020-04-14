@@ -336,8 +336,55 @@ def project_tile_healpix(tile_pair):
                     print(f'Missing {ref}_{tile}_{timestamp}_aligned.npz')
                     continue
 
+    ## Save map arrays to npz file
+    #np.savez_compressed(f'{out_dir}/{tile}_{ref}_healpix_map.npz', **tile_data)
+
+    # list of all possible satellites
+    sat_ids = list(norad_ids.values())
+    
+    # create a dictionary, with the keys being sat_ids and the values being healpix maps of data from those sats
+    # Fist level keys are pointings with dictionaty values
+    # Second level keys are satellite ids with healpix map lists
+    ratio_sat_data = {}
+    ref_sat_data = {}
+    tile_sat_data = {}
+    time_sat_data = {}
+
+    # loop over pointings for all maps
+    for p in pointings:
+        ratio_map   = np.asarray(tile_data['healpix_maps'][p])
+        tile_map    = np.asarray(tile_data['tile_maps'][p])
+        ref_map     = np.asarray(tile_data['ref_maps'][p])
+        sat_map     = np.asarray(tile_data['sat_map'][p])
+        time_map    = np.asarray(tile_data['times'][p])
+
+        ratio_sat_data[p]   = {}
+        ref_sat_data[p]     = {}
+        tile_sat_data[p]    = {}
+        time_sat_data[p]    = {}
+        
+        # loop over all sats
+        for s in sat_ids:
+
+            ratio_sat_data[p][s]    = [] 
+            ref_sat_data[p][s]      = [] 
+            tile_sat_data[p][s]     = [] 
+            time_sat_data[p][s]     = [] 
+            
+
+            # loop over every healpix pixel
+            for i in range(len(ratio_map)):
+
+                # Find subset of data for each sat
+                sat_idx = np.where(np.asarray(sat_map[i]) == s)
+                ratio_sat_data[p][s].append((np.asarray(ratio_map[i])[sat_idx]).tolist())
+                ref_sat_data[p][s].append((np.asarray(ref_map[i])[sat_idx]).tolist())
+                tile_sat_data[p][s].append((np.asarray(tile_map[i])[sat_idx]).tolist())
+                time_sat_data[p][s].append((np.asarray(time_map[i])[sat_idx]).tolist())
+
     # Save map arrays to npz file
-    np.savez_compressed(f'{out_dir}/{tile}_{ref}_healpix_map.npz', **tile_data)
+    tile_sat_data = {'ratio_map':ratio_sat_data, 'ref_map':ref_sat_data, 'tile_map':tile_sat_data, 'time_map':time_sat_data}
+    np.savez_compressed(f'{out_dir}/{tile}_{ref}_sat_maps.npz', **tile_data)
 
 if __name__=='__main__':
 
@@ -350,8 +397,8 @@ if __name__=='__main__':
             help='Dir where agligned data date is saved. Default:../../outputs/align_data')
 
     parser.add_argument(
-            '--out_dir', metavar='\b', default='./../../outputs/tile_maps/',
-            help='Output directory. Default=./../../outputs/tile_maps/')
+            '--out_dir', metavar='\b', default='./../../outputs/tile_maps/tile_map_data/',
+            help='Output directory. Default=./../../outputs/tile_maps/tile_map_data/')
     
     parser.add_argument(
             '--plt_dir', metavar='\b', default='./../../outputs/tile_maps/pass_plots/',
@@ -399,8 +446,8 @@ if __name__=='__main__':
     plt_dir         = Path(args.plt_dir)
     map_dir         = Path(args.map_dir)
 
-    # Import list of Norad catalogue IDs
-    sat_list = [id for id in sat_ids.norad_ids.values()]
+#    # Import list of Norad catalogue IDs
+#    sat_list = [id for id in sat_ids.norad_ids.values()]
 
     # Tile names
     refs    = tile_names()[:4]
@@ -427,8 +474,6 @@ if __name__=='__main__':
         point_0 = obs_p['point_0'] 
         point_2 = obs_p['point_2'] 
         point_4 = obs_p['point_4']
-
-
 
 
     # dates: list of days
