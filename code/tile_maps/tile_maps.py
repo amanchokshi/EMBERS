@@ -11,7 +11,7 @@ import concurrent.futures
 from scipy.stats import median_absolute_deviation as mad
 
 sys.path.append('../sat_ephemeris')
-import sat_ids
+from sat_ids import norad_ids
 
 sys.path.append('../sat_channels')
 from sat_channels import time_tree, savgol_interp, time_filter
@@ -487,7 +487,7 @@ if __name__=='__main__':
 #    for tile_pair in tile_pairs:
 #        project_tile_healpix(tile_pair)
 #        break
-         
+        
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor() as executor:
         results = executor.map(project_tile_healpix, tile_pairs)
