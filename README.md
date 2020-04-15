@@ -244,41 +244,6 @@ This will create `ref_dipole_models.npz` and a diagnostic plot of the beams in t
 
 
 &nbsp;
-### Null Test
-
-In this section we perform a sanity check, to make sure that both our reference antennas have the same performance. `project_pass_healpix.py` projects all satellite passes detected in the reference data to a healpix map. The script looks in each ref data file between two dates, and using the corresponding chrono ephem .json files with the window maps, detects each satellite pass. We use the arbitrary and noise threshold described in the satellite channel section. Signal which pass both thresholds are considered good, and their corresponding altitude and azimuth are determined from the ephem file. These are projected to a healpix map. The healpix map is rotated by (π/4), so that the cardinal axes (NS, EW), lie on rows of healpix pixels. This will be essential when we look at the profiles of the beam shape. Two arrays are created - `ref_map` & `ref_map_counter`. In `ref_map`, each row represents a healpix pixel, with its values being a list of power from all passes over that pixel. `ref_map_counter` holds a count of the number of passes at each healpix pixel. These arrays are saved to an `.npz` file in the `/outputs/null_test` directory.
-
-```
-cd ../null_test
-
-python project_pass_healpix.py --help
-```
-
-The code is parallelized, and loops over the four reference antennas, creating four corresponding `rf***_healpix_map.npz` files in the output dir. These maps can be visualized with
-
-```
-python plot_healpix.py
-```
-
-<p float="left">
-  <img src="./docs/rf0XX_map_healpix.png" width="49%" />
-  <img src="./docs/rf0YY_map_healpix.png" width="49%" />
-</p>
-
-Perform the actual null test and create some interesting plots with
-
-```
-python null_test.py --help
-```
-
-We now compare corresponding EW and NS slices of both reference antennas. The four reference maps we created above are slices along the two cardinal axes. We compute the meadian value of each pixel, and estimate it's error using the Median Absolute Deviation. We rotate our FEE models by (π/4), to match the rotation of our data, and slice it along NS & EW. We use a least square minimization to determine a single gain factor which will best fit out model to our data. We plot the residuals to see if it has any significant structure. The null test is performed by subtracting corresponding data from one ref with the other. For Example, in the plot below, consider the first column. The first plot shows the NS slice of the rf0XX beam, with the NS slice of the rf1XX beam below it. The green points represent our data and errors, while the crimson curve represents the FEE model fitted to the data. The blue data points are the residuals between our data and the FEE model, while the orange curve is a 3rd order polynomial fit to it. The last plot displays the difference between the two plots above it. 
-
-<p float="left">
-  <img src="./docs/null_test_XX_slices.png" width="100%" />
-</p>
-
-
-&nbsp;
 ### Beam Pointings
 
 The MWA Telescope points its beam in different directions by giving each of its 16 dipoles a different delay. These pointings are quantised, with 181 discrete pointings available, each of which is given a unique 'Grid-pointing' number.  
@@ -360,8 +325,40 @@ python tile_pointings.py --help
 
 
 
+&nbsp;
 ### Tile Maps
 
-##### TODO: Sort data by gridpointing
-##### TODO: Figure out how to read MWA beam
-##### TODO: Finish this 
+In this section we project the satellite data onto healpix maps according to their ephemeris. 
+
+In this section we perform a sanity check, to make sure that both our reference antennas have the same performance. `project_pass_healpix.py` projects all satellite passes detected in the reference data to a healpix map. The script looks in each ref data file between two dates, and using the corresponding chrono ephem .json files with the window maps, detects each satellite pass. We use the arbitrary and noise threshold described in the satellite channel section. Signal which pass both thresholds are considered good, and their corresponding altitude and azimuth are determined from the ephem file. These are projected to a healpix map. The healpix map is rotated by (π/4), so that the cardinal axes (NS, EW), lie on rows of healpix pixels. This will be essential when we look at the profiles of the beam shape. Two arrays are created - `ref_map` & `ref_map_counter`. In `ref_map`, each row represents a healpix pixel, with its values being a list of power from all passes over that pixel. `ref_map_counter` holds a count of the number of passes at each healpix pixel. These arrays are saved to an `.npz` file in the `/outputs/null_test` directory.
+
+```
+cd ../null_test
+
+python project_pass_healpix.py --help
+```
+
+The code is parallelized, and loops over the four reference antennas, creating four corresponding `rf***_healpix_map.npz` files in the output dir. These maps can be visualized with
+
+```
+python plot_healpix.py
+```
+
+<p float="left">
+  <img src="./docs/rf0XX_map_healpix.png" width="49%" />
+  <img src="./docs/rf0YY_map_healpix.png" width="49%" />
+</p>
+
+Perform the actual null test and create some interesting plots with
+
+```
+python null_test.py --help
+```
+
+We now compare corresponding EW and NS slices of both reference antennas. The four reference maps we created above are slices along the two cardinal axes. We compute the meadian value of each pixel, and estimate it's error using the Median Absolute Deviation. We rotate our FEE models by (π/4), to match the rotation of our data, and slice it along NS & EW. We use a least square minimization to determine a single gain factor which will best fit out model to our data. We plot the residuals to see if it has any significant structure. The null test is performed by subtracting corresponding data from one ref with the other. For Example, in the plot below, consider the first column. The first plot shows the NS slice of the rf0XX beam, with the NS slice of the rf1XX beam below it. The green points represent our data and errors, while the crimson curve represents the FEE model fitted to the data. The blue data points are the residuals between our data and the FEE model, while the orange curve is a 3rd order polynomial fit to it. The last plot displays the difference between the two plots above it. 
+
+<p float="left">
+  <img src="./docs/null_test_XX_slices.png" width="100%" />
+</p>
+
+
