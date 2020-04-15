@@ -371,18 +371,21 @@ python plot_healpix.py
 
 This reads the healpix maps created by `tile_maps.py`, and creates two sets of maps. First, it creates a directory `../../outputs/tile_maps/sat_maps` where for each pointing of the telescope, it creates maps from individual satellite passes, from one representative tile. This enables up to see whether some satellites are adding anomalous data to our final maps. It also creates `../../outputs/tile_maps/good_maps`, where tile maps are created for each pointing, and for every tile.
 
+#### Zenith Maps
 <p float="left">
   <img src="./docs/S08XX_rf0XX_0_good_map.png" width="32%" />
   <img src="./docs/S08XX_rf0XX_0_good_map_counts.png" width="32%" />
   <img src="./docs/S08XX_rf0XX_0_good_map_errors.png" width="32%" />
 </p>
 
+#### Sweet Point 2
 <p float="left">
   <img src="./docs/S08XX_rf0XX_2_good_map.png" width="32%" />
   <img src="./docs/S08XX_rf0XX_2_good_map_counts.png" width="32%" />
   <img src="./docs/S08XX_rf0XX_2_good_map_errors.png" width="32%" />
 </p>
 
+#### Sweet Point 4
 <p float="left">
   <img src="./docs/S08XX_rf0XX_4_good_map.png" width="32%" />
   <img src="./docs/S08XX_rf0XX_4_good_map_counts.png" width="32%" />
