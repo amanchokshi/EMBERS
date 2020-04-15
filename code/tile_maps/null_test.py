@@ -80,15 +80,43 @@ def nan_mad(ref_map):
     return ref_map_mad
 
 
-def ref_map_slice(out_dir, ref_tile):
-    '''slices ref healpix map along NS & EW'''
+def good_maps(ref_map):
+    '''Creates a ref map with only good satellites'''
+   
+    pointings = ['0','2','4']
     
     # load data from map .npz file
-    map_data = np.load(f'{out_dir}/{ref_tile}_map_healpix.npz', allow_pickle=True)
-    ref_map = map_data['ref_map']
-    #ref_counter = map_data['ref_counter']
-   
-    ref_map_NS, ref_map_EW = slice_map(ref_map)
+    f = Path(f'{map_dir}/{ref_map}')
+    tile_data = np.load(f, allow_pickle=True)
+    tile_data = {key:tile_data[key].item() for key in tile_data}
+    ref_map = tile_data['ref_map']  
+    
+    # Good sats from which to make plots
+    good_sats = [
+            25338, 25984, 25985,
+            28654, 40086, 40087,
+            40091, 41179, 41180,
+            41182, 41183, 41184,
+            41185, 41187, 41188,
+            41189, 44387
+            ]
+    
+    # Empty good map
+    good_map = [[] for pixel in range(hp.nside2npix(nside))]
+    
+    for p in pointings:
+        
+        # append to good map from all good sat data
+        for sat in good_sats:
+            for pix in range(hp.nside2npix(nside)):
+                good_map[pix].extend(ref_map[p][sat][pix])
+        
+    return good_map
+
+def ref_map_slice(good_map):
+    '''slices ref healpix map along NS & EW'''
+    
+    ref_map_NS, ref_map_EW = slice_map(np.asarray(good_map))
 
     ref_med_map_NS = np.asarray([(np.nanmean(i) if i != [] else np.nan) for i in ref_map_NS[0]])
     # Scale mean map such that the max value is 0
@@ -243,7 +271,6 @@ def plt_null_test(
     return ax
 
 
-
 if __name__=='__main__':
     
     import argparse
@@ -268,8 +295,10 @@ if __name__=='__main__':
         Plot healpix map of reference data
         """)
     
-    parser.add_argument('--out_dir', metavar='\b', default='../../outputs/null_test/',
-            help='Output directory. Default=../../outputs/null_test/')
+    parser.add_argument('--out_dir', metavar='\b', default='../../outputs/tile_maps/null_test/',
+            help='Output directory. Default=../../outputs/tile_maps/null_test/')
+    parser.add_argument('--map_dir', metavar='\b', default='../../outputs/tile_maps/tile_map_data/',
+            help='Output directory. Default=../../outputs/tile_maps/tile_map_data/')
     parser.add_argument('--ref_model', metavar='\b', default='../../outputs/reproject_ref/ref_dipole_models.npz',
             help='Healpix reference FEE model file. default=../../outputs/reproject_ref/ref_dipole_models.npz')
     parser.add_argument('--nside', metavar='\b',type=int, default=32,help='Healpix Nside. Default = 32')
@@ -277,17 +306,29 @@ if __name__=='__main__':
     
     args = parser.parse_args()
     
-    out_dir = Path(args.out_dir)
-    ref_model = args.ref_model
-    nside   = args.nside
+    out_dir     = Path(args.out_dir)
+    map_dir     = Path(args.map_dir)
+    ref_model   = args.ref_model
+    nside       = args.nside
     
-    ref_tiles = ['rf0XX', 'rf0YY', 'rf1XX', 'rf1YY']
+    out_dir.mkdir(parents=True, exist_ok=True)
+    
+    ref_tiles = [
+            'S08XX_rf0XX_sat_maps.npz', 
+            'S08YY_rf0YY_sat_maps.npz', 
+            'S08XX_rf1XX_sat_maps.npz', 
+            'S08YY_rf1YY_sat_maps.npz'
+            ]
+    good_rf0XX = good_maps(ref_tiles[0])
+    good_rf0YY = good_maps(ref_tiles[1])
+    good_rf1XX = good_maps(ref_tiles[2])
+    good_rf1YY = good_maps(ref_tiles[3])
 
     # NS, EW slices of all four reference tiles 
-    rf0XX_NS, rf0XX_EW = ref_map_slice(out_dir, ref_tiles[0])
-    rf0YY_NS, rf0YY_EW = ref_map_slice(out_dir, ref_tiles[1])
-    rf1XX_NS, rf1XX_EW = ref_map_slice(out_dir, ref_tiles[2])
-    rf1YY_NS, rf1YY_EW = ref_map_slice(out_dir, ref_tiles[3])
+    rf0XX_NS, rf0XX_EW = ref_map_slice(good_rf0XX)
+    rf0YY_NS, rf0YY_EW = ref_map_slice(good_rf0YY)
+    rf1XX_NS, rf1XX_EW = ref_map_slice(good_rf1XX)
+    rf1YY_NS, rf1YY_EW = ref_map_slice(good_rf1YY)
 
     # Null test diff in power b/w rf0 & rf1
     ref01_XX_NS = rf0XX_NS[0] - rf1XX_NS[0]
