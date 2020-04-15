@@ -363,27 +363,17 @@ data
 The highest level dictionary contains ratio, reference, tile and time maps. Within each of these, there are dictionaries for each of the telescope pointings:`0, 2, 4`. Within each of these, there are dictionaries for each satellite norad ID, which contain a healpix map of data from one satellite, in one pointing. This structure map seem complicated, but is very useful for diagnostic purposes, and determining where errors in the final tile maps come from. The time maps contain the times of every data point added to the above maps.
 
 
-We can now finally create some beam maps.
-
-
-In this section we perform a sanity check, to make sure that both our reference antennas have the same performance. `project_pass_healpix.py` projects all satellite passes detected in the reference data to a healpix map. The script looks in each ref data file between two dates, and using the corresponding chrono ephem .json files with the window maps, detects each satellite pass. We use the arbitrary and noise threshold described in the satellite channel section. Signal which pass both thresholds are considered good, and their corresponding altitude and azimuth are determined from the ephem file. These are projected to a healpix map. The healpix map is rotated by (π/4), so that the cardinal axes (NS, EW), lie on rows of healpix pixels. This will be essential when we look at the profiles of the beam shape. Two arrays are created - `ref_map` & `ref_map_counter`. In `ref_map`, each row represents a healpix pixel, with its values being a list of power from all passes over that pixel. `ref_map_counter` holds a count of the number of passes at each healpix pixel. These arrays are saved to an `.npz` file in the `/outputs/null_test` directory.
-
-```
-cd ../null_test
-
-python project_pass_healpix.py --help
-```
-
-The code is parallelized, and loops over the four reference antennas, creating four corresponding `rf***_healpix_map.npz` files in the output dir. These maps can be visualized with
+We can now finally create some beam maps using
 
 ```
 python plot_healpix.py
 ```
 
-<p float="left">
-  <img src="./docs/rf0XX_map_healpix.png" width="49%" />
-  <img src="./docs/rf0YY_map_healpix.png" width="49%" />
-</p>
+This reads the healpix maps created by `tile_maps.py`, and creates two sets of maps. First, it creates a directory `../../outputs/tile_maps/sat_maps` where for each pointing of the telescope, it creates maps from individual satellite passes, from one representative tile. This enables up to see whether some satellites are adding anomalous data to our final maps. It also creates `../../outputs/tile_maps/good_maps`, where tile maps are created for each pointing, and for every tile.
+
+
+In this section we perform a sanity check, to make sure that both our reference antennas have the same performance. `project_pass_healpix.py` projects all satellite passes detected in the reference data to a healpix map. The script looks in each ref data file between two dates, and using the corresponding chrono ephem .json files with the window maps, detects each satellite pass. We use the arbitrary and noise threshold described in the satellite channel section. Signal which pass both thresholds are considered good, and their corresponding altitude and azimuth are determined from the ephem file. These are projected to a healpix map. The healpix map is rotated by (π/4), so that the cardinal axes (NS, EW), lie on rows of healpix pixels. This will be essential when we look at the profiles of the beam shape. Two arrays are created - `ref_map` & `ref_map_counter`. In `ref_map`, each row represents a healpix pixel, with its values being a list of power from all passes over that pixel. `ref_map_counter` holds a count of the number of passes at each healpix pixel. These arrays are saved to an `.npz` file in the `/outputs/null_test` directory.
+
 
 Perform the actual null test and create some interesting plots with
 
