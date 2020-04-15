@@ -330,6 +330,7 @@ python tile_pointings.py --help
 
 This section is where everything finally comes together.  We project the aligned satellite data onto healpix maps according to their ephemeris, using the channel maps to only project the good data. The resulting maps are stored in `.npz` files in the `./outputs/tile_maps/tile_map_data` directory. The data is stored as nested dictionaries.  
 
+```
 data
 ├── ratio_map                
 │   └── pointings            
@@ -347,6 +348,7 @@ data
     └── pointings            
         └── satellites            
             └── healpix maps
+```
 
 The highest level dictionary contains ratio, reference, tile and time maps. Within each of these, there are dictionaries for each of the telescope pointings:`0, 2, 4`. Within each of these, there are dictionaries for each satellite norad ID, which contain a healpix map of data from one satellite, in one pointing. This structure map seem complicated, but is very useful for diagnostic purposes, and determining where errors in the final tile maps come from.
 
