@@ -118,14 +118,14 @@ def ref_map_slice(good_map):
     
     ref_map_NS, ref_map_EW = slice_map(np.asarray(good_map))
 
-    ref_med_map_NS = np.asarray([(np.nanmean(i) if i != [] else np.nan) for i in ref_map_NS[0]])
+    ref_med_map_NS = np.asarray([(np.nanmedian(i) if i != [] else np.nan) for i in ref_map_NS[0]])
     # Scale mean map such that the max value is 0
     ref_med_map_scaled_NS = np.asarray([i-np.nanmax(ref_med_map_NS) for i in ref_med_map_NS])
     #ref_mad_map_NS = np.asarray([mad(i) for i in ref_map_NS[0]])
     ref_mad_map_NS = np.asarray(nan_mad(ref_map_NS[0]))
     za_NS = ref_map_NS[1]
 
-    ref_med_map_EW = np.asarray([(np.nanmean(i) if i != [] else np.nan) for i in ref_map_EW[0]])
+    ref_med_map_EW = np.asarray([(np.nanmedian(i) if i != [] else np.nan) for i in ref_map_EW[0]])
     # Scale mean map such that the max value is 0
     ref_med_map_scaled_EW = np.asarray([i-np.nanmax(ref_med_map_EW) for i in ref_med_map_EW])
     #ref_mad_map_EW = np.asarray([mad(i) for i in ref_map_EW[0]])

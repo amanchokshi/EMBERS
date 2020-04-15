@@ -329,8 +329,7 @@ python tile_pointings.py --help
 ### Tile Maps
 
 
-
-This section is where everything finally comes together.  We project the aligned satellite data onto healpix maps according to their ephemeris, using the channel maps to only project the good data. This is doen using `tile_maps.py` The resulting maps are stored in `.npz` files in the `./outputs/tile_maps/tile_map_data` directory. The data is stored as nested dictionaries.
+This section is where everything finally comes together.  We project the aligned satellite data onto healpix maps according to their ephemeris, using the channel maps to only project the good data. We use the power and noise threshold described in the satellite channel section. Signal which pass both thresholds are considered good, and their corresponding altitude and azimuth are determined from the ephem file. These are projected to a healpix map. The healpix map is rotated by (π/4), so that the cardinal axes (NS, EW), lie on rows of healpix pixels. This will be essential when we look at the profiles of the beam shape.This is done using `tile_maps.py` The resulting maps are stored in `.npz` files in the `./outputs/tile_maps/tile_map_data` directory. The data is stored as nested dictionaries.
 
 ```
 cd ../tile_maps/
@@ -369,7 +368,9 @@ We can now finally create some beam maps using
 python plot_healpix.py
 ```
 
-This reads the healpix maps created by `tile_maps.py`, and creates two sets of maps. First, it creates a directory `../../outputs/tile_maps/sat_maps` where for each pointing of the telescope, it creates maps from individual satellite passes, from one representative tile. This enables up to see whether some satellites are adding anomalous data to our final maps. It also creates `../../outputs/tile_maps/good_maps`, where tile maps are created for each pointing, and for every tile.
+This reads the healpix maps created by `tile_maps.py`, and creates two sets of maps. First, it creates a directory `../../outputs/tile_maps/sat_maps` where for each pointing of the telescope, it creates maps from individual satellite passes, from one representative tile. This enables up to see whether some satellites are adding anomalous data to our final maps. 
+
+Using the satellite maps, we choose the 17 best satellites, which have good coverage in the sky, and transimit at a constant power. Using these satellites, `plot_healpix.py` also creates `../../outputs/tile_maps/good_maps`, where good tile maps are created for each pointing, and for every tile. Error and count maps are also created at the same time.
 
 #### Zenith Maps
 <p float="left">
@@ -393,7 +394,9 @@ This reads the healpix maps created by `tile_maps.py`, and creates two sets of m
 </p>
 
 
-In this section we perform a sanity check, to make sure that both our reference antennas have the same performance. `project_pass_healpix.py` projects all satellite passes detected in the reference data to a healpix map. The script looks in each ref data file between two dates, and using the corresponding chrono ephem .json files with the window maps, detects each satellite pass. We use the arbitrary and noise threshold described in the satellite channel section. Signal which pass both thresholds are considered good, and their corresponding altitude and azimuth are determined from the ephem file. These are projected to a healpix map. The healpix map is rotated by (π/4), so that the cardinal axes (NS, EW), lie on rows of healpix pixels. This will be essential when we look at the profiles of the beam shape. Two arrays are created - `ref_map` & `ref_map_counter`. In `ref_map`, each row represents a healpix pixel, with its values being a list of power from all passes over that pixel. `ref_map_counter` holds a count of the number of passes at each healpix pixel. These arrays are saved to an `.npz` file in the `/outputs/null_test` directory.
+#### Null Test
+
+We also perform a sanity check, to make sure that both our reference antennas have the same performance. We do this by fitting slices of the reference beam model to corresponding slices of out projected healpix data. We fit the residuals with a 3rd order polinomial to show what it has no structure. We then divide corresponding slices from `rf0 & rf1`
 
 
 Perform the actual null test and create some interesting plots with
