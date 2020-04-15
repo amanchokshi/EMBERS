@@ -328,7 +328,27 @@ python tile_pointings.py --help
 &nbsp;
 ### Tile Maps
 
-In this section we project the satellite data onto healpix maps according to their ephemeris. 
+This section is where everything finally comes together.  We project the aligned satellite data onto healpix maps according to their ephemeris, using the channel maps to only project the good data. The resulting maps are stored in `.npz` files in the `./outputs/tile_maps/tile_map_data` directory. The data is stored as nested dictionaries.  
+
+data
+├── ratio_map                
+│   └── pointings            
+│       └── satellites            
+│           └── healpix maps            
+├── ref_map                   
+│   └── pointings            
+│       └── satellites            
+│           └── healpix maps            
+├── tile_map                  
+│   └── pointings            
+│       └── satellites            
+│           └── healpix maps            
+└── time_map
+    └── pointings            
+        └── satellites            
+            └── healpix maps
+
+The highest level dictionary contains ratio, reference, tile and time maps. Within each of these, there are dictionaries for each of the telescope pointings:`0, 2, 4`. Within each of these, there are dictionaries for each satellite norad ID, which contain a healpix map of data from one satellite, in one pointing. This structure map seem complicated, but is very useful for diagnostic purposes, and determining where errors in the final tile maps come from.
 
 In this section we perform a sanity check, to make sure that both our reference antennas have the same performance. `project_pass_healpix.py` projects all satellite passes detected in the reference data to a healpix map. The script looks in each ref data file between two dates, and using the corresponding chrono ephem .json files with the window maps, detects each satellite pass. We use the arbitrary and noise threshold described in the satellite channel section. Signal which pass both thresholds are considered good, and their corresponding altitude and azimuth are determined from the ephem file. These are projected to a healpix map. The healpix map is rotated by (π/4), so that the cardinal axes (NS, EW), lie on rows of healpix pixels. This will be essential when we look at the profiles of the beam shape. Two arrays are created - `ref_map` & `ref_map_counter`. In `ref_map`, each row represents a healpix pixel, with its values being a list of power from all passes over that pixel. `ref_map_counter` holds a count of the number of passes at each healpix pixel. These arrays are saved to an `.npz` file in the `/outputs/null_test` directory.
 
