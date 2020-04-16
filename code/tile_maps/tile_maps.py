@@ -213,14 +213,6 @@ def project_tile_healpix(tile_pair):
 
     pointings = ['0','2','4']
     
-    # Load reference FEE model
-    ref_fee_model = np.load(ref_model, allow_pickle=True)
-
-    if 'XX' in tile:
-        ref_fee_model = ref_fee_model['XX']
-    else:
-        ref_fee_model = ref_fee_model['YY']
-    
     if plots == 'True':
         Path(f'{plt_dir}/{tile}_{ref}/0').mkdir(parents=True, exist_ok=True)
         Path(f'{plt_dir}/{tile}_{ref}/2').mkdir(parents=True, exist_ok=True)
@@ -297,7 +289,8 @@ def project_tile_healpix(tile_pair):
                                                 # DIVIDE OUT SATS
                                                 # Here we divide satellite signal by reference signal
                                                 # In log space, this is subtraction
-                                                pass_power = tile_power - ref_power
+                                                
+                                                #pass_power = tile_power - ref_power
 
                                                 # Altitude is in deg while az is in radians
                                                 # convert alt to radians
@@ -315,14 +308,15 @@ def project_tile_healpix(tile_pair):
                                                 # Since we need to slice along NS & EW, and nside = 32 healpix does not 
                                                 # straight lines of pixels vertically or horizontally, but it does have
                                                 # them diagonally. We rotate ɸ by 45° to be able to slice NS & EW
-                                                ɸ_rot = ɸ + (np.pi / 4)
+                                                
+                                                #ɸ_rot = ɸ + (np.pi / 4)
 
                                                 # Now convert to healpix coordinates
-                                                healpix_index = hp.ang2pix(nside,θ, ɸ_rot)
+                                                healpix_index = hp.ang2pix(nside,θ, ɸ)
                                                         
                                                 # Append channel power to healpix map
-                                                for i in range(len(healpix_index)):
-                                                    tile_data['healpix_maps'][f'{point}'][healpix_index[i]].append(pass_power[i])
+                                                #for i in range(len(healpix_index)):
+                                                #    tile_data['healpix_maps'][f'{point}'][healpix_index[i]].append(pass_power[i])
                                                  
                                                 # Append channel power to ref healpix map
                                                 for i in range(len(healpix_index)):
@@ -353,20 +347,31 @@ def project_tile_healpix(tile_pair):
     # create a dictionary, with the keys being sat_ids and the values being healpix maps of data from those sats
     # Fist level keys are pointings with dictionaty values
     # Second level keys are satellite ids with healpix map lists
-    ratio_sat_data = {}
+    #ratio_sat_data = {}
     ref_sat_data = {}
     tile_sat_data = {}
     time_sat_data = {}
 
     # loop over pointings for all maps
     for p in pointings:
-        ratio_map   = np.asarray(tile_data['healpix_maps'][p]) + np.asarray(ref_fee_model)
+        
+        ###TODO hardcoded 12288
+        #diff_map   = tile_data['healpix_maps'][p]
+
+        ## Apply the fee model
+        #
+        #ratio_map = []
+
+        #for i in range(len(diff_map)):
+        #    ratio_map.append((np.asarray(diff_map[i]) + ref_fee_model[i]).tolist())
+        #ratio_map   = np.asarray(ratio_map)
+        
         tile_map    = np.asarray(tile_data['tile_maps'][p])
         ref_map     = np.asarray(tile_data['ref_maps'][p])
         sat_map     = np.asarray(tile_data['sat_map'][p])
         time_map    = np.asarray(tile_data['times'][p])
 
-        ratio_sat_data[p]   = {}
+        #ratio_sat_data[p]   = {}
         ref_sat_data[p]     = {}
         tile_sat_data[p]    = {}
         time_sat_data[p]    = {}
@@ -374,7 +379,7 @@ def project_tile_healpix(tile_pair):
         # loop over all sats
         for s in sat_ids:
 
-            ratio_sat_data[p][s]    = [] 
+            #ratio_sat_data[p][s]    = [] 
             ref_sat_data[p][s]      = [] 
             tile_sat_data[p][s]     = [] 
             time_sat_data[p][s]     = [] 
@@ -385,13 +390,14 @@ def project_tile_healpix(tile_pair):
 
                 # Find subset of data for each sat
                 sat_idx = np.where(np.asarray(sat_map[i]) == s)
-                ratio_sat_data[p][s].append((np.asarray(ratio_map[i])[sat_idx]).tolist())
+                #ratio_sat_data[p][s].append((np.asarray(ratio_map[i])[sat_idx]).tolist())
                 ref_sat_data[p][s].append((np.asarray(ref_map[i])[sat_idx]).tolist())
                 tile_sat_data[p][s].append((np.asarray(tile_map[i])[sat_idx]).tolist())
                 time_sat_data[p][s].append((np.asarray(time_map[i])[sat_idx]).tolist())
 
     # Save map arrays to npz file
-    tile_sat_data = {'ratio_map':ratio_sat_data, 'ref_map':ref_sat_data, 'tile_map':tile_sat_data, 'time_map':time_sat_data}
+    #tile_sat_data = {'ratio_map':ratio_sat_data, 'ref_map':ref_sat_data, 'tile_map':tile_sat_data, 'time_map':time_sat_data}
+    tile_sat_data = {'ref_map':ref_sat_data, 'tile_map':tile_sat_data, 'time_map':time_sat_data}
     np.savez_compressed(f'{out_dir}/{tile}_{ref}_sat_maps.npz', **tile_sat_data)
 
 if __name__=='__main__':

@@ -170,6 +170,7 @@ def good_maps(f):
         
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Good Map: {tile}/{ref} @ {p}', fontsize=16)
+        #plot_healpix(data_map=good_map_scaled, sub=(1,1,1), cmap=jade, vmin=-35, vmax=0)
         plot_healpix(data_map=good_map_scaled, sub=(1,1,1), cmap=jade, vmin=np.nanmin(good_map_scaled), vmax=0)
         plt.savefig(f'{out_dir}/good_maps/{p}/tile_maps/{tile}_{ref}_{p}_good_map.png',bbox_inches='tight')
         plt.close()
