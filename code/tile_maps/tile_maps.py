@@ -360,7 +360,7 @@ def project_tile_healpix(tile_pair):
 
     # loop over pointings for all maps
     for p in pointings:
-        ratio_map   = np.asarray(tile_data['healpix_maps'][p]) + ref_fee_model
+        ratio_map   = np.asarray(tile_data['healpix_maps'][p]) + np.asarray(ref_fee_model)
         tile_map    = np.asarray(tile_data['tile_maps'][p])
         ref_map     = np.asarray(tile_data['ref_maps'][p])
         sat_map     = np.asarray(tile_data['sat_map'][p])
