@@ -386,7 +386,7 @@ def project_tile_healpix(tile_pair):
             
 
             # loop over every healpix pixel
-            for i in range(len(ratio_map)):
+            for i in range(len(ref_map)):
 
                 # Find subset of data for each sat
                 sat_idx = np.where(np.asarray(sat_map[i]) == s)
@@ -501,13 +501,13 @@ if __name__=='__main__':
     Path(out_dir).mkdir(parents=True, exist_ok=True)
     sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
-    for tile_pair in tile_pairs:
-        project_tile_healpix(tile_pair)
-        break
+#    for tile_pair in tile_pairs:
+#        project_tile_healpix(tile_pair)
+#        break
         
-#    # Parallization magic happens here
-#    with concurrent.futures.ProcessPoolExecutor() as executor:
-#        results = executor.map(project_tile_healpix, tile_pairs)
+    # Parallization magic happens here
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(project_tile_healpix, tile_pairs)
     
 
 
