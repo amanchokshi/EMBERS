@@ -213,6 +213,14 @@ def project_tile_healpix(tile_pair):
 
     pointings = ['0','2','4']
     
+    # Load reference FEE model
+    ref_fee_model = np.load(ref_model, allow_pickle=True)
+
+    if 'XX' in tile:
+        ref_fee_model = ref_fee_model['XX']
+    else:
+        ref_fee_model = ref_fee_model['YY']
+    
     if plots == 'True':
         Path(f'{plt_dir}/{tile}_{ref}/0').mkdir(parents=True, exist_ok=True)
         Path(f'{plt_dir}/{tile}_{ref}/2').mkdir(parents=True, exist_ok=True)
@@ -352,7 +360,7 @@ def project_tile_healpix(tile_pair):
 
     # loop over pointings for all maps
     for p in pointings:
-        ratio_map   = np.asarray(tile_data['healpix_maps'][p])
+        ratio_map   = np.asarray(tile_data['healpix_maps'][p]) + ref_fee_model
         tile_map    = np.asarray(tile_data['tile_maps'][p])
         ref_map     = np.asarray(tile_data['ref_maps'][p])
         sat_map     = np.asarray(tile_data['sat_map'][p])
@@ -427,6 +435,8 @@ if __name__=='__main__':
     parser.add_argument('--pow_thresh', metavar='\b', type=int, default=5,help='Power Threshold to detect sats. Default=10 dB.')
     parser.add_argument('--nside', metavar='\b', type=int,  default=32,help='Healpix Nside. Default = 32')
     parser.add_argument('--plots', metavar='\b', default=False,help='If True, create a gazzillion plots for each sat pass. Default = False')
+    parser.add_argument('--ref_model', metavar='\b', default='../../outputs/reproject_ref/ref_dipole_models.npz',
+            help='Healpix reference FEE model file. default=../../outputs/reproject_ref/ref_dipole_models.npz')
     
     args = parser.parse_args()
     
@@ -439,6 +449,7 @@ if __name__=='__main__':
     pow_thresh      = args.pow_thresh
     nside           = args.nside
     plots           = args.plots
+    ref_model       = args.ref_model
     
     align_dir       = Path(args.align_dir)
     chrono_dir      = Path(args.chrono_dir)
@@ -484,13 +495,13 @@ if __name__=='__main__':
     Path(out_dir).mkdir(parents=True, exist_ok=True)
     sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
-#    for tile_pair in tile_pairs:
-#        project_tile_healpix(tile_pair)
-#        break
+    for tile_pair in tile_pairs:
+        project_tile_healpix(tile_pair)
+        break
         
-    # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(project_tile_healpix, tile_pairs)
+#    # Parallization magic happens here
+#    with concurrent.futures.ProcessPoolExecutor() as executor:
+#        results = executor.map(project_tile_healpix, tile_pairs)
     
 
 
