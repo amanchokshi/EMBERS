@@ -170,13 +170,13 @@ def good_maps(f):
         print(p)
 
         tile_map_med = [(np.median(i) if i != [] else np.nan ) for i in tile_data[p]]
-        tile_map_scaled = np.asarray([(i - np.nanmax(tile_map_med[:4000])) for i in tile_map_med])
+        tile_map_scaled = np.asarray([(i - np.nanmedian(tile_map_med[:100])) for i in tile_map_med])
 
         
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Good Map: {tile}/{ref} @ {p}', fontsize=16)
-        #plot_healpix(data_map=good_map_scaled, sub=(1,1,1), cmap=jade, vmin=-35, vmax=0)
-        plot_healpix(data_map=tile_map_scaled, sub=(1,1,1), cmap=jade, vmin=np.nanmin(tile_map_scaled), vmax=0)
+        plot_healpix(data_map=tile_map_scaled, sub=(1,1,1), cmap=jade, vmin=-40, vmax=0)
+        #plot_healpix(data_map=tile_map_scaled, sub=(1,1,1), cmap=jade, vmin=np.nanmin(tile_map_scaled), vmax=0)
         plt.savefig(f'{out_dir}/good_maps/{p}/tile_maps/{tile}_{ref}_{p}_good_map.png',bbox_inches='tight')
         plt.close()
         
@@ -301,10 +301,10 @@ if __name__=='__main__':
     #    results = executor.map(map_plots, map_files)
 
     # Parallization magic happens here
-    #with concurrent.futures.ProcessPoolExecutor() as executor:
-    #    results = executor.map(good_maps, map_files)
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(good_maps, map_files)
 
-    good_maps(map_files[0]) 
+    #good_maps(map_files[0]) 
 
     # plot maps for all sats, for only one tile_ref pair
     # S08XX has good time coverage
