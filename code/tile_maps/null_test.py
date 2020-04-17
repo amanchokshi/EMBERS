@@ -286,7 +286,7 @@ if __name__=='__main__':
 
     import sys
     sys.path.append('../decode_rf_data')
-    from plot_healpix import plot_healpix
+    from plot_tile_maps import plot_healpix
     from colormap import spectral
     
     # Custom spectral colormap
@@ -298,8 +298,8 @@ if __name__=='__main__':
     
     parser.add_argument('--out_dir', metavar='\b', default='../../outputs/tile_maps/null_test/',
             help='Output directory. Default=../../outputs/tile_maps/null_test/')
-    parser.add_argument('--map_dir', metavar='\b', default='../../outputs/tile_maps/tile_map_data/',
-            help='Output directory. Default=../../outputs/tile_maps/tile_map_data/')
+    parser.add_argument('--map_dir', metavar='\b', default='../../outputs/tile_maps/tile_maps_raw/',
+            help='Output directory. Default=../../outputs/tile_maps/tile_maps_raw/')
     parser.add_argument('--ref_model', metavar='\b', default='../../outputs/reproject_ref/ref_dipole_models.npz',
             help='Healpix reference FEE model file. default=../../outputs/reproject_ref/ref_dipole_models.npz')
     parser.add_argument('--nside', metavar='\b',type=int, default=32,help='Healpix Nside. Default = 32')
