@@ -21,10 +21,10 @@ def hp_slices_horizon(nside=None):
 
     # pixel indices along N, E, S, W slices
     # order the indices such that they proceed from N -> S or E -> W
-    n_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) ==  45)[0], reverse=True)
-    e_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 135)[0], reverse=True)
-    s_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 225)[0])
-    w_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 315)[0])
+    e_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) ==  45)[0], reverse=True)
+    s_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 135)[0])
+    w_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 225)[0])
+    n_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 315)[0], reverse=True)
 
     NS_indices.extend(n_slice)
     NS_indices.extend(s_slice)
