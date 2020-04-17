@@ -412,8 +412,8 @@ if __name__=='__main__':
             help='Dir where agligned data date is saved. Default:../../outputs/align_data')
 
     parser.add_argument(
-            '--out_dir', metavar='\b', default='./../../outputs/tile_maps/tile_map_data/',
-            help='Output directory. Default=./../../outputs/tile_maps/tile_map_data/')
+            '--out_dir', metavar='\b', default='./../../outputs/tile_maps/tile_maps_raw/',
+            help='Output directory. Default=./../../outputs/tile_maps/tile_maps_raw/')
     
     parser.add_argument(
             '--plt_dir', metavar='\b', default='./../../outputs/tile_maps/pass_plots/',
