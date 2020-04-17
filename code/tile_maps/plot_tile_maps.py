@@ -21,25 +21,25 @@ def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None
             half_sky = hp.orthview(
                     map=data_map,coord='E',
                     half_sky=True,xsize=400,
-                    title=title,rot=(0,90,0),
+                    title=title,rot=(0,90,-90), flip='geo',
                     sub=sub,notext=True, return_projected_map=True)
         else:
             half_sky = hp.orthview(
                     map=data_map,coord='E',
-                    half_sky=True,xsize=400,
-                    title=title,rot=(0,90,0), sub=sub,cmap=cmap,
+                    half_sky=True,xsize=400, flip='geo',
+                    title=title,rot=(0,90,-90), sub=sub,cmap=cmap,
                     notext=True,return_projected_map=True)
     else:
         if cmap == None:
             half_sky = hp.orthview(
                     map=data_map,coord='E'
-                    ,half_sky=True,xsize=400,rot=(0,90,0),
+                    ,half_sky=True,xsize=400,rot=(0,90,-90), flip='geo',
                     title=title,sub=sub,min=vmin,max=vmax,
                     notext=True,return_projected_map=True)
         else:
             half_sky = hp.orthview(
                     map=data_map,coord='E',
-                    half_sky=True,xsize=400,rot=(0,90,0),
+                    half_sky=True,xsize=400,rot=(0,90,-90), flip='geo',
                     title=title,sub=sub,min=vmin,max=vmax,
                     cmap=cmap,notext=True,return_projected_map=True)
 
@@ -51,16 +51,16 @@ def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None
     hp.projtext(60.0*(np.pi/180.0), 0.0, '60', coord='E')
 
     # Azimuth grid
-    hp.projtext(90.0*(np.pi/180.0), 00.0*(np.pi/180.0), r'$0^\circ$', coord='E',color='k',verticalalignment='top', fontsize=12)
-    hp.projtext(90.0*(np.pi/180.0), 90.0*(np.pi/180.0), r'$90^\circ$', coord='E',color='k',horizontalalignment='right', fontsize=12)
-    hp.projtext(90.0*(np.pi/180.0), 180.0*(np.pi/180.0), r'$180^\circ$', coord='E',color='k', fontsize=12)
-    hp.projtext(90.0*(np.pi/180.0), 270.0*(np.pi/180.0), r'$270^\circ$', coord='E',color='k', fontsize=12)
+    hp.projtext(80.0*(np.pi/180.0), 000.0*(np.pi/180.0), r'$0^\circ$',   coord='E',color='w', fontsize=10, horizontalalignment='right')
+    hp.projtext(80.0*(np.pi/180.0), 090.0*(np.pi/180.0), r'$90^\circ$',  coord='E',color='w', fontsize=10, verticalalignment='top')
+    hp.projtext(80.0*(np.pi/180.0), 180.0*(np.pi/180.0), r'$180^\circ$', coord='E',color='w', fontsize=10)
+    hp.projtext(80.0*(np.pi/180.0), 270.0*(np.pi/180.0), r'$270^\circ$', coord='E',color='w', fontsize=10)
     
     # NSEW 
-    hp.projtext(90.0*(np.pi/180.0), 045.0*(np.pi/180.0), r'$N  $', coord='E',color='k',verticalalignment='top', horizontalalignment='right', fontsize=14)
-    hp.projtext(90.0*(np.pi/180.0), 135.0*(np.pi/180.0), r'$E  $', coord='E',color='k',horizontalalignment='right', fontsize=14)
-    hp.projtext(90.0*(np.pi/180.0), 225.0*(np.pi/180.0), r'$S  $', coord='E',color='k', fontsize=14)
-    hp.projtext(90.0*(np.pi/180.0), 315.0*(np.pi/180.0), r'$W  $', coord='E',color='k', verticalalignment='top', horizontalalignment='left', fontsize=14)
+    hp.projtext(90.0*(np.pi/180.0), 000.0*(np.pi/180.0), r'$E  $', coord='E',color='k', fontsize=14)
+    hp.projtext(90.0*(np.pi/180.0), 090.0*(np.pi/180.0), r'$N  $', coord='E',color='k', fontsize=14)
+    hp.projtext(90.0*(np.pi/180.0), 180.0*(np.pi/180.0), r'$W  $', coord='E',color='k', fontsize=14, horizontalalignment='right')
+    hp.projtext(90.0*(np.pi/180.0), 270.0*(np.pi/180.0), r'$S  $', coord='E',color='k', fontsize=14, verticalalignment='top')
 
 
 def plt_good_maps(f):
@@ -114,8 +114,6 @@ def plt_good_maps(f):
         plt.savefig(f'{out_dir}/good_maps/{p}/tile_counts/{tile}_{ref}_{p}_good_map_counts.png',bbox_inches='tight')
         plt.close()
 
-        print('tile counts')
-
 
 if __name__=='__main__':
     
@@ -163,6 +161,6 @@ if __name__=='__main__':
 
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(good_maps, map_files)
+        results = executor.map(plt_good_maps, map_files)
 
 
