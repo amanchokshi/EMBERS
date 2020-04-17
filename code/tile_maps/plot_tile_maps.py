@@ -1,6 +1,3 @@
-# Healpix plotting script adapted from Dr. Jack Line's code
-# https://github.com/JLBLine/MWA_ORBCOMM
-
 import sys
 import numpy as np
 import healpy as hp
@@ -11,6 +8,9 @@ from sat_ids import norad_ids
 
 def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None):
     '''Yeesh do some healpix magic to plot the thing'''
+    
+    # Healpix plotting script adapted from Dr. Jack Line's code
+    # https://github.com/JLBLine/MWA_ORBCOMM
     
     # Disable cryptic healpy warnings. Can't figure out where they originate
     import warnings
@@ -63,77 +63,7 @@ def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None
     hp.projtext(90.0*(np.pi/180.0), 315.0*(np.pi/180.0), r'$W  $', coord='E',color='k', verticalalignment='top', horizontalalignment='left', fontsize=14)
 
 
-def map_plots(f):
-    
-    f_name, _ = f.name.split('.')
-    tile, ref, _, _ = f_name.split('_')
-   
-    pointings = ['0','2','4']
-
-    # load data from map .npz file
-    map_data = np.load(f, allow_pickle=True)
-    map_data = {key:map_data[key].item() for key in map_data}
-    tile_maps = map_data['healpix_maps']
-    #tile_counters = map_data['healpix_counters']
-
-    for p in pointings:
-
-        tile_map = tile_maps[p]
-        #tile_counter = tile_counters[p]
-        tile_counter = [len(m) for m in tile_map]
-    
-        # Plot BEAM
-        # compute the median for every pixel array
-        tile_map_mean = [(np.mean(i) if i != [] else np.nan ) for i in tile_map]
-        tile_map_mean_scaled = np.asarray([(i - np.nanmax(tile_map_mean[:5000])) for i in tile_map_mean])
-        vmin = np.nanmin(tile_map_mean_scaled)
-        #vmax = np.nanmax(tile_map_mean_scaled)
-        vmax = 0
-
-        fig = plt.figure(figsize=(8,10))
-        fig.suptitle(f'Healpix Map: {tile}/{ref} @ {p}', fontsize=16)
-        plot_healpix(data_map=np.asarray(tile_map_mean_scaled),sub=(1,1,1), cmap=jade, vmin=vmin, vmax=vmax)
-        plt.savefig(f'{out_dir}/tile_maps/{tile}_{ref}_{p}_map.png',bbox_inches='tight')
-        plt.close()
-           
-        # Plot MAD 
-        tile_map_mad = []
-        for j in tile_map:
-            if j != []:
-                j = np.asarray(j)
-                j = j[~np.isnan(j)]
-                tile_map_mad.append(mad(j))
-            else:
-                tile_map_mad.append(np.nan)
-
-        tile_map_mad = np.asarray(tile_map_mad)
-        
-        tile_map_mad[np.where(tile_map_mad == np.nan)] = np.nanmean(tile_map_mad)
-
-
-
-        vmin = np.nanmin(tile_map_mad)
-        vmax = np.nanmax(tile_map_mad)
-
-        fig = plt.figure(figsize=(8,10))
-        fig.suptitle(f'Healpix MAD: {tile}/{ref} @ {p}', fontsize=16)
-        plot_healpix(data_map=np.asarray(tile_map_mad),sub=(1,1,1), cmap=jade, vmin=vmin, vmax=vmax)
-        plt.savefig(f'{out_dir}/tile_errors/{tile}_{ref}_{p}_mad.png',bbox_inches='tight')
-        plt.close()
-
-
-        # Plot counts in pix
-
-
-            
-        fig = plt.figure(figsize=(8,10))
-        fig.suptitle(f'Healpix Pixel Counts: {tile}/{ref} @ {p}', fontsize=16)
-        plot_healpix(data_map=np.asarray(tile_counter),sub=(1,1,1), cmap=jade, vmin=0, vmax=400)
-
-        plt.savefig(f'{out_dir}/tile_counts/{tile}_{ref}_{p}_counts.png',bbox_inches='tight')
-        plt.close()
-
-def good_maps(f):
+def plt_good_maps(f):
     
     f_name, _ = f.name.split('.')
     tile, ref, _, _ = f_name.split('_')
@@ -142,32 +72,8 @@ def good_maps(f):
 
     # load data from map .npz file
     tile_data = np.load(f, allow_pickle=True)
-    #tile_data = {key:tile_data[key].item() for key in tile_data}
-    #ratio_map = tile_data['ratio_map']  
-    
-    ## Good sats from which to make plots
-    #good_sats = [
-    #        25338, 25984, 25985,
-    #        28654, 40086, 40087,
-    #        40091, 41179, 41180,
-    #        41182, 41183, 41184,
-    #        41185, 41187, 41188,
-    #        41189, 44387
-    #        ]
-    #
-    #for p in pointings:
-    #    
-    #    # Empty good map
-    #    good_map = [[] for pixel in range(hp.nside2npix(nside))]
-    #    
-    #    # append to good map from all good sat data
-    #    for sat in good_sats:
-    #        for pix in range(hp.nside2npix(nside)):
-    #            good_map[pix].extend(ratio_map[p][sat][pix])
     
     for p in pointings:
-
-        print(p)
 
         tile_map_med = [(np.median(i) if i != [] else np.nan ) for i in tile_data[p]]
         tile_map_scaled = np.asarray([(i - np.nanmedian(tile_map_med[:100])) for i in tile_map_med])
@@ -176,12 +82,9 @@ def good_maps(f):
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Good Map: {tile}/{ref} @ {p}', fontsize=16)
         plot_healpix(data_map=tile_map_scaled, sub=(1,1,1), cmap=jade, vmin=-40, vmax=0)
-        #plot_healpix(data_map=tile_map_scaled, sub=(1,1,1), cmap=jade, vmin=np.nanmin(tile_map_scaled), vmax=0)
         plt.savefig(f'{out_dir}/good_maps/{p}/tile_maps/{tile}_{ref}_{p}_good_map.png',bbox_inches='tight')
         plt.close()
         
-        print('tile map')
-
         # Plot MAD 
         tile_map_mad = []
         for j in tile_data[p]:
@@ -192,14 +95,8 @@ def good_maps(f):
             else:
                 tile_map_mad.append(np.nan)
 
-        #good_map_mad = np.asarray(good_map_mad)
-        #
-        #good_map_mad[np.where(good_map_mad == np.nan)] = np.nanmedian(good_map_mad)
-
         vmin = np.nanmin(tile_map_mad)
         vmax = np.nanmax(tile_map_mad)
-
-        #tile_map_mad = [mad(tile_data[p][pix]) if len(tile_data[p][pix]) > 0 else np.nan for pix in range(hp.nside2npix(nside)) ]
 
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Good Map MAD: {tile}/{ref} @ {p}', fontsize=16)
@@ -207,10 +104,8 @@ def good_maps(f):
         plt.savefig(f'{out_dir}/good_maps/{p}/tile_errors/{tile}_{ref}_{p}_good_map_errors.png',bbox_inches='tight')
         plt.close()
         
-        print('tile mad')
 
         # Plot counts in pix
-            
         tile_map_counts = [len(i) for i in tile_data[p]]
         
         fig = plt.figure(figsize=(8,10))
@@ -220,34 +115,6 @@ def good_maps(f):
         plt.close()
 
         print('tile counts')
-
-
-#def sat_maps(sat):
-#    
-#    f = Path(f'{map_dir}/S08XX_rf0XX_sat_maps.npz')
-#    f_name, _ = f.name.split('.')
-#    tile, ref, _, _ = f_name.split('_')
-#   
-#    pointings = ['0','2','4']
-#
-#    # list of all possible satellites
-#    sat_ids = list(norad_ids.values())
-#    
-#    # load data from map .npz file
-#    tile_data = np.load(f, allow_pickle=True)
-#    tile_data = {key:tile_data[key].item() for key in tile_data}
-#    ratio_map = tile_data['ratio_map']  
-#    
-#    for p in pointings:
-#
-#        fig = plt.figure(figsize=(8,10))
-#        fig.suptitle(f'Satellite [{sat}]: {tile}/{ref} @ {p}', fontsize=16)
-#        ratio_sat_med = [(np.median(i) if i != [] else np.nan ) for i in tile_data['ratio_map'][p][sat]]
-#        ratio_sat_scaled = np.asarray([(i - np.nanmax(ratio_sat_med[:5000])) for i in ratio_sat_med])
-#        plot_healpix(data_map=ratio_sat_scaled, sub=(1,1,1), cmap=jade)
-#        plt.savefig(f'{out_dir}/sat_maps/{p}/{sat}_{p}_{tile}_{ref}_passes.png',bbox_inches='tight')
-#        plt.close()
-
 
 
 if __name__=='__main__':
@@ -268,7 +135,7 @@ if __name__=='__main__':
     
 
     parser = argparse.ArgumentParser(description="""
-        Plot healpix map of reference data
+        Plot healpix maps of normalized tile maps
         """)
     
     parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/tile_maps/',help='Output directory. Default=./../../outputs/tile_maps/')
@@ -293,23 +160,9 @@ if __name__=='__main__':
         Path(f'{out_dir}/good_maps/{p}/tile_maps/').mkdir(parents=True, exist_ok=True)
         Path(f'{out_dir}/good_maps/{p}/tile_counts/').mkdir(parents=True, exist_ok=True)
         Path(f'{out_dir}/good_maps/{p}/tile_errors/').mkdir(parents=True, exist_ok=True)
-        #Path(f'{out_dir}/sat_maps/{p}/').mkdir(parents=True, exist_ok=True)
-
-    # Depreciated: plotting maps from all data   
-    # Parallization magic happens here
-    #with concurrent.futures.ProcessPoolExecutor() as executor:
-    #    results = executor.map(map_plots, map_files)
 
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor() as executor:
         results = executor.map(good_maps, map_files)
-
-    #good_maps(map_files[0]) 
-
-    # plot maps for all sats, for only one tile_ref pair
-    # S08XX has good time coverage
-    #with concurrent.futures.ProcessPoolExecutor() as executor:
-    #    results = executor.map(sat_maps, sat_ids)
-
 
 
