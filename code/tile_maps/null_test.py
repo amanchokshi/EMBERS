@@ -320,10 +320,10 @@ if __name__=='__main__':
             'S36XX_rf1XX_sat_maps.npz', 
             'S36YY_rf1YY_sat_maps.npz'
             ]
-    good_rf0XX = good_maps(ref_tiles[0])
-    good_rf0YY = good_maps(ref_tiles[1])
-    good_rf1XX = good_maps(ref_tiles[2])
-    good_rf1YY = good_maps(ref_tiles[3])
+    good_rf0XX = rotate(angle=+(1*np.pi)/4.0, healpix_array=np.asarray(good_maps(ref_tiles[0])))
+    good_rf0YY = rotate(angle=+(1*np.pi)/4.0, healpix_array=np.asarray(good_maps(ref_tiles[1])))
+    good_rf1XX = rotate(angle=+(1*np.pi)/4.0, healpix_array=np.asarray(good_maps(ref_tiles[2])))
+    good_rf1YY = rotate(angle=+(1*np.pi)/4.0, healpix_array=np.asarray(good_maps(ref_tiles[3])))
 
     # NS, EW slices of all four reference tiles 
     rf0XX_NS, rf0XX_EW = ref_map_slice(good_rf0XX)
