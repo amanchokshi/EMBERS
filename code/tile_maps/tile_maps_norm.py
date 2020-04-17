@@ -25,12 +25,9 @@ def good_maps(raw_tile):
     ref_map     = tile_data['ref_map'] 
     tile_map    = tile_data['tile_map']  
     
-    
+    tile_maps_norm = {p:[] for p in pointings}
+     
     for p in pointings:
-
-        print(p)
-        
-        # Good empty maps
 
         # This contains the data from all the good sat ref data
         ref_map_good = [[] for pixel in range(hp.nside2npix(nside))]
@@ -45,42 +42,36 @@ def good_maps(raw_tile):
                 ref_map_good[pix].extend(ref_map[p][sat][pix])
                 tile_map_good[pix].extend(tile_map[p][sat][pix])
         
-        print('1') 
-        # Here, we divide tile power by ref power in log space
-        ratio_map_good = [[] for pixel in range(hp.nside2npix(nside))]
-        for pixel in range(hp.nside2npix(nside)):
-            ratio_map_good[pixel].extend(np.subtract(tile_map_good[pixel], ref_map_good[pixel]))
-
-        print('2') 
-        ratio_map_med = [np.nanmedian(i) if len(i) > 0 else np.nan for i in ratio_map_good]
+        # Here, we divide tile power by ref power and multiply by the fee ref model in log space
+        tile_map_norm = [[] for pixel in range(hp.nside2npix(nside))]
         
-        print('3') 
-        ratio_map_mad = [mad(i) if len(i) > 0 else np.nan for i in ratio_map_good]
+        for pixel in range(hp.nside2npix(nside)):
+        
+            ratio = np.asarray(np.subtract(tile_map_good[pixel], ref_map_good[pixel]))
+            tile_map_norm[pixel].extend(ratio + ref_fee[pixel])
 
-        print('4') 
-        # Final tile map. Ratio map normalized by fee ref beam model
-        tile_map_norm = np.add(ratio_map_med, ref_fee)
+        tile_maps_norm[p].extend(tile_map_norm)
 
-        print('Yelp')
+
+    # Save map arrays to npz file
+    np.savez_compressed(f'{out_dir}/{tile}_{ref}_tile_maps.npz', **tile_maps_norm)
+
 
 if __name__=='__main__':
     
     import argparse
-    import matplotlib
-    matplotlib.use('Agg')
     from pathlib import Path
     import concurrent.futures
-    import matplotlib.pyplot as plt
-    
 
     parser = argparse.ArgumentParser(description="""
-        Plot healpix map of reference data
+        Extract the data from a list of 'good satellites' from the raw tile maps made my tile_maps.py. 
+        Divide the tile/ref beams and apply the FEE ref model.
         """)
     
-    parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/tile_maps/',
-            help='Output directory. Default=./../../outputs/tile_maps/')
+    parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/tile_maps/tile_maps_norm/',
+            help='Output directory. Default=./../../outputs/tile_maps/tile_maps_norm/')
     parser.add_argument('--map_dir', metavar='\b', default='./../../outputs/tile_maps/tile_maps_raw',
-            help='Output directory. Default=./../../outputs/tile_maps/tile_maps_raw')
+            help='Raw Map directory. Default=./../../outputs/tile_maps/tile_maps_raw')
     parser.add_argument('--ref_model', metavar='\b', default='../../outputs/reproject_ref/ref_dipole_models.npz',
             help='Healpix reference FEE model file. default=../../outputs/reproject_ref/ref_dipole_models.npz')
     parser.add_argument('--nside', metavar='\b', type=int,  default=32,help='Healpix Nside. Default = 32')
@@ -91,6 +82,9 @@ if __name__=='__main__':
     map_dir     = Path(args.map_dir)
     ref_model   = Path(args.ref_model)
     nside       = args.nside
+    
+    # make outpud dir
+    out_dir.mkdir(parents=True, exist_ok=True)
     
     # Good sats from which to make plots
     good_sats = [
@@ -104,14 +98,15 @@ if __name__=='__main__':
     
     # list of beam pointings
     pointings = ['0','2','4']
-    
+   
+    # list of all raw tile maps
     map_files = [item for item in map_dir.glob('*.npz')]
 
     # Parallization magic happens here
-    #with concurrent.futures.ProcessPoolExecutor() as executor:
-    #    results = executor.map(good_maps, map_files)
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(good_maps, map_files)
 
-    good_maps(map_files[0])
+    #good_maps(map_files[0])
 
 
 
