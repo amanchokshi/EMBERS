@@ -27,6 +27,8 @@ def good_maps(raw_tile):
     
     
     for p in pointings:
+
+        print(p)
         
         # Good empty maps
 
@@ -43,15 +45,19 @@ def good_maps(raw_tile):
                 ref_map_good[pix].extend(ref_map[p][sat][pix])
                 tile_map_good[pix].extend(tile_map[p][sat][pix])
         
+        print('1') 
         # Here, we divide tile power by ref power in log space
         ratio_map_good = [[] for pixel in range(hp.nside2npix(nside))]
-        for i in range(len(tile_map_good)):
-            ratio_map_good.extend(np.subtract(tile_map_good[i], ref_map_good[i]))
+        for pixel in range(hp.nside2npix(nside)):
+            ratio_map_good[pixel].extend(np.subtract(tile_map_good[pixel], ref_map_good[pixel]))
 
+        print('2') 
         ratio_map_med = [np.nanmedian(i) if len(i) > 0 else np.nan for i in ratio_map_good]
         
+        print('3') 
         ratio_map_mad = [mad(i) if len(i) > 0 else np.nan for i in ratio_map_good]
 
+        print('4') 
         # Final tile map. Ratio map normalized by fee ref beam model
         tile_map_norm = np.add(ratio_map_med, ref_fee)
 
