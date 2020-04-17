@@ -298,12 +298,13 @@ def project_tile_healpix(tile_pair):
                                                 az  = np.asarray(az)
 
                                                 # To convert from Alt/Az to θ/ϕ spherical coordinates
+                                                # ɸ is measured clockwise, from E, looking down
                                                 # θ = 90 - Alt
-                                                # ɸ = 180 - Az
+                                                # ɸ = Az - 90
 
                                                 # Healpix uses sperical coordinates
                                                 θ = np.pi/2 - alt
-                                                ɸ = np.pi - az
+                                                ɸ = az - np.pi/2
 
                                                 # Since we need to slice along NS & EW, and nside = 32 healpix does not 
                                                 # straight lines of pixels vertically or horizontally, but it does have
