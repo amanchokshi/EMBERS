@@ -367,7 +367,7 @@ python plot_sat_maps.py
 #### Satellite Maps
 <p float="left">
   <img src="./docs/23545_0_S08XX_rf0XX_passes.png" width="32%" />
-  <img src="./docs/23545_0_S08XX_rf0XX_passes.png" width="32%" />
+  <img src="./docs/28654_0_S08XX_rf0XX_passes.png" width="32%" />
   <img src="./docs/41188_0_S08XX_rf0XX_passes.png" width="32%" />
 </p>
 
