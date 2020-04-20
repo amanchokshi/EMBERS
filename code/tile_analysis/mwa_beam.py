@@ -10,11 +10,14 @@ import scipy.optimize as opt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from sys import path
-path.append('./../../../MWA_Beam/mwa_pb/mwa_pb')
+path.append('./../../../MWA_Beam/mwa_pb/')
 import primary_beam
 import beam_full_EE
 import mwa_tile
 MWAPY_H5PATH = "./../../../MWA_Beam/mwa_pb/mwa_pb/data/mwa_full_embedded_element_pattern.h5"
+
+path.append('./../tile_maps/plot_tile_maps.py')
+import plot_healpix
 
 
 def local_beam(za, az, freq, delays=None, zenithnorm=True, power=True, jones=False, interp=True, pixels_per_deg=5,amps=None):
@@ -23,6 +26,7 @@ def local_beam(za, az, freq, delays=None, zenithnorm=True, power=True, jones=Fal
           second 16 for the YY pol. values match what you find in the metafits file
         - amps are the amplitudes of each individual dipole, again in a 2x16,
             with XX first then YY'''
+
     tile=beam_full_EE.ApertureArray(MWAPY_H5PATH,freq)
     mybeam=beam_full_EE.Beam(tile, delays,amps)
     if interp:
@@ -72,11 +76,15 @@ if __name__=='__main__':
     nside       = args.nside
 
     # Empty array for model beam
-    beam_response = np.zeros(hp.nside2npix(nside))
-    
-    beam_zas,beam_azs = hp.pix2ang(nside, all_indexes)
-    beam_azs[beam_azs < 0] += 2*np.pi
-    beam_azs -= np.pi / 4.0
+    npix = hp.nside2npix(nside)
+    beam_response = np.zeros(npix)
+
+    # healpix indices above horizon
+    hp_above_horizon = np.arange(npix/2)
+
+    beam_zas,beam_azs = hp.pix2ang(nside, hp_above_horizon)
+    #beam_azs[beam_azs < 0] += 2*np.pi
+    #beam_azs -= np.pi / 4.0
     
     # S21 had a missing dipole, so need a different amplitude array for the model
     amps = np.ones((2,16))
@@ -88,10 +96,11 @@ if __name__=='__main__':
     response = response[0][0]
     
     # Stick in an array, convert to decibels, and noralise
-    beam_response[all_indexes] = response
+    beam_response[hp_above_horizon] = response
     decibel_beam = 10*np.log10(beam_response)
     normed_beam = decibel_beam - decibel_beam.max()
+
     
-    # Just plot it above 20 deg elevation
-    above_thresh = np.where(beam_zas <= 20.0*(np.pi/180.0))
+    plot_healpix(data_map=normed_beam, sub=(1,1,1), vmin=-40, vmax=0)
+    plt.show()
 
