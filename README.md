@@ -373,7 +373,7 @@ python plot_sat_maps.py
 
 These are three example sat maps. The first map has almost no data, so we don't use it in our final map. The other two show a lot of satellite passes / sky coverage, and we can almost make out the beam structure. The satellites will be included in out final "good maps". 
 
-With our list of good satellites, we can now proceed to extracting and analysing all our "good" data from the `./outputs/tile_maps/tile_maps_raw`. `tile_maps_norm.py`, extracts the good satellite reference and tile data. It divides tile power by refernce power, for each satellite pass, and them multiplies by the FEE reference beam model. This gives is the measured beam shape of the MWA tile, which are saved to `./outputs/tile_maps/tile_maps_norm/`.
+With our list of [ 17 ] good satellites, we can now proceed to extracting and analysing all our "good" data from the `./outputs/tile_maps/tile_maps_raw`. `tile_maps_norm.py`, extracts the good satellite reference and tile data. It divides tile power by refernce power, for each satellite pass, and them multiplies by the FEE reference beam model. This gives is the measured beam shape of the MWA tile, which are saved to `./outputs/tile_maps/tile_maps_norm/`.
 
 ```
 python tile_maps_norm.py
