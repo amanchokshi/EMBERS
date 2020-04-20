@@ -428,3 +428,13 @@ We now compare corresponding EW and NS slices of both reference antennas. The fo
 </p>
 
 
+&nbsp;
+### Tile Analysis
+
+In this section we analyse the tile maps we've made so far, by comparing them to the latest FEE simulated beam models of MWA tiles. To do this, we need an external library [https://github.com/MWATelescope/mwa_pb.git](https://github.com/MWATelescope/mwa_pb.git), and the raw FEE Beam model data which is stored on cerberus [http://cerberus.mwa128t.org]. We can set this up with `mwa_beam_setup.sh`, which clones the git repo into a `/MWA_Beam` directory at the same level as this `mwa-satellites` directory and downloads the beam data into `/MWA_Beam/mwa_pb/mwa_pb/data`.
+
+```
+cd ../tile_analysis
+
+source mwa_beam_setup.sh
+```
