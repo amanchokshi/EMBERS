@@ -11,6 +11,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from sys import path
 path.append('./../../../MWA_Beam/mwa_pb/')
+path.append('./../../../MWA_Beam/')
 import primary_beam
 import beam_full_EE
 import mwa_tile
