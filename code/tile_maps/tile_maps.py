@@ -339,8 +339,7 @@ def project_tile_healpix(tile_pair):
                     print(f'Missing {ref}_{tile}_{timestamp}_aligned.npz')
                     continue
 
-    ## Save map arrays to npz file
-    #np.savez_compressed(f'{out_dir}/{tile}_{ref}_healpix_map.npz', **tile_data)
+    # Sort data by satellites
 
     # list of all possible satellites
     sat_ids = list(norad_ids.values())
@@ -348,24 +347,12 @@ def project_tile_healpix(tile_pair):
     # create a dictionary, with the keys being sat_ids and the values being healpix maps of data from those sats
     # Fist level keys are pointings with dictionaty values
     # Second level keys are satellite ids with healpix map lists
-    #ratio_sat_data = {}
     ref_sat_data = {}
     tile_sat_data = {}
     time_sat_data = {}
 
     # loop over pointings for all maps
     for p in pointings:
-        
-        ###TODO hardcoded 12288
-        #diff_map   = tile_data['healpix_maps'][p]
-
-        ## Apply the fee model
-        #
-        #ratio_map = []
-
-        #for i in range(len(diff_map)):
-        #    ratio_map.append((np.asarray(diff_map[i]) + ref_fee_model[i]).tolist())
-        #ratio_map   = np.asarray(ratio_map)
         
         tile_map    = np.asarray(tile_data['tile_maps'][p])
         ref_map     = np.asarray(tile_data['ref_maps'][p])
@@ -397,7 +384,6 @@ def project_tile_healpix(tile_pair):
                 time_sat_data[p][s].append((np.asarray(time_map[i])[sat_idx]).tolist())
 
     # Save map arrays to npz file
-    #tile_sat_data = {'ratio_map':ratio_sat_data, 'ref_map':ref_sat_data, 'tile_map':tile_sat_data, 'time_map':time_sat_data}
     tile_sat_data = {'ref_map':ref_sat_data, 'tile_map':tile_sat_data, 'time_map':time_sat_data}
     np.savez_compressed(f'{out_dir}/{tile}_{ref}_sat_maps.npz', **tile_sat_data)
 
