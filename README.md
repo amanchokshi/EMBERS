@@ -329,7 +329,7 @@ python tile_pointings.py --help
 ### Tile Maps
 
 
-This section is where everything finally comes together.  We project the aligned satellite data onto healpix maps according to their ephemeris, using the channel maps to only project the good data. We use the power and noise threshold described in the satellite channel section. Signal which pass both thresholds are considered good, and their corresponding altitude and azimuth are determined from the ephem file. These are projected to a healpix map. The healpix map is rotated by (π/4), so that the cardinal axes (NS, EW), lie on rows of healpix pixels. This will be essential when we look at the profiles of the beam shape.This is done using `tile_maps.py` The resulting maps are stored in `.npz` files in the `./outputs/tile_maps/tile_map_data` directory. The data is stored as nested dictionaries.
+This section is where everything finally comes together.  We project the aligned satellite data onto healpix maps according to their ephemeris, using the channel maps to only project the good data. We use the power and noise threshold described in the satellite channel section. Signal which pass both thresholds are considered good, and their corresponding altitude and azimuth are determined from the ephem file. These are projected to a healpix map. This is done using `tile_maps.py` The resulting maps are stored in `.npz` files in the `./outputs/tile_maps/tile_maps_raw` directory. The data is stored as nested dictionaries.
 
 ```
 cd ../tile_maps/
@@ -341,10 +341,6 @@ The resulting `.npz` files have the following internal structure.
 
 ```
 data
-├── ratio_map                
-│   └── pointings            
-│       └── satellites            
-│           └── healpix maps            
 ├── ref_map                   
 │   └── pointings            
 │       └── satellites            
@@ -359,18 +355,37 @@ data
             └── healpix maps
 ```
 
-The highest level dictionary contains ratio, reference, tile and time maps. Within each of these, there are dictionaries for each of the telescope pointings:`0, 2, 4`. Within each of these, there are dictionaries for each satellite norad ID, which contain a healpix map of data from one satellite, in one pointing. This structure map seem complicated, but is very useful for diagnostic purposes, and determining where errors in the final tile maps come from. The time maps contain the times of every data point added to the above maps.
+The highest level dictionary contains reference, tile and time maps. Within each of these, there are dictionaries for each of the telescope pointings:`0, 2, 4`. Within which there are dictionaries for each satellite norad ID, which contain a healpix map of data from one satellite, in one pointing. This structure map seem complicated, but is very useful for diagnostic purposes, and determining where errors in the final tile maps come from. The time maps contain the times of every data point added to the above maps.
 
 
-We can now finally create some beam maps using
+Using `plot_sat_maps.py`, we can plot the sky coverage of each satellite. This is very useful in limiting the amount of "bad" data we add to our final maps. Some of the maps in `./outputs/tile_maps/sat_maps/` clearly show sparse coverage and weird power structure. Eyeballing these maps, we create a list of "good_sats", which we will use to make our good maps.
 
 ```
-python plot_healpix.py
+python plot_sat_maps.py
 ```
 
-This reads the healpix maps created by `tile_maps.py`, and creates two sets of maps. First, it creates a directory `../../outputs/tile_maps/sat_maps` where for each pointing of the telescope, it creates maps from individual satellite passes, from one representative tile. This enables up to see whether some satellites are adding anomalous data to our final maps. 
+#### Satellite Maps
+<p float="left">
+  <img src="./docs/23545_0_S08XX_rf0XX_passes.png" width="32%" />
+  <img src="./docs/23545_0_S08XX_rf0XX_passes.png" width="32%" />
+  <img src="./docs/41188_0_S08XX_rf0XX_passes.png" width="32%" />
+</p>
 
-Using the satellite maps, we choose the 17 best satellites, which have good coverage in the sky, and transimit at a constant power. Using these satellites, `plot_healpix.py` also creates `../../outputs/tile_maps/good_maps`, where good tile maps are created for each pointing, and for every tile. Error and count maps are also created at the same time.
+These are three example sat maps. The first map has almost no data, so we don't use it in our final map. The other two show a lot of satellite passes / sky coverage, and we can almost make out the beam structure. The satellites will be included in out final "good maps". 
+
+With our list of good satellites, we can now proceed to extracting and analysing all our "good" data from the `./outputs/tile_maps/tile_maps_raw`. `tile_maps_norm.py`, extracts the good satellite reference and tile data. It divides tile power by refernce power, for each satellite pass, and them multiplies by the FEE reference beam model. This gives is the measured beam shape of the MWA tile, which are saved to `./outputs/tile_maps/tile_maps_norm/`.
+
+```
+python tile_maps_norm.py
+```
+
+
+We can now finally create some beam maps using `plot_tile_maps.py`, which caluclates the median of sat passes in each healpix pixel, and scales the zenith to 0dB. Maps are saved to `../../outputs/tile_maps/good_maps`, where good tile maps are created for each pointing, and for every tile. Error and count maps are also created at the same time.
+
+```
+python plot_tile_maps.py
+```
+
 
 #### Zenith Maps
 <p float="left">
