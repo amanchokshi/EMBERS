@@ -90,7 +90,7 @@ if __name__=='__main__':
     #beam_azs[beam_azs < 0] += 2*np.pi
     #beam_azs -= np.pi / 4.0
    
-    d = all_grid_points[4][-1]
+    d = all_grid_points[0][-1]
 
     # S21 had a missing dipole, so need a different amplitude array for the model
     amps = np.ones((2,16))
@@ -109,5 +109,5 @@ if __name__=='__main__':
 
     
     plot_healpix(data_map=normed_beam, sub=(1,1,1), vmin=-40, vmax=0)
-    plt.savefig('beam_4.png')
+    plt.savefig('beam.png')
 
