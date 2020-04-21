@@ -107,10 +107,10 @@ if __name__=='__main__':
     map_files = [item for item in map_dir.glob('*.npz')]
 
     # Parallization magic happens here
-    #with concurrent.futures.ProcessPoolExecutor() as executor:
-    #    results = executor.map(good_maps, map_files)
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(good_maps, map_files)
 
-    good_maps(map_files[0])
+    #good_maps(map_files[0])
 
 
 
