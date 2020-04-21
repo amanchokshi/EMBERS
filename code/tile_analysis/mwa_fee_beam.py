@@ -66,6 +66,7 @@ if __name__=='__main__':
     from pathlib import Path
     sys.path.append('../decode_rf_data')
     from colormap import jade
+    import matplotlib.pyplot as plt
     
     # Custom spectral colormap
     jade, _ = jade()
@@ -118,8 +119,8 @@ if __name__=='__main__':
         normed_beam = decibel_beam - decibel_beam.max()
         fee_beam[p] = normed_beam
       
-        plt.figure(figsize=(8,9))
-        plt.tight_layout()
+        fig = plt.figure(figsize=(9,10))
+        fig.suptitle(f'MWA FEE MAP @ pointing [{p}]', fontsize=16, y=1.0)
         plot_healpix(data_map=normed_beam, sub=(1,1,1), cmap=jade, vmin=-40, vmax=0)
         plt.savefig(f'{out_dir}/mwa_fee_beam_{p}.png')
         plt.close()
