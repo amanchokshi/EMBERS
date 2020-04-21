@@ -9,16 +9,16 @@ from os import environ
 import scipy.optimize as opt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from sys import path
-path.append('./../../../MWA_Beam/mwa_pb/')
-path.append('./../../../MWA_Beam/')
-import primary_beam
-import beam_full_EE
-import mwa_tile
+import sys
+sys.path.append('./../../../MWA_Beam/mwa_pb/')
+from mwa_pb import primary_beam
+from mwa_pb import beam_full_EE
+from mwa_pb import mwa_tile
+
 MWAPY_H5PATH = "./../../../MWA_Beam/mwa_pb/mwa_pb/data/mwa_full_embedded_element_pattern.h5"
 
-path.append('./../tile_maps/plot_tile_maps.py')
-import plot_healpix
+sys.path.append('../tile_maps')
+from plot_tile_maps import plot_healpix
 
 
 def local_beam(za, az, freq, delays=None, zenithnorm=True, power=True, jones=False, interp=True, pixels_per_deg=5,amps=None):
@@ -73,7 +73,7 @@ if __name__=='__main__':
     
     args = parser.parse_args()
     
-    out_dir     = Path(args.outdir)
+    out_dir     = Path(args.out_dir)
     nside       = args.nside
 
     # Empty array for model beam
@@ -81,9 +81,12 @@ if __name__=='__main__':
     beam_response = np.zeros(npix)
 
     # healpix indices above horizon
-    hp_above_horizon = np.arange(npix/2)
+    above_horizon = range(int(npix/2))
 
-    beam_zas,beam_azs = hp.pix2ang(nside, hp_above_horizon)
+    #print(hp_above_horizon)
+    #print(type(hp_above_horizon))
+
+    beam_zas,beam_azs = hp.pix2ang(nside, above_horizon)
     #beam_azs[beam_azs < 0] += 2*np.pi
     #beam_azs -= np.pi / 4.0
     
@@ -97,11 +100,11 @@ if __name__=='__main__':
     response = response[0][0]
     
     # Stick in an array, convert to decibels, and noralise
-    beam_response[hp_above_horizon] = response
+    beam_response[above_horizon] = response
     decibel_beam = 10*np.log10(beam_response)
     normed_beam = decibel_beam - decibel_beam.max()
 
     
-    plot_healpix(data_map=normed_beam, sub=(1,1,1), vmin=-40, vmax=0)
+    plot_healpix(data_map=normed_beam, sub=(1,1,1))
     plt.show()
 
