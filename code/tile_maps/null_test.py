@@ -11,7 +11,7 @@ def hp_slices_horizon(nside=None):
     θ, ɸ = hp.pix2ang(nside, hp_indices)
 
     # healpix indices above the horizon
-    above_horizon_indices = np.where(θ <= np.radians(80))[0]
+    above_horizon_indices = np.where(θ <= np.radians(85))[0]
     
     # pixel coords above the horizon
     ɸ_above_horizon = ɸ[above_horizon_indices]
@@ -231,6 +231,8 @@ def plt_slice(
     #ax.set_ylim(bottom=-30)
     #ax.set_xlabel('Zenith Angle (degrees)')
     ax.legend()
+    ax.set_xlim([-90,90])
+    ax.set_ylim([-32,12])
 
     divider = make_axes_locatable(ax)
     dax = divider.append_axes("bottom", size="30%", pad=0.1)
@@ -264,6 +266,7 @@ def plt_null_test(
     
     ax.plot(zen_angle,del_fit, color='#ff8264', linewidth=1.2, alpha=0.9, label=fit_label)
     
+    ax.set_xlim([-90,90])
     ax.set_ylim([-10,10])
     ax.set_ylabel('Power (dB)')
     ax.set_xlabel('Zenith Angle (degrees)')
@@ -315,10 +318,10 @@ if __name__=='__main__':
     out_dir.mkdir(parents=True, exist_ok=True)
     
     ref_tiles = [
-            'S36XX_rf0XX_sat_maps.npz', 
-            'S36YY_rf0YY_sat_maps.npz', 
-            'S36XX_rf1XX_sat_maps.npz', 
-            'S36YY_rf1YY_sat_maps.npz'
+            'S08XX_rf0XX_sat_maps.npz', 
+            'S08YY_rf0YY_sat_maps.npz', 
+            'S08XX_rf1XX_sat_maps.npz', 
+            'S08YY_rf1YY_sat_maps.npz'
             ]
     good_rf0XX = rotate(nside, angle=+(1*np.pi)/4.0, healpix_array=np.asarray(good_maps(ref_tiles[0])))
     good_rf0YY = rotate(nside, angle=+(1*np.pi)/4.0, healpix_array=np.asarray(good_maps(ref_tiles[1])))
