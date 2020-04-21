@@ -13,6 +13,7 @@ MWAPY_H5PATH = "./../../../MWA_Beam/mwa_pb/data/mwa_full_embedded_element_patter
 from mwa_pb import primary_beam
 from mwa_pb import beam_full_EE
 from mwa_pb import mwa_tile
+from mwa_pb.mwa_sweet_spots import all_grid_points
 
 
 import sys
@@ -88,14 +89,17 @@ if __name__=='__main__':
     beam_zas,beam_azs = hp.pix2ang(nside, above_horizon)
     #beam_azs[beam_azs < 0] += 2*np.pi
     #beam_azs -= np.pi / 4.0
-    
+   
+    d = all_grid_points[4][-1]
+
     # S21 had a missing dipole, so need a different amplitude array for the model
     amps = np.ones((2,16))
     #if AUT == 'S21XX':
     #    amps[0,5] = 0
 
     # Make beam response
-    response = local_beam([list(beam_zas)], [list(beam_azs)], freq=137.85e+6, delays=np.zeros((2,16)), zenithnorm=True, power=True, interp=False, amps=amps)
+    response = local_beam([list(beam_zas)], [list(beam_azs)], freq=137.85e+6, delays=np.array([d, d]), zenithnorm=True, power=True, interp=False, amps=amps)
+    #response = local_beam([list(beam_zas)], [list(beam_azs)], freq=137.85e+6, delays=np.zeros((2,16)), zenithnorm=True, power=True, interp=False, amps=amps)
     response = response[0][0]
     
     # Stick in an array, convert to decibels, and noralise
@@ -104,6 +108,6 @@ if __name__=='__main__':
     normed_beam = decibel_beam - decibel_beam.max()
 
     
-    plot_healpix(data_map=normed_beam, sub=(1,1,1))
+    plot_healpix(data_map=normed_beam, sub=(1,1,1), vmin=-40, vmax=0)
     plt.savefig('beam.png')
 
