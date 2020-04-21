@@ -6,6 +6,62 @@ from scipy.stats import median_absolute_deviation as mad
 sys.path.append('../sat_ephemeris')
 from sat_ids import norad_ids
 
+#def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None):
+#    '''Yeesh do some healpix magic to plot the thing'''
+#    
+#    # Healpix plotting script adapted from Dr. Jack Line's code
+#    # https://github.com/JLBLine/MWA_ORBCOMM
+#    
+#    # Disable cryptic healpy warnings. Can't figure out where they originate
+#    import warnings
+#    warnings.filterwarnings("ignore", category=RuntimeWarning) 
+#    
+#    if vmin == None:
+#        if cmap == None:
+#            half_sky = hp.orthview(
+#                    map=data_map,coord='E',
+#                    half_sky=True,xsize=400,
+#                    title=title,rot=(0,90,-90), flip='geo',
+#                    sub=sub,notext=True, return_projected_map=True)
+#        else:
+#            half_sky = hp.orthview(
+#                    map=data_map,coord='E',
+#                    half_sky=True,xsize=400, flip='geo',
+#                    title=title,rot=(0,90,-90), sub=sub,cmap=cmap,
+#                    notext=True,return_projected_map=True)
+#    else:
+#        if cmap == None:
+#            half_sky = hp.orthview(
+#                    map=data_map,coord='E'
+#                    ,half_sky=True,xsize=400,rot=(0,90,-90), flip='geo',
+#                    title=title,sub=sub,min=vmin,max=vmax,
+#                    notext=True,return_projected_map=True)
+#        else:
+#            half_sky = hp.orthview(
+#                    map=data_map,coord='E',
+#                    half_sky=True,xsize=400,rot=(0,90,-90), flip='geo',
+#                    title=title,sub=sub,min=vmin,max=vmax,
+#                    cmap=cmap,notext=True,return_projected_map=True)
+#
+#    hp.graticule(dpar=10,coord='E',color='k',alpha=0.3,dmer=45)
+#   
+#    # Altitude grid
+#    hp.projtext(0.0*(np.pi/180.0), 0.0, '0', coord='E')
+#    hp.projtext(30.0*(np.pi/180.0), 0.0, '30', coord='E')
+#    hp.projtext(60.0*(np.pi/180.0), 0.0, '60', coord='E')
+#
+#    # Azimuth grid
+#    hp.projtext(80.0*(np.pi/180.0), 000.0*(np.pi/180.0), r'$0^\circ$',   coord='E',color='w', fontsize=10, horizontalalignment='right')
+#    hp.projtext(80.0*(np.pi/180.0), 090.0*(np.pi/180.0), r'$90^\circ$',  coord='E',color='w', fontsize=10, verticalalignment='top')
+#    hp.projtext(80.0*(np.pi/180.0), 180.0*(np.pi/180.0), r'$180^\circ$', coord='E',color='w', fontsize=10)
+#    hp.projtext(80.0*(np.pi/180.0), 270.0*(np.pi/180.0), r'$270^\circ$', coord='E',color='w', fontsize=10)
+#    
+#    # NSEW 
+#    hp.projtext(90.0*(np.pi/180.0), 000.0*(np.pi/180.0), r'$E  $', coord='E',color='k', fontsize=14)
+#    hp.projtext(90.0*(np.pi/180.0), 090.0*(np.pi/180.0), r'$N  $', coord='E',color='k', fontsize=14)
+#    hp.projtext(90.0*(np.pi/180.0), 180.0*(np.pi/180.0), r'$W  $', coord='E',color='k', fontsize=14, horizontalalignment='right')
+#    hp.projtext(90.0*(np.pi/180.0), 270.0*(np.pi/180.0), r'$S  $', coord='E',color='k', fontsize=14, verticalalignment='top')
+
 def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None):
     '''Yeesh do some healpix magic to plot the thing'''
     
@@ -21,46 +77,46 @@ def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None
             half_sky = hp.orthview(
                     map=data_map,coord='E',
                     half_sky=True,xsize=400,
-                    title=title,rot=(0,90,-90), flip='geo',
+                    title=title,rot=(0,90,90),
                     sub=sub,notext=True, return_projected_map=True)
         else:
             half_sky = hp.orthview(
                     map=data_map,coord='E',
-                    half_sky=True,xsize=400, flip='geo',
-                    title=title,rot=(0,90,-90), sub=sub,cmap=cmap,
+                    half_sky=True,xsize=400,
+                    title=title,rot=(0,90,90), sub=sub,cmap=cmap,
                     notext=True,return_projected_map=True)
     else:
         if cmap == None:
             half_sky = hp.orthview(
-                    map=data_map,coord='E'
-                    ,half_sky=True,xsize=400,rot=(0,90,-90), flip='geo',
+                    map=data_map,coord='E',
+                    half_sky=True,xsize=400,rot=(0,90,90),
                     title=title,sub=sub,min=vmin,max=vmax,
                     notext=True,return_projected_map=True)
         else:
             half_sky = hp.orthview(
                     map=data_map,coord='E',
-                    half_sky=True,xsize=400,rot=(0,90,-90), flip='geo',
+                    half_sky=True,xsize=400,rot=(0,90,90),
                     title=title,sub=sub,min=vmin,max=vmax,
                     cmap=cmap,notext=True,return_projected_map=True)
 
     hp.graticule(dpar=10,coord='E',color='k',alpha=0.3,dmer=45)
    
     # Altitude grid
-    hp.projtext(0.0*(np.pi/180.0), 0.0, '0', coord='E')
-    hp.projtext(30.0*(np.pi/180.0), 0.0, '30', coord='E')
-    hp.projtext(60.0*(np.pi/180.0), 0.0, '60', coord='E')
+    hp.projtext(00.0*(np.pi/180.0), 315.0*(np.pi/180), '0', coord='E')
+    hp.projtext(30.0*(np.pi/180.0), 315.0*(np.pi/180), '30', coord='E')
+    hp.projtext(60.0*(np.pi/180.0), 315.0*(np.pi/180), '60', coord='E')
 
     # Azimuth grid
-    hp.projtext(80.0*(np.pi/180.0), 000.0*(np.pi/180.0), r'$0^\circ$',   coord='E',color='w', fontsize=10, horizontalalignment='right')
-    hp.projtext(80.0*(np.pi/180.0), 090.0*(np.pi/180.0), r'$90^\circ$',  coord='E',color='w', fontsize=10, verticalalignment='top')
-    hp.projtext(80.0*(np.pi/180.0), 180.0*(np.pi/180.0), r'$180^\circ$', coord='E',color='w', fontsize=10)
-    hp.projtext(80.0*(np.pi/180.0), 270.0*(np.pi/180.0), r'$270^\circ$', coord='E',color='w', fontsize=10)
+    hp.projtext(75.0*(np.pi/180.0), 000.0*(np.pi/180.0), r'$0^\circ$',   coord='E',color='w', fontsize=10, horizontalalignment='right')
+    hp.projtext(75.0*(np.pi/180.0), 090.0*(np.pi/180.0), r'$90^\circ$',  coord='E',color='w', fontsize=10)
+    hp.projtext(75.0*(np.pi/180.0), 180.0*(np.pi/180.0), r'$180^\circ$', coord='E',color='w', fontsize=10)
+    hp.projtext(75.0*(np.pi/180.0), 270.0*(np.pi/180.0), r'$270^\circ$', coord='E',color='w', fontsize=10, verticalalignment='top')
     
     # NSEW 
-    hp.projtext(90.0*(np.pi/180.0), 000.0*(np.pi/180.0), r'$E  $', coord='E',color='k', fontsize=14)
-    hp.projtext(90.0*(np.pi/180.0), 090.0*(np.pi/180.0), r'$N  $', coord='E',color='k', fontsize=14)
+    hp.projtext(90.0*(np.pi/180.0), 000.0*(np.pi/180.0), r'$E  $', coord='E',color='k', fontsize=14, horizontalalignment='left')
+    hp.projtext(90.0*(np.pi/180.0), 090.0*(np.pi/180.0), r'$S  $', coord='E',color='k', fontsize=14, verticalalignment='top')
     hp.projtext(90.0*(np.pi/180.0), 180.0*(np.pi/180.0), r'$W  $', coord='E',color='k', fontsize=14, horizontalalignment='right')
-    hp.projtext(90.0*(np.pi/180.0), 270.0*(np.pi/180.0), r'$S  $', coord='E',color='k', fontsize=14, verticalalignment='top')
+    hp.projtext(90.0*(np.pi/180.0), 270.0*(np.pi/180.0), r'$N  $', coord='E',color='k', fontsize=14, verticalalignment='bottom')
 
 
 def plt_good_maps(f):
