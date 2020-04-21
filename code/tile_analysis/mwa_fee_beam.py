@@ -52,7 +52,7 @@ def local_beam(za, az, freq, delays=None, zenithnorm=True, power=True, jones=Fal
     #Use mwa_tile makeUnpolInstrumentalResponse because we have swapped axes
     vis = mwa_tile.makeUnpolInstrumentalResponse(j,j)
     if not power:
-        return (sqrt(vis[:,:,0,0].real),sqrt(vis[:,:,1,1].real))
+        return (np.sqrt(vis[:,:,0,0].real),np.sqrt(vis[:,:,1,1].real))
     else:
         return (vis[:,:,0,0].real,vis[:,:,1,1].real)
 
@@ -63,6 +63,12 @@ if __name__=='__main__':
 
     import argparse
     from pathlib import Path
+    import sys
+    sys.path.append('../decode_rf_data')
+    from colormap import jade
+    
+    # Custom spectral colormap
+    jade, _ = jade()
 
     parser = argparse.ArgumentParser(description="""
         Create Simulated MWA Beam response maps using mwapy
@@ -76,38 +82,40 @@ if __name__=='__main__':
     out_dir     = Path(args.out_dir)
     nside       = args.nside
 
-    # Empty array for model beam
-    npix = hp.nside2npix(nside)
-    beam_response = np.zeros(npix)
 
-    # healpix indices above horizon
-    above_horizon = range(int(npix/2))
+    pointings = ['0', '2', '4']
 
-    #print(hp_above_horizon)
-    #print(type(hp_above_horizon))
+    
+    fee_beam = {}
+    for p in pointings:
 
-    beam_zas,beam_azs = hp.pix2ang(nside, above_horizon)
-    #beam_azs[beam_azs < 0] += 2*np.pi
-    #beam_azs -= np.pi / 4.0
+        # Empty array for model beam
+        npix = hp.nside2npix(nside)
+        beam_response = np.zeros(npix)
+
+        # healpix indices above horizon
+        # convert to zenith angle and azimuth
+        above_horizon = range(int(npix/2))
+        beam_zas,beam_azs = hp.pix2ang(nside, above_horizon)
    
-    d = all_grid_points[0][-1]
+        delay_p = np.array([all_grid_points[int(p)][-1], all_grid_points[int(p)][-1]])
 
-    # S21 had a missing dipole, so need a different amplitude array for the model
-    amps = np.ones((2,16))
-    #if AUT == 'S21XX':
-    #    amps[0,5] = 0
+        # S21 had a missing dipole, so need a different amplitude array for the model
+        amps = np.ones((2,16))
+        #if AUT == 'S21XX':
+        #    amps[0,5] = 0
 
-    # Make beam response
-    response = local_beam([list(beam_zas)], [list(beam_azs)], freq=137.85e+6, delays=np.array([d, d]), zenithnorm=True, power=True, interp=False, amps=amps)
-    #response = local_beam([list(beam_zas)], [list(beam_azs)], freq=137.85e+6, delays=np.zeros((2,16)), zenithnorm=True, power=True, interp=False, amps=amps)
-    response = response[0][0]
-    
-    # Stick in an array, convert to decibels, and noralise
-    beam_response[above_horizon] = response
-    decibel_beam = 10*np.log10(beam_response)
-    normed_beam = decibel_beam - decibel_beam.max()
-
-    
-    plot_healpix(data_map=normed_beam, sub=(1,1,1), vmin=-40, vmax=0)
-    plt.savefig('beam.png')
+        # Make beam response
+        response = local_beam([list(beam_zas)], [list(beam_azs)], freq=137.85e+6, delays=delay_p, zenithnorm=True, power=True, interp=False, amps=amps)
+        response = response[0][0]
+        
+        # Stick in an array, convert to decibels, and noralise
+        beam_response[above_horizon] = response
+        decibel_beam = 10*np.log10(beam_response)
+        normed_beam = decibel_beam - decibel_beam.max()
+        fee_beam[p] = normed_beam
+        
+        plot_healpix(data_map=normed_beam, sub=(1,1,1), cmap=jade, vmin=-40, vmax=0)
+        plt.savefig(f'beam_{p}.png')
+        plt.close()
 
