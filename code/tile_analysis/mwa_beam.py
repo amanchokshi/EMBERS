@@ -9,14 +9,13 @@ from os import environ
 import scipy.optimize as opt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-import sys
-sys.path.append('./../../../MWA_Beam/mwa_pb/')
+MWAPY_H5PATH = "./../../../MWA_Beam/mwa_pb/data/mwa_full_embedded_element_pattern.h5"
 from mwa_pb import primary_beam
 from mwa_pb import beam_full_EE
 from mwa_pb import mwa_tile
 
-MWAPY_H5PATH = "./../../../MWA_Beam/mwa_pb/mwa_pb/data/mwa_full_embedded_element_pattern.h5"
 
+import sys
 sys.path.append('../tile_maps')
 from plot_tile_maps import plot_healpix
 
@@ -106,5 +105,5 @@ if __name__=='__main__':
 
     
     plot_healpix(data_map=normed_beam, sub=(1,1,1))
-    plt.show()
+    plt.savefig('beam.png')
 
