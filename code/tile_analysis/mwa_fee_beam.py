@@ -61,9 +61,9 @@ def local_beam(za, az, freq, delays=None, zenithnorm=True, power=True, jones=Fal
 
 if __name__=='__main__':
 
+    import sys
     import argparse
     from pathlib import Path
-    import sys
     sys.path.append('../decode_rf_data')
     from colormap import jade
     
@@ -81,6 +81,9 @@ if __name__=='__main__':
     
     out_dir     = Path(args.out_dir)
     nside       = args.nside
+    
+    # make output directory if it doesn't exist
+    Path(out_dir).mkdir(parents=True, exist_ok=True)
 
 
     pointings = ['0', '2', '4']
@@ -116,6 +119,9 @@ if __name__=='__main__':
         fee_beam[p] = normed_beam
         
         plot_healpix(data_map=normed_beam, sub=(1,1,1), cmap=jade, vmin=-40, vmax=0)
-        plt.savefig(f'beam_{p}.png')
+        plt.savefig(f'{out_dir}/mwa_fee_beam_{p}.png')
         plt.close()
+
+    np.savez_compressed(f'{out_dir}/mwa_fee_beam.npz', **fee_beam)
+
 
