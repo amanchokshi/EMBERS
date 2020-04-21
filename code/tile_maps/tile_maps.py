@@ -286,39 +286,19 @@ def project_tile_healpix(tile_pair):
                                             
                                                 ref_power, tile_power, alt, az, times = sat_data
 
-                                                # DIVIDE OUT SATS
-                                                # Here we divide satellite signal by reference signal
-                                                # In log space, this is subtraction
-                                                
-                                                #pass_power = tile_power - ref_power
 
                                                 # Altitude is in deg while az is in radians
                                                 # convert alt to radians
+                                                # za - zenith angle
                                                 alt = np.radians(alt)
+                                                za = np.pi/2 - alt
                                                 az  = np.asarray(az)
 
-                                                # To convert from Alt/Az to θ/ϕ spherical coordinates
-                                                # ɸ is measured clockwise, from E, looking down
-                                                # θ = 90 - Alt
-                                                # ɸ = Az - 90
-
-                                                # Healpix uses sperical coordinates
-                                                θ = np.pi/2 - alt
-                                                ɸ = az - np.pi/2
-
-                                                # Since we need to slice along NS & EW, and nside = 32 healpix does not 
-                                                # straight lines of pixels vertically or horizontally, but it does have
-                                                # them diagonally. We rotate ɸ by 45° to be able to slice NS & EW
-                                                
-                                                #ɸ_rot = ɸ + (np.pi / 4)
 
                                                 # Now convert to healpix coordinates
-                                                healpix_index = hp.ang2pix(nside,θ, ɸ)
-                                                        
-                                                # Append channel power to healpix map
-                                                #for i in range(len(healpix_index)):
-                                                #    tile_data['healpix_maps'][f'{point}'][healpix_index[i]].append(pass_power[i])
-                                                 
+                                                #healpix_index = hp.ang2pix(nside,θ, ɸ)
+                                                healpix_index = hp.ang2pix(nside, za, az)
+                                                
                                                 # Append channel power to ref healpix map
                                                 for i in range(len(healpix_index)):
                                                     tile_data['ref_maps'][f'{point}'][healpix_index[i]].append(ref_power[i])
@@ -488,13 +468,13 @@ if __name__=='__main__':
     Path(out_dir).mkdir(parents=True, exist_ok=True)
     sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
-#    for tile_pair in tile_pairs:
-#        project_tile_healpix(tile_pair)
-#        break
+    for tile_pair in tile_pairs:
+        project_tile_healpix(tile_pair)
+        break
         
     # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(project_tile_healpix, tile_pairs)
+    #with concurrent.futures.ProcessPoolExecutor() as executor:
+    #    results = executor.map(project_tile_healpix, tile_pairs)
     
 
 
