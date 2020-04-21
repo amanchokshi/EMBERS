@@ -117,7 +117,9 @@ if __name__=='__main__':
         decibel_beam = 10*np.log10(beam_response)
         normed_beam = decibel_beam - decibel_beam.max()
         fee_beam[p] = normed_beam
-        
+      
+        plt.figure(figsize=(8,9))
+        plt.tight_layout()
         plot_healpix(data_map=normed_beam, sub=(1,1,1), cmap=jade, vmin=-40, vmax=0)
         plt.savefig(f'{out_dir}/mwa_fee_beam_{p}.png')
         plt.close()
