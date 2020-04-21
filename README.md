@@ -438,3 +438,13 @@ cd ../tile_analysis
 
 source mwa_beam_setup.sh
 ```
+
+We can then use `mwa_fee_beam.py` to make simulated FEE beam maps at the 3 pointings of interest. This created plots and a `.npz` file with the three beam maps in the `/outputs/tile_analysis/FEE_maps directory`.
+
+
+#### MWA FEE Beam Maps
+<p float="left">
+  <img src="./docs/mwa_fee_beam_4.png" width="32%" />
+  <img src="./docs/mwa_fee_beam_0.png" width="32%" />
+  <img src="./docs/mwa_fee_beam_2.png" width="32%" />
+</p>
