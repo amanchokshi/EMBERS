@@ -109,5 +109,5 @@ if __name__=='__main__':
 
     
     plot_healpix(data_map=normed_beam, sub=(1,1,1), vmin=-40, vmax=0)
-    plt.savefig('beam.png')
+    plt.savefig('beam_4.png')
 
