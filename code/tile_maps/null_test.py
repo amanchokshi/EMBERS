@@ -11,7 +11,7 @@ def hp_slices_horizon(nside=None):
     θ, ɸ = hp.pix2ang(nside, hp_indices)
 
     # healpix indices above the horizon
-    above_horizon_indices = np.where(θ <= np.radians(85))[0]
+    above_horizon_indices = np.where(θ <= np.radians(80))[0]
     
     # pixel coords above the horizon
     ɸ_above_horizon = ɸ[above_horizon_indices]
@@ -21,10 +21,10 @@ def hp_slices_horizon(nside=None):
 
     # pixel indices along N, E, S, W slices
     # order the indices such that they proceed from N -> S or E -> W
-    e_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) ==  45)[0], reverse=True)
-    s_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 135)[0])
-    w_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 225)[0])
-    n_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 315)[0], reverse=True)
+    n_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) ==  45)[0], reverse=True)
+    e_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 135)[0], reverse=True)
+    s_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 225)[0])
+    w_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 315)[0])
 
     NS_indices.extend(n_slice)
     NS_indices.extend(s_slice)
@@ -349,8 +349,8 @@ if __name__=='__main__':
     beam_YY = ref_fee_model['YY']
    
     # Rotate beam models by pi/4 to match rotation of data
-    rotated_XX = rotate(nside, angle=+(1*np.pi)/4.0,healpix_array=beam_XX)
-    rotated_YY = rotate(nside, angle=+(1*np.pi)/4.0,healpix_array=beam_YY)
+    rotated_XX = rotate(nside, angle=-(1*np.pi)/4.0,healpix_array=beam_XX)
+    rotated_YY = rotate(nside, angle=-(1*np.pi)/4.0,healpix_array=beam_YY)
     
     # These plots show that the pi/4 rotation was correct
     #plot_healpix(data_map=rotated_XX,sub=(1,1,1), cmap=cmap, vmin=-40, vmax=-20)
