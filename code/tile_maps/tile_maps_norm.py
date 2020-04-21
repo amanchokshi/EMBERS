@@ -1,6 +1,7 @@
 import sys
 import numpy as np
 import healpy as hp
+from null_test import rotate
 from scipy.stats import median_absolute_deviation as mad
 
 
@@ -13,11 +14,14 @@ def good_maps(raw_tile):
     tile, ref, _, _ = f_name.split('_')
     
     # Load reference FEE model
+    # Rotate the fee models by -pi/4 to move model from spherical (E=0) to Alt/Az (N=0)
     ref_fee_model = np.load(ref_model, allow_pickle=True)
     if 'XX' in tile:
         ref_fee = ref_fee_model['XX']
+        rotated_fee = rotate(nside, angle=-(1*np.pi)/2.0,healpix_array=ref_fee)
     else:
         ref_fee = ref_fee_model['YY']
+        rotated_fee = rotate(nside, angle=-(1*np.pi)/2.0,healpix_array=ref_fee)
    
     # load data from map .npz file
     tile_data   = np.load(raw_tile, allow_pickle=True)
@@ -48,7 +52,7 @@ def good_maps(raw_tile):
         for pixel in range(hp.nside2npix(nside)):
         
             ratio = np.asarray(np.subtract(tile_map_good[pixel], ref_map_good[pixel]))
-            tile_map_norm[pixel].extend(ratio + ref_fee[pixel])
+            tile_map_norm[pixel].extend(ratio + rotated_fee[pixel])
 
         tile_maps_norm[p].extend(tile_map_norm)
 
@@ -103,10 +107,10 @@ if __name__=='__main__':
     map_files = [item for item in map_dir.glob('*.npz')]
 
     # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(good_maps, map_files)
+    #with concurrent.futures.ProcessPoolExecutor() as executor:
+    #    results = executor.map(good_maps, map_files)
 
-    #good_maps(map_files[0])
+    good_maps(map_files[0])
 
 
 
