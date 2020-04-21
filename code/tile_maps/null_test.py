@@ -139,7 +139,7 @@ def ref_map_slice(good_map):
 
 
 # rotate func written by Jack Line
-def rotate(angle=None,healpix_array=None,savetag=None,flip=False):
+def rotate(nside, angle=None,healpix_array=None,savetag=None,flip=False):
     '''Takes in a healpix array, rotates it by the desired angle, and saves it.
     Optionally flip the data, changes east-west into west-east because
     astronomy'''
@@ -320,10 +320,10 @@ if __name__=='__main__':
             'S36XX_rf1XX_sat_maps.npz', 
             'S36YY_rf1YY_sat_maps.npz'
             ]
-    good_rf0XX = rotate(angle=+(1*np.pi)/4.0, healpix_array=np.asarray(good_maps(ref_tiles[0])))
-    good_rf0YY = rotate(angle=+(1*np.pi)/4.0, healpix_array=np.asarray(good_maps(ref_tiles[1])))
-    good_rf1XX = rotate(angle=+(1*np.pi)/4.0, healpix_array=np.asarray(good_maps(ref_tiles[2])))
-    good_rf1YY = rotate(angle=+(1*np.pi)/4.0, healpix_array=np.asarray(good_maps(ref_tiles[3])))
+    good_rf0XX = rotate(nside, angle=+(1*np.pi)/4.0, healpix_array=np.asarray(good_maps(ref_tiles[0])))
+    good_rf0YY = rotate(nside, angle=+(1*np.pi)/4.0, healpix_array=np.asarray(good_maps(ref_tiles[1])))
+    good_rf1XX = rotate(nside, angle=+(1*np.pi)/4.0, healpix_array=np.asarray(good_maps(ref_tiles[2])))
+    good_rf1YY = rotate(nside, angle=+(1*np.pi)/4.0, healpix_array=np.asarray(good_maps(ref_tiles[3])))
 
     # NS, EW slices of all four reference tiles 
     rf0XX_NS, rf0XX_EW = ref_map_slice(good_rf0XX)
@@ -349,8 +349,8 @@ if __name__=='__main__':
     beam_YY = ref_fee_model['YY']
    
     # Rotate beam models by pi/4 to match rotation of data
-    rotated_XX = rotate(angle=+(1*np.pi)/4.0,healpix_array=beam_XX)
-    rotated_YY = rotate(angle=+(1*np.pi)/4.0,healpix_array=beam_YY)
+    rotated_XX = rotate(nside, angle=+(1*np.pi)/4.0,healpix_array=beam_XX)
+    rotated_YY = rotate(nside, angle=+(1*np.pi)/4.0,healpix_array=beam_YY)
     
     # These plots show that the pi/4 rotation was correct
     #plot_healpix(data_map=rotated_XX,sub=(1,1,1), cmap=cmap, vmin=-40, vmax=-20)
