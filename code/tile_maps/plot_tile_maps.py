@@ -1,6 +1,7 @@
 import sys
 import numpy as np
 import healpy as hp
+from mwa_pb.mwa_sweet_spots import all_grid_points
 from scipy.stats import median_absolute_deviation as mad
 
 sys.path.append('../sat_ephemeris')
@@ -70,13 +71,25 @@ def plt_good_maps(f):
    
     pointings = ['0','2','4','41']
 
+
     # load data from map .npz file
     tile_data = np.load(f, allow_pickle=True)
     
     for p in pointings:
+    
+        pointing_center_az = np.radians(all_grid_points[int(p)][1])
+        pointing_center_za = np.radians(all_grid_points[int(p)][3])
 
-        tile_map_med = [(np.median(i) if i != [] else np.nan ) for i in tile_data[p]]
-        tile_map_scaled = np.asarray([(i - np.nanmedian(tile_map_med[:100])) for i in tile_map_med])
+        pointing_vec = hp.ang2vec(pointing_center_za, pointing_center_az)
+        ipix_disc = hp.query_disc(nside=nside, vec=pointing_vec, radius=np.radians(10))
+
+        tile_map_med = np.asarray([(np.median(i) if i != [] else np.nan ) for i in tile_data[p]])
+        
+        ipix_max = np.nanmax(tile_map_med[ipix_disc])
+        
+        
+        tile_map_scaled = np.asarray([(i - ipix_max) for i in tile_map_med])
+        #tile_map_scaled = np.asarray([(i - np.nanmedian(tile_map_med[:100])) for i in tile_map_med])
 
         
         fig = plt.figure(figsize=(8,10))
@@ -160,7 +173,9 @@ if __name__=='__main__':
         Path(f'{out_dir}/good_maps/{p}/tile_errors/').mkdir(parents=True, exist_ok=True)
 
     # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(plt_good_maps, map_files)
+    #with concurrent.futures.ProcessPoolExecutor() as executor:
+    #    results = executor.map(plt_good_maps, map_files)
+
+    plt_good_maps(map_files[0])
 
 
