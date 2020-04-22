@@ -87,7 +87,7 @@ if __name__=='__main__':
     Path(out_dir).mkdir(parents=True, exist_ok=True)
 
 
-    pointings = ['0', '2', '4']
+    pointings = ['0', '2', '4', '41']
 
     
     fee_beam = {}
