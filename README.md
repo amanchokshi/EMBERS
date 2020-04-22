@@ -7,15 +7,18 @@ A conda virtual enviroment is used to install the correct version of python and 
 ```
 source setup.sh
 ```
-This creates a conda enviroment, called sat-env, for out mwa-satellites repository. This virtual conda enviroment can be activated and deactivated with:
+It also installs the [MWA Primary Beam](https://github.com/MWATelescope/mwa_pb) repository and downloads the required FEE beam data.
+
+A conda enviroment, called `beam-env` have been created locally, for out mwa-satellites repository. This virtual conda enviroment can be activated and deactivated with:
 
 ```
-conda activate sat-env
+conda activate ./beam-env
 
 conda deactivate
 ```
+while in the homr dir of this repository.
 
-When running code in this repository, ensure that `sat-env`is active.
+When running code in this repository, ensure that `beam-env`is active.
 
 &nbsp;
 #### Directory Structure
@@ -431,20 +434,19 @@ We now compare corresponding EW and NS slices of both reference antennas. The fo
 &nbsp;
 ### Tile Analysis
 
-In this section we analyse the tile maps we've made so far, by comparing them to the latest FEE simulated beam models of MWA tiles. To do this, we need an external library [https://github.com/MWATelescope/mwa_pb.git](https://github.com/MWATelescope/mwa_pb.git), and the raw FEE Beam model data which is stored on cerberus [http://cerberus.mwa128t.org]. We can set this up with `mwa_beam_setup.sh`, which clones the git repo into a `/MWA_Beam` directory at the same level as this `mwa-satellites` directory and downloads the beam data into `/MWA_Beam/mwa_pb/mwa_pb/data`.
+In this section we analyse the tile maps we've made so far, by comparing them to the latest FEE simulated beam models of MWA tiles. To do this, we need an external library [https://github.com/MWATelescope/mwa_pb.git](https://github.com/MWATelescope/mwa_pb.git), and the raw FEE Beam model data which is stored on cerberus [http://cerberus.mwa128t.org]. These were downloaded and installed while setting up the conda environment.
 
 ```
 cd ../tile_analysis
-
-source mwa_beam_setup.sh
 ```
 
-We can then use `mwa_fee_beam.py` to make simulated FEE beam maps at the 3 pointings of interest. This created plots and a `.npz` file with the three beam maps in the `/outputs/tile_analysis/FEE_maps directory`.
+We can then use `mwa_fee_beam.py` to make simulated FEE beam maps at the 4 pointings of interest. This created plots and a `.npz` file with the three beam maps in the `/outputs/tile_analysis/FEE_maps directory`.
 
 
 #### MWA FEE Beam Maps
 <p float="left">
-  <img src="./docs/mwa_fee_beam_4.png" width="32%" />
-  <img src="./docs/mwa_fee_beam_0.png" width="32%" />
-  <img src="./docs/mwa_fee_beam_2.png" width="32%" />
+  <img src="./docs/mwa_fee_beam_4.png" width="25%" />
+  <img src="./docs/mwa_fee_beam_0.png" width="25%" />
+  <img src="./docs/mwa_fee_beam_2.png" width="25%" />
+  <img src="./docs/mwa_fee_beam_41.png" width="25%" />
 </p>
