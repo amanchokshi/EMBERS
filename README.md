@@ -296,7 +296,7 @@ python sort_pointings.py
 
 This creates an `ultimate_pointing_times.json` file in the metadata directory. `pointing_list.py` has condensed observations with the same pointing into blocks of observation. Each entry in `ultimate_pointing_times.json` contains the `grid_pt` number, `start_gps`, `stop_gps` time and `obs_length` in seconds.
 
-A good way to visualise the amount of data collected so far is to use `plot_pointings.py`. This computes total integration over each pointing, and converts it into hours, and saves a plot to `pointing_integration.png`. The plot below represent data between `2019-09-10` and `2020-03-17`.
+A good way to visualise the amount of data collected so far is to use `plot_pointings.py`. This computes total integration over each pointing, and converts it into hours, and saves a plot to `pointing_integration.png`. It plots all pointings with a tottal observation time above a threshold, in this case 200 hours. The plot below represent data between `2019-09-10` and `2020-03-17`. We see that pointings `0, 2, 4, 41` have more than 200 hours each, and we will make maps of each of them.
 
 ```
 
