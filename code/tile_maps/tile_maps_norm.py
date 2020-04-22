@@ -101,7 +101,7 @@ if __name__=='__main__':
             ]
     
     # list of beam pointings
-    pointings = ['0','2','4']
+    pointings = ['0','2','4','41']
    
     # list of all raw tile maps
     map_files = [item for item in map_dir.glob('*.npz')]

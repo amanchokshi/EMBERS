@@ -14,7 +14,7 @@ def sat_maps(sat):
     f_name, _ = f.name.split('.')
     tile, ref, _, _ = f_name.split('_')
    
-    pointings = ['0','2','4']
+    pointings = ['0','2','4','41']
 
     # list of all possible satellites
     sat_ids = list(norad_ids.values())
@@ -68,7 +68,7 @@ if __name__=='__main__':
     # list of all possible satellites
     sat_ids = list(norad_ids.values())
     
-    pointings = ['0','2','4']
+    pointings = ['0','2','4', '41']
     
     map_files = [item for item in map_dir.glob('*.npz')]
 
