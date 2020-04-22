@@ -383,7 +383,7 @@ python tile_maps_norm.py
 ```
 
 
-We can now finally create some beam maps using `plot_tile_maps.py`, which caluclates the median of sat passes in each healpix pixel, and scales the zenith to 0dB. Maps are saved to `../../outputs/tile_maps/good_maps`, where good tile maps are created for each pointing, and for every tile. Error and count maps are also created at the same time.
+We can now finally create some beam maps using `plot_tile_maps.py`, which caluclates the median of sat passes in each healpix pixel. The pointing centers of each pointing are determined, and the maximum pixel value within 10 degrees of it is found, and is scaled to 0dB. Maps are saved to `../../outputs/tile_maps/good_maps`, where good tile maps are created for each pointing, and for every tile. Error and count maps are also created at the same time.
 
 ```
 python plot_tile_maps.py
