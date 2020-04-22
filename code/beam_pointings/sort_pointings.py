@@ -52,12 +52,13 @@ for f in files:
             else:
                 pass
             
-            # Filter obs by passes
-            if pointing in [0, 2, 4]:
+            ## Filter obs by passes
+            #if pointing in [0, 2, 4]:
+            if pointing in list(range(197)):
             
                 if i != (len(data)-1):
-                # Telescope pointing remains constant till it is changed
-                # So, stop time is the start of next observation
+                    # Telescope pointing remains constant till it is changed
+                    # So, stop time is the start of next observation
                     stop = data[i+1][0]
                 else:
                     stop = data[i][1]
@@ -68,7 +69,7 @@ for f in files:
                 
                     start_gps.append(start)
                     stop_gps.append(stop)
-                    obs_length.append(stop - start)
+                    obs_length.append(length)
                     pointings.append(pointing)
 
 
