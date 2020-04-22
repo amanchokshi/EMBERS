@@ -76,21 +76,25 @@ def plt_good_maps(f):
     tile_data = np.load(f, allow_pickle=True)
     
     for p in pointings:
-    
+   
+        # find the pointing center in radians
         pointing_center_az = np.radians(all_grid_points[int(p)][1])
         pointing_center_za = np.radians(all_grid_points[int(p)][3])
-
-        pointing_vec = hp.ang2vec(pointing_center_za, pointing_center_az)
-        ipix_disc = hp.query_disc(nside=nside, vec=pointing_vec, radius=np.radians(10))
-
-        tile_map_med = np.asarray([(np.median(i) if i != [] else np.nan ) for i in tile_data[p]])
         
+        # convert it to a healpix vector
+        pointing_vec = hp.ang2vec(pointing_center_za, pointing_center_az)
+
+        # find all healpix indices within 10 degrees of pointing center
+        ipix_disc = hp.query_disc(nside=nside, vec=pointing_vec, radius=np.radians(10))
+        
+        # healpix meadian map
+        tile_map_med = np.asarray([(np.median(i) if i != [] else np.nan ) for i in tile_data[p]])
+       
+        # find the max value within 10 degrees of pointing center
         ipix_max = np.nanmax(tile_map_med[ipix_disc])
         
-        
+        # scale map such that the above max is set to 0dB 
         tile_map_scaled = np.asarray([(i - ipix_max) for i in tile_map_med])
-        #tile_map_scaled = np.asarray([(i - np.nanmedian(tile_map_med[:100])) for i in tile_map_med])
-
         
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Good Map: {tile}/{ref} @ {p}', fontsize=16)
@@ -173,9 +177,6 @@ if __name__=='__main__':
         Path(f'{out_dir}/good_maps/{p}/tile_errors/').mkdir(parents=True, exist_ok=True)
 
     # Parallization magic happens here
-    #with concurrent.futures.ProcessPoolExecutor() as executor:
-    #    results = executor.map(plt_good_maps, map_files)
-
-    plt_good_maps(map_files[0])
-
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(plt_good_maps, map_files)
 
