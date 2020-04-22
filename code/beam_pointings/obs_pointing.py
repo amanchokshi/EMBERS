@@ -121,9 +121,11 @@ def time_filter(s_rise, s_set, times):
     # intvl = interval
     return occu
 
+# this list of pointings is made using the histogram from plot_pointings.py
 point_0 = []
 point_2 = []
 point_4 = []
+point_41 = []
 
 for i in range(len(obs_time)):
     obs_window = [obs_gps[i], obs_gps_end[i]]
@@ -136,8 +138,12 @@ for i in range(len(obs_time)):
                 point_0.append(obs_time[i])
             elif pointings[j] == 2:
                 point_2.append(obs_time[i])
-            else:
+            elif pointings[j] == 4:
                 point_4.append(obs_time[i])
+            elif pointings[j] == 41:
+                point_41.append(obs_time[i])
+            else:
+                pass
 
 
 # Create dictionary to be saved to json
@@ -148,6 +154,7 @@ obs_pointings['stop_date']  = stop_date
 obs_pointings['point_0']    = point_0
 obs_pointings['point_2']    = point_2
 obs_pointings['point_4']    = point_4
+obs_pointings['point_41']   = point_41
 
 
 with open(f'{out_dir}/obs_pointings.json', 'w') as outfile:
