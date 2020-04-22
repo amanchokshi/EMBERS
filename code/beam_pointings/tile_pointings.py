@@ -13,13 +13,14 @@ sys.path.append('../sat_channels')
 from sat_channels import time_tree
 
 
-def point_int(tile, start, stop, point_0, point_2, point_4):
+def point_int(tile, start, stop, point_0, point_2, point_4, point_41):
     
     # increment this by 0.5, for every obs which is in point_list. 
     # 0.5 = 30 min
-    p_0 = 0
-    p_2 = 0
-    p_4 = 0
+    p_0     = 0
+    p_2     = 0
+    p_4     = 0
+    p_41    = 0
 
     # dates: list of days
     # date_time = list of 30 min observation windows
@@ -35,9 +36,11 @@ def point_int(tile, start, stop, point_0, point_2, point_4):
                     p_2 += 0.5
                 elif date_time[day][window] in point_4:
                     p_4 += 0.5
+                elif date_time[day][window] in point_41:
+                    p_41 += 0.5
                 else:
                     pass
-    return [p_0, p_2, p_4]
+    return [p_0, p_2, p_4, p_41]
 
 def plt_pointing_hist(a, b, c, int_dict=None, tile=None, x_ticks=None):
 
@@ -107,10 +110,11 @@ if __name__=='__main__':
         point_0     = data['point_0']
         point_2     = data['point_2']
         point_4     = data['point_4']
+        point_41    = data['point_41']
 
     tile_integration = {}
     for tile in tiles:
-        p_integration = point_int(tile, start_date, stop_date, point_0, point_2, point_4)
+        p_integration = point_int(tile, start_date, stop_date, point_0, point_2, point_4, point_41)
         tile_integration[f'{tile}'] = p_integration
 
 
