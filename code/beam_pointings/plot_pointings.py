@@ -48,9 +48,13 @@ int_hours = np.asarray(integrations)/(60*60)
 time_point = []
 point = []
 
+# time threshold at pointing in hours
+point_threshold = 200
+
 for i in range(len(int_hours)):
-    point.append(pointings[i])
-    time_point.append(int_hours[i])
+    if int_hours[i] >= point_threshold:
+        point.append(pointings[i])
+        time_point.append(int_hours[i])
 
 x = range(len(time_point))
 leg = [int(i) for i in time_point]
