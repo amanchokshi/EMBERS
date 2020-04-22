@@ -445,8 +445,8 @@ We can then use `mwa_fee_beam.py` to make simulated FEE beam maps at the 4 point
 
 #### MWA FEE Beam Maps
 <p float="left">
-  <img src="./docs/mwa_fee_beam_4.png" width="25%" />
-  <img src="./docs/mwa_fee_beam_0.png" width="25%" />
-  <img src="./docs/mwa_fee_beam_2.png" width="25%" />
-  <img src="./docs/mwa_fee_beam_41.png" width="25%" />
+  <img src="./docs/mwa_fee_beam_4.png" width="24%" />
+  <img src="./docs/mwa_fee_beam_0.png" width="24%" />
+  <img src="./docs/mwa_fee_beam_2.png" width="24%" />
+  <img src="./docs/mwa_fee_beam_41.png" width="24%" />
 </p>
