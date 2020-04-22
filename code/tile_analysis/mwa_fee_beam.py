@@ -9,7 +9,7 @@ from os import environ
 import scipy.optimize as opt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-MWAPY_H5PATH = "./../../../MWA_Beam/mwa_pb/data/mwa_full_embedded_element_pattern.h5"
+MWAPY_H5PATH='../../beam-env/lib/python3.7/site-packages/mwa_pb-1.1.0-py3.7.egg/mwa_pb/data/mwa_full_embedded_element_pattern.h5'
 from mwa_pb import primary_beam
 from mwa_pb import beam_full_EE
 from mwa_pb import mwa_tile
