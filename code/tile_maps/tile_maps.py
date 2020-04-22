@@ -23,14 +23,16 @@ from colormap import spectral
 cmap = spectral()
 
 
-def check_pointing(timestamp, point_0, point_2, point_4):
-    '''Check if timestamp is at pointing 0, 2, 4'''
+def check_pointing(timestamp, point_0, point_2, point_4, point_41):
+    '''Check if timestamp is at pointing 0, 2, 4, 41'''
     if timestamp in point_0:
         point = 0
     elif timestamp in point_2:
         point = 2
-    else:
+    elif timestamp in point_4:
         point = 4
+    else:
+        point=41
     
     return point
 
@@ -211,12 +213,13 @@ def project_tile_healpix(tile_pair):
 
     ref, tile = tile_pair
 
-    pointings = ['0','2','4']
+    pointings = ['0','2','4', '41']
     
     if plots == 'True':
         Path(f'{plt_dir}/{tile}_{ref}/0').mkdir(parents=True, exist_ok=True)
         Path(f'{plt_dir}/{tile}_{ref}/2').mkdir(parents=True, exist_ok=True)
         Path(f'{plt_dir}/{tile}_{ref}/4').mkdir(parents=True, exist_ok=True)
+        Path(f'{plt_dir}/{tile}_{ref}/41').mkdir(parents=True, exist_ok=True)
 
     # Initialize an empty dictionary for tile data
     # The map is list of length 12288 of empty lists to append pixel values to
@@ -236,10 +239,10 @@ def project_tile_healpix(tile_pair):
             timestamp = date_time[day][window]
             
             # Check if at timestamp, reciever was pointed to 0,2,4 gridpointing
-            if ((timestamp in point_0) or (timestamp in point_2) or (timestamp in point_4)):
+            if ((timestamp in point_0) or (timestamp in point_2) or (timestamp in point_4) or (timestamp in point_41)):
             
                 # pointing at timestamp
-                point = check_pointing(timestamp, point_0, point_2, point_4)
+                point = check_pointing(timestamp, point_0, point_2, point_4, point_41)
 
                 ali_file = Path(f'{align_dir}/{dates[day]}/{timestamp}/{ref}_{tile}_{timestamp}_aligned.npz')
 
@@ -455,9 +458,10 @@ if __name__=='__main__':
     # Read observation pointing list
     with open(obs_point) as point:
         obs_p = json.load(point)
-        point_0 = obs_p['point_0'] 
-        point_2 = obs_p['point_2'] 
-        point_4 = obs_p['point_4']
+        point_0  = obs_p['point_0'] 
+        point_2  = obs_p['point_2'] 
+        point_4  = obs_p['point_4']
+        point_41 = obs_p['point_41']
 
 
     # dates: list of days
