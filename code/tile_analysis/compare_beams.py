@@ -1,8 +1,11 @@
+import sys
 import numpy as np
 import healpy as hp
 import scipy.optimize as opt
 import numpy.polynomial.polynomial as poly
 
+sys.path.append('../tile_maps')
+from plot_tile_maps import plot_healpix
 
 def hp_slices_horizon(nside=None):
     '''Healpix pix indices of NS, EW slices and above horizon'''
@@ -250,10 +253,18 @@ if __name__=='__main__':
     
     out_dir     = Path(args.out_dir)
     map_dir     = Path(args.map_dir)
-    fee_map     = args.ref_model
+    fee_map     = args.fee_map
     nside       = args.nside
     
+    # make output dir if it doesn't exist
     out_dir.mkdir(parents=True, exist_ok=True)
-   
 
+    fee_map = np.load(fee_map, allow_pickle=True)
+
+    tile_map = np.load(f'{map_dir}/S35XX_rf0XX_tile_maps.npz')
+
+    pointings = ['0', '2', '4', '41']
+
+    for p in pointings:
+        print(p)
 
