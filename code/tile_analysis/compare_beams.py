@@ -269,4 +269,5 @@ if __name__=='__main__':
     for p in pointings:
         fee     = fee_map[p]
         tile    = tile_map[p]
+        print('test_github_ssh_key')
 
