@@ -268,7 +268,7 @@ if __name__=='__main__':
 
     fee_map = np.load(fee_map, allow_pickle=True)
 
-    tile_map = np.load(f'{map_dir}/S35XX_rf0XX_tile_maps.npz', allow_pickle=True)
+    tile_map = np.load(f'{map_dir}/S36XX_rf0XX_tile_maps.npz', allow_pickle=True)
 
     pointings = ['0', '2', '4', '41']
 
@@ -294,10 +294,16 @@ if __name__=='__main__':
         
         # scale map such that the above max is set to 0dB 
         tile_scaled = np.asarray([(i - ipix_max) for i in tile_med])
+
+        residuals = tile_scaled - fee
+        residuals[np.where(fee < -30)] = np.nan
+        residuals[np.where(tile_scaled == np.nan)] = np.nan
+
         
         fig = plt.figure(figsize=(8,10))
         #fig.suptitle(f'Good Map: {tile}/{ref} @ {p}', fontsize=16)
-        plot_healpix(data_map=tile_scaled, sub=(1,1,1), cmap=jade, vmin=-40, vmax=0)
+        #plot_healpix(data_map=tile_scaled, sub=(1,1,1), cmap=jade, vmin=-40, vmax=0)
+        plot_healpix(data_map=residuals, sub=(1,1,1), cmap='inferno')
         plt.savefig(f'test_{p}.png',bbox_inches='tight')
         plt.close()
 
