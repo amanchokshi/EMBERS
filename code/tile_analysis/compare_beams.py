@@ -87,7 +87,7 @@ def nan_mad(ref_map):
     return ref_map_mad
 
 
-def map_slice(good_map):
+def tile_map_slice(good_map):
     '''slices ref healpix map along NS & EW'''
     
     ref_map_NS, ref_map_EW = slice_map(np.asarray(good_map))
@@ -302,10 +302,30 @@ if __name__=='__main__':
     
     # rotate maps so slices can be taken 
     fee_r = rotate(nside, angle=np.pi/4, healpix_array=fee)
-    tile_r = rotate(nside, angle=np.pi/4, healpix_array=fee)
+    tile_r = rotate(nside, angle=np.pi/4, healpix_array=tile)
 
+    # slice the tile and fee maps along NS, EW
     NS_fee, EW_fee = slice_map(fee_r)
-    NS_tile, EW_tile = slice_map(tile_r)
+    NS_tile, EW_tile = tile_map_slice(tile_r)
+
+    print(NS_tile[1])
+
+    gain_NS = fit_gain(map_data=NS_tile[0], map_error=NS_tile[1], beam=NS_fee[0])
+    gain_EW = fit_gain(map_data=EW_tile[0], map_error=EW_tile[1], beam=EW_fee[0])
+
+    # Scale the data so that it best fits the beam slice
+    NS_tile_med = NS_tile[0] - gain_NS[0]
+    EW_tile_med = NS_tile[0] - gain_EW[0]
+    
+    # delta powers
+    del_NS = NS_tile_med - NS_fee[0]
+    del_EW = EW_tile_med - EW_fee[0]
+   
+    # 3rd order poly fits for residuals
+    fit_NS = poly_fit(NS_tile[2], del_NS, NS_tile[0], 3)  
+    fit_EW = poly_fit(EW_tile[2], del_EW, EW_tile[0], 3)  
+
+
    
     # Visualize the tile map and diff map
     # find the pointing center in radians
@@ -337,6 +357,12 @@ if __name__=='__main__':
     fig1 = plt.figure(figsize=(10, 8))
 
     ax1 = plt.subplot(2,2,1)
+    plt_slice(
+            fig=fig1, sub=221,
+            zen_angle=NS_tile[2], map_slice=NS_tile_med,
+            map_error=NS_tile[1], model_slice=NS_fee[0],
+            delta_pow=del_NS, pow_fit=fit_NS, 
+            slice_label='Tile NS', model_label='FEE NS')
 
     ax2 = fig1.add_axes([0.48, 0.52, 0.48, 0.43])
     plot_healpix(data_map=tile_scaled, sub=(2,2,2), fig=fig1, title='tile map', cmap=jade, vmin=-50, vmax=0, cbar=False)
