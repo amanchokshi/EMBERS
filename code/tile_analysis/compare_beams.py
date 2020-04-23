@@ -3,6 +3,7 @@ import numpy as np
 import healpy as hp
 import scipy.optimize as opt
 import numpy.polynomial.polynomial as poly
+from mwa_pb.mwa_sweet_spots import all_grid_points
 
 sys.path.append('../tile_maps')
 from plot_tile_maps import plot_healpix
@@ -261,10 +262,11 @@ if __name__=='__main__':
 
     fee_map = np.load(fee_map, allow_pickle=True)
 
-    tile_map = np.load(f'{map_dir}/S35XX_rf0XX_tile_maps.npz')
+    tile_map = np.load(f'{map_dir}/S35XX_rf0XX_tile_maps.npz', allow_pickle=True)
 
     pointings = ['0', '2', '4', '41']
 
     for p in pointings:
-        print(p)
+        fee     = fee_map[p]
+        tile    = tile_map[p]
 
