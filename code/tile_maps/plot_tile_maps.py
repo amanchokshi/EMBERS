@@ -4,9 +4,6 @@ import healpy as hp
 from mwa_pb.mwa_sweet_spots import all_grid_points
 from scipy.stats import median_absolute_deviation as mad
 
-sys.path.append('../sat_ephemeris')
-from sat_ids import norad_ids
-
 def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None):
     '''Yeesh do some healpix magic to plot the thing'''
     
@@ -162,9 +159,6 @@ if __name__=='__main__':
     out_dir = Path(args.out_dir)
     map_dir = Path(args.map_dir)
     nside   = args.nside
-    
-    # list of all possible satellites
-    sat_ids = list(norad_ids.values())
     
     pointings = ['0','2','4','41']
     
