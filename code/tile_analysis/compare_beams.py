@@ -219,7 +219,7 @@ def plt_slice(
 
     return ax
 
-def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None):
+def plot_healpix(data_map=None, fig=None, sub=None,title=None,vmin=None,vmax=None,cmap=None, cbar=True):
     '''Yeesh do some healpix magic to plot the thing'''
     
     # Healpix plotting script adapted from Dr. Jack Line's code
@@ -230,29 +230,23 @@ def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None
     warnings.filterwarnings("ignore", category=RuntimeWarning) 
     
     hp.orthview(
-            map=data_map,coord='E',
-            half_sky=True, rot=(0,90,180),
+            map=data_map,coord='E', fig=fig,
+            half_sky=True, rot=(0,90,180), xsize=600,
             title=title,sub=sub,min=vmin,max=vmax,
-            cmap=cmap,notext=True, hold=True)
+            cmap=cmap,notext=True, hold=True, cbar=cbar)
 
     hp.graticule(dpar=10,coord='E',color='k',alpha=0.3,dmer=45)
    
     # Altitude grid
-    hp.projtext(00.0*(np.pi/180.0), 225.0*(np.pi/180), '0', coord='E')
-    hp.projtext(30.0*(np.pi/180.0), 225.0*(np.pi/180), '30', coord='E')
-    hp.projtext(60.0*(np.pi/180.0), 225.0*(np.pi/180), '60', coord='E')
+    hp.projtext(00.0*(np.pi/180.0), 225.0*(np.pi/180),'0', color='w', coord='E')
+    hp.projtext(30.0*(np.pi/180.0), 225.0*(np.pi/180),'30', color='w', coord='E')
+    hp.projtext(60.0*(np.pi/180.0), 225.0*(np.pi/180),'60', color='w', coord='E')
 
-    # Azimuth grid
-    hp.projtext(75.0*(np.pi/180.0), 000.0*(np.pi/180.0), r'$0^\circ$',   coord='E',color='w', fontsize=10, verticalalignment='top')
-    hp.projtext(75.0*(np.pi/180.0), 090.0*(np.pi/180.0), r'$90^\circ$',  coord='E',color='w', fontsize=10, horizontalalignment='right')
-    hp.projtext(75.0*(np.pi/180.0), 180.0*(np.pi/180.0), r'$180^\circ$', coord='E',color='w', fontsize=10, verticalalignment='bottom')
-    hp.projtext(75.0*(np.pi/180.0), 270.0*(np.pi/180.0), r'$270^\circ$', coord='E',color='w', fontsize=10, horizontalalignment='left')
-    
     # NSEW 
-    hp.projtext(90.0*(np.pi/180.0), 000.0*(np.pi/180.0), r'$N  $', coord='E',color='k', fontsize=14, verticalalignment='bottom')
-    hp.projtext(90.0*(np.pi/180.0), 090.0*(np.pi/180.0), r'$E  $', coord='E',color='k', fontsize=14, horizontalalignment='left')
-    hp.projtext(90.0*(np.pi/180.0), 180.0*(np.pi/180.0), r'$S  $', coord='E',color='k', fontsize=14, verticalalignment='top')
-    hp.projtext(90.0*(np.pi/180.0), 270.0*(np.pi/180.0), r'$W  $', coord='E',color='k', fontsize=14, horizontalalignment='right')
+    hp.projtext(80.0*(np.pi/180.0), 000.0*(np.pi/180.0), r'$N  $', coord='E',color='w', verticalalignment='top')
+    hp.projtext(80.0*(np.pi/180.0), 090.0*(np.pi/180.0), r'$E  $', coord='E',color='w', horizontalalignment='right')
+    hp.projtext(80.0*(np.pi/180.0), 180.0*(np.pi/180.0), r'$S  $', coord='E',color='w', verticalalignment='bottom')
+    hp.projtext(80.0*(np.pi/180.0), 270.0*(np.pi/180.0), r'$W  $', coord='E',color='w', horizontalalignment='left')
 
 if __name__=='__main__':
     
@@ -329,6 +323,30 @@ if __name__=='__main__':
     residuals[np.where(fee < -30)] = np.nan
     residuals[np.where(tile_scaled == np.nan)] = np.nan
 
-    #plot_healpix(data_map=fee,vmin=-50,vmax=0,cmap=jade)
-    plot_healpix(data_map=fee, cmap=jade, vmin=-50, vmax=0)
+    plt.style.use('seaborn')
+    fig1 = plt.figure(figsize=(10, 8))
+
+    ax1 = plt.subplot(2,2,1)
+
+    ax2 = fig1.add_axes([0.48, 0.52, 0.48, 0.43])
+    plot_healpix(data_map=tile_scaled, sub=(2,2,2), fig=fig1, title='tile map', cmap=jade, vmin=-50, vmax=0, cbar=False)
+    ax = plt.gca()
+    image = ax.get_images()[0]
+    cax = fig1.add_axes([0.92, 0.52, 0.015, 0.43])
+    cbar = fig1.colorbar(image, cax=cax, label='dB')
+    
+    ax3 = plt.subplot(2,2,3)
+    
+    ax4 = fig1.add_axes([0.48, 0.02, 0.48, 0.43])
+    plot_healpix(data_map=residuals, sub=(2,2,4), fig=fig1, title='diff map', cmap='inferno',  cbar=False)
+    ax = plt.gca()
+    image = ax.get_images()[0]
+    cax = fig1.add_axes([0.92, 0.02, 0.015, 0.43])
+    cbar = fig1.colorbar(image, cax=cax, label='dB')
+
+    plt.tight_layout()
     plt.savefig('test.png')
+
+
+
+
