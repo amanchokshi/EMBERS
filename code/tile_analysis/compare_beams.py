@@ -5,9 +5,6 @@ import scipy.optimize as opt
 import numpy.polynomial.polynomial as poly
 from mwa_pb.mwa_sweet_spots import all_grid_points
 
-sys.path.append('../tile_maps')
-from plot_tile_maps import plot_healpix
-    
 sys.path.append('../decode_rf_data')
 from colormap import spectral, jade, kelp
 
@@ -222,6 +219,40 @@ def plt_slice(
 
     return ax
 
+def plot_healpix(data_map=None,sub=None,title=None,vmin=None,vmax=None,cmap=None):
+    '''Yeesh do some healpix magic to plot the thing'''
+    
+    # Healpix plotting script adapted from Dr. Jack Line's code
+    # https://github.com/JLBLine/MWA_ORBCOMM
+    
+    # Disable cryptic healpy warnings. Can't figure out where they originate
+    import warnings
+    warnings.filterwarnings("ignore", category=RuntimeWarning) 
+    
+    hp.orthview(
+            map=data_map,coord='E',
+            half_sky=True, rot=(0,90,180),
+            title=title,sub=sub,min=vmin,max=vmax,
+            cmap=cmap,notext=True, hold=True)
+
+    hp.graticule(dpar=10,coord='E',color='k',alpha=0.3,dmer=45)
+   
+    # Altitude grid
+    hp.projtext(00.0*(np.pi/180.0), 225.0*(np.pi/180), '0', coord='E')
+    hp.projtext(30.0*(np.pi/180.0), 225.0*(np.pi/180), '30', coord='E')
+    hp.projtext(60.0*(np.pi/180.0), 225.0*(np.pi/180), '60', coord='E')
+
+    # Azimuth grid
+    hp.projtext(75.0*(np.pi/180.0), 000.0*(np.pi/180.0), r'$0^\circ$',   coord='E',color='w', fontsize=10, verticalalignment='top')
+    hp.projtext(75.0*(np.pi/180.0), 090.0*(np.pi/180.0), r'$90^\circ$',  coord='E',color='w', fontsize=10, horizontalalignment='right')
+    hp.projtext(75.0*(np.pi/180.0), 180.0*(np.pi/180.0), r'$180^\circ$', coord='E',color='w', fontsize=10, verticalalignment='bottom')
+    hp.projtext(75.0*(np.pi/180.0), 270.0*(np.pi/180.0), r'$270^\circ$', coord='E',color='w', fontsize=10, horizontalalignment='left')
+    
+    # NSEW 
+    hp.projtext(90.0*(np.pi/180.0), 000.0*(np.pi/180.0), r'$N  $', coord='E',color='k', fontsize=14, verticalalignment='bottom')
+    hp.projtext(90.0*(np.pi/180.0), 090.0*(np.pi/180.0), r'$E  $', coord='E',color='k', fontsize=14, horizontalalignment='left')
+    hp.projtext(90.0*(np.pi/180.0), 180.0*(np.pi/180.0), r'$S  $', coord='E',color='k', fontsize=14, verticalalignment='top')
+    hp.projtext(90.0*(np.pi/180.0), 270.0*(np.pi/180.0), r'$W  $', coord='E',color='k', fontsize=14, horizontalalignment='right')
 
 if __name__=='__main__':
     
@@ -237,7 +268,6 @@ if __name__=='__main__':
 
     import sys
     sys.path.append('../decode_rf_data')
-    from plot_tile_maps import plot_healpix
     from colormap import spectral
     
     # Custom spectral colormap
@@ -273,42 +303,32 @@ if __name__=='__main__':
     pointings = ['0', '2', '4', '41']
 
     
-    #fig, axs = plt.subplots(4,3, figsize=(9, 14))
-    fig = plt.figure(figsize=(8,10))
-    fig.subplots_adjust(hspace = .001, wspace=.001)
+    fee     = fee_map[pointings[0]]
+    tile    = tile_map[pointings[0]]
     
-    for i in range(4):
-        fee     = fee_map[pointings[i]]
-        tile    = tile_map[pointings[i]]
-        
-        # find the pointing center in radians
-        pointing_center_az = np.radians(all_grid_points[int(pointings[i])][1])
-        pointing_center_za = np.radians(all_grid_points[int(pointings[i])][3])
-        
-        # convert it to a healpix vector
-        pointing_vec = hp.ang2vec(pointing_center_za, pointing_center_az)
-
-        # find all healpix indices within 10 degrees of pointing center
-        ipix_disc = hp.query_disc(nside=nside, vec=pointing_vec, radius=np.radians(10))
-        
-        # healpix meadian map
-        tile_med = np.asarray([(np.median(i) if i != [] else np.nan ) for i in tile])
-       
-        # find the max value within 10 degrees of pointing center
-        ipix_max = np.nanmax(tile_med[ipix_disc])
-        
-        # scale map such that the above max is set to 0dB 
-        tile_scaled = np.asarray([(i - ipix_max) for i in tile_med])
-
-        residuals = tile_scaled - fee
-        residuals[np.where(fee < -30)] = np.nan
-        residuals[np.where(tile_scaled == np.nan)] = np.nan
-
-        plot_healpix(data_map=tile_scaled, sub=(4,3,i*3+1), cmap=jade, vmin=-40, vmax=0)
-        plot_healpix(data_map=fee, sub=(4,3,i*3+2), cmap=jade, vmin=-40, vmax=0)
-        plot_healpix(data_map=residuals, sub=(4,3,i*3+3), cmap='inferno')
-        print(i)
+    # find the pointing center in radians
+    pointing_center_az = np.radians(all_grid_points[int(pointings[0])][1])
+    pointing_center_za = np.radians(all_grid_points[int(pointings[0])][3])
     
-    plt.savefig(f'test.png',bbox_inches='tight')
-    #plt.close()
+    # convert it to a healpix vector
+    pointing_vec = hp.ang2vec(pointing_center_za, pointing_center_az)
 
+    # find all healpix indices within 10 degrees of pointing center
+    ipix_disc = hp.query_disc(nside=nside, vec=pointing_vec, radius=np.radians(10))
+    
+    # healpix meadian map
+    tile_med = np.asarray([(np.median(j) if j != [] else np.nan ) for j in tile])
+    
+    # find the max value within 10 degrees of pointing center
+    ipix_max = np.nanmax(tile_med[ipix_disc])
+    
+    # scale map such that the above max is set to 0dB 
+    tile_scaled = np.asarray([(k - ipix_max) for k in tile_med])
+
+    residuals = tile_scaled - fee
+    residuals[np.where(fee < -30)] = np.nan
+    residuals[np.where(tile_scaled == np.nan)] = np.nan
+
+    #plot_healpix(data_map=fee,vmin=-50,vmax=0,cmap=jade)
+    plot_healpix(data_map=fee, cmap=jade, vmin=-50, vmax=0)
+    plt.savefig('test.png')
