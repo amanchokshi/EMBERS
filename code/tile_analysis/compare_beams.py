@@ -154,8 +154,8 @@ def fit_gain(map_data=None,map_error=None,beam=None):
     #print(len(map_data), len(map_error))
     def chisqfunc(gain):
         model = beam[~bad_values] + gain
-        chisq = sum((map_data - model)**2)
-        #chisq = sum(((map_data - model)/map_error)**2)
+        #chisq = sum((map_data - model)**2)
+        chisq = sum(((map_data - model)/map_error)**2)
         return chisq
 
     x0 = np.array([0])
@@ -206,7 +206,7 @@ def plt_slice(
     #ax.set_xlabel('Zenith Angle (degrees)')
     ax.legend()
     ax.set_xlim([-90,90])
-    ax.set_ylim([-32,12])
+    ax.set_ylim([-45,5])
 
     divider = make_axes_locatable(ax)
     dax = divider.append_axes("bottom", size="30%", pad=0.1)
@@ -308,8 +308,6 @@ if __name__=='__main__':
     NS_fee, EW_fee = slice_map(fee_r)
     NS_tile, EW_tile = tile_map_slice(tile_r)
 
-    print(NS_tile[1])
-
     gain_NS = fit_gain(map_data=NS_tile[0], map_error=NS_tile[1], beam=NS_fee[0])
     gain_EW = fit_gain(map_data=EW_tile[0], map_error=EW_tile[1], beam=EW_fee[0])
 
@@ -372,6 +370,12 @@ if __name__=='__main__':
     cbar = fig1.colorbar(image, cax=cax, label='dB')
     
     ax3 = plt.subplot(2,2,3)
+    plt_slice(
+            fig=fig1, sub=223,
+            zen_angle=EW_tile[2], map_slice=EW_tile_med,
+            map_error=EW_tile[1], model_slice=EW_fee[0],
+            delta_pow=del_EW, pow_fit=fit_EW, 
+            slice_label='Tile EW', model_label='FEE EW')
     
     ax4 = fig1.add_axes([0.48, 0.02, 0.48, 0.43])
     plot_healpix(data_map=residuals, sub=(2,2,4), fig=fig1, title='diff map', cmap='inferno',  cbar=False)
