@@ -296,10 +296,18 @@ if __name__=='__main__':
 
     pointings = ['0', '2', '4', '41']
 
-    
     fee     = fee_map[pointings[0]]
     tile    = tile_map[pointings[0]]
+
     
+    # rotate maps so slices can be taken 
+    fee_r = rotate(nside, angle=np.pi/4, healpix_array=fee)
+    tile_r = rotate(nside, angle=np.pi/4, healpix_array=fee)
+
+    NS_fee, EW_fee = slice_map(fee_r)
+    NS_tile, EW_tile = slice_map(tile_r)
+   
+    # Visualize the tile map and diff map
     # find the pointing center in radians
     pointing_center_az = np.radians(all_grid_points[int(pointings[0])][1])
     pointing_center_za = np.radians(all_grid_points[int(pointings[0])][3])
@@ -323,6 +331,8 @@ if __name__=='__main__':
     residuals[np.where(fee < -30)] = np.nan
     residuals[np.where(tile_scaled == np.nan)] = np.nan
 
+
+    # This is an Awesome plot
     plt.style.use('seaborn')
     fig1 = plt.figure(figsize=(10, 8))
 
