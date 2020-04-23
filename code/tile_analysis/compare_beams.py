@@ -272,13 +272,18 @@ if __name__=='__main__':
 
     pointings = ['0', '2', '4', '41']
 
-    for p in pointings:
-        fee     = fee_map[p]
-        tile    = tile_map[p]
+    
+    #fig, axs = plt.subplots(4,3, figsize=(9, 14))
+    fig = plt.figure(figsize=(8,10))
+    fig.subplots_adjust(hspace = .001, wspace=.001)
+    
+    for i in range(4):
+        fee     = fee_map[pointings[i]]
+        tile    = tile_map[pointings[i]]
         
         # find the pointing center in radians
-        pointing_center_az = np.radians(all_grid_points[int(p)][1])
-        pointing_center_za = np.radians(all_grid_points[int(p)][3])
+        pointing_center_az = np.radians(all_grid_points[int(pointings[i])][1])
+        pointing_center_za = np.radians(all_grid_points[int(pointings[i])][3])
         
         # convert it to a healpix vector
         pointing_vec = hp.ang2vec(pointing_center_za, pointing_center_az)
@@ -299,11 +304,11 @@ if __name__=='__main__':
         residuals[np.where(fee < -30)] = np.nan
         residuals[np.where(tile_scaled == np.nan)] = np.nan
 
-        
-        fig = plt.figure(figsize=(8,10))
-        #fig.suptitle(f'Good Map: {tile}/{ref} @ {p}', fontsize=16)
-        #plot_healpix(data_map=tile_scaled, sub=(1,1,1), cmap=jade, vmin=-40, vmax=0)
-        plot_healpix(data_map=residuals, sub=(1,1,1), cmap='inferno')
-        plt.savefig(f'test_{p}.png',bbox_inches='tight')
-        plt.close()
+        plot_healpix(data_map=tile_scaled, sub=(4,3,i*3+1), cmap=jade, vmin=-40, vmax=0)
+        plot_healpix(data_map=fee, sub=(4,3,i*3+2), cmap=jade, vmin=-40, vmax=0)
+        plot_healpix(data_map=residuals, sub=(4,3,i*3+3), cmap='inferno')
+        print(i)
+    
+    plt.savefig(f'test.png',bbox_inches='tight')
+    #plt.close()
 
