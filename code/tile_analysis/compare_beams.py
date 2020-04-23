@@ -7,6 +7,12 @@ from mwa_pb.mwa_sweet_spots import all_grid_points
 
 sys.path.append('../tile_maps')
 from plot_tile_maps import plot_healpix
+    
+sys.path.append('../decode_rf_data')
+from colormap import spectral, jade, kelp
+
+# Custom spectral colormap
+jade, _ = jade()
 
 def hp_slices_horizon(nside=None):
     '''Healpix pix indices of NS, EW slices and above horizon'''
@@ -269,5 +275,29 @@ if __name__=='__main__':
     for p in pointings:
         fee     = fee_map[p]
         tile    = tile_map[p]
-        print('test_github_ssh_key_II')
+        
+        # find the pointing center in radians
+        pointing_center_az = np.radians(all_grid_points[int(p)][1])
+        pointing_center_za = np.radians(all_grid_points[int(p)][3])
+        
+        # convert it to a healpix vector
+        pointing_vec = hp.ang2vec(pointing_center_za, pointing_center_az)
+
+        # find all healpix indices within 10 degrees of pointing center
+        ipix_disc = hp.query_disc(nside=nside, vec=pointing_vec, radius=np.radians(10))
+        
+        # healpix meadian map
+        tile_med = np.asarray([(np.median(i) if i != [] else np.nan ) for i in tile])
+       
+        # find the max value within 10 degrees of pointing center
+        ipix_max = np.nanmax(tile_med[ipix_disc])
+        
+        # scale map such that the above max is set to 0dB 
+        tile_scaled = np.asarray([(i - ipix_max) for i in tile_med])
+        
+        fig = plt.figure(figsize=(8,10))
+        #fig.suptitle(f'Good Map: {tile}/{ref} @ {p}', fontsize=16)
+        plot_healpix(data_map=tile_scaled, sub=(1,1,1), cmap=jade, vmin=-40, vmax=0)
+        plt.savefig(f'test_{p}.png',bbox_inches='tight')
+        plt.close()
 
