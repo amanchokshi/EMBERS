@@ -28,15 +28,15 @@ def hp_slices_horizon(nside=None, zenith_angle=90):
 
     # pixel indices along N, E, S, W slices
     # order the indices such that they proceed from N -> S or E -> W
-    n_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) ==  45)[0], reverse=True)
-    e_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 135)[0], reverse=True)
-    s_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 225)[0])
-    w_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 315)[0])
+    n_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) ==  45)[0])
+    e_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 135)[0])
+    s_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 225)[0], reverse=True)
+    w_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 315)[0], reverse=True)
 
-    NS_indices.extend(n_slice)
     NS_indices.extend(s_slice)
-    EW_indices.extend(e_slice)
+    NS_indices.extend(n_slice)
     EW_indices.extend(w_slice)
+    EW_indices.extend(e_slice)
 
     return [NS_indices, EW_indices, above_horizon_indices]
 
@@ -304,8 +304,8 @@ if __name__=='__main__':
 
         
         # rotate maps so slices can be taken 
-        fee_r = rotate(nside, angle= np.pi/4, healpix_array=fee)
-        tile_r = rotate(nside, angle=np.pi/4, healpix_array=tile)
+        fee_r = rotate(nside, angle= -np.pi/4, healpix_array=fee)
+        tile_r = rotate(nside, angle=-np.pi/4, healpix_array=tile)
 
         # slice the tile and fee maps along NS, EW
         # zenith angle thresh of 70 to determine fit gain factor
@@ -314,8 +314,6 @@ if __name__=='__main__':
 
         gain_NS = fit_gain(map_data=NS_t[0], map_error=NS_t[1], beam=NS_f[0])
         gain_EW = fit_gain(map_data=EW_t[0], map_error=EW_t[1], beam=EW_f[0])
-
-        print(gain_NS, gain_EW)
 
         # slice the tile and fee maps along NS, EW. 
         # the above gain factor is applied to full beam slices
@@ -399,7 +397,4 @@ if __name__=='__main__':
         plt.savefig(f'test_{p}.png')
         plt.close()
 
-        #plt.scatter(NS_fee[1], NS_fee[0])
-        #plt.scatter(NS_tile[2], NS_tile[0])
-        #plt.savefig('test_2_scatter.png')
 
