@@ -290,11 +290,15 @@ if __name__=='__main__':
     # make output dir if it doesn't exist
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    pointings = ['0', '2', '4', '41']
+
+    for p in pointings:
+        Path(f'{out_dir}/{p}/').mkdir(parents=True, exist_ok=True)
+
     fee_map = np.load(fee_map, allow_pickle=True)
 
     tile_map = np.load(f'{map_dir}/S34XX_rf0XX_tile_maps.npz', allow_pickle=True)
 
-    pointings = ['0', '2', '4', '41']
     #pointings = ['2']
 
     for p in pointings:
@@ -394,7 +398,7 @@ if __name__=='__main__':
         cbar = fig1.colorbar(image, cax=cax, label='dB')
 
         plt.tight_layout()
-        plt.savefig(f'test_{p}.png')
+        plt.savefig(f'{out_dir}/{p}/slices_{p}.png')
         plt.close()
 
 
