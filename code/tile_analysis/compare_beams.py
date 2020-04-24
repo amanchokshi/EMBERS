@@ -296,101 +296,103 @@ if __name__=='__main__':
 
     pointings = ['0', '2', '4', '41']
 
-    fee     = fee_map[pointings[0]][0] # XX
-    tile    = tile_map[pointings[0]]
+    for p in pointings:
 
-    
-    # rotate maps so slices can be taken 
-    fee_r = rotate(nside, angle= np.pi/4, healpix_array=fee)
-    tile_r = rotate(nside, angle=np.pi/4, healpix_array=tile)
+        fee     = fee_map[p][0] # XX
+        tile    = tile_map[p]
 
-    # slice the tile and fee maps along NS, EW
-    # zenith angle thresh of 70 to determine fit gain factor
-    NS_fee, EW_fee = slice_map(fee_r, 70)
-    NS_tile, EW_tile = tile_map_slice(tile_r, 70)
+        
+        # rotate maps so slices can be taken 
+        fee_r = rotate(nside, angle= np.pi/4, healpix_array=fee)
+        tile_r = rotate(nside, angle=np.pi/4, healpix_array=tile)
 
-    gain_NS = fit_gain(map_data=NS_tile[0], map_error=NS_tile[1], beam=NS_fee[0])
-    gain_EW = fit_gain(map_data=EW_tile[0], map_error=EW_tile[1], beam=EW_fee[0])
+        # slice the tile and fee maps along NS, EW
+        # zenith angle thresh of 70 to determine fit gain factor
+        NS_fee, EW_fee = slice_map(fee_r, 70)
+        NS_tile, EW_tile = tile_map_slice(tile_r, 70)
 
-    # slice the tile and fee maps along NS, EW. 
-    # the above gain factor is applied to full beam slices
-    NS_fee, EW_fee = slice_map(fee_r, 90)
-    NS_tile, EW_tile = tile_map_slice(tile_r, 90)
+        gain_NS = fit_gain(map_data=NS_tile[0], map_error=NS_tile[1], beam=NS_fee[0])
+        gain_EW = fit_gain(map_data=EW_tile[0], map_error=EW_tile[1], beam=EW_fee[0])
 
-    # Scale the data so that it best fits the beam slice
-    NS_tile_med = NS_tile[0] - gain_NS[0]
-    EW_tile_med = EW_tile[0] - gain_EW[0]
-    
-    # delta powers
-    del_NS = NS_tile_med - NS_fee[0]
-    del_EW = EW_tile_med - EW_fee[0]
+        # slice the tile and fee maps along NS, EW. 
+        # the above gain factor is applied to full beam slices
+        NS_fee, EW_fee = slice_map(fee_r, 90)
+        NS_tile, EW_tile = tile_map_slice(tile_r, 90)
+
+        # Scale the data so that it best fits the beam slice
+        NS_tile_med = NS_tile[0] - gain_NS[0]
+        EW_tile_med = EW_tile[0] - gain_EW[0]
+        
+        # delta powers
+        del_NS = NS_tile_med - NS_fee[0]
+        del_EW = EW_tile_med - EW_fee[0]
    
-    # 3rd order poly fits for residuals
-    fit_NS = poly_fit(NS_tile[2], del_NS, NS_tile[0], 3)  
-    fit_EW = poly_fit(EW_tile[2], del_EW, EW_tile[0], 3)  
+        # 3rd order poly fits for residuals
+        fit_NS = poly_fit(NS_tile[2], del_NS, NS_tile[0], 3)  
+        fit_EW = poly_fit(EW_tile[2], del_EW, EW_tile[0], 3)  
 
 
    
-    # Visualize the tile map and diff map
-    # find the pointing center in radians
-    pointing_center_az = np.radians(all_grid_points[int(pointings[0])][1])
-    pointing_center_za = np.radians(all_grid_points[int(pointings[0])][3])
-    
-    # convert it to a healpix vector
-    pointing_vec = hp.ang2vec(pointing_center_za, pointing_center_az)
+        # Visualize the tile map and diff map
+        # find the pointing center in radians
+        pointing_center_az = np.radians(all_grid_points[int(pointings[0])][1])
+        pointing_center_za = np.radians(all_grid_points[int(pointings[0])][3])
+        
+        # convert it to a healpix vector
+        pointing_vec = hp.ang2vec(pointing_center_za, pointing_center_az)
 
-    # find all healpix indices within 10 degrees of pointing center
-    ipix_disc = hp.query_disc(nside=nside, vec=pointing_vec, radius=np.radians(10))
-    
-    # healpix meadian map
-    tile_med = np.asarray([(np.median(j) if j != [] else np.nan ) for j in tile])
-    
-    # find the max value within 10 degrees of pointing center
-    ipix_max = np.nanmax(tile_med[ipix_disc])
-    
-    # scale map such that the above max is set to 0dB 
-    tile_scaled = np.asarray([(k - ipix_max) for k in tile_med])
+        # find all healpix indices within 10 degrees of pointing center
+        ipix_disc = hp.query_disc(nside=nside, vec=pointing_vec, radius=np.radians(10))
+        
+        # healpix meadian map
+        tile_med = np.asarray([(np.median(j) if j != [] else np.nan ) for j in tile])
+        
+        # find the max value within 10 degrees of pointing center
+        ipix_max = np.nanmax(tile_med[ipix_disc])
+        
+        # scale map such that the above max is set to 0dB 
+        tile_scaled = np.asarray([(k - ipix_max) for k in tile_med])
 
-    residuals = tile_scaled - fee
-    residuals[np.where(fee < -30)] = np.nan
-    residuals[np.where(tile_scaled == np.nan)] = np.nan
+        residuals = tile_scaled - fee
+        residuals[np.where(fee < -30)] = np.nan
+        residuals[np.where(tile_scaled == np.nan)] = np.nan
 
 
-    # This is an Awesome plot
-    plt.style.use('seaborn')
-    fig1 = plt.figure(figsize=(10, 8))
+        # This is an Awesome plot
+        plt.style.use('seaborn')
+        fig1 = plt.figure(figsize=(10, 8))
 
-    ax1 = plt.subplot(2,2,1)
-    plt_slice(
-            fig=fig1, sub=221,
-            zen_angle=NS_tile[2], map_slice=NS_tile_med,
-            map_error=NS_tile[1], model_slice=NS_fee[0],
-            delta_pow=del_NS, pow_fit=fit_NS, 
-            slice_label='Tile NS', model_label='FEE NS')
+        ax1 = plt.subplot(2,2,1)
+        plt_slice(
+                fig=fig1, sub=221,
+                zen_angle=NS_tile[2], map_slice=NS_tile_med,
+                map_error=NS_tile[1], model_slice=NS_fee[0],
+                delta_pow=del_NS, pow_fit=fit_NS, 
+                slice_label='Tile NS', model_label='FEE NS')
 
-    ax2 = fig1.add_axes([0.48, 0.52, 0.48, 0.43])
-    plot_healpix(data_map=tile_scaled, sub=(2,2,2), fig=fig1, title='tile map', cmap=jade, vmin=-50, vmax=0, cbar=False)
-    ax = plt.gca()
-    image = ax.get_images()[0]
-    cax = fig1.add_axes([0.92, 0.52, 0.015, 0.43])
-    cbar = fig1.colorbar(image, cax=cax, label='dB')
-    
-    ax3 = plt.subplot(2,2,3)
-    plt_slice(
-            fig=fig1, sub=223,
-            zen_angle=EW_tile[2], map_slice=EW_tile_med,
-            map_error=EW_tile[1], model_slice=EW_fee[0],
-            delta_pow=del_EW, pow_fit=fit_EW, 
-            slice_label='Tile EW', model_label='FEE EW')
-    
-    ax4 = fig1.add_axes([0.48, 0.02, 0.48, 0.43])
-    plot_healpix(data_map=residuals, sub=(2,2,4), fig=fig1, title='diff map', cmap='inferno',  cbar=False)
-    ax = plt.gca()
-    image = ax.get_images()[0]
-    cax = fig1.add_axes([0.92, 0.02, 0.015, 0.43])
-    cbar = fig1.colorbar(image, cax=cax, label='dB')
+        ax2 = fig1.add_axes([0.48, 0.52, 0.48, 0.43])
+        plot_healpix(data_map=tile_scaled, sub=(2,2,2), fig=fig1, title='tile map', cmap=jade, vmin=-50, vmax=0, cbar=False)
+        ax = plt.gca()
+        image = ax.get_images()[0]
+        cax = fig1.add_axes([0.92, 0.52, 0.015, 0.43])
+        cbar = fig1.colorbar(image, cax=cax, label='dB')
+        
+        ax3 = plt.subplot(2,2,3)
+        plt_slice(
+                fig=fig1, sub=223,
+                zen_angle=EW_tile[2], map_slice=EW_tile_med,
+                map_error=EW_tile[1], model_slice=EW_fee[0],
+                delta_pow=del_EW, pow_fit=fit_EW, 
+                slice_label='Tile EW', model_label='FEE EW')
+        
+        ax4 = fig1.add_axes([0.48, 0.02, 0.48, 0.43])
+        plot_healpix(data_map=residuals, sub=(2,2,4), fig=fig1, title='diff map', cmap='inferno',  cbar=False)
+        ax = plt.gca()
+        image = ax.get_images()[0]
+        cax = fig1.add_axes([0.92, 0.02, 0.015, 0.43])
+        cbar = fig1.colorbar(image, cax=cax, label='dB')
 
-    plt.tight_layout()
-    plt.savefig('test.png')
-    plt.close()
+        plt.tight_layout()
+        plt.savefig(f'test_{p}.png')
+        plt.close()
 
