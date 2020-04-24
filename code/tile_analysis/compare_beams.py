@@ -205,7 +205,7 @@ def plt_slice(
     ax.set_xlabel('Zenith Angle (degrees)')
     ax.legend()
     ax.set_xlim([-92,92])
-    #ax.set_ylim([-80,5])
+    ax.set_ylim([-50,5])
 
     divider = make_axes_locatable(ax)
     dax = divider.append_axes("bottom", size="30%", pad=0.1)
