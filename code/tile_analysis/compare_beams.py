@@ -153,8 +153,8 @@ def fit_gain(map_data=None, map_error=None,beam=None):
 
     def chisqfunc(gain):
         model = beam[~bad_values] + gain
-        #chisq = sum((map_data - model)**2)
-        chisq = sum(((map_data - model)/map_error)**2)
+        chisq = sum((map_data - model)**2)
+        #chisq = sum(((map_data - model)/map_error)**2)
         return chisq
 
     x0 = np.array([0])
@@ -292,9 +292,10 @@ if __name__=='__main__':
 
     fee_map = np.load(fee_map, allow_pickle=True)
 
-    tile_map = np.load(f'{map_dir}/S36XX_rf0XX_tile_maps.npz', allow_pickle=True)
+    tile_map = np.load(f'{map_dir}/S34XX_rf0XX_tile_maps.npz', allow_pickle=True)
 
     pointings = ['0', '2', '4', '41']
+    #pointings = ['2']
 
     for p in pointings:
 
@@ -308,11 +309,13 @@ if __name__=='__main__':
 
         # slice the tile and fee maps along NS, EW
         # zenith angle thresh of 70 to determine fit gain factor
-        NS_fee, EW_fee = slice_map(fee_r, 70)
-        NS_tile, EW_tile = tile_map_slice(tile_r, 70)
+        NS_f, EW_f = slice_map(fee_r, 70)
+        NS_t, EW_t = tile_map_slice(tile_r, 70)
 
-        gain_NS = fit_gain(map_data=NS_tile[0], map_error=NS_tile[1], beam=NS_fee[0])
-        gain_EW = fit_gain(map_data=EW_tile[0], map_error=EW_tile[1], beam=EW_fee[0])
+        gain_NS = fit_gain(map_data=NS_t[0], map_error=NS_t[1], beam=NS_f[0])
+        gain_EW = fit_gain(map_data=EW_t[0], map_error=EW_t[1], beam=EW_f[0])
+
+        print(gain_NS, gain_EW)
 
         # slice the tile and fee maps along NS, EW. 
         # the above gain factor is applied to full beam slices
@@ -372,8 +375,8 @@ if __name__=='__main__':
 
         ax2 = fig1.add_axes([0.48, 0.52, 0.48, 0.43])
         plot_healpix(data_map=tile_scaled, sub=(2,2,2), fig=fig1, title='tile map', cmap=jade, vmin=-50, vmax=0, cbar=False)
-        ax = plt.gca()
-        image = ax.get_images()[0]
+        ax7 = plt.gca()
+        image = ax7.get_images()[0]
         cax = fig1.add_axes([0.92, 0.52, 0.015, 0.43])
         cbar = fig1.colorbar(image, cax=cax, label='dB')
         
@@ -387,12 +390,16 @@ if __name__=='__main__':
         
         ax4 = fig1.add_axes([0.48, 0.02, 0.48, 0.43])
         plot_healpix(data_map=residuals, sub=(2,2,4), fig=fig1, title='diff map', cmap='inferno',  cbar=False)
-        ax = plt.gca()
-        image = ax.get_images()[0]
+        ax8 = plt.gca()
+        image = ax8.get_images()[0]
         cax = fig1.add_axes([0.92, 0.02, 0.015, 0.43])
         cbar = fig1.colorbar(image, cax=cax, label='dB')
 
         plt.tight_layout()
         plt.savefig(f'test_{p}.png')
         plt.close()
+
+        #plt.scatter(NS_fee[1], NS_fee[0])
+        #plt.scatter(NS_tile[2], NS_tile[0])
+        #plt.savefig('test_2_scatter.png')
 
