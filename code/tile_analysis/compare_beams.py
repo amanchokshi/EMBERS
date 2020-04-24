@@ -11,14 +11,14 @@ from colormap import spectral, jade, kelp
 # Custom spectral colormap
 jade, _ = jade()
 
-def hp_slices_horizon(nside=None):
+def hp_slices_horizon(nside=None, zenith_angle=90):
     '''Healpix pix indices of NS, EW slices and above horizon'''
     # theta phi values of each pixel 
     hp_indices = np.arange(hp.nside2npix(nside))
     θ, ɸ = hp.pix2ang(nside, hp_indices)
 
     # healpix indices above the horizon
-    above_horizon_indices = np.where(θ <= np.radians(85))[0]
+    above_horizon_indices = np.where(θ <= np.radians(zenith_angle))[0]
     
     # pixel coords above the horizon
     ɸ_above_horizon = ɸ[above_horizon_indices]
@@ -41,10 +41,10 @@ def hp_slices_horizon(nside=None):
     return [NS_indices, EW_indices, above_horizon_indices]
 
 
-def slice_map(hp_map):
+def slice_map(hp_map, za):
     '''slices healpix map along NS, EW'''
     
-    NS_indices, EW_indices, _ = hp_slices_horizon(nside)
+    NS_indices, EW_indices, _ = hp_slices_horizon(nside, zenith_angle=za)
 
     θ_NS, ɸ_NS = np.degrees(hp.pix2ang(nside, NS_indices))
     θ_EW, ɸ_EW = np.degrees(hp.pix2ang(nside, EW_indices))
@@ -87,27 +87,27 @@ def nan_mad(ref_map):
     return ref_map_mad
 
 
-def tile_map_slice(good_map):
+def tile_map_slice(good_map, za):
     '''slices ref healpix map along NS & EW'''
     
-    ref_map_NS, ref_map_EW = slice_map(np.asarray(good_map))
+    ref_map_NS, ref_map_EW = slice_map(np.asarray(good_map), za)
 
     ref_med_map_NS = np.asarray([(np.nanmedian(i) if i != [] else np.nan) for i in ref_map_NS[0]])
     # Scale mean map such that the max value is 0
-    ref_med_map_scaled_NS = np.asarray([i-np.nanmax(ref_med_map_NS) for i in ref_med_map_NS])
+    #ref_med_map_scaled_NS = np.asarray([i-np.nanmax(ref_med_map_NS) for i in ref_med_map_NS])
     #ref_mad_map_NS = np.asarray([mad(i) for i in ref_map_NS[0]])
     ref_mad_map_NS = np.asarray(nan_mad(ref_map_NS[0]))
     za_NS = ref_map_NS[1]
 
     ref_med_map_EW = np.asarray([(np.nanmedian(i) if i != [] else np.nan) for i in ref_map_EW[0]])
     # Scale mean map such that the max value is 0
-    ref_med_map_scaled_EW = np.asarray([i-np.nanmax(ref_med_map_EW) for i in ref_med_map_EW])
+    #ref_med_map_scaled_EW = np.asarray([i-np.nanmax(ref_med_map_EW) for i in ref_med_map_EW])
     #ref_mad_map_EW = np.asarray([mad(i) for i in ref_map_EW[0]])
     ref_mad_map_EW = np.asarray(nan_mad(ref_map_EW[0]))
     za_EW = ref_map_EW[1]
     
-    NS_data = [ref_med_map_scaled_NS, ref_mad_map_NS, za_NS]
-    EW_data = [ref_med_map_scaled_EW, ref_mad_map_EW, za_EW]
+    NS_data = [ref_med_map_NS, ref_mad_map_NS, za_NS]
+    EW_data = [ref_med_map_EW, ref_mad_map_EW, za_EW]
 
     return [NS_data, EW_data]
 
@@ -141,17 +141,16 @@ def rotate(nside, angle=None,healpix_array=None,savetag=None,flip=False):
     return healpix_array[new_hp_inds]
 
 # chisquared minimization to best fit map to data
-def fit_gain(map_data=None,map_error=None,beam=None):
+def fit_gain(map_data=None, map_error=None,beam=None):
     '''Fit the beam model to the measured data using
     chisquared minimization'''
-
+    
     bad_values = np.isnan(map_data)
     map_data = map_data[~bad_values]
     map_error = map_error[~bad_values]
 
     map_error[np.where(map_error == 0)] = np.mean(map_error)
 
-    #print(len(map_data), len(map_error))
     def chisqfunc(gain):
         model = beam[~bad_values] + gain
         #chisq = sum((map_data - model)**2)
@@ -203,10 +202,10 @@ def plt_slice(
 
     ax.set_ylabel('Power (dB)')
     #ax.set_ylim(bottom=-30)
-    #ax.set_xlabel('Zenith Angle (degrees)')
+    ax.set_xlabel('Zenith Angle (degrees)')
     ax.legend()
-    ax.set_xlim([-90,90])
-    ax.set_ylim([-45,5])
+    ax.set_xlim([-92,92])
+    #ax.set_ylim([-80,5])
 
     divider = make_axes_locatable(ax)
     dax = divider.append_axes("bottom", size="30%", pad=0.1)
@@ -215,7 +214,8 @@ def plt_slice(
     dax.scatter(zen_angle, delta_pow, marker='.', color='#27296d')
     dax.plot(zen_angle, pow_fit, linewidth=1.2, alpha=0.9, color='#ff8264')
     dax.set_ylabel('Data - Model (dB)')
-    dax.set_xticklabels([])
+    #dax.set_xticklabels([])
+    dax.set_xlim([-92,92])
 
     return ax
 
@@ -296,24 +296,30 @@ if __name__=='__main__':
 
     pointings = ['0', '2', '4', '41']
 
-    fee     = fee_map[pointings[0]]
+    fee     = fee_map[pointings[0]][0] # XX
     tile    = tile_map[pointings[0]]
 
     
     # rotate maps so slices can be taken 
-    fee_r = rotate(nside, angle=np.pi/4, healpix_array=fee)
+    fee_r = rotate(nside, angle= np.pi/4, healpix_array=fee)
     tile_r = rotate(nside, angle=np.pi/4, healpix_array=tile)
 
     # slice the tile and fee maps along NS, EW
-    NS_fee, EW_fee = slice_map(fee_r)
-    NS_tile, EW_tile = tile_map_slice(tile_r)
+    # zenith angle thresh of 70 to determine fit gain factor
+    NS_fee, EW_fee = slice_map(fee_r, 70)
+    NS_tile, EW_tile = tile_map_slice(tile_r, 70)
 
     gain_NS = fit_gain(map_data=NS_tile[0], map_error=NS_tile[1], beam=NS_fee[0])
     gain_EW = fit_gain(map_data=EW_tile[0], map_error=EW_tile[1], beam=EW_fee[0])
 
+    # slice the tile and fee maps along NS, EW. 
+    # the above gain factor is applied to full beam slices
+    NS_fee, EW_fee = slice_map(fee_r, 90)
+    NS_tile, EW_tile = tile_map_slice(tile_r, 90)
+
     # Scale the data so that it best fits the beam slice
     NS_tile_med = NS_tile[0] - gain_NS[0]
-    EW_tile_med = NS_tile[0] - gain_EW[0]
+    EW_tile_med = EW_tile[0] - gain_EW[0]
     
     # delta powers
     del_NS = NS_tile_med - NS_fee[0]
@@ -386,7 +392,5 @@ if __name__=='__main__':
 
     plt.tight_layout()
     plt.savefig('test.png')
-
-
-
+    plt.close()
 
