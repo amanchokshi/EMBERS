@@ -389,12 +389,12 @@ if __name__=='__main__':
         Plot healpix map of reference data
         """)
     
-    parser.add_argument('--out_dir', metavar='\b', default='../../outputs/tile_analysis/compare_beams/',
-            help='Output directory. Default=../../outputs/tile_analysis/compare_beams/')
+    parser.add_argument('--out_dir', metavar='\b', default='../../outputs/tile_maps/compare_beams/',
+            help='Output directory. Default=../../outputs/tile_maps/compare_beams/')
     parser.add_argument('--map_dir', metavar='\b', default='../../outputs/tile_maps/tile_maps_norm/',
             help='Tile map directory. Default=../../outputs/tile_maps/tile_maps_norm/')
-    parser.add_argument('--fee_map', metavar='\b', default='../../outputs/tile_analysis/FEE_maps/mwa_fee_beam.npz',
-            help='Healpix FEE map of mwa tile. default=../../outputs/tile_analysis/FEE_maps/mwa_fee_beam.npz')
+    parser.add_argument('--fee_map', metavar='\b', default='../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz',
+            help='Healpix FEE map of mwa tile. default=../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz')
     parser.add_argument('--nside', metavar='\b',type=int, default=32,help='Healpix Nside. Default = 32')
     
     
