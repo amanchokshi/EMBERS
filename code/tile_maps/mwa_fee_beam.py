@@ -14,10 +14,6 @@ from mwa_pb import primary_beam
 from mwa_pb import beam_full_EE
 from mwa_pb import mwa_tile
 from mwa_pb.mwa_sweet_spots import all_grid_points
-
-
-import sys
-sys.path.append('../tile_maps')
 from plot_tile_maps import plot_healpix
 
 
@@ -75,7 +71,7 @@ if __name__=='__main__':
         Create Simulated MWA Beam response maps using mwapy
         """)
     
-    parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/tile_analysis/FEE_maps/', help='Output directory. Default=./../../outputs/tile_analysis/FEE_maps/')
+    parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/tile_maps/FEE_maps/', help='Output directory. Default=./../../outputs/tile_maps/FEE_maps/')
     parser.add_argument('--nside', metavar='\b', type=int,  default=32,help='Healpix Nside. Default = 32')
     
     args = parser.parse_args()
