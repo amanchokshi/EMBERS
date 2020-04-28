@@ -301,23 +301,38 @@ def project_tile_healpix(tile_pair):
                                                 # Now convert to healpix coordinates
                                                 #healpix_index = hp.ang2pix(nside,θ, ɸ)
                                                 healpix_index = hp.ang2pix(nside, za, az)
+
+                                                u = np.unique(healpix_index)
                                                 
-                                                # Append channel power to ref healpix map
-                                                for i in range(len(healpix_index)):
-                                                    tile_data['ref_maps'][f'{point}'][healpix_index[i]].append(ref_power[i])
-                                                
-                                                # Append channel power to tile healpix map
-                                                for i in range(len(healpix_index)):
-                                                    tile_data['tile_maps'][f'{point}'][healpix_index[i]].append(tile_power[i])
-                                                
-                                                # Keep track of sats in each healpix pixel
-                                                for i in range(len(healpix_index)):
-                                                    tile_data['sat_map'][f'{point}'][healpix_index[i]].append(sat)
-                                                
-                                                # Keep track of times when each datapoint was recorded in each healpix pixel
-                                                for i in range(len(healpix_index)):
-                                                    tile_data['times'][f'{point}'][healpix_index[i]].append(times[i])
-                            
+                                                for i in u:
+                                                    # Median of all consecutive data points which fall in one healpix pixel
+
+                                                    # Append channel power to ref healpix map
+                                                    tile_data['ref_maps'][f'{point}'][i].append(np.median(ref_power[np.where(healpix_index==i)[0]]))
+                                                    # Append channel power to tile healpix map
+                                                    tile_data['tile_maps'][f'{point}'][i].append(np.median(tile_power[np.where(healpix_index==i)[0]]))
+                                                    # Keep track of times when each datapoint was recorded in each healpix pixel
+                                                    tile_data['times'][f'{point}'][i].append(np.median(times[np.where(healpix_index==i)][0]))
+                                                    # Keep track of sats in each healpix pixel
+                                                    tile_data['sat_map'][f'{point}'][i].append(sat)
+                                               
+
+
+#                                                # Append channel power to ref healpix map
+#                                                for i in range(len(healpix_index)):
+#                                                    tile_data['ref_maps'][f'{point}'][healpix_index[i]].append(ref_power[i])
+#                                                
+#                                                # Append channel power to tile healpix map
+#                                                for i in range(len(healpix_index)):
+#                                                    tile_data['tile_maps'][f'{point}'][healpix_index[i]].append(tile_power[i])
+#                                                
+#                                                # Keep track of sats in each healpix pixel
+#                                                for i in range(len(healpix_index)):
+#                                                    tile_data['sat_map'][f'{point}'][healpix_index[i]].append(sat)
+#                                                
+#                                                # Keep track of times when each datapoint was recorded in each healpix pixel
+#                                                for i in range(len(healpix_index)):
+#                                                    tile_data['times'][f'{point}'][healpix_index[i]].append(times[i])
                 else:
                     print(f'Missing {ref}_{tile}_{timestamp}_aligned.npz')
                     continue
@@ -470,15 +485,17 @@ if __name__=='__main__':
 
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+#    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
 #    for tile_pair in tile_pairs:
 #        project_tile_healpix(tile_pair)
 #        break
         
     # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(project_tile_healpix, tile_pairs)
+    #with concurrent.futures.ProcessPoolExecutor() as executor:
+    #    results = executor.map(project_tile_healpix, tile_pairs)
+
+    project_tile_healpix(tile_pairs[0])
     
 
 
