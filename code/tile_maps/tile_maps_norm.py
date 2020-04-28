@@ -14,7 +14,7 @@ def good_maps(raw_tile):
     tile, ref, _, _ = f_name.split('_')
     
     # Load reference FEE model
-    # Rotate the fee models by -pi/4 to move model from spherical (E=0) to Alt/Az (N=0)
+    # Rotate the fee models by -pi/2 to move model from spherical (E=0) to Alt/Az (N=0)
     ref_fee_model = np.load(ref_model, allow_pickle=True)
     if 'XX' in tile:
         ref_fee = ref_fee_model['XX']

@@ -2,12 +2,14 @@ import sys
 import json
 import argparse
 import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 import numpy as np
 import healpy as hp
+matplotlib.use('Agg')
 from pathlib import Path
 import concurrent.futures
+import scipy.optimize as opt
+from null_test import rotate
+import matplotlib.pyplot as plt
 from scipy.stats import median_absolute_deviation as mad
 
 sys.path.append('../sat_ephemeris')
@@ -138,6 +140,23 @@ def plt_channel(
     plt.close()
 
 
+# chisquared minimization to best fit map to data
+def fit_gain(map_data=None,fee=None):
+    '''Fit the beam model to the measured data using
+    chisquared minimization'''
+    
+    def chisqfunc(gain):
+        model = fee + gain
+        chisq = sum((map_data - model)**2)
+        return chisq
+
+    x0 = np.array([0])
+
+    result =  opt.minimize(chisqfunc,x0)
+    
+    return result.x
+
+
 def power_ephem(
         ref, tile,
         ali_file,
@@ -226,12 +245,25 @@ def project_tile_healpix(tile_pair):
     # The counter is an array of zeros, to increment when a new values is added
     # keep track of which satellites contributed which data
     tile_data = {
-            'healpix_maps':{p:[[] for pixel in range(hp.nside2npix(nside))] for p in pointings}, 
+            'mwa_maps':{p:[[] for pixel in range(hp.nside2npix(nside))] for p in pointings}, 
             'ref_maps':{p:[[] for pixel in range(hp.nside2npix(nside))] for p in pointings}, 
             'tile_maps':{p:[[] for pixel in range(hp.nside2npix(nside))] for p in pointings}, 
             'sat_map':{p:[[] for pixel in range(hp.nside2npix(nside))] for p in pointings},
             'times':{p:[[] for pixel in range(hp.nside2npix(nside))] for p in pointings}
             }
+    
+    
+    # Load reference FEE model
+    # Rotate the fee models by -pi/2 to move model from spherical (E=0) to Alt/Az (N=0)
+    ref_fee_model = np.load(ref_model, allow_pickle=True)
+    fee_m = np.load(fee_map, allow_pickle=True)
+    
+    if 'XX' in tile:    
+        ref_fee = ref_fee_model['XX']
+        rotated_fee = rotate(nside, angle=-(1*np.pi)/2.0,healpix_array=ref_fee)
+    else:
+        ref_fee = ref_fee_model['YY']
+        rotated_fee = rotate(nside, angle=-(1*np.pi)/2.0,healpix_array=ref_fee)
     
     for day in range(len(dates)):
 
@@ -243,6 +275,11 @@ def project_tile_healpix(tile_pair):
             
                 # pointing at timestamp
                 point = check_pointing(timestamp, point_0, point_2, point_4, point_41)
+
+                if 'XX' in tile:    
+                    mwa_fee = fee_m[str(point)][0]
+                else:
+                    mwa_fee = fee_m[str(point)][1]
 
                 ali_file = Path(f'{align_dir}/{dates[day]}/{timestamp}/{ref}_{tile}_{timestamp}_aligned.npz')
 
@@ -269,70 +306,82 @@ def project_tile_healpix(tile_pair):
                         
                                     for sat in chan_sat_ids:
 
-                                        if sat in norad_list:
-
-                                            chan = chan_map[f'{sat}']
+                                        chan = chan_map[f'{sat}']
 
                             
-                                            sat_data = power_ephem(
-                                                    ref, tile,
-                                                    ali_file,
-                                                    chrono_file,
-                                                    sat,
-                                                    chan,
-                                                    point,
-                                                    pow_thresh,
-                                                    timestamp
-                                                    )
+                                        sat_data = power_ephem(
+                                                ref, tile,
+                                                ali_file,
+                                                chrono_file,
+                                                sat,
+                                                chan,
+                                                point,
+                                                pow_thresh,
+                                                timestamp
+                                                )
 
-                                            if sat_data != 0:
+                                        if sat_data != 0:
+                                        
+                                            ref_power, tile_power, alt, az, times = sat_data
+
+
+                                            # Altitude is in deg while az is in radians
+                                            # convert alt to radians
+                                            # za - zenith angle
+                                            alt = np.radians(alt)
+                                            za = np.pi/2 - alt
+                                            az  = np.asarray(az)
+
+
+                                            # Now convert to healpix coordinates
+                                            #healpix_index = hp.ang2pix(nside,θ, ɸ)
+                                            healpix_index = hp.ang2pix(nside, za, az)
                                             
-                                                ref_power, tile_power, alt, az, times = sat_data
+                                            # multiple data points fall within a single healpix pixel
+                                            # find the unique pixels
+                                            u = np.unique(healpix_index)
+
+                                            
+                                            ref_pass = [np.median(ref_power[np.where(healpix_index==i)[0]]) for i in u]
+                                            tile_pass = [np.median(tile_power[np.where(healpix_index==i)[0]]) for i in u]
+                                            times_pass = [np.median(times[np.where(healpix_index==i)][0]) for i in u]
+                                            ref_fee_pass = [rotated_fee[i] for i in u]
+                                            mwa_fee_pass = [mwa_fee[i] for i in u]
+
+                                            mwa_pass = np.array(tile_pass) - np.array(ref_pass) + np.array(ref_fee_pass)
+
+                                            # fit the power level of the pass to the mwa_fee model using a single gain value
+                                            offset = fit_gain(map_data=mwa_pass, fee=mwa_fee_pass)
+
+                                            mwa_pass_fit = mwa_pass - offset[0]
 
 
-                                                # Altitude is in deg while az is in radians
-                                                # convert alt to radians
-                                                # za - zenith angle
-                                                alt = np.radians(alt)
-                                                za = np.pi/2 - alt
-                                                az  = np.asarray(az)
+                                            # loop though all healpix pixels for the pass
+                                            for i in range(len(u)):
+
+                                                tile_data['mwa_maps'][f'{point}'][i].append(mwa_pass_fit[i])
+                                                tile_data['ref_maps'][f'{point}'][i].append(ref_pass[i])
+                                                tile_data['tile_maps'][f'{point}'][i].append(tile_pass[i])
+                                                tile_data['times'][f'{point}'][i].append(times_pass[i])
+                                                tile_data['sat_map'][f'{point}'][i].append(sat)
+                                           
 
 
-                                                # Now convert to healpix coordinates
-                                                #healpix_index = hp.ang2pix(nside,θ, ɸ)
-                                                healpix_index = hp.ang2pix(nside, za, az)
-
-                                                u = np.unique(healpix_index)
-                                                
-                                                for i in u:
-                                                    # Median of all consecutive data points which fall in one healpix pixel
-
-                                                    # Append channel power to ref healpix map
-                                                    tile_data['ref_maps'][f'{point}'][i].append(np.median(ref_power[np.where(healpix_index==i)[0]]))
-                                                    # Append channel power to tile healpix map
-                                                    tile_data['tile_maps'][f'{point}'][i].append(np.median(tile_power[np.where(healpix_index==i)[0]]))
-                                                    # Keep track of times when each datapoint was recorded in each healpix pixel
-                                                    tile_data['times'][f'{point}'][i].append(np.median(times[np.where(healpix_index==i)][0]))
-                                                    # Keep track of sats in each healpix pixel
-                                                    tile_data['sat_map'][f'{point}'][i].append(sat)
-                                               
-
-
-#                                                # Append channel power to ref healpix map
-#                                                for i in range(len(healpix_index)):
-#                                                    tile_data['ref_maps'][f'{point}'][healpix_index[i]].append(ref_power[i])
-#                                                
-#                                                # Append channel power to tile healpix map
-#                                                for i in range(len(healpix_index)):
-#                                                    tile_data['tile_maps'][f'{point}'][healpix_index[i]].append(tile_power[i])
-#                                                
-#                                                # Keep track of sats in each healpix pixel
-#                                                for i in range(len(healpix_index)):
-#                                                    tile_data['sat_map'][f'{point}'][healpix_index[i]].append(sat)
-#                                                
-#                                                # Keep track of times when each datapoint was recorded in each healpix pixel
-#                                                for i in range(len(healpix_index)):
-#                                                    tile_data['times'][f'{point}'][healpix_index[i]].append(times[i])
+##                                            # Append channel power to ref healpix map
+##                                            for i in range(len(healpix_index)):
+##                                                tile_data['ref_maps'][f'{point}'][healpix_index[i]].append(ref_power[i])
+##                                            
+##                                            # Append channel power to tile healpix map
+##                                            for i in range(len(healpix_index)):
+##                                                tile_data['tile_maps'][f'{point}'][healpix_index[i]].append(tile_power[i])
+##                                            
+##                                            # Keep track of sats in each healpix pixel
+##                                            for i in range(len(healpix_index)):
+##                                                tile_data['sat_map'][f'{point}'][healpix_index[i]].append(sat)
+##                                            
+##                                            # Keep track of times when each datapoint was recorded in each healpix pixel
+##                                            for i in range(len(healpix_index)):
+##                                                tile_data['times'][f'{point}'][healpix_index[i]].append(times[i])
                 else:
                     print(f'Missing {ref}_{tile}_{timestamp}_aligned.npz')
                     continue
@@ -345,6 +394,7 @@ def project_tile_healpix(tile_pair):
     # create a dictionary, with the keys being sat_ids and the values being healpix maps of data from those sats
     # Fist level keys are pointings with dictionaty values
     # Second level keys are satellite ids with healpix map lists
+    mwa_sat_data = {}
     ref_sat_data = {}
     tile_sat_data = {}
     time_sat_data = {}
@@ -352,12 +402,13 @@ def project_tile_healpix(tile_pair):
     # loop over pointings for all maps
     for p in pointings:
         
+        mwa_map     = np.asarray(tile_data['mwa_maps'][p])
         tile_map    = np.asarray(tile_data['tile_maps'][p])
         ref_map     = np.asarray(tile_data['ref_maps'][p])
         sat_map     = np.asarray(tile_data['sat_map'][p])
         time_map    = np.asarray(tile_data['times'][p])
 
-        #ratio_sat_data[p]   = {}
+        mwa_sat_data[p]     = {}
         ref_sat_data[p]     = {}
         tile_sat_data[p]    = {}
         time_sat_data[p]    = {}
@@ -365,7 +416,7 @@ def project_tile_healpix(tile_pair):
         # loop over all sats
         for s in sat_ids:
 
-            #ratio_sat_data[p][s]    = [] 
+            mwa_sat_data[p][s]      = [] 
             ref_sat_data[p][s]      = [] 
             tile_sat_data[p][s]     = [] 
             time_sat_data[p][s]     = [] 
@@ -376,7 +427,7 @@ def project_tile_healpix(tile_pair):
 
                 # Find subset of data for each sat
                 sat_idx = np.where(np.asarray(sat_map[i]) == s)
-                #ratio_sat_data[p][s].append((np.asarray(ratio_map[i])[sat_idx]).tolist())
+                mwa_sat_data[p][s].append((np.asarray(mwa_map[i])[sat_idx]).tolist())
                 ref_sat_data[p][s].append((np.asarray(ref_map[i])[sat_idx]).tolist())
                 tile_sat_data[p][s].append((np.asarray(tile_map[i])[sat_idx]).tolist())
                 time_sat_data[p][s].append((np.asarray(time_map[i])[sat_idx]).tolist())
@@ -428,6 +479,8 @@ if __name__=='__main__':
     parser.add_argument('--plots', metavar='\b', default=False,help='If True, create a gazzillion plots for each sat pass. Default = False')
     parser.add_argument('--ref_model', metavar='\b', default='../../outputs/reproject_ref/ref_dipole_models.npz',
             help='Healpix reference FEE model file. default=../../outputs/reproject_ref/ref_dipole_models.npz')
+    parser.add_argument('--fee_map', metavar='\b', default='../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz',
+            help='Healpix FEE map of mwa tile. default=../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz')
     
     args = parser.parse_args()
     
@@ -441,6 +494,7 @@ if __name__=='__main__':
     nside           = args.nside
     plots           = args.plots
     ref_model       = args.ref_model
+    fee_map         = args.fee_map
     
     align_dir       = Path(args.align_dir)
     chrono_dir      = Path(args.chrono_dir)
