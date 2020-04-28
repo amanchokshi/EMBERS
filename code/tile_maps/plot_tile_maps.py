@@ -124,7 +124,7 @@ def plt_good_maps(f):
         
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Good Map Counts: {tile}/{ref} @ {p}', fontsize=16)
-        plot_healpix(data_map=np.asarray(tile_map_counts),sub=(1,1,1), cmap=jade, vmin=0, vmax=300)
+        plot_healpix(data_map=np.asarray(tile_map_counts),sub=(1,1,1), cmap=jade, vmin=0, vmax=100)
         plt.savefig(f'{out_dir}/good_maps/{p}/tile_counts/{tile}_{ref}_{p}_good_map_counts.png',bbox_inches='tight')
         plt.close()
 
