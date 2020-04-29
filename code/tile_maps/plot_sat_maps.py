@@ -22,13 +22,13 @@ def sat_maps(sat):
     # load data from map .npz file
     tile_data = np.load(f, allow_pickle=True)
     tile_data = {key:tile_data[key].item() for key in tile_data}
-    tile_map = tile_data['tile_map']  
+    tile_map = tile_data['mwa_map']  
     
     for p in pointings:
 
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Satellite [{sat}]: {tile}/{ref} @ {p}', fontsize=16)
-        tile_sat_med = [(np.median(i) if i != [] else np.nan ) for i in tile_data['tile_map'][p][sat]]
+        tile_sat_med = [(np.median(i) if i != [] else np.nan ) for i in tile_data['mwa_map'][p][sat]]
         #tile_sat_scaled = np.asarray([(i - np.nanmax(tile_sat_med[:5000])) for i in tile_sat_med])
         plot_healpix(data_map=np.asarray(tile_sat_med), sub=(1,1,1), cmap=jade)
         plt.savefig(f'{out_dir}/sat_maps/{p}/{sat}_{p}_{tile}_{ref}_passes.png',bbox_inches='tight')
@@ -80,6 +80,7 @@ if __name__=='__main__':
     # S08XX has good time coverage
     with concurrent.futures.ProcessPoolExecutor() as executor:
         results = executor.map(sat_maps, sat_ids)
+    #sat_maps(sat_ids[0])
 
 
 
