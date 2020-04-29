@@ -359,11 +359,11 @@ def project_tile_healpix(tile_pair):
                                             # loop though all healpix pixels for the pass
                                             for i in range(len(u)):
 
-                                                tile_data['mwa_maps'][f'{point}'][i].append(mwa_pass_fit[i])
-                                                tile_data['ref_maps'][f'{point}'][i].append(ref_pass[i])
-                                                tile_data['tile_maps'][f'{point}'][i].append(tile_pass[i])
-                                                tile_data['times'][f'{point}'][i].append(times_pass[i])
-                                                tile_data['sat_map'][f'{point}'][i].append(sat)
+                                                tile_data['mwa_maps'][f'{point}'][u[i]].append(mwa_pass_fit[i])
+                                                tile_data['ref_maps'][f'{point}'][u[i]].append(ref_pass[i])
+                                                tile_data['tile_maps'][f'{point}'][u[i]].append(tile_pass[i])
+                                                tile_data['times'][f'{point}'][u[i]].append(times_pass[i])
+                                                tile_data['sat_map'][f'{point}'][u[i]].append(sat)
                                            
 
 
@@ -433,7 +433,7 @@ def project_tile_healpix(tile_pair):
                 time_sat_data[p][s].append((np.asarray(time_map[i])[sat_idx]).tolist())
 
     # Save map arrays to npz file
-    tile_sat_data = {'ref_map':ref_sat_data, 'tile_map':tile_sat_data, 'time_map':time_sat_data}
+    tile_sat_data = {'mwa_map':mwa_sat_data, 'ref_map':ref_sat_data, 'tile_map':tile_sat_data, 'time_map':time_sat_data}
     np.savez_compressed(f'{out_dir}/{tile}_{ref}_sat_maps.npz', **tile_sat_data)
 
 if __name__=='__main__':
@@ -539,17 +539,14 @@ if __name__=='__main__':
 
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-#    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
 #    for tile_pair in tile_pairs:
 #        project_tile_healpix(tile_pair)
 #        break
         
     # Parallization magic happens here
-    #with concurrent.futures.ProcessPoolExecutor() as executor:
-    #    results = executor.map(project_tile_healpix, tile_pairs)
-
-    project_tile_healpix(tile_pairs[0])
-    
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(project_tile_healpix, tile_pairs)
 
 
