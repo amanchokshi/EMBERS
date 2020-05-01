@@ -140,6 +140,27 @@ def plt_channel(
     plt.close()
 
 
+def plt_fee_fit(u, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat):
+
+    plt.style.use('seaborn')
+
+    fig = plt.figure(figsize=(8,6))
+    ax1 = fig.add_subplot(1, 1, 1)
+    
+    ax1.scatter(u, mwa_fee_pass, color='#c70039', alpha=0.6, marker=".", label="fee_slice")
+    ax1.scatter(u, mwa_pass_fit, color='#7da87b', alpha=0.9, marker=".", label="data fit")
+    ax1.set_ylim(-50, 2)
+    
+    leg = ax1.legend(frameon=True)
+    leg.get_frame().set_facecolor('grey')
+    leg.get_frame().set_alpha(0.2)
+    for l in leg.legendHandles:
+        l.set_alpha(1)
+    
+    plt.tight_layout()
+    plt.savefig(f'{out_dir}/{point}/{timestamp}_{sat}.png')
+    plt.close()
+
 # chisquared minimization to best fit map to data
 def fit_gain(map_data=None,fee=None):
     '''Fit the beam model to the measured data using
@@ -242,7 +263,6 @@ def project_tile_healpix(tile_pair):
 
     # Initialize an empty dictionary for tile data
     # The map is list of length 12288 of empty lists to append pixel values to
-    # The counter is an array of zeros, to increment when a new values is added
     # keep track of which satellites contributed which data
     tile_data = {
             'mwa_maps':{p:[[] for pixel in range(hp.nside2npix(nside))] for p in pointings}, 
@@ -341,10 +361,9 @@ def project_tile_healpix(tile_pair):
                                             # find the unique pixels
                                             u = np.unique(healpix_index)
 
-                                            
-                                            ref_pass = [np.median(ref_power[np.where(healpix_index==i)[0]]) for i in u]
-                                            tile_pass = [np.median(tile_power[np.where(healpix_index==i)[0]]) for i in u]
-                                            times_pass = [np.median(times[np.where(healpix_index==i)][0]) for i in u]
+                                            ref_pass = [np.mean(ref_power[np.where(healpix_index==i)[0]]) for i in u]
+                                            tile_pass = [np.mean(tile_power[np.where(healpix_index==i)[0]]) for i in u]
+                                            times_pass = [np.mean(times[np.where(healpix_index==i)][0]) for i in u]
                                             ref_fee_pass = [rotated_fee[i] for i in u]
                                             mwa_fee_pass = [mwa_fee[i] for i in u]
 
@@ -355,7 +374,8 @@ def project_tile_healpix(tile_pair):
 
                                             mwa_pass_fit = mwa_pass - offset[0]
 
-
+                                            plt_fee_fit(times_pass, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat)
+                                            
                                             # loop though all healpix pixels for the pass
                                             for i in range(len(u)):
 
@@ -519,6 +539,10 @@ if __name__=='__main__':
             for tile in [t for t in tiles if 'YY' in t]:
                 tile_pairs.append([ref,tile])
 
+    Path(f'{out_dir}/0').mkdir(parents=True, exist_ok=True)
+    Path(f'{out_dir}/2').mkdir(parents=True, exist_ok=True)
+    Path(f'{out_dir}/4').mkdir(parents=True, exist_ok=True)
+    Path(f'{out_dir}/41').mkdir(parents=True, exist_ok=True)
 
     # Read channel map file
     with open(chan_map) as map:
@@ -541,12 +565,12 @@ if __name__=='__main__':
     Path(out_dir).mkdir(parents=True, exist_ok=True)
     sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
-#    for tile_pair in tile_pairs:
-#        project_tile_healpix(tile_pair)
-#        break
+    for tile_pair in tile_pairs:
+        project_tile_healpix(tile_pair)
+        break
         
     # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(project_tile_healpix, tile_pairs)
+    #with concurrent.futures.ProcessPoolExecutor() as executor:
+    #    results = executor.map(project_tile_healpix, tile_pairs)
 
 
