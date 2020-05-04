@@ -244,7 +244,7 @@ def find_sat_channel(norad_id):
             
                         # Arbitrary threshold below which satellites aren't counted
                         # Only continue if there is signal for more than 80% of satellite pass
-                        if (max(channel_power) >= arb_thresh and 
+                        if (max(channel_power) >= pow_thresh and 
                                 occ_thresh <= window_occupancy < 1.00):
                          
                             if times_c[0] == times[0]:
