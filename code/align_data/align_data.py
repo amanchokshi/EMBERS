@@ -39,9 +39,9 @@ def savgol_interp(ref, tile, savgol_window =None, polyorder=None, interp_type=No
     ref_p, ref_t = read_data(ref)
     tile_p, tile_t = read_data(tile)
 
-    savgol_ref = savgol_filter(ref_p, savgol_window, polyorder, axis=0)
-    savgol_tile = savgol_filter(tile_p, savgol_window, polyorder, axis=0)
-    
+    #savgol_ref = savgol_filter(ref_p, savgol_window, polyorder, axis=0)
+    #savgol_tile = savgol_filter(tile_p, savgol_window, polyorder, axis=0)
+
     
     # Data is recorded at a range of frequencies, depending on the RF Explorer version
     # The Old models recoreded at 6-7Hz, while the new ones record at 8.5-9.2Hz.
@@ -59,13 +59,22 @@ def savgol_interp(ref, tile, savgol_window =None, polyorder=None, interp_type=No
     time_array = np.arange(start_time, stop_time, (1 / interp_freq))
     
     # Interp1d output functions
-    f = interpolate.interp1d(ref_t, savgol_ref, axis=0, kind=interp_type)
-    g = interpolate.interp1d(tile_t, savgol_tile, axis=0, kind=interp_type)
+    #f = interpolate.interp1d(ref_t, savgol_ref, axis=0, kind=interp_type)
+    #g = interpolate.interp1d(tile_t, savgol_tile, axis=0, kind=interp_type)
+    
+    f = interpolate.interp1d(ref_t, ref_p, axis=0, kind=interp_type)
+    g = interpolate.interp1d(tile_t, tile_p, axis=0, kind=interp_type)
     
     # New power array, evaluated at the desired frequency
     ref_p_aligned = f(time_array)
     tile_p_aligned = g(time_array)
-
+    
+    ref_p_aligned = savgol_filter(ref_p_aligned, savgol_window, polyorder, axis=0)
+    tile_p_aligned = savgol_filter(tile_p_aligned, savgol_window, polyorder, axis=0)
+    
+    ref_p_aligned = savgol_filter(ref_p_aligned,   11, polyorder, axis=0)
+    tile_p_aligned = savgol_filter(tile_p_aligned, 11, polyorder, axis=0)
+    
     return (ref_t, ref_p, tile_t, tile_p, ref_p_aligned, tile_p_aligned, time_array)
 
 
@@ -78,22 +87,50 @@ if __name__ == '__main__':
     
     import matplotlib
     # Enable x-window
-    matplotlib.use('TkAgg')
+    matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     
 
+#    ref_t, ref_p, tile_t, tile_p, ref_p_aligned, tile_p_aligned, time_array = savgol_interp(
+#            './../../data/rf0XX_2019-10-10-02:30.txt',
+#            './../../data/S10XX_2019-10-10-02:30.txt',
+#            savgol_window =7,
+#            polyorder=2,
+#            interp_type='cubic',
+#            interp_freq=1
+#            )
+
+
+#    ref_t, ref_p, tile_t, tile_p, ref_p_aligned, tile_p_aligned, time_array = savgol_interp(
+#            '../../../tiles_data/rf0XX/2019-09-12/rf0XX_2019-09-12-09:30.txt',
+#            '../../../tiles_data/S06XX/2019-09-12/S06XX_2019-09-12-09:30.txt',
+#            savgol_window =7,
+#            polyorder=2,
+#            interp_type='cubic',
+#            interp_freq=1
+#            )
+
+#    ref_t, ref_p, tile_t, tile_p, ref_p_aligned, tile_p_aligned, time_array = savgol_interp(
+#            '../../../tiles_data/rf0XX/2019-09-14/rf0XX_2019-09-14-11:30.txt',
+#            '../../../tiles_data/S06XX/2019-09-14/S06XX_2019-09-14-11:30.txt',
+#            savgol_window =15,
+#            polyorder=2,
+#            interp_type='cubic',
+#            interp_freq=1
+#            )
+
+
     ref_t, ref_p, tile_t, tile_p, ref_p_aligned, tile_p_aligned, time_array = savgol_interp(
-            './../../data/rf0XX_2019-10-10-02:30.txt',
-            './../../data/S10XX_2019-10-10-02:30.txt',
-            savgol_window =151,
-            polyorder=1,
+            '../../../tiles_data/rf0XX/2019-09-15/rf0XX_2019-09-15-11:00.txt',
+            '../../../tiles_data/S06XX/2019-09-15/S06XX_2019-09-15-11:00.txt',
+            savgol_window =15,
+            polyorder=2,
             interp_type='cubic',
             interp_freq=1
             )
 
-
-
-# Plots 
+# Plots
+    fig = plt.figure(figsize=(12,9))
     plt.style.use('seaborn')
 #    plt.rcParams["figure.figsize"] = (6,9)
 #    plt.rcParams.update({
@@ -110,14 +147,17 @@ if __name__ == '__main__':
 #    "savefig.facecolor": "#2F1543",
 #    "savefig.edgecolor": "black"})
 
+#####59
 
-    plt.plot(time_array,tile_p_aligned[::, 59], color='#e23a4e', alpha=0.9, label='aut savgol')
+    ch =8
+
+    plt.plot(time_array,tile_p_aligned[::, ch], color='#e23a4e', alpha=0.9, label='aut savgol')
     #plt.fill_between(time_array,tile_p_aligned[::, 59], np.full(len(time_array), min(ref_p_aligned[::, 59])), color='#ff5453', alpha=0.8)	
-    plt.scatter(tile_t, tile_p[::, 59], color='#f78b51',marker='.', alpha=0.6, label='aut tile')
+    plt.scatter(tile_t, tile_p[::, ch], color='#f78b51',marker='.', alpha=0.6, label='aut tile')
     
-    plt.plot(time_array,ref_p_aligned[::, 59], color='#252b40', alpha=0.9, label='ref savgol')	
+    plt.plot(time_array,ref_p_aligned[::, ch], color='#252b40', alpha=0.9, label='ref savgol')	
     #plt.fill_between(time_array,ref_p_aligned[::, 59], np.full(len(time_array), min(ref_p_aligned[::, 59])), color='#252b40', alpha=0.8)	
-    plt.scatter(ref_t, ref_p[::, 59], color='#6a82bb',marker='.', alpha=0.6, label='ref tile')
+    plt.scatter(ref_t, ref_p[::, ch], color='#6a82bb',marker='.', alpha=0.6, label='ref tile')
 #    plt.scatter(ref_t, ref_p[::, 59], color='#fe6845',marker='.', alpha=0.7)
 #    plt.plot(time_array,ref_p_aligned[::, 59], color='#ec9b3b', alpha=0.9, label='Ref Tile')	
 #
@@ -150,9 +190,10 @@ if __name__ == '__main__':
     
     #plt.xlabel('Time [HH:MM]')
     #plt.xticks(times, t_tz)
+    plt.ylim(-120, 5)
     plt.ylabel('Power')
     plt.tight_layout()
-    #plt.savefig('test2png.png', dpi=300)
-    plt.show()
+    plt.savefig('test.png', dpi=300)
+    #plt.show()
 
 
