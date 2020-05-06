@@ -16,7 +16,7 @@ sys.path.append('../sat_ephemeris')
 from sat_ids import norad_ids
 
 sys.path.append('../sat_channels')
-from sat_channels import time_tree, savgol_interp, time_filter
+from sat_channels import time_tree, time_filter
 
 # Custom spectral colormap
 sys.path.append('../decode_rf_data')
