@@ -4,6 +4,8 @@ import healpy as hp
 from null_test import rotate
 from scipy.stats import median_absolute_deviation as mad
 
+sys.path.append('../sat_ephemeris')
+from sat_ids import norad_ids
 
 def good_maps(raw_tile):
     '''Here, we extract "good satellie" data from the tile_maps_raw 
@@ -107,7 +109,9 @@ if __name__=='__main__':
             41185, 41187, 41188,
             41189, 44387
             ]
-    
+
+    #good_sats = list(norad_ids.values())
+
     # list of beam pointings
     pointings = ['0','2','4','41']
    
