@@ -191,6 +191,12 @@ def window_chan_map(obs_stamp):
     channel_map = {}
 
     ref_file = f'{ali_dir}/{date}/{timestamp}/rf0XX_S07XX_{timestamp}_aligned.npz'
+    
+    if Path(ref_file).is_file():
+        ref_file = f'{ali_dir}/{date}/{timestamp}/rf0XX_S07XX_{timestamp}_aligned.npz'
+    else:
+        ref_file = f'{ali_dir}/{date}/{timestamp}/rf0XX_S36XX_{timestamp}_aligned.npz'
+    
     chrono_file = f'{chrono_dir}/{timestamp}.json'
     
     try:
