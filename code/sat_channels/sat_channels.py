@@ -46,31 +46,6 @@ def time_tree(start_date, stop_date):
     return (dates, date_time)
 
 
-def savgol_interp(ref, savgol_window =None, polyorder=None, interp_type=None, interp_freq=None):
-    """Smooth and interpolate the power array with a savgol filter
-    
-    Args:
-        ref:            Path to reference data file
-        savgol_window:  Window size of savgol filer. Must be odd. Default = 151
-        polyorder:      Order of polynomial to fit to savgol_window. Default = 1
-        interp_type:    Type of interpolation. Ex: 'cubic', 'linear'. Default = cubic
-        interp_freq:    The freqency to which power array is interpolated. Default = 6 Hz
-
-    Returns:
-        power_smooth:   Aligned reference power array
-        time_smooth:    Time array corresponding to power arrays
-    """
-    
-    
-    power, times = rf.read_data(ref)
-    savgol_pow = savgol_filter(power, savgol_window, polyorder, axis=0)
-    time_smooth = np.arange(math.ceil(times[0]), math.floor(times[-1]), (1 / interp_freq))
-    ref_sav_interp = interpolate.interp1d(times, savgol_pow, axis=0, kind=interp_type)
-    power_smooth = ref_sav_interp(time_smooth)
-    
-    return (power_smooth, time_smooth)
-
-
 def center_of_gravity(channel_power, times_c):
     '''Determine center of gravity of channel power
     
