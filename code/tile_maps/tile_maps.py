@@ -48,6 +48,16 @@ def read_aligned(ali_file=None):
 
     return [ref_p, tile_p, times]
 
+def flag_clipped(ref_p, tile_p):
+    '''When the input power to the RF Explorer
+    exceeds -30 dBm, it is distored. We replace 
+    all such values with nans'''
+
+    tile_clip = np.where(tile_p >= -30)
+    ref_p[tile_clip] = np.nan
+    tile_p[tile_clip] = np.nan
+
+    return (ref_p, tile_p)
 
 def noise_floor(sat_thresh, noi_thresh, data=None):
     '''Computes '''
@@ -67,10 +77,11 @@ def noise_floor(sat_thresh, noi_thresh, data=None):
     μ_noise = np.median(noise_data)
     σ_noise = mad(noise_data, axis=None)
     # because we rescale power to have zero median
-    noise_threshold = (μ_noise-μ_noise) + noi_thresh*σ_noise
+    #noise_threshold = (μ_noise-μ_noise) + noi_thresh*σ_noise
+    noise_threshold = μ_noise + noi_thresh*σ_noise
     
     # scale the data so that it has zero median
-    data = data - μ_noise
+    #data = data - μ_noise
     
     return (data, noise_threshold)
 
@@ -140,15 +151,22 @@ def plt_channel(
     plt.close()
 
 
-def plt_fee_fit(u, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat):
+def plt_fee_fit(t, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat):
 
     plt.style.use('seaborn')
 
     fig = plt.figure(figsize=(8,6))
     ax1 = fig.add_subplot(1, 1, 1)
     
-    ax1.scatter(u, mwa_fee_pass, color='#c70039', alpha=0.6, marker=".", label="fee_slice")
-    ax1.scatter(u, mwa_pass_fit, color='#7da87b', alpha=0.9, marker=".", label="data fit")
+
+    ax1.scatter(t, mwa_fee_pass, color='#c70039', alpha=0.6, marker=".", label="fee_slice")
+
+    where_nan = np.isnan(mwa_pass_fit)
+    
+    t = t[~where_nan]
+    p = mwa_pass_fit[~where_nan]
+    
+    ax1.scatter(t, p, color='#7da87b', alpha=0.9, marker=".", label="data fit")
     ax1.set_ylim(-50, 2)
     
     leg = ax1.legend(frameon=True)
@@ -165,6 +183,10 @@ def plt_fee_fit(u, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat):
 def fit_gain(map_data=None,fee=None):
     '''Fit the beam model to the measured data using
     chisquared minimization'''
+    
+    bad_values = np.isnan(map_data)
+    map_data = map_data[~bad_values]
+    fee = fee[~bad_values]
     
     def chisqfunc(gain):
         model = fee + gain
@@ -194,6 +216,8 @@ def power_ephem(
     # Read .npz aligned file
     ref_p, tile_p, times = read_aligned(ali_file=ali_file)
 
+    #ref_p, tile_p = flag_clipped(ref_p, tile_p)
+    
     # Scale noise floor to zero and determine noise threshold
     ref_p, ref_noise = noise_floor(sat_thresh, noi_thresh, ref_p)
     tile_p, tile_noise = noise_floor(sat_thresh, noi_thresh, tile_p)
@@ -224,7 +248,7 @@ def power_ephem(
             alt = np.asarray(norad_ephem["sat_alt"])
             az  = np.asarray(norad_ephem["sat_az"])
 
-            if ((max(ref_c) >= pow_thresh) and (max(tile_c) >= pow_thresh)):
+            if ((np.nanmax(ref_c - ref_noise) >= pow_thresh) and (np.nanmax(tile_c - tile_noise) >= pow_thresh)):
 
                 # Apply noise criteria. In the window, where are ref_power and tile power
                 # above their respective thresholds?
@@ -236,7 +260,9 @@ def power_ephem(
 
                     if plots == 'True':
                         plt_channel(f'{plt_dir}/{tile}_{ref}/{point}', times_c, ref_c, tile_c, ref_noise, tile_noise, sat_chan, sat_id, point, timestamp, point)
-                
+                    
+                    good_ref, good_tile = flag_clipped(good_ref, good_tile)
+
                     return [good_ref, good_tile, good_alt, good_az, times_c]
 
                 else:
@@ -361,18 +387,24 @@ def project_tile_healpix(tile_pair):
                                             # find the unique pixels
                                             u = np.unique(healpix_index)
 
-                                            ref_pass = [np.mean(ref_power[np.where(healpix_index==i)[0]]) for i in u]
-                                            tile_pass = [np.mean(tile_power[np.where(healpix_index==i)[0]]) for i in u]
-                                            times_pass = [np.mean(times[np.where(healpix_index==i)][0]) for i in u]
-                                            ref_fee_pass = [rotated_fee[i] for i in u]
-                                            mwa_fee_pass = [mwa_fee[i] for i in u]
+                                            ref_pass = np.array([np.nanmean(ref_power[np.where(healpix_index==i)[0]]) for i in u])
+                                            tile_pass = np.array([np.nanmean(tile_power[np.where(healpix_index==i)[0]]) for i in u])
+                                            times_pass = np.array([np.mean(times[np.where(healpix_index==i)][0]) for i in u])
+                                            ref_fee_pass = np.array([rotated_fee[i] for i in u])
+                                            clipped_idx = np.where(tile_pass == np.nan)
+                                            ref_fee_pass[clipped_idx] == np.nan
+                                            mwa_fee_pass = np.array([mwa_fee[i] for i in u])
 
+                                            # magic here
+                                            # the beam shape finally emerges
                                             mwa_pass = np.array(tile_pass) - np.array(ref_pass) + np.array(ref_fee_pass)
+
 
                                             # fit the power level of the pass to the mwa_fee model using a single gain value
                                             offset = fit_gain(map_data=mwa_pass, fee=mwa_fee_pass)
 
                                             mwa_pass_fit = mwa_pass - offset[0]
+                                            #print(mwa_pass)
 
                                             plt_fee_fit(times_pass, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat)
                                             
@@ -386,22 +418,6 @@ def project_tile_healpix(tile_pair):
                                                 tile_data['sat_map'][f'{point}'][u[i]].append(sat)
                                            
 
-
-##                                            # Append channel power to ref healpix map
-##                                            for i in range(len(healpix_index)):
-##                                                tile_data['ref_maps'][f'{point}'][healpix_index[i]].append(ref_power[i])
-##                                            
-##                                            # Append channel power to tile healpix map
-##                                            for i in range(len(healpix_index)):
-##                                                tile_data['tile_maps'][f'{point}'][healpix_index[i]].append(tile_power[i])
-##                                            
-##                                            # Keep track of sats in each healpix pixel
-##                                            for i in range(len(healpix_index)):
-##                                                tile_data['sat_map'][f'{point}'][healpix_index[i]].append(sat)
-##                                            
-##                                            # Keep track of times when each datapoint was recorded in each healpix pixel
-##                                            for i in range(len(healpix_index)):
-##                                                tile_data['times'][f'{point}'][healpix_index[i]].append(times[i])
                 else:
                     print(f'Missing {ref}_{tile}_{timestamp}_aligned.npz')
                     continue
@@ -563,7 +579,7 @@ if __name__=='__main__':
 
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+    #sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
     for tile_pair in tile_pairs:
         project_tile_healpix(tile_pair)
