@@ -10,6 +10,7 @@ import concurrent.futures
 import scipy.optimize as opt
 from null_test import rotate
 import matplotlib.pyplot as plt
+from scipy.stats import chisquare
 from scipy.stats import median_absolute_deviation as mad
 
 sys.path.append('../sat_ephemeris')
@@ -84,6 +85,40 @@ def noise_floor(sat_thresh, noi_thresh, data=None):
     #data = data - μ_noise
     
     return (data, noise_threshold)
+
+
+# chisquared minimization to best fit map to data
+def fit_gain(map_data=None,fee=None):
+    '''Fit the beam model to the measured data using
+    chisquared minimization'''
+    
+    bad_values = np.isnan(map_data)
+    map_data = map_data[~bad_values]
+    fee = fee[~bad_values]
+    
+    def chisqfunc(gain):
+        model = fee + gain
+        chisq = sum((map_data - model)**2)
+        return chisq
+
+    x0 = np.array([0])
+
+    result =  opt.minimize(chisqfunc,x0)
+    
+    return result.x
+
+
+def fit_test(map_data=None,fee=None):
+    '''chi-squared test for fit between
+    model and data'''
+    
+    bad_values = np.isnan(map_data)
+    map_data = map_data[~bad_values]
+    fee = fee[~bad_values]
+   
+    statistic, pvalue = chisquare(map_data, f_exp=fee)
+
+    return(statistic, pvalue)
 
 
 def plt_channel(
@@ -178,27 +213,6 @@ def plt_fee_fit(t, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat):
     plt.tight_layout()
     plt.savefig(f'{out_dir}/{point}/{timestamp}_{sat}.png')
     plt.close()
-
-# chisquared minimization to best fit map to data
-def fit_gain(map_data=None,fee=None):
-    '''Fit the beam model to the measured data using
-    chisquared minimization'''
-    
-    bad_values = np.isnan(map_data)
-    map_data = map_data[~bad_values]
-    fee = fee[~bad_values]
-    
-    def chisqfunc(gain):
-        model = fee + gain
-        chisq = sum((map_data - model)**2)
-        return chisq
-
-    x0 = np.array([0])
-
-    result =  opt.minimize(chisqfunc,x0)
-    
-    return result.x
-
 
 def power_ephem(
         ref, tile,
