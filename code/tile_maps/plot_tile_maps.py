@@ -120,7 +120,7 @@ def plt_good_maps(f):
         
 
         # Plot counts in pix
-        tile_map_counts = [len(i) for i in tile_data[p]]
+        tile_map_counts = [len(np.array(i)[~np.isnan(i)]) for i in tile_data[p]]
         
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Good Map Counts: {tile}/{ref} @ {p}', fontsize=16)
