@@ -115,6 +115,10 @@ def fit_test(map_data=None,fee=None):
     bad_values = np.isnan(map_data)
     map_data = map_data[~bad_values]
     fee = fee[~bad_values]
+    
+    map_data = np.asarray(map_data) + 120
+    fee = np.asarray(fee) + 120
+
    
     statistic, pvalue = chisquare(map_data, f_exp=fee)
 
@@ -188,6 +192,8 @@ def plt_channel(
 
 def plt_fee_fit(t, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat):
 
+    stat, pval = fit_test(map_data=mwa_pass_fit, fee=mwa_fee_pass)
+
     plt.style.use('seaborn')
 
     fig = plt.figure(figsize=(8,6))
@@ -210,6 +216,7 @@ def plt_fee_fit(t, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat):
     for l in leg.legendHandles:
         l.set_alpha(1)
     
+    plt.title(f'Chi-sq: {stat}, P-value: {pval} ')
     plt.tight_layout()
     plt.savefig(f'{out_dir}/{point}/{timestamp}_{sat}.png')
     plt.close()
@@ -418,18 +425,22 @@ def project_tile_healpix(tile_pair):
                                             offset = fit_gain(map_data=mwa_pass, fee=mwa_fee_pass)
 
                                             mwa_pass_fit = mwa_pass - offset[0]
-                                            #print(mwa_pass)
-
-                                            plt_fee_fit(times_pass, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat)
                                             
-                                            # loop though all healpix pixels for the pass
-                                            for i in range(len(u)):
+                                            # determine how well the data fits the model with chi-square  
+                                            _, pval = fit_test(map_data=mwa_pass_fit, fee=mwa_fee_pass)
+                                            
+                                            #plt_fee_fit(times_pass, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat)
+                                            
+                                            if pval >= 0.9:
 
-                                                tile_data['mwa_maps'][f'{point}'][u[i]].append(mwa_pass_fit[i])
-                                                tile_data['ref_maps'][f'{point}'][u[i]].append(ref_pass[i])
-                                                tile_data['tile_maps'][f'{point}'][u[i]].append(tile_pass[i])
-                                                tile_data['times'][f'{point}'][u[i]].append(times_pass[i])
-                                                tile_data['sat_map'][f'{point}'][u[i]].append(sat)
+                                                # loop though all healpix pixels for the pass
+                                                for i in range(len(u)):
+
+                                                    tile_data['mwa_maps'][f'{point}'][u[i]].append(mwa_pass_fit[i])
+                                                    tile_data['ref_maps'][f'{point}'][u[i]].append(ref_pass[i])
+                                                    tile_data['tile_maps'][f'{point}'][u[i]].append(tile_pass[i])
+                                                    tile_data['times'][f'{point}'][u[i]].append(times_pass[i])
+                                                    tile_data['sat_map'][f'{point}'][u[i]].append(sat)
                                            
 
                 else:
@@ -595,12 +606,12 @@ if __name__=='__main__':
     Path(out_dir).mkdir(parents=True, exist_ok=True)
     #sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
-#    for tile_pair in tile_pairs:
-#        project_tile_healpix(tile_pair)
-#        break
+    for tile_pair in tile_pairs:
+        project_tile_healpix(tile_pair)
+        break
         
     # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(project_tile_healpix, tile_pairs)
+#    with concurrent.futures.ProcessPoolExecutor() as executor:
+#        results = executor.map(project_tile_healpix, tile_pairs)
 
 
