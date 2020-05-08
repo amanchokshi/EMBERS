@@ -347,7 +347,7 @@ We can then use `mwa_fee_beam.py` to make simulated FEE beam maps at the 4 point
   <img src="./docs/mwa_fee_beam_41.png" width="24%" />
 </p>
 
-Finally, everything can come together.  We project the aligned satellite data onto healpix maps according to their ephemeris, using the channel maps to only project the good data. We use the power and noise threshold described in the satellite channel section. Signal which pass both thresholds are considered good, and their corresponding altitude and azimuth are determined from the ephem file. The RF Explorers distort input signals above -30dBm. We clip any such data to prevent inaccuracies in out final maps. Each satellite pass is git to the fee model using a single gain offset, by a least squares method. A goodness of fit chi-squared test is also used to reject outliers which may have slipped throught he channel map section. The resulting normalized passes are projected to a healpix map. This is done using `tile_maps.py` The resulting maps are stored in `.npz` files in the `./outputs/tile_maps/tile_maps_raw` directory. The data is stored as nested dictionaries.
+Finally, everything can come together.  We project the aligned satellite data onto healpix maps according to their ephemeris, using the channel maps to only project the good data. We use the power and noise threshold described in the satellite channel section. Signal which pass both thresholds are considered good, and their corresponding altitude and azimuth are determined from the ephem file. The RF Explorers distort input signals above -30dBm. We clip any such data to prevent inaccuracies in out final maps. Each satellite pass is git to the fee model using a single gain offset, by a least squares method. A goodness of fit chi-squared test is also used to reject outliers which may have slipped throught he channel map section. The resulting normalized passes are projected to a healpix map. The crutial step of dividing the tile data by the reference data, and then multyplying by the reference fee model is also done using `tile_maps.py` The resulting maps are stored in `.npz` files in the `./outputs/tile_maps/tile_maps_raw` directory. The data is stored as nested dictionaries.
 
 ```
 cd ../tile_maps/
@@ -395,14 +395,14 @@ python plot_sat_maps.py
 
 These are three example sat maps. The first map has almost no data, so we don't use it in our final map. The other two show a lot of satellite passes / sky coverage, and we can almost make out the beam structure. The satellites will be included in out final "good maps". 
 
-With our list of [ 17 ] good satellites, we can now proceed to extracting and analysing all our "good" data from the `./outputs/tile_maps/tile_maps_raw`. `tile_maps_norm.py`, extracts the good satellite reference and tile data. It divides tile power by refernce power, for each satellite pass, and them multiplies by the FEE reference beam model. This gives is the measured beam shape of the MWA tile, which are saved to `./outputs/tile_maps/tile_maps_norm/`.
+If a subset of satellite need to be used, they can be added to the `good_sats` list in `tile_maps_norm.py`. By default all satellites are used. We can now proceed to extracting and analysing all our "good" data from the `./outputs/tile_maps/tile_maps_raw`. `tile_maps_norm.py`, extracts the good satellite reference and tile data. This gives us the measured beam shape of the MWA tile, which are saved to `./outputs/tile_maps/tile_maps_norm/`.
 
 ```
 python tile_maps_norm.py
 ```
 
 
-We can now finally create some beam maps using `plot_tile_maps.py`, which caluclates the median of sat passes in each healpix pixel. The pointing centers of each pointing are determined, and the maximum pixel value within 10 degrees of it is found, and is scaled to 0dB. Maps are saved to `../../outputs/tile_maps/good_maps`, where good tile maps are created for each pointing, and for every tile. Error and count maps are also created at the same time.
+We can now finally create some beam maps using `plot_tile_maps.py`, which caluclates the median of sat passes in each healpix pixel. The Maps are saved to `../../outputs/tile_maps/good_maps`, where good tile maps are created for each pointing, and for every tile. Error and count maps are also created at the same time.
 
 ```
 python plot_tile_maps.py
