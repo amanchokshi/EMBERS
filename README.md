@@ -457,3 +457,17 @@ We now compare corresponding EW and NS slices of both reference antennas. The fo
 </p>
 
 
+#### Compare Beams
+
+In this section we compare our tile maps with the FEE beam models of the MWA tiles using `compare_beams.py`. EW & NS slices of the tile maps, at the 4 pointings, are fit to corresponding slices of the FEE maps with a global gain factor obtained by least-squares minimization. A difference map is also plotted to show gradiants across the ratio of tile to FEE maps.
+
+```
+python compare_beams.py
+```
+
+<p float="left">
+  <img src="./docs/S35XX_rf1XX_0_beam_slices.png" width="49%" />
+  <img src="./docs/S35YY_rf1YY_0_beam_slices.png" width="49%" />
+</p>
+
+
