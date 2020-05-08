@@ -497,6 +497,7 @@ def project_tile_healpix(tile_pair):
     tile_sat_data = {'mwa_map':mwa_sat_data, 'ref_map':ref_sat_data, 'tile_map':tile_sat_data, 'time_map':time_sat_data}
     np.savez_compressed(f'{out_dir}/{tile}_{ref}_sat_maps.npz', **tile_sat_data)
 
+
 if __name__=='__main__':
 
     parser = argparse.ArgumentParser(description="""
@@ -510,10 +511,6 @@ if __name__=='__main__':
     parser.add_argument(
             '--out_dir', metavar='\b', default='./../../outputs/tile_maps/tile_maps_raw/',
             help='Output directory. Default=./../../outputs/tile_maps/tile_maps_raw/')
-    
-    parser.add_argument(
-            '--chan_map', metavar='\b', default='../../data/channel_map.json',
-            help='Satellite channel map. Default=../../data/channel_map.json')
     
     parser.add_argument(
             '--obs_point', metavar='\b', default='../../outputs/beam_pointings/obs_pointings.json',
@@ -547,7 +544,6 @@ if __name__=='__main__':
     
     start_date      = args.start_date
     stop_date       = args.stop_date
-    chan_map        = args.chan_map
     obs_point       = args.obs_point
     noi_thresh      = args.noi_thresh
     sat_thresh      = args.sat_thresh
@@ -564,9 +560,6 @@ if __name__=='__main__':
     out_dir         = Path(args.out_dir)
     map_dir         = Path(args.map_dir)
 
-#    # Import list of Norad catalogue IDs
-#    sat_list = [id for id in sat_ids.norad_ids.values()]
-
     # Tile names
     refs    = tile_names()[:4]
     tiles   = tile_names()[4:]
@@ -580,10 +573,6 @@ if __name__=='__main__':
         else:
             for tile in [t for t in tiles if 'YY' in t]:
                 tile_pairs.append([ref,tile])
-
-    # Read channel map file
-    with open(chan_map) as map:
-        channel_map = json.load(map)
 
     # Read observation pointing list
     with open(obs_point) as point:
