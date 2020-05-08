@@ -32,6 +32,7 @@ def read_data(filename):
             # I have no idea where the (-1/2) factor comes from
             # Remenant of Jared Rasti's code. Seems to work
             # Must be something to do with how data is written from RF
+            # The (-1/2) converts an unsigned byte to a real value
             power = np.single(np.asarray(data_lines) * (-1 / 2))
             times = np.double(np.asarray(times))
             

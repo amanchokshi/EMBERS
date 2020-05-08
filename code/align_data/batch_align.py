@@ -22,22 +22,24 @@ parser.add_argument('--data_dir', metavar='\b', help='Dir where date is saved')
 parser.add_argument('--start_date', metavar='\b', help='Date from which to start aligning data. Ex: 2019-10-10')
 parser.add_argument('--stop_date', metavar='\b', help='Date until which to align data. Ex: 2019-10-11')
 parser.add_argument('--out_dir', metavar='\b', default='./../../outputs/align_data/',help='Output directory. Default=./../../outputs/align_data/')
-parser.add_argument('--savgol_window', metavar='\b', type=int,  default=151,help='Length of savgol window. Must be odd. Default=151')
-parser.add_argument('--polyorder', metavar='\b', type=int,  default=1,help='Order of polynomial to fit to savgol window. Default=1')
+parser.add_argument('--savgol_window_1', metavar='\b', type=int,  default=11,help='Length of savgol window. Must be odd. Default=11')
+parser.add_argument('--savgol_window_2', metavar='\b', type=int,  default=15,help='Length of savgol window. Must be odd. Default=15')
+parser.add_argument('--polyorder', metavar='\b', type=int,  default=2,help='Order of polynomial to fit to savgol window. Default=2')
 parser.add_argument('--interp_type', metavar='\b', default='cubic',help='Type of interpolation. Ex: cubic, linear, etc. Default=cubic')
 parser.add_argument('--interp_freq', metavar='\b', type=int,  default=1,help='Frequency at which to resample smoothed data, in Hertz. Default=1')
 
 
 args = parser.parse_args()
 
-data_dir =          args.data_dir
-start_date =        args.start_date
-stop_date =         args.stop_date
-out_dir =           args.out_dir
-savgol_window =     args.savgol_window
-polyorder =         args.polyorder
-interp_type =       args.interp_type
-interp_freq =       args.interp_freq
+data_dir =            args.data_dir
+start_date =          args.start_date
+stop_date =           args.stop_date
+out_dir =             args.out_dir
+savgol_window_1 =     args.savgol_window_1
+savgol_window_2 =     args.savgol_window_2
+polyorder =           args.polyorder
+interp_type =         args.interp_type
+interp_freq =         args.interp_freq
 
 
 # Save logs 
@@ -103,7 +105,8 @@ def save_aligned(time_stamp):
         _, _, _, _, ref_p_aligned, tile_p_aligned, time_array = al.savgol_interp(
                 ref_file,
                 aut_file,
-                savgol_window=savgol_window,
+                savgol_window_1=savgol_window_1,
+                savgol_window_2=savgol_window_2,
                 polyorder=polyorder,
                 interp_type=interp_type,
                 interp_freq=interp_freq

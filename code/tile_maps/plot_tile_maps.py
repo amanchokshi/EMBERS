@@ -74,28 +74,28 @@ def plt_good_maps(f):
     
     for p in pointings:
    
-        # find the pointing center in radians
-        pointing_center_az = np.radians(all_grid_points[int(p)][1])
-        pointing_center_za = np.radians(all_grid_points[int(p)][3])
-        
-        # convert it to a healpix vector
-        pointing_vec = hp.ang2vec(pointing_center_za, pointing_center_az)
+        ## find the pointing center in radians
+        #pointing_center_az = np.radians(all_grid_points[int(p)][1])
+        #pointing_center_za = np.radians(all_grid_points[int(p)][3])
+        #
+        ## convert it to a healpix vector
+        #pointing_vec = hp.ang2vec(pointing_center_za, pointing_center_az)
 
-        # find all healpix indices within 10 degrees of pointing center
-        ipix_disc = hp.query_disc(nside=nside, vec=pointing_vec, radius=np.radians(10))
+        ## find all healpix indices within 10 degrees of pointing center
+        #ipix_disc = hp.query_disc(nside=nside, vec=pointing_vec, radius=np.radians(10))
         
         # healpix meadian map
-        tile_map_med = np.asarray([(np.median(i) if i != [] else np.nan ) for i in tile_data[p]])
+        tile_map_med = np.asarray([(np.nanmedian(i) if i != [] else np.nan ) for i in tile_data[p]])
        
-        # find the max value within 10 degrees of pointing center
-        ipix_max = np.nanmax(tile_map_med[ipix_disc])
-        
-        # scale map such that the above max is set to 0dB 
-        tile_map_scaled = np.asarray([(i - ipix_max) for i in tile_map_med])
+        ## find the max value within 10 degrees of pointing center
+        #ipix_max = np.nanmax(tile_map_med[ipix_disc])
+        #
+        ## scale map such that the above max is set to 0dB 
+        #tile_map_scaled = np.asarray([(i - ipix_max) for i in tile_map_med])
         
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Good Map: {tile}/{ref} @ {p}', fontsize=16)
-        plot_healpix(data_map=tile_map_scaled, sub=(1,1,1), cmap=jade, vmin=-40, vmax=0)
+        plot_healpix(data_map=tile_map_med, sub=(1,1,1), cmap=jade, vmin=-50, vmax=0)
         plt.savefig(f'{out_dir}/good_maps/{p}/tile_maps/{tile}_{ref}_{p}_good_map.png',bbox_inches='tight')
         plt.close()
         
@@ -120,11 +120,11 @@ def plt_good_maps(f):
         
 
         # Plot counts in pix
-        tile_map_counts = [len(i) for i in tile_data[p]]
+        tile_map_counts = [len(np.array(i)[~np.isnan(i)]) for i in tile_data[p]]
         
         fig = plt.figure(figsize=(8,10))
         fig.suptitle(f'Good Map Counts: {tile}/{ref} @ {p}', fontsize=16)
-        plot_healpix(data_map=np.asarray(tile_map_counts),sub=(1,1,1), cmap=jade, vmin=0, vmax=300)
+        plot_healpix(data_map=np.asarray(tile_map_counts),sub=(1,1,1), cmap=jade, vmin=0, vmax=80)
         plt.savefig(f'{out_dir}/good_maps/{p}/tile_counts/{tile}_{ref}_{p}_good_map_counts.png',bbox_inches='tight')
         plt.close()
 

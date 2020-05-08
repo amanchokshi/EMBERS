@@ -46,31 +46,6 @@ def time_tree(start_date, stop_date):
     return (dates, date_time)
 
 
-def savgol_interp(ref, savgol_window =None, polyorder=None, interp_type=None, interp_freq=None):
-    """Smooth and interpolate the power array with a savgol filter
-    
-    Args:
-        ref:            Path to reference data file
-        savgol_window:  Window size of savgol filer. Must be odd. Default = 151
-        polyorder:      Order of polynomial to fit to savgol_window. Default = 1
-        interp_type:    Type of interpolation. Ex: 'cubic', 'linear'. Default = cubic
-        interp_freq:    The freqency to which power array is interpolated. Default = 6 Hz
-
-    Returns:
-        power_smooth:   Aligned reference power array
-        time_smooth:    Time array corresponding to power arrays
-    """
-    
-    
-    power, times = rf.read_data(ref)
-    savgol_pow = savgol_filter(power, savgol_window, polyorder, axis=0)
-    time_smooth = np.arange(math.ceil(times[0]), math.floor(times[-1]), (1 / interp_freq))
-    ref_sav_interp = interpolate.interp1d(times, savgol_pow, axis=0, kind=interp_type)
-    power_smooth = ref_sav_interp(time_smooth)
-    
-    return (power_smooth, time_smooth)
-
-
 def center_of_gravity(channel_power, times_c):
     '''Determine center of gravity of channel power
     
@@ -244,7 +219,7 @@ def find_sat_channel(norad_id):
             
                         # Arbitrary threshold below which satellites aren't counted
                         # Only continue if there is signal for more than 80% of satellite pass
-                        if (max(channel_power) >= arb_thresh and 
+                        if (max(channel_power) >= pow_thresh and 
                                 occ_thresh <= window_occupancy < 1.00):
                          
                             if times_c[0] == times[0]:
@@ -304,7 +279,7 @@ if __name__=="__main__":
     parser.add_argument('--chrono_dir', metavar='\b', default='./../../outputs/sat_ephemeris/chrono_json',help='Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/')
     parser.add_argument('--noi_thresh', metavar='\b', type=int, default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
     parser.add_argument('--sat_thresh', metavar='\b', type=int, default=1,help='1 σ threshold to detect sats Default=1.')
-    parser.add_argument('--pow_thresh', metavar='\b', type=int, default=20,help='Power Threshold to detect sats. Default=20 dB.')
+    parser.add_argument('--pow_thresh', metavar='\b', type=int, default=15,help='Power Threshold to detect sats. Default=15 dB.')
     parser.add_argument('--occ_thresh', metavar='\b', type=int, default=0.80,help='Occupation Threshold of sat in window. Default=0.80')
 
     

@@ -56,8 +56,6 @@ def slice_map(hp_map):
         else:
             zenith_angle_EW.append(i)
     
-    #print(sorted(zenith_angle_NS))
-
     NS_data = [hp_map[NS_indices], zenith_angle_NS]
     EW_data = [hp_map[EW_indices], zenith_angle_EW]
 
@@ -177,7 +175,6 @@ def fit_gain(map_data=None,map_error=None,beam=None):
 
     map_error[np.where(map_error == 0)] = np.mean(map_error)
 
-    #print(len(map_data), len(map_error))
     def chisqfunc(gain):
         model = beam[~bad_values] + gain
         chisq = sum((map_data - model)**2)
@@ -318,10 +315,10 @@ if __name__=='__main__':
     out_dir.mkdir(parents=True, exist_ok=True)
     
     ref_tiles = [
-            'S08XX_rf0XX_sat_maps.npz', 
-            'S08YY_rf0YY_sat_maps.npz', 
-            'S08XX_rf1XX_sat_maps.npz', 
-            'S08YY_rf1YY_sat_maps.npz'
+            'S35XX_rf0XX_sat_maps.npz', 
+            'S35YY_rf0YY_sat_maps.npz', 
+            'S35XX_rf1XX_sat_maps.npz', 
+            'S35YY_rf1YY_sat_maps.npz'
             ]
     good_rf0XX = rotate(nside, angle=+(1*np.pi)/4.0, healpix_array=np.asarray(good_maps(ref_tiles[0])))
     good_rf0YY = rotate(nside, angle=+(1*np.pi)/4.0, healpix_array=np.asarray(good_maps(ref_tiles[1])))
@@ -529,7 +526,4 @@ if __name__=='__main__':
 
     plt.tight_layout()
     fig2.savefig(f'{out_dir}/null_test_YY_slices.png')
-
-
-
 

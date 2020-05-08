@@ -63,8 +63,6 @@ def slice_map(hp_map, za):
         else:
             zenith_angle_EW.append(i)
     
-    #print(sorted(zenith_angle_NS))
-
     NS_data = [hp_map[NS_indices], zenith_angle_NS]
     EW_data = [hp_map[EW_indices], zenith_angle_EW]
 
@@ -93,16 +91,10 @@ def tile_map_slice(good_map, za):
     ref_map_NS, ref_map_EW = slice_map(np.asarray(good_map), za)
 
     ref_med_map_NS = np.asarray([(np.nanmedian(i) if i != [] else np.nan) for i in ref_map_NS[0]])
-    # Scale mean map such that the max value is 0
-    #ref_med_map_scaled_NS = np.asarray([i-np.nanmax(ref_med_map_NS) for i in ref_med_map_NS])
-    #ref_mad_map_NS = np.asarray([mad(i) for i in ref_map_NS[0]])
     ref_mad_map_NS = np.asarray(nan_mad(ref_map_NS[0]))
     za_NS = ref_map_NS[1]
 
     ref_med_map_EW = np.asarray([(np.nanmedian(i) if i != [] else np.nan) for i in ref_map_EW[0]])
-    # Scale mean map such that the max value is 0
-    #ref_med_map_scaled_EW = np.asarray([i-np.nanmax(ref_med_map_EW) for i in ref_med_map_EW])
-    #ref_mad_map_EW = np.asarray([mad(i) for i in ref_map_EW[0]])
     ref_mad_map_EW = np.asarray(nan_mad(ref_map_EW[0]))
     za_EW = ref_map_EW[1]
     
@@ -222,9 +214,6 @@ def plt_slice(
 def plot_healpix(data_map=None, fig=None, sub=None,title=None,vmin=None,vmax=None,cmap=None, cbar=True):
     '''Yeesh do some healpix magic to plot the thing'''
     
-    # Healpix plotting script adapted from Dr. Jack Line's code
-    # https://github.com/JLBLine/MWA_ORBCOMM
-    
     # Disable cryptic healpy warnings. Can't figure out where they originate
     import warnings
     warnings.filterwarnings("ignore", category=RuntimeWarning) 
@@ -263,9 +252,9 @@ def beam_slice(f):
     
     for p in pointings:
 
-        tile    = tile_map[p]
+        tile = tile_map[p]
 
-        if 'XX' in tile:
+        if 'XX' in t_name:
             fee = fee_m[p][0]
         else:
             fee = fee_m[p][1]
@@ -299,31 +288,13 @@ def beam_slice(f):
         fit_NS = poly_fit(NS_tile[2], del_NS, NS_tile[0], 3)  
         fit_EW = poly_fit(EW_tile[2], del_EW, EW_tile[0], 3)  
 
-
-
         # Visualize the tile map and diff map
-        # find the pointing center in radians
-        pointing_center_az = np.radians(all_grid_points[int(pointings[0])][1])
-        pointing_center_za = np.radians(all_grid_points[int(pointings[0])][3])
-        
-        # convert it to a healpix vector
-        pointing_vec = hp.ang2vec(pointing_center_za, pointing_center_az)
-
-        # find all healpix indices within 10 degrees of pointing center
-        ipix_disc = hp.query_disc(nside=nside, vec=pointing_vec, radius=np.radians(10))
-        
         # healpix meadian map
-        tile_med = np.asarray([(np.median(j) if j != [] else np.nan ) for j in tile])
+        tile_med = np.asarray([(np.nanmedian(j) if j != [] else np.nan ) for j in tile])
         
-        # find the max value within 10 degrees of pointing center
-        ipix_max = np.nanmax(tile_med[ipix_disc])
-        
-        # scale map such that the above max is set to 0dB 
-        tile_scaled = np.asarray([(k - ipix_max) for k in tile_med])
-
-        residuals = tile_scaled - fee
+        residuals = tile_med - fee
         residuals[np.where(fee < -30)] = np.nan
-        residuals[np.where(tile_scaled == np.nan)] = np.nan
+        residuals[np.where(tile_med == np.nan)] = np.nan
 
 
         # This is an Awesome plot
@@ -339,7 +310,7 @@ def beam_slice(f):
                 slice_label='Tile NS', model_label='FEE NS')
 
         ax2 = fig1.add_axes([0.48, 0.52, 0.48, 0.43])
-        plot_healpix(data_map=tile_scaled, sub=(2,2,2), fig=fig1, title='tile map', cmap=jade, vmin=-50, vmax=0, cbar=False)
+        plot_healpix(data_map=tile_med, sub=(2,2,2), fig=fig1, title='tile map', cmap=jade, vmin=-50, vmax=0, cbar=False)
         ax7 = plt.gca()
         image = ax7.get_images()[0]
         cax = fig1.add_axes([0.92, 0.52, 0.015, 0.43])
@@ -421,4 +392,4 @@ if __name__=='__main__':
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor() as executor:
         results = executor.map(beam_slice, map_files)
-
+#    beam_slice(map_files[0])
