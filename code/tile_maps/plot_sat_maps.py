@@ -10,7 +10,7 @@ from plot_tile_maps import plot_healpix
 
 def sat_maps(sat):
     
-    f = Path(f'{map_dir}/S08XX_rf0XX_sat_maps.npz')
+    f = Path(f'{map_dir}/S07XX_rf0XX_sat_maps.npz')
     f_name, _ = f.name.split('.')
     tile, ref, _, _ = f_name.split('_')
    
