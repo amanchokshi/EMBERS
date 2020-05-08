@@ -49,19 +49,19 @@ def read_aligned(ali_file=None):
 
     return [ref_p, tile_p, times]
 
-def flag_clipped(ref_p, tile_p, rfe_clip):
+def flag_clipped(ref_p, tile_p):
     '''When the input power to the RF Explorer
     exceeds -30 dBm, it is distored. We replace 
     all such values with nans'''
 
-    tile_clip = np.where(tile_p >= ref_clip)
+    tile_clip = np.where(tile_p >= -30)
     ref_p[tile_clip] = np.nan
     tile_p[tile_clip] = np.nan
 
     return (ref_p, tile_p)
 
 def noise_floor(sat_thresh, noi_thresh, data=None):
-    '''Computes '''
+    '''Computes the noise floor of the data '''
     
     # compute the standard deviation of data, and use it to identify occupied channels
     σ = np.std(data)
@@ -77,12 +77,7 @@ def noise_floor(sat_thresh, noi_thresh, data=None):
     # noise median, noise mad, noise threshold = μ + 3*σ
     μ_noise = np.median(noise_data)
     σ_noise = mad(noise_data, axis=None)
-    # because we rescale power to have zero median
-    #noise_threshold = (μ_noise-μ_noise) + noi_thresh*σ_noise
     noise_threshold = μ_noise + noi_thresh*σ_noise
-    
-    # scale the data so that it has zero median
-    #data = data - μ_noise
     
     return (data, noise_threshold)
 
@@ -120,9 +115,9 @@ def fit_test(map_data=None,fee=None):
     fee = np.asarray(fee) + 120
 
    
-    statistic, pvalue = chisquare(map_data, f_exp=fee)
+    _, pvalue = chisquare(map_data, f_exp=fee)
 
-    return(statistic, pvalue)
+    return pvalue
 
 
 def plt_channel(
@@ -155,9 +150,9 @@ def plt_channel(
 
     ax1 = fig.add_subplot(2, 1, 1)
     ax1.plot(times, ref_c, linestyle='-', linewidth=2, alpha=1.0, color='#729d39', label='ref')
-    ax1.fill_between(times, ref_c, color='#729d39', alpha=0.7)
+    ax1.fill_between(times, y1=ref_c, y2=-120, color='#729d39', alpha=0.7)
     ax1.axhline(ref_noise,linestyle='-', linewidth=2, color='#36622b', label=f'Ref Cut: {ref_noise:.2f} dBm')
-    ax1.axhspan(-1, ref_noise, color='#36622b', alpha=0.7)
+    ax1.axhspan(-120, ref_noise, color='#36622b', alpha=0.7)
     ax1.set_ylim([min(ref_c)-1, max(ref_c)+1])
     ax1.set_ylabel('Power [dBm]')
     ax1.set_xticklabels([])
@@ -171,9 +166,9 @@ def plt_channel(
     
     ax2 = fig.add_subplot(2, 1, 2)
     ax2.plot(times, tile_c, linestyle='-', linewidth=2, alpha=1.0, color='#ff5656', label='tile')
-    ax2.fill_between(times, tile_c, color='#ff5656', alpha=0.7)
+    ax2.fill_between(times, y1=tile_c, y2=-120, color='#ff5656', alpha=0.7)
     ax2.axhline(tile_noise,linestyle='-', linewidth=2, color='#970747', label=f'Tile Cut: {tile_noise:.2f} dBm')
-    ax2.axhspan(-1, tile_noise, color='#970747', alpha=0.7)
+    ax2.axhspan(-120, tile_noise, color='#970747', alpha=0.7)
     ax2.set_ylim([min(tile_c)-1, max(tile_c)+1])
     ax2.set_ylabel('Power [dBm]')
     ax2.set_xlabel('Time [s]')
@@ -192,7 +187,7 @@ def plt_channel(
 
 def plt_fee_fit(t, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat):
 
-    stat, pval = fit_test(map_data=mwa_pass_fit, fee=mwa_fee_pass)
+    pval = fit_test(map_data=mwa_pass_fit, fee=mwa_fee_pass)
 
     plt.style.use('seaborn')
 
@@ -216,7 +211,7 @@ def plt_fee_fit(t, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat):
     for l in leg.legendHandles:
         l.set_alpha(1)
     
-    plt.title(f'Chi-sq: {stat}, P-value: {pval} ')
+    plt.title(f'Goodness of Fit: {pval} ')
     plt.tight_layout()
     plt.savefig(f'{out_dir}/{point}/{timestamp}_{sat}.png')
     plt.close()
@@ -230,8 +225,7 @@ def power_ephem(
         sat_chan,
         point,
         pow_thresh,
-        timestamp,
-        rfe_clip
+        timestamp
         ):
 
     '''Create power, alt, az arrays at constant cadence'''
@@ -280,9 +274,9 @@ def power_ephem(
                     good_az     = az[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
 
                     if plots == 'True':
-                        plt_channel(f'{plt_dir}/{tile}_{ref}/{point}', times_c, ref_c, tile_c, ref_noise, tile_noise, sat_chan, sat_id, point, timestamp, point)
+                        plt_channel(f'{out_dir}/pass_plots/{tile}_{ref}/{point}', times_c, ref_c, tile_c, ref_noise, tile_noise, sat_chan, sat_id, point, timestamp, point)
                     
-                    good_ref, good_tile = flag_clipped(good_ref, good_tile, rfe_clip)
+                    good_ref, good_tile = flag_clipped(good_ref, good_tile)
 
                     return [good_ref, good_tile, good_alt, good_az, times_c]
 
@@ -303,10 +297,15 @@ def project_tile_healpix(tile_pair):
     pointings = ['0','2','4', '41']
     
     if plots == 'True':
-        Path(f'{plt_dir}/{tile}_{ref}/0').mkdir(parents=True, exist_ok=True)
-        Path(f'{plt_dir}/{tile}_{ref}/2').mkdir(parents=True, exist_ok=True)
-        Path(f'{plt_dir}/{tile}_{ref}/4').mkdir(parents=True, exist_ok=True)
-        Path(f'{plt_dir}/{tile}_{ref}/41').mkdir(parents=True, exist_ok=True)
+        Path(f'{out_dir}/pass_plots/{tile}_{ref}/0').mkdir(parents=True, exist_ok=True)
+        Path(f'{out_dir}/pass_plots/{tile}_{ref}/2').mkdir(parents=True, exist_ok=True)
+        Path(f'{out_dir}/pass_plots/{tile}_{ref}/4').mkdir(parents=True, exist_ok=True)
+        Path(f'{out_dir}/pass_plots/{tile}_{ref}/41').mkdir(parents=True, exist_ok=True)
+        
+        Path(f'{out_dir}/fit_plots/{tile}_{ref}/0').mkdir(parents=True, exist_ok=True)
+        Path(f'{out_dir}/fit_plots/{tile}_{ref}/2').mkdir(parents=True, exist_ok=True)
+        Path(f'{out_dir}/fit_plots/{tile}_{ref}/4').mkdir(parents=True, exist_ok=True)
+        Path(f'{out_dir}/fit_plots/{tile}_{ref}/41').mkdir(parents=True, exist_ok=True)
 
     # Initialize an empty dictionary for tile data
     # The map is list of length 12288 of empty lists to append pixel values to
@@ -375,7 +374,6 @@ def project_tile_healpix(tile_pair):
 
                                         chan = chan_map[f'{sat}']
 
-                            
                                         sat_data = power_ephem(
                                                 ref, tile,
                                                 ali_file,
@@ -427,9 +425,9 @@ def project_tile_healpix(tile_pair):
                                             mwa_pass_fit = mwa_pass - offset[0]
                                             
                                             # determine how well the data fits the model with chi-square  
-                                            _, pval = fit_test(map_data=mwa_pass_fit, fee=mwa_fee_pass)
+                                            pval = fit_test(map_data=mwa_pass_fit, fee=mwa_fee_pass)
                                             
-                                            #plt_fee_fit(times_pass, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat)
+                                            plt_fee_fit(times_pass, mwa_fee_pass, mwa_pass_fit, f'{out_dir}/fit_plots/{tile}_{ref}/', point, timestamp, sat)
                                             
                                             # a goodness of fit threshold
                                             if pval >= 0.9:
@@ -513,10 +511,6 @@ if __name__=='__main__':
             help='Output directory. Default=./../../outputs/tile_maps/tile_maps_raw/')
     
     parser.add_argument(
-            '--plt_dir', metavar='\b', default='./../../outputs/tile_maps/pass_plots/',
-            help='Output directory. Default=./../../outputs/tile_maps/pass_plots/')
-
-    parser.add_argument(
             '--chan_map', metavar='\b', default='../../data/channel_map.json',
             help='Satellite channel map. Default=../../data/channel_map.json')
     
@@ -532,19 +526,21 @@ if __name__=='__main__':
             '--map_dir', metavar='\b', default='../../outputs/sat_channels/window_maps/',
             help='Satellite channel map. Default=../../outputs/sat_channels/window_maps/')
 
+    parser.add_argument('--ref_model', metavar='\b', default='../../outputs/reproject_ref/ref_dipole_models.npz',
+            help='Healpix reference FEE model file. default=../../outputs/reproject_ref/ref_dipole_models.npz')
+    
+    parser.add_argument('--fee_map', metavar='\b', default='../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz',
+            help='Healpix FEE map of mwa tile. default=../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz')
+    
     parser.add_argument('--start_date', metavar='\b', help='Date from which to start aligning data. Ex: 2019-10-10')
     parser.add_argument('--stop_date', metavar='\b', help='Date until which to align data. Ex: 2019-10-11')
     parser.add_argument('--noi_thresh', metavar='\b', type=int, default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
     parser.add_argument('--sat_thresh', metavar='\b', type=int, default=1,help='σ threshold to detect sats Default=1.')
     parser.add_argument('--pow_thresh', metavar='\b', type=int, default=5,help='Power Threshold to detect sats. Default=10 dB.')
     parser.add_argument('--fit_thresh', metavar='\b', default=0.9, help='Goodness of fit threshold. 0.9 seems to only reject obvious outliers')
-    parser.add_argument('--rfe_clip', metavar='\b', default=-30,help='RF Explorer clipping level. Default: -30dBm.')
+    parser.add_argument('--rfe_clip', metavar='\b', default=-30, help='RF Explorer clipping level. Default: -30dBm.')
     parser.add_argument('--nside', metavar='\b', type=int,  default=32,help='Healpix Nside. Default = 32')
     parser.add_argument('--plots', metavar='\b', default=False,help='If True, create a gazzillion plots for each sat pass. Default = False')
-    parser.add_argument('--ref_model', metavar='\b', default='../../outputs/reproject_ref/ref_dipole_models.npz',
-            help='Healpix reference FEE model file. default=../../outputs/reproject_ref/ref_dipole_models.npz')
-    parser.add_argument('--fee_map', metavar='\b', default='../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz',
-            help='Healpix FEE map of mwa tile. default=../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz')
     
     args = parser.parse_args()
     
@@ -585,11 +581,6 @@ if __name__=='__main__':
             for tile in [t for t in tiles if 'YY' in t]:
                 tile_pairs.append([ref,tile])
 
-    Path(f'{out_dir}/0').mkdir(parents=True, exist_ok=True)
-    Path(f'{out_dir}/2').mkdir(parents=True, exist_ok=True)
-    Path(f'{out_dir}/4').mkdir(parents=True, exist_ok=True)
-    Path(f'{out_dir}/41').mkdir(parents=True, exist_ok=True)
-
     # Read channel map file
     with open(chan_map) as map:
         channel_map = json.load(map)
@@ -611,12 +602,10 @@ if __name__=='__main__':
     Path(out_dir).mkdir(parents=True, exist_ok=True)
     sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
-#    for tile_pair in tile_pairs:
-#        project_tile_healpix(tile_pair)
-#        break
+    project_tile_healpix(tile_pairs[0])
         
     # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(project_tile_healpix, tile_pairs)
+#    with concurrent.futures.ProcessPoolExecutor() as executor:
+#        results = executor.map(project_tile_healpix, tile_pairs)
 
 
