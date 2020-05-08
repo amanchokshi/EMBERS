@@ -252,9 +252,9 @@ def beam_slice(f):
     
     for p in pointings:
 
-        tile    = tile_map[p]
+        tile = tile_map[p]
 
-        if 'XX' in tile:
+        if 'XX' in t_name:
             fee = fee_m[p][0]
         else:
             fee = fee_m[p][1]
