@@ -28,46 +28,25 @@ def good_maps(raw_tile):
     # load data from map .npz file
     tile_data   = np.load(raw_tile, allow_pickle=True)
     tile_data   = {key:tile_data[key].item() for key in tile_data}
-    #ref_map     = tile_data['ref_map'] 
-    #tile_map    = tile_data['tile_map']  
     mwa_map     = tile_data['mwa_map']  
     
     tile_maps_norm = {p:[] for p in pointings}
     mwa_maps_norm = {p:[] for p in pointings}
      
     for p in pointings:
-
-        # This contains the data from all the good sat ref data
-        #ref_map_good = [[] for pixel in range(hp.nside2npix(nside))]
         
-        # This contains the data from all the good sat ref data
-        #tile_map_good = [[] for pixel in range(hp.nside2npix(nside))]
-        
+        # mwa map
         mwa_map_good = [[] for pixel in range(hp.nside2npix(nside))]
         
         for sat in good_sats:
 
             for pix in range(hp.nside2npix(nside)):
 
-                #ref_map_good[pix].extend(ref_map[p][sat][pix])
-                #tile_map_good[pix].extend(tile_map[p][sat][pix])
                 mwa_map_good[pix].extend(mwa_map[p][sat][pix])
 
         mwa_maps_norm[p].extend(mwa_map_good)
         
-#        # Here, we divide tile power by ref power and multiply by the fee ref model in log space
-#        tile_map_norm = [[] for pixel in range(hp.nside2npix(nside))]
-#        
-#        for pixel in range(hp.nside2npix(nside)):
-#        
-#            ratio = np.asarray(np.subtract(tile_map_good[pixel], ref_map_good[pixel]))
-#            tile_map_norm[pixel].extend(ratio + rotated_fee[pixel])
-#
-#        tile_maps_norm[p].extend(tile_map_norm)
-
-
     # Save map arrays to npz file
-    #np.savez_compressed(f'{out_dir}/{tile}_{ref}_tile_maps.npz', **tile_maps_norm)
     np.savez_compressed(f'{out_dir}/{tile}_{ref}_tile_maps.npz', **mwa_maps_norm)
 
 
@@ -101,16 +80,16 @@ if __name__=='__main__':
     out_dir.mkdir(parents=True, exist_ok=True)
     
     # Good sats from which to make plots
-    good_sats = [
-            25338, 25984, 25985,
-            28654, 40086, 40087,
-            40091, 41179, 41180,
-            41182, 41183, 41184,
-            41185, 41187, 41188,
-            41189, 44387
-            ]
+    #good_sats = [
+    #        25338, 25984, 25985,
+    #        28654, 40086, 40087,
+    #        40091, 41179, 41180,
+    #        41182, 41183, 41184,
+    #        41185, 41187, 41188,
+    #        41189, 44387
+    #        ]
 
-    #good_sats = list(norad_ids.values())
+    good_sats = list(norad_ids.values())
 
     # list of beam pointings
     pointings = ['0','2','4','41']
