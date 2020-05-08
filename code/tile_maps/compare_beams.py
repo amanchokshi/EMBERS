@@ -276,6 +276,13 @@ def beam_slice(f):
 
         # slice the tile and fee maps along NS, EW
         # zenith angle thresh of 70 to determine fit gain factor
+
+        #mask = np.where(fee_r < -30)
+        #fee_masked = fee_r
+        #fee_masked[mask] = np.nan
+        #tile_masked = tile_r
+        #tile_masked[mask] = np.nan
+        
         NS_f, EW_f = slice_map(fee_r, 70)
         NS_t, EW_t = tile_map_slice(tile_r, 70)
 
@@ -290,6 +297,8 @@ def beam_slice(f):
         # Scale the data so that it best fits the beam slice
         NS_tile_med = NS_tile[0] - gain_NS[0]
         EW_tile_med = EW_tile[0] - gain_EW[0]
+        #NS_tile_med = NS_tile[0]
+        #EW_tile_med = EW_tile[0]
         
         # delta powers
         del_NS = NS_tile_med - NS_fee[0]
@@ -299,31 +308,13 @@ def beam_slice(f):
         fit_NS = poly_fit(NS_tile[2], del_NS, NS_tile[0], 3)  
         fit_EW = poly_fit(EW_tile[2], del_EW, EW_tile[0], 3)  
 
-
-
         # Visualize the tile map and diff map
-        # find the pointing center in radians
-        pointing_center_az = np.radians(all_grid_points[int(pointings[0])][1])
-        pointing_center_za = np.radians(all_grid_points[int(pointings[0])][3])
-        
-        # convert it to a healpix vector
-        pointing_vec = hp.ang2vec(pointing_center_za, pointing_center_az)
-
-        # find all healpix indices within 10 degrees of pointing center
-        ipix_disc = hp.query_disc(nside=nside, vec=pointing_vec, radius=np.radians(10))
-        
         # healpix meadian map
-        tile_med = np.asarray([(np.median(j) if j != [] else np.nan ) for j in tile])
+        tile_med = np.asarray([(np.nanmedian(j) if j != [] else np.nan ) for j in tile])
         
-        # find the max value within 10 degrees of pointing center
-        ipix_max = np.nanmax(tile_med[ipix_disc])
-        
-        # scale map such that the above max is set to 0dB 
-        tile_scaled = np.asarray([(k - ipix_max) for k in tile_med])
-
-        residuals = tile_scaled - fee
+        residuals = tile_med - fee
         residuals[np.where(fee < -30)] = np.nan
-        residuals[np.where(tile_scaled == np.nan)] = np.nan
+        residuals[np.where(tile_med == np.nan)] = np.nan
 
 
         # This is an Awesome plot
@@ -339,7 +330,7 @@ def beam_slice(f):
                 slice_label='Tile NS', model_label='FEE NS')
 
         ax2 = fig1.add_axes([0.48, 0.52, 0.48, 0.43])
-        plot_healpix(data_map=tile_scaled, sub=(2,2,2), fig=fig1, title='tile map', cmap=jade, vmin=-50, vmax=0, cbar=False)
+        plot_healpix(data_map=tile_med, sub=(2,2,2), fig=fig1, title='tile map', cmap=jade, vmin=-50, vmax=0, cbar=False)
         ax7 = plt.gca()
         image = ax7.get_images()[0]
         cax = fig1.add_axes([0.92, 0.52, 0.015, 0.43])
@@ -421,4 +412,4 @@ if __name__=='__main__':
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor() as executor:
         results = executor.map(beam_slice, map_files)
-
+#    beam_slice(map_files[0])
