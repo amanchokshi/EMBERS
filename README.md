@@ -411,23 +411,30 @@ python plot_tile_maps.py
 
 #### Zenith Maps
 <p float="left">
-  <img src="./docs/S08XX_rf0XX_0_good_map.png" width="32%" />
-  <img src="./docs/S08XX_rf0XX_0_good_map_counts.png" width="32%" />
-  <img src="./docs/S08XX_rf0XX_0_good_map_errors.png" width="32%" />
+  <img src="./docs/S35XX_rf0XX_0_good_map.png" width="32%" />
+  <img src="./docs/S35XX_rf0XX_0_good_map_counts.png" width="32%" />
+  <img src="./docs/S35XX_rf0XX_0_good_map_errors.png" width="32%" />
 </p>
 
 #### Sweet Point 2
 <p float="left">
-  <img src="./docs/S08XX_rf0XX_2_good_map.png" width="32%" />
-  <img src="./docs/S08XX_rf0XX_2_good_map_counts.png" width="32%" />
-  <img src="./docs/S08XX_rf0XX_2_good_map_errors.png" width="32%" />
+  <img src="./docs/S35XX_rf0XX_2_good_map.png" width="32%" />
+  <img src="./docs/S35XX_rf0XX_2_good_map_counts.png" width="32%" />
+  <img src="./docs/S35XX_rf0XX_2_good_map_errors.png" width="32%" />
 </p>
 
 #### Sweet Point 4
 <p float="left">
-  <img src="./docs/S08XX_rf0XX_4_good_map.png" width="32%" />
-  <img src="./docs/S08XX_rf0XX_4_good_map_counts.png" width="32%" />
-  <img src="./docs/S08XX_rf0XX_4_good_map_errors.png" width="32%" />
+  <img src="./docs/S35XX_rf0XX_4_good_map.png" width="32%" />
+  <img src="./docs/S35XX_rf0XX_4_good_map_counts.png" width="32%" />
+  <img src="./docs/S35XX_rf0XX_4_good_map_errors.png" width="32%" />
+</p>
+
+#### Sweet Point 41
+<p float="left">
+  <img src="./docs/S35XX_rf0XX_41_good_map.png" width="32%" />
+  <img src="./docs/S35XX_rf0XX_41_good_map_counts.png" width="32%" />
+  <img src="./docs/S35XX_rf0XX_41_good_map_errors.png" width="32%" />
 </p>
 
 
