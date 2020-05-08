@@ -318,10 +318,10 @@ if __name__=='__main__':
     out_dir.mkdir(parents=True, exist_ok=True)
     
     ref_tiles = [
-            'S08XX_rf0XX_sat_maps.npz', 
-            'S08YY_rf0YY_sat_maps.npz', 
-            'S08XX_rf1XX_sat_maps.npz', 
-            'S08YY_rf1YY_sat_maps.npz'
+            'S07XX_rf0XX_sat_maps.npz', 
+            'S07YY_rf0YY_sat_maps.npz', 
+            'S07XX_rf1XX_sat_maps.npz', 
+            'S07YY_rf1YY_sat_maps.npz'
             ]
     good_rf0XX = rotate(nside, angle=+(1*np.pi)/4.0, healpix_array=np.asarray(good_maps(ref_tiles[0])))
     good_rf0YY = rotate(nside, angle=+(1*np.pi)/4.0, healpix_array=np.asarray(good_maps(ref_tiles[1])))
