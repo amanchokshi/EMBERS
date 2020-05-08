@@ -388,9 +388,9 @@ python plot_sat_maps.py
 
 #### Satellite Maps
 <p float="left">
-  <img src="./docs/23545_0_S08XX_rf0XX_passes.png" width="32%" />
-  <img src="./docs/28654_0_S08XX_rf0XX_passes.png" width="32%" />
-  <img src="./docs/41188_0_S08XX_rf0XX_passes.png" width="32%" />
+  <img src="./docs/23545_0_S07XX_rf0XX_passes.png" width="32%" />
+  <img src="./docs/28654_0_S07XX_rf0XX_passes.png" width="32%" />
+  <img src="./docs/41188_0_S07XX_rf0XX_passes.png" width="32%" />
 </p>
 
 These are three example sat maps. The first map has almost no data, so we don't use it in our final map. The other two show a lot of satellite passes / sky coverage, and we can almost make out the beam structure. The satellites will be included in out final "good maps". 
