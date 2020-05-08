@@ -54,7 +54,7 @@ def flag_clipped(ref_p, tile_p):
     exceeds -30 dBm, it is distored. We replace 
     all such values with nans'''
 
-    tile_clip = np.where(tile_p >= -30)
+    tile_clip = np.where(tile_p >= rfe_clip)
     ref_p[tile_clip] = np.nan
     tile_p[tile_clip] = np.nan
 
@@ -427,7 +427,8 @@ def project_tile_healpix(tile_pair):
                                             # determine how well the data fits the model with chi-square  
                                             pval = fit_test(map_data=mwa_pass_fit, fee=mwa_fee_pass)
                                             
-                                            plt_fee_fit(times_pass, mwa_fee_pass, mwa_pass_fit, f'{out_dir}/fit_plots/{tile}_{ref}/', point, timestamp, sat)
+                                            if plots == 'True':
+                                                plt_fee_fit(times_pass, mwa_fee_pass, mwa_pass_fit, f'{out_dir}/fit_plots/{tile}_{ref}/', point, timestamp, sat)
                                             
                                             # a goodness of fit threshold
                                             if pval >= 0.9:
@@ -538,7 +539,7 @@ if __name__=='__main__':
     parser.add_argument('--sat_thresh', metavar='\b', type=int, default=1,help='σ threshold to detect sats Default=1.')
     parser.add_argument('--pow_thresh', metavar='\b', type=int, default=5,help='Power Threshold to detect sats. Default=10 dB.')
     parser.add_argument('--fit_thresh', metavar='\b', default=0.9, help='Goodness of fit threshold. 0.9 seems to only reject obvious outliers')
-    parser.add_argument('--rfe_clip', metavar='\b', default=-30, help='RF Explorer clipping level. Default: -30dBm.')
+    parser.add_argument('--rfe_clip', metavar='\b', type=int, default=-30, help='RF Explorer clipping level. Default: -30dBm.')
     parser.add_argument('--nside', metavar='\b', type=int,  default=32,help='Healpix Nside. Default = 32')
     parser.add_argument('--plots', metavar='\b', default=False,help='If True, create a gazzillion plots for each sat pass. Default = False')
     
@@ -561,7 +562,6 @@ if __name__=='__main__':
     align_dir       = Path(args.align_dir)
     chrono_dir      = Path(args.chrono_dir)
     out_dir         = Path(args.out_dir)
-    plt_dir         = Path(args.plt_dir)
     map_dir         = Path(args.map_dir)
 
 #    # Import list of Norad catalogue IDs
