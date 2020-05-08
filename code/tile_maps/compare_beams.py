@@ -63,8 +63,6 @@ def slice_map(hp_map, za):
         else:
             zenith_angle_EW.append(i)
     
-    #print(sorted(zenith_angle_NS))
-
     NS_data = [hp_map[NS_indices], zenith_angle_NS]
     EW_data = [hp_map[EW_indices], zenith_angle_EW]
 
@@ -93,16 +91,10 @@ def tile_map_slice(good_map, za):
     ref_map_NS, ref_map_EW = slice_map(np.asarray(good_map), za)
 
     ref_med_map_NS = np.asarray([(np.nanmedian(i) if i != [] else np.nan) for i in ref_map_NS[0]])
-    # Scale mean map such that the max value is 0
-    #ref_med_map_scaled_NS = np.asarray([i-np.nanmax(ref_med_map_NS) for i in ref_med_map_NS])
-    #ref_mad_map_NS = np.asarray([mad(i) for i in ref_map_NS[0]])
     ref_mad_map_NS = np.asarray(nan_mad(ref_map_NS[0]))
     za_NS = ref_map_NS[1]
 
     ref_med_map_EW = np.asarray([(np.nanmedian(i) if i != [] else np.nan) for i in ref_map_EW[0]])
-    # Scale mean map such that the max value is 0
-    #ref_med_map_scaled_EW = np.asarray([i-np.nanmax(ref_med_map_EW) for i in ref_med_map_EW])
-    #ref_mad_map_EW = np.asarray([mad(i) for i in ref_map_EW[0]])
     ref_mad_map_EW = np.asarray(nan_mad(ref_map_EW[0]))
     za_EW = ref_map_EW[1]
     
@@ -222,9 +214,6 @@ def plt_slice(
 def plot_healpix(data_map=None, fig=None, sub=None,title=None,vmin=None,vmax=None,cmap=None, cbar=True):
     '''Yeesh do some healpix magic to plot the thing'''
     
-    # Healpix plotting script adapted from Dr. Jack Line's code
-    # https://github.com/JLBLine/MWA_ORBCOMM
-    
     # Disable cryptic healpy warnings. Can't figure out where they originate
     import warnings
     warnings.filterwarnings("ignore", category=RuntimeWarning) 
@@ -276,13 +265,6 @@ def beam_slice(f):
 
         # slice the tile and fee maps along NS, EW
         # zenith angle thresh of 70 to determine fit gain factor
-
-        #mask = np.where(fee_r < -30)
-        #fee_masked = fee_r
-        #fee_masked[mask] = np.nan
-        #tile_masked = tile_r
-        #tile_masked[mask] = np.nan
-        
         NS_f, EW_f = slice_map(fee_r, 70)
         NS_t, EW_t = tile_map_slice(tile_r, 70)
 
@@ -297,8 +279,6 @@ def beam_slice(f):
         # Scale the data so that it best fits the beam slice
         NS_tile_med = NS_tile[0] - gain_NS[0]
         EW_tile_med = EW_tile[0] - gain_EW[0]
-        #NS_tile_med = NS_tile[0]
-        #EW_tile_med = EW_tile[0]
         
         # delta powers
         del_NS = NS_tile_med - NS_fee[0]
