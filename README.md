@@ -331,8 +331,23 @@ python tile_pointings.py --help
 &nbsp;
 ### Tile Maps
 
+In this section we create and analyse tile maps. We compare out tile maps with the latest FEE simulated beam models of MWA tiles. To do this, we need an external library [https://github.com/MWATelescope/mwa_pb.git](https://github.com/MWATelescope/mwa_pb.git), and the raw FEE Beam model data which is stored on cerberus [http://cerberus.mwa128t.org]. These were downloaded and installed while setting up the conda environment.
 
-This section is where everything finally comes together.  We project the aligned satellite data onto healpix maps according to their ephemeris, using the channel maps to only project the good data. We use the power and noise threshold described in the satellite channel section. Signal which pass both thresholds are considered good, and their corresponding altitude and azimuth are determined from the ephem file. These are projected to a healpix map. This is done using `tile_maps.py` The resulting maps are stored in `.npz` files in the `./outputs/tile_maps/tile_maps_raw` directory. The data is stored as nested dictionaries.
+```
+cd ../tile_maps
+```
+
+We can then use `mwa_fee_beam.py` to make simulated FEE beam maps at the 4 pointings of interest. This created plots and a `.npz` file with the four beam maps in the `/outputs/tile_analysis/FEE_maps directory`.
+
+#### MWA FEE Beam Maps
+<p float="left">
+  <img src="./docs/mwa_fee_beam_4.png" width="24%" />
+  <img src="./docs/mwa_fee_beam_0.png" width="24%" />
+  <img src="./docs/mwa_fee_beam_2.png" width="24%" />
+  <img src="./docs/mwa_fee_beam_41.png" width="24%" />
+</p>
+
+Finally, everything can come together.  We project the aligned satellite data onto healpix maps according to their ephemeris, using the channel maps to only project the good data. We use the power and noise threshold described in the satellite channel section. Signal which pass both thresholds are considered good, and their corresponding altitude and azimuth are determined from the ephem file. The RF Explorers distort input signals above -30dBm. We clip any such data to prevent inaccuracies in out final maps. Each satellite pass is git to the fee model using a single gain offset, by a least squares method. A goodness of fit chi-squared test is also used to reject outliers which may have slipped throught he channel map section. The resulting normalized passes are projected to a healpix map. This is done using `tile_maps.py` The resulting maps are stored in `.npz` files in the `./outputs/tile_maps/tile_maps_raw` directory. The data is stored as nested dictionaries.
 
 ```
 cd ../tile_maps/
@@ -344,6 +359,10 @@ The resulting `.npz` files have the following internal structure.
 
 ```
 data
+├── mwa_map                   
+│   └── pointings            
+│       └── satellites            
+│           └── healpix maps            
 ├── ref_map                   
 │   └── pointings            
 │       └── satellites            
@@ -358,7 +377,7 @@ data
             └── healpix maps
 ```
 
-The highest level dictionary contains reference, tile and time maps. Within each of these, there are dictionaries for each of the telescope pointings:`0, 2, 4`. Within which there are dictionaries for each satellite norad ID, which contain a healpix map of data from one satellite, in one pointing. This structure map seem complicated, but is very useful for diagnostic purposes, and determining where errors in the final tile maps come from. The time maps contain the times of every data point added to the above maps.
+The highest level dictionary contains normalized mwa, reference, tile and time maps. Within each of these, there are dictionaries for each of the telescope pointings:`0, 2, 4, 41`. Within which there are dictionaries for each satellite norad ID, which contain a healpix map of data from one satellite, in one pointing. This structure map seem complicated, but is very useful for diagnostic purposes, and determining where errors in the final tile maps come from. The time maps contain the times of every data point added to the above maps.
 
 
 Using `plot_sat_maps.py`, we can plot the sky coverage of each satellite. This is very useful in limiting the amount of "bad" data we add to our final maps. Some of the maps in `./outputs/tile_maps/sat_maps/` clearly show sparse coverage and weird power structure. Eyeballing these maps, we create a list of "good_sats", which we will use to make our good maps.
@@ -431,22 +450,3 @@ We now compare corresponding EW and NS slices of both reference antennas. The fo
 </p>
 
 
-&nbsp;
-### Tile Analysis
-
-In this section we analyse the tile maps we've made so far, by comparing them to the latest FEE simulated beam models of MWA tiles. To do this, we need an external library [https://github.com/MWATelescope/mwa_pb.git](https://github.com/MWATelescope/mwa_pb.git), and the raw FEE Beam model data which is stored on cerberus [http://cerberus.mwa128t.org]. These were downloaded and installed while setting up the conda environment.
-
-```
-cd ../tile_analysis
-```
-
-We can then use `mwa_fee_beam.py` to make simulated FEE beam maps at the 4 pointings of interest. This created plots and a `.npz` file with the three beam maps in the `/outputs/tile_analysis/FEE_maps directory`.
-
-
-#### MWA FEE Beam Maps
-<p float="left">
-  <img src="./docs/mwa_fee_beam_4.png" width="24%" />
-  <img src="./docs/mwa_fee_beam_0.png" width="24%" />
-  <img src="./docs/mwa_fee_beam_2.png" width="24%" />
-  <img src="./docs/mwa_fee_beam_41.png" width="24%" />
-</p>
