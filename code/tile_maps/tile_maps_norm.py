@@ -89,6 +89,7 @@ if __name__=='__main__':
     #        41189, 44387
     #        ]
 
+    # use all satellites
     good_sats = list(norad_ids.values())
 
     # list of beam pointings
