@@ -16,7 +16,7 @@ conda activate ./beam-env
 
 conda deactivate
 ```
-while in the homr dir of this repository.
+while in the home dir of this repository.
 
 When running code in this repository, ensure that `beam-env`is active.
 
