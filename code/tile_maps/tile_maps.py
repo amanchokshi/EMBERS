@@ -49,12 +49,12 @@ def read_aligned(ali_file=None):
 
     return [ref_p, tile_p, times]
 
-def flag_clipped(ref_p, tile_p):
+def flag_clipped(ref_p, tile_p, rfe_clip):
     '''When the input power to the RF Explorer
     exceeds -30 dBm, it is distored. We replace 
     all such values with nans'''
 
-    tile_clip = np.where(tile_p >= -30)
+    tile_clip = np.where(tile_p >= ref_clip)
     ref_p[tile_clip] = np.nan
     tile_p[tile_clip] = np.nan
 
@@ -221,6 +221,7 @@ def plt_fee_fit(t, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat):
     plt.savefig(f'{out_dir}/{point}/{timestamp}_{sat}.png')
     plt.close()
 
+
 def power_ephem(
         ref, tile,
         ali_file,
@@ -229,7 +230,8 @@ def power_ephem(
         sat_chan,
         point,
         pow_thresh,
-        timestamp
+        timestamp,
+        rfe_clip
         ):
 
     '''Create power, alt, az arrays at constant cadence'''
@@ -237,8 +239,6 @@ def power_ephem(
     # Read .npz aligned file
     ref_p, tile_p, times = read_aligned(ali_file=ali_file)
 
-    #ref_p, tile_p = flag_clipped(ref_p, tile_p)
-    
     # Scale noise floor to zero and determine noise threshold
     ref_p, ref_noise = noise_floor(sat_thresh, noi_thresh, ref_p)
     tile_p, tile_noise = noise_floor(sat_thresh, noi_thresh, tile_p)
@@ -282,7 +282,7 @@ def power_ephem(
                     if plots == 'True':
                         plt_channel(f'{plt_dir}/{tile}_{ref}/{point}', times_c, ref_c, tile_c, ref_noise, tile_noise, sat_chan, sat_id, point, timestamp, point)
                     
-                    good_ref, good_tile = flag_clipped(good_ref, good_tile)
+                    good_ref, good_tile = flag_clipped(good_ref, good_tile, rfe_clip)
 
                     return [good_ref, good_tile, good_alt, good_az, times_c]
 
@@ -431,6 +431,7 @@ def project_tile_healpix(tile_pair):
                                             
                                             #plt_fee_fit(times_pass, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat)
                                             
+                                            # a goodness of fit threshold
                                             if pval >= 0.9:
 
                                                 # loop though all healpix pixels for the pass
@@ -536,6 +537,8 @@ if __name__=='__main__':
     parser.add_argument('--noi_thresh', metavar='\b', type=int, default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
     parser.add_argument('--sat_thresh', metavar='\b', type=int, default=1,help='σ threshold to detect sats Default=1.')
     parser.add_argument('--pow_thresh', metavar='\b', type=int, default=5,help='Power Threshold to detect sats. Default=10 dB.')
+    parser.add_argument('--fit_thresh', metavar='\b', default=0.9, help='Goodness of fit threshold. 0.9 seems to only reject obvious outliers')
+    parser.add_argument('--rfe_clip', metavar='\b', default=-30,help='RF Explorer clipping level. Default: -30dBm.')
     parser.add_argument('--nside', metavar='\b', type=int,  default=32,help='Healpix Nside. Default = 32')
     parser.add_argument('--plots', metavar='\b', default=False,help='If True, create a gazzillion plots for each sat pass. Default = False')
     parser.add_argument('--ref_model', metavar='\b', default='../../outputs/reproject_ref/ref_dipole_models.npz',
@@ -552,6 +555,8 @@ if __name__=='__main__':
     noi_thresh      = args.noi_thresh
     sat_thresh      = args.sat_thresh
     pow_thresh      = args.pow_thresh
+    fit_thresh      = args.fit_thresh
+    rfe_clip        = args.rfe_clip
     nside           = args.nside
     plots           = args.plots
     ref_model       = args.ref_model
@@ -604,7 +609,7 @@ if __name__=='__main__':
 
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-    #sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
 #    for tile_pair in tile_pairs:
 #        project_tile_healpix(tile_pair)
