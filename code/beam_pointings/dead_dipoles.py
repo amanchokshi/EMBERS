@@ -71,9 +71,7 @@ def find_flag(meta):
 for m in meta_files:
     find_flag(m)
 
-print(flags)
-
-
+# Save flagging info to json file
 with open(f'{output}', 'w') as outfile:
     json.dump(flags, outfile, indent=4)
 
