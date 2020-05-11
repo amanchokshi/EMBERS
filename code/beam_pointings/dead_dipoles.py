@@ -37,6 +37,7 @@ tiles = [
 # 0 indicates no dead dipole
 # 1-16 dipole index
 flags = {}
+flags['obsid'] = []
 for t in tiles:
     for p in ['X', 'Y']:
         flags[f'{t}{p}'] = []
@@ -45,6 +46,7 @@ for t in tiles:
 def find_flag(meta):
     hdu = fits.open(meta)
     obsid = hdu[0].header['GPSTIME']
+    flags['obsid'].append(int(obsid))
     delays = hdu[1].data['Delays']
     
     tile_names = hdu[1].data['TileName']
