@@ -342,6 +342,8 @@ python dead_dipoles.py
   <img src="./docs/dead_dipoles.png" width="98%" />
 </p>
 
+We can see that dipole `9` of tile `HexS33Y` is flagged. We need to take this into account in later stages.
+
 
 &nbsp;
 ### Tile Maps
