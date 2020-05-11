@@ -15,12 +15,12 @@ parser.add_argument(
         help='Directory where metafits files live. Default=./../../outputs/beam_pointings/metafits/')
 
 parser.add_argument(
-        '--output', metavar='\b', default='./../../outputs/beam_pointings/flags.json', 
-        help='Directory where metafits files live. Default=./../../outputs/beam_pointings/flags.json')
+        '--out_dir', metavar='\b', default='./../../outputs/beam_pointings/', 
+        help='Directory where metafits files live. Default=./../../outputs/beam_pointings/')
 
 args = parser.parse_args()
 metafits     = Path(args.metafits)
-output       = Path(args.output)
+out_dir       = Path(args.out_dir)
 
 meta_files = [item for item in metafits.glob('*.metafits')]
 
@@ -78,7 +78,7 @@ for m in meta_files:
     find_flag(m)
 
 # Save flagging info to json file
-with open(f'{output}', 'w') as outfile:
+with open(f'{out_dir}/flags.json', 'w') as outfile:
     json.dump(flags, outfile, indent=4)
 
 keys = list(flags.keys())
@@ -92,7 +92,7 @@ fig, axs = plt.subplots(4,7, figsize=(18, 9), sharex=True, sharey=True,)
 axs = axs.ravel()
 
 for i in range(n):
-    axs[i].scatter(flags['obsid'], flags[keys[i+1]], marker='.', color=colors[i], linewidths=0.1, edgecolors='slategray' ,alpha=0.7, label=keys[i+1])
+    axs[i].scatter(flags['obsid'], flags[keys[i+1]], color=colors[i], linewidths=0.1, s=28, edgecolors='slategray' ,alpha=0.7, label=keys[i+1])
     axs[i].set_ylim(-1, 17)
     axs[i].set_yticks([0, 4, 8, 12, 16])
     
@@ -104,5 +104,5 @@ for i in range(n):
         verticalalignment='top', bbox=props)
 
 plt.tight_layout()
-plt.savefig('test_subs.png')
+plt.savefig(f'{out_dir}/dead_dipoles.png')
 
