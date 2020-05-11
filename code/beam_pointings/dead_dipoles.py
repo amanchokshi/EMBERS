@@ -1,13 +1,15 @@
-from astropy.io import fits
 import numpy as np
+from astropy.io import fits
+from pathlib import Path
 
-meta = '~/Downloads/1252145824.metafits'
+meta = Path('./1252145824.metafits')
+
 
 hdu = fits.open(meta)
 obsid = hdu[0].header['GPSTIME']
 delays = hdu[1].data['Delays']
 
-print(delays)
+print(repr(hdu[0].header))
 
 ## Counts the number of flagged dipoles for each tile
 #flags = []
