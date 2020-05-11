@@ -21,11 +21,14 @@ args = parser.parse_args()
 obs_ids     = args.obs_ids
 out_dir     = Path(args.out_dir)
 
+out_dir.mkdir(parents=True, exist_ok=True)
 
 with open(obs_ids) as gps:
     gps_times = json.load(gps)['start_gps']
 
-print(len(gps_times[::10]))
+for i in gps_times[::10]:
+    print(i)
+
 
 
 
