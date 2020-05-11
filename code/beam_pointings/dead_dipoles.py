@@ -64,7 +64,7 @@ def find_flag(meta):
             t_flag = np.where(t_del == 32)[0] + 1
              
             if t_flag.size != 0:
-                flags[f'{t_name}{t_pol}'].append(t_flag[0])
+                flags[f'{t_name}{t_pol}'].append(int(t_flag[0]))
             else:
                 flags[f'{t_name}{t_pol}'].append(0)
 
@@ -74,5 +74,7 @@ for m in meta_files:
 print(flags)
 
 
+with open(f'{output}', 'w') as outfile:
+    json.dump(flags, outfile, indent=4)
 
 
