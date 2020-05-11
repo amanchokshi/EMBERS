@@ -326,6 +326,11 @@ python tile_pointings.py --help
   <img src="./docs/tiles_pointing_integration.png" width="100%" />
 </p>
 
+We also need to check whether any of the tiles have flagged dipoles. This information can be found in the metafits files saved by the mwa. We download these files with
+
+```
+python download_metafits.py
+```
 
 
 &nbsp;
