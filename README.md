@@ -332,6 +332,16 @@ We also need to check whether any of the tiles have flagged dipoles. This inform
 python download_metafits.py
 ```
 
+Extract data for the 14 tiles used in the experiment. [Hardcoded list]. Find Which of their dipoles are flagged and when. A value of `0`, indicates 0 dipoles flagged, while a value of `1-16` corresponds to the position of each of the 16 dipoles.
+
+```
+python dead_dipoles.py
+```
+
+<p float="left">
+  <img src="./docs/dead_dipoles.png" width="98%" />
+</p>
+
 
 &nbsp;
 ### Tile Maps
