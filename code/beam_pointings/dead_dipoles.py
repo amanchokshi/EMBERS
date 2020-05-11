@@ -3,6 +3,8 @@ import argparse
 import numpy as np
 from pathlib import Path
 from astropy.io import fits
+import matplotlib.pylab as pl
+import matplotlib.pyplot as plt
 
 parser = argparse.ArgumentParser(description="""
         Look for dead dipoles
@@ -45,30 +47,32 @@ for t in tiles:
 
 def find_flag(meta):
     hdu = fits.open(meta)
+    mode = hdu[0].header['MODE']
     obsid = hdu[0].header['GPSTIME']
-    flags['obsid'].append(int(obsid))
     delays = hdu[1].data['Delays']
-    
+           
     tile_names = hdu[1].data['TileName']
     delays = hdu[1].data['Delays']
     pols = hdu[1].data['Pol']
     
-    
-    
-    for t in tiles:
-        idx = np.where(tile_names == t)
-        for i in range(2):
-            idx_p = idx[0][i]
-            
-            t_name = tile_names[idx_p]
-            t_pol = pols[idx_p]
-            t_del = delays[idx_p]
-            t_flag = np.where(t_del == 32)[0] + 1
-             
-            if t_flag.size != 0:
-                flags[f'{t_name}{t_pol}'].append(int(t_flag[0]))
-            else:
-                flags[f'{t_name}{t_pol}'].append(0)
+    if mode == 'HW_LFILES':
+
+        flags['obsid'].append(int(obsid))
+        
+        for t in tiles:
+            idx = np.where(tile_names == t)
+            for i in range(2):
+                idx_p = idx[0][i]
+                
+                t_name = tile_names[idx_p]
+                t_pol = pols[idx_p]
+                t_del = delays[idx_p]
+                t_flag = np.where(t_del == 32)[0] + 1
+                 
+                if t_flag.size != 0:
+                    flags[f'{t_name}{t_pol}'].append(int(t_flag[0]))
+                else:
+                    flags[f'{t_name}{t_pol}'].append(0)
 
 for m in meta_files:
     find_flag(m)
@@ -77,4 +81,28 @@ for m in meta_files:
 with open(f'{output}', 'w') as outfile:
     json.dump(flags, outfile, indent=4)
 
+keys = list(flags.keys())
+
+n = len(keys) - 1
+colors = pl.cm.Spectral(np.linspace(0,1,n))
+
+plt.style.use('seaborn')
+
+fig, axs = plt.subplots(4,7, figsize=(18, 9), sharex=True, sharey=True,)
+axs = axs.ravel()
+
+for i in range(n):
+    axs[i].scatter(flags['obsid'], flags[keys[i+1]], marker='.', color=colors[i], linewidths=0.1, edgecolors='slategray' ,alpha=0.7, label=keys[i+1])
+    axs[i].set_ylim(-1, 17)
+    axs[i].set_yticks([0, 4, 8, 12, 16])
+    
+    # these are matplotlib.patch.Patch properties
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.2)
+
+    # place a text box in upper left in axes coords
+    axs[i].text(0.67, 0.93, f'{keys[i+1]}', transform=axs[i].transAxes, fontsize=10,
+        verticalalignment='top', bbox=props)
+
+plt.tight_layout()
+plt.savefig('test_subs.png')
 
