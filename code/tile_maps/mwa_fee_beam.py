@@ -137,3 +137,51 @@ if __name__=='__main__':
     np.savez_compressed(f'{out_dir}/mwa_fee_beam.npz', **fee_beam)
 
 
+    fee_beam_flagged = {}
+    for p in pointings:
+
+        # Empty array for model beam
+        npix = hp.nside2npix(nside)
+        beam_response_XX = np.zeros(npix)
+        beam_response_YY = np.zeros(npix)
+
+        # healpix indices above horizon
+        # convert to zenith angle and azimuth
+        above_horizon = range(int(npix/2))
+        beam_zas,beam_azs = hp.pix2ang(nside, above_horizon)
+   
+        delay_p = np.array([all_grid_points[int(p)][-1], all_grid_points[int(p)][-1]])
+
+        # S21 had a missing dipole, so need a different amplitude array for the model
+        amps = np.ones((2,16))
+        amps[1,8] = 0
+
+        # Make beam response
+        response = local_beam([list(beam_zas)], [list(beam_azs)], freq=137e+6, delays=delay_p, zenithnorm=True, power=True, interp=False, amps=amps)
+        response_XX = response[0][0]
+        response_YY = response[1][0]
+        
+        # Stick in an array, convert to decibels, and noralise
+        beam_response_XX[above_horizon] = response_XX
+        decibel_beam_XX = 10*np.log10(beam_response_XX)
+        normed_beam_XX = decibel_beam_XX - decibel_beam_XX.max()
+        
+        beam_response_YY[above_horizon] = response_YY
+        decibel_beam_YY = 10*np.log10(beam_response_YY)
+        normed_beam_YY = decibel_beam_YY - decibel_beam_YY.max()
+        
+        fee_beam_flagged[p] = [normed_beam_XX, normed_beam_YY]
+      
+        #fig = plt.figure(figsize=(9,10))
+        #fig.suptitle(f'MWA FEE MAP @ pointing [{p}] XX', fontsize=16, y=1.0)
+        #plot_healpix(data_map=normed_beam_XX, sub=(1,1,1), cmap=jade, vmin=-50, vmax=0)
+        #plt.savefig(f'{out_dir}/mwa_fee_beam_{p}_XX.png')
+        #plt.close()
+        
+        fig = plt.figure(figsize=(9,10))
+        fig.suptitle(f'MWA FEE MAP @ pointing [{p}] YY', fontsize=16, y=1.0)
+        plot_healpix(data_map=normed_beam_YY, sub=(1,1,1), cmap=jade, vmin=-50, vmax=0)
+        plt.savefig(f'{out_dir}/mwa_fee_beam_{p}_YY_9_flagged.png')
+        plt.close()
+
+    np.savez_compressed(f'{out_dir}/mwa_fee_beam_9_flagged.npz', **fee_beam_flagged)
