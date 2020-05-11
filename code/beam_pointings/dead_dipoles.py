@@ -92,7 +92,7 @@ fig, axs = plt.subplots(4,7, figsize=(18, 9), sharex=True, sharey=True,)
 axs = axs.ravel()
 
 for i in range(n):
-    axs[i].scatter(flags['obsid'], flags[keys[i+1]], color=colors[i], linewidths=0.1, s=28, edgecolors='slategray' ,alpha=0.7, label=keys[i+1])
+    axs[i].scatter(flags['obsid'], flags[keys[i+1]], color=colors[i], linewidths=0.1, s=28 ,alpha=0.7, label=keys[i+1])
     axs[i].set_ylim(-1, 17)
     axs[i].set_yticks([0, 4, 8, 12, 16])
     
