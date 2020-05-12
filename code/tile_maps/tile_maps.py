@@ -322,7 +322,12 @@ def project_tile_healpix(tile_pair):
     # Load reference FEE model
     # Rotate the fee models by -pi/2 to move model from spherical (E=0) to Alt/Az (N=0)
     ref_fee_model = np.load(ref_model, allow_pickle=True)
-    fee_m = np.load(fee_map, allow_pickle=True)
+    
+    # Tile S33YY has it's 9th dipole flagged
+    if tile is 'S33YY':
+        fee_m = np.load(fee_map_flagged, allow_pickle=True)
+    else:
+        fee_m = np.load(fee_map, allow_pickle=True)
     
     if 'XX' in tile:    
         ref_fee = ref_fee_model['XX']
@@ -530,6 +535,9 @@ if __name__=='__main__':
     parser.add_argument('--fee_map', metavar='\b', default='../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz',
             help='Healpix FEE map of mwa tile. default=../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz')
     
+    parser.add_argument('--fee_map_flagged', metavar='\b', default='../../outputs/tile_maps/FEE_maps/mwa_fee_beam_9_flagged.npz',
+            help='Healpix FEE map of mwa tile. default=../../outputs/tile_maps/FEE_maps/mwa_fee_beam_9_flagged.npz')
+    
     parser.add_argument('--fit_thresh', metavar='\b', default=0.9, help='Goodness of fit threshold. 0.9 seems to only reject obvious outliers')
     parser.add_argument('--noi_thresh', metavar='\b', type=int, default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
     parser.add_argument('--sat_thresh', metavar='\b', type=int, default=1,help='σ threshold to detect sats Default=1.')
@@ -554,6 +562,7 @@ if __name__=='__main__':
     plots           = args.plots
     ref_model       = args.ref_model
     fee_map         = args.fee_map
+    fee_map_flagged = args.fee_map_flagged
     
     align_dir       = Path(args.align_dir)
     chrono_dir      = Path(args.chrono_dir)
