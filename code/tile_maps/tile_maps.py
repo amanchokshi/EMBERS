@@ -328,7 +328,7 @@ def project_tile_healpix(tile_pair):
         fee_m = np.load(fee_map_flagged, allow_pickle=True)
     else:
         fee_m = np.load(fee_map, allow_pickle=True)
-    
+        
     if 'XX' in tile:    
         ref_fee = ref_fee_model['XX']
         rotated_fee = rotate(nside, angle=-(1*np.pi)/2.0,healpix_array=ref_fee)
@@ -601,9 +601,10 @@ if __name__=='__main__':
     sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
 #    project_tile_healpix(tile_pairs[0])
+    project_tile_healpix(['rf0YY', 'S33YY'])
         
     # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(project_tile_healpix, tile_pairs)
+    #with concurrent.futures.ProcessPoolExecutor() as executor:
+    #    results = executor.map(project_tile_healpix, tile_pairs)
 
 
