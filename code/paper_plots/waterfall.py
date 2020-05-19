@@ -61,13 +61,13 @@ nice_fonts = {
 
 plt.rcParams.update(nice_fonts)
 
-fig = plt.figure(figsize=(7, 5))
+fig = plt.figure(figsize=(7, 4.2))
 #fig, axs = plt.subplots(1,2, figsize=(7,5))
 #axs = axs.ravel()
 
-ax1 = fig.add_axes([0.01, 0.01, 0.46, 0.98])
-ax2 = fig.add_axes([0.49, 0.01, 0.46, 0.98])
-cax = fig.add_axes([0.96, 0.01, 0.015, 0.98])
+ax1 = fig.add_axes([0.00, 0.0, 0.46, 1])
+ax2 = fig.add_axes([0.50, 0.0, 0.46, 1])
+cax = fig.add_axes([0.98, 0.0, 0.015,1])
 
 ax1.imshow(t_image, vmin=vmin, vmax=vmax, interpolation='none', cmap=cmap)
 ax1.set_aspect('auto')
