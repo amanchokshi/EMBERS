@@ -87,16 +87,16 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     
 
-    ch =59
-    ref_t, ref_p, tile_t, tile_p, ref_p_aligned, tile_p_aligned, time_array = savgol_interp(
-            './../../data/rf0XX_2019-10-10-02:30.txt',
-            './../../data/S10XX_2019-10-10-02:30.txt',
-            savgol_window_1 =11,
-            savgol_window_2 =15,
-            polyorder=2,
-            interp_type='cubic',
-            interp_freq=1
-            )
+#    ch =59
+#    ref_t, ref_p, tile_t, tile_p, ref_p_aligned, tile_p_aligned, time_array = savgol_interp(
+#            './../../data/rf0XX_2019-10-10-02:30.txt',
+#            './../../data/S10XX_2019-10-10-02:30.txt',
+#            savgol_window_1 =11,
+#            savgol_window_2 =15,
+#            polyorder=2,
+#            interp_type='cubic',
+#            interp_freq=1
+#            )
 
 
 #    ch =23
@@ -122,16 +122,16 @@ if __name__ == '__main__':
 #            )
 
 
-#    ch =8
-#    ref_t, ref_p, tile_t, tile_p, ref_p_aligned, tile_p_aligned, time_array = savgol_interp(
-#            '../../../tiles_data/rf0XX/2019-09-15/rf0XX_2019-09-15-11:00.txt',
-#            '../../../tiles_data/S06XX/2019-09-15/S06XX_2019-09-15-11:00.txt',
-#            savgol_window_1 =11,
-#            savgol_window_2 =15,
-#            polyorder=2,
-#            interp_type='cubic',
-#            interp_freq=1
-#            )
+    ch =8
+    ref_t, ref_p, tile_t, tile_p, ref_p_aligned, tile_p_aligned, time_array = savgol_interp(
+            '../../../tiles_data/rf0XX/2019-09-15/rf0XX_2019-09-15-11:00.txt',
+            '../../../tiles_data/S06XX/2019-09-15/S06XX_2019-09-15-11:00.txt',
+            savgol_window_1 =11,
+            savgol_window_2 =15,
+            polyorder=2,
+            interp_type='cubic',
+            interp_freq=1
+            )
 
 # Plots
     fig = plt.figure(figsize=(12,9))
