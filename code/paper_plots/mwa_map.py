@@ -82,18 +82,18 @@ plt.rcParams.update(nice_fonts)
 
 fig, ax = plt.subplots(figsize=(3.6, 3.6))
 #fig, ax = plt.subplots(figsize=(16, 16))
-ax.scatter(E, N, marker='s', s=4.9, color='#ffbe00', label='MWA')
-ax.scatter(e_14, n_14, marker='s', s=4.9, color='#78bbe6', label='AUT')
-ax.scatter(rf_e, rf_n, marker='s', s=4.9, color='#00b906', label='REF')
-#ax.scatter(-8.5, 0.9, marker='s', s=4.9, color='green', label='Center')
+ax.scatter(E, N, marker='s', s=10.0, color='orange', label='MWA')
+ax.scatter(e_14, n_14, marker='s', s=10.0, color='cornflowerblue', label='AUT')
+ax.scatter(rf_e, rf_n, marker='s', s=10.0, color='crimson', label='REF')
+#ax.scatter(-8.5, 0.9, marker='s', s=10.0, color='green', label='Center')
 
 #for i, txt in enumerate(tiles):
 #    ax.annotate(txt, (E[i], N[i]))
 
-leg = ax.legend(loc="upper right", frameon=True, framealpha=0.4, markerscale=1.7)
+leg = ax.legend(loc="lower right", frameon=True, framealpha=0.2, markerscale=1, prop={'weight':'heavy'})
 leg.get_frame().set_edgecolor('white')
 for text in leg.get_texts():
-    text.set_color('Black')
+    text.set_color('white')
 for l in leg.legendHandles:
     l.set_alpha(1)
 
