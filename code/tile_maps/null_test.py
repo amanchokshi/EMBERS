@@ -242,9 +242,14 @@ def plt_slice(
     dax.plot(zen_angle, pow_fit, linewidth=1.2, alpha=0.9, color='#ff8264')
     dax.set_xlim([-82,82])
     dax.set_xticklabels([])
+    dax.set_ylim([-5,5])
     if ylabel is True:
-        ax.set_ylabel('Power (dB)')
-        dax.set_ylabel('Data - Model (dB)')
+        ax.set_ylabel('Power [dB]')
+        dax.set_ylabel(r'$\Delta ref$ [dB]')
+        #dax.set_ylabel('Data - Model (dB)')
+    else:
+        dax.set_yticklabels([])
+        ax.set_yticklabels([])
 
     return ax
 
@@ -271,7 +276,7 @@ def plt_null_test(
     
     ax.set_xlim([-82,82])
     ax.set_ylim([-10,10])
-    ax.set_xlabel('Zenith Angle (degrees)')
+    ax.set_xlabel('Zenith Angle [degrees]')
     #ax.legend(loc='upper left')
     leg = ax.legend(loc="upper left", frameon=True, handlelength=1)
     leg.get_frame().set_facecolor('white')
@@ -279,7 +284,9 @@ def plt_null_test(
         l.set_alpha(1)
     
     if ylabel is True:
-        ax.set_ylabel('Power (dB)')
+        ax.set_ylabel('Power [dB]')
+    else:
+        ax.set_yticklabels([])
 
     return ax
 
