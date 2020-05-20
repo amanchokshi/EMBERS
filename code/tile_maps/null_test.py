@@ -11,7 +11,7 @@ def hp_slices_horizon(nside=None):
     θ, ɸ = hp.pix2ang(nside, hp_indices)
 
     # healpix indices above the horizon
-    above_horizon_indices = np.where(θ <= np.radians(85))[0]
+    above_horizon_indices = np.where(θ <= np.radians(80))[0]
     
     # pixel coords above the horizon
     ɸ_above_horizon = ɸ[above_horizon_indices]
@@ -207,7 +207,7 @@ def plt_slice(
         zen_angle=None, map_slice=None,
         map_error=None, model_slice=None, 
         delta_pow=None, pow_fit=None, 
-        slice_label=None, model_label=None):
+        slice_label=None, model_label=None, ylabel=True):
 
     '''Plot a slice of the beam, with measured
     data, errorbars, and fit the simulated beam
@@ -224,12 +224,15 @@ def plt_slice(
 
     ax.plot(zen_angle,model_slice, color='#c70039', linewidth=1.2, alpha=0.9, label=model_label)
 
-    ax.set_ylabel('Power (dB)')
     #ax.set_ylim(bottom=-30)
     #ax.set_xlabel('Zenith Angle (degrees)')
-    ax.legend()
-    ax.set_xlim([-90,90])
-    ax.set_ylim([-32,12])
+    #ax.legend(loc='lower center')
+    leg = ax.legend(loc="lower center", frameon=True, handlelength=1)
+    leg.get_frame().set_facecolor('white')
+    for l in leg.legendHandles:
+        l.set_alpha(1)
+    ax.set_xlim([-82,82])
+    ax.set_ylim([-26,12])
 
     divider = make_axes_locatable(ax)
     dax = divider.append_axes("bottom", size="30%", pad=0.1)
@@ -237,8 +240,11 @@ def plt_slice(
     #dax = fig.add_subplot(2,1,2)
     dax.scatter(zen_angle, delta_pow, marker='.', color='#27296d')
     dax.plot(zen_angle, pow_fit, linewidth=1.2, alpha=0.9, color='#ff8264')
-    dax.set_ylabel('Data - Model (dB)')
+    dax.set_xlim([-82,82])
     dax.set_xticklabels([])
+    if ylabel is True:
+        ax.set_ylabel('Power (dB)')
+        dax.set_ylabel('Data - Model (dB)')
 
     return ax
 
@@ -247,7 +253,7 @@ def plt_null_test(
         zen_angle=None, del_pow=None, 
         del_err=None, del_beam=None, 
         del_fit=None, null_label=None,
-        beam_label=None, fit_label=None):
+        beam_label=None, fit_label=None, ylabel=True):
 
     '''Plot graphs for a null test'''
 
@@ -263,11 +269,17 @@ def plt_null_test(
     
     ax.plot(zen_angle,del_fit, color='#ff8264', linewidth=1.2, alpha=0.9, label=fit_label)
     
-    ax.set_xlim([-90,90])
+    ax.set_xlim([-82,82])
     ax.set_ylim([-10,10])
-    ax.set_ylabel('Power (dB)')
     ax.set_xlabel('Zenith Angle (degrees)')
-    ax.legend()
+    #ax.legend(loc='upper left')
+    leg = ax.legend(loc="upper left", frameon=True, handlelength=1)
+    leg.get_frame().set_facecolor('white')
+    for l in leg.legendHandles:
+        l.set_alpha(1)
+    
+    if ylabel is True:
+        ax.set_ylabel('Power (dB)')
 
     return ax
 
@@ -444,7 +456,7 @@ if __name__=='__main__':
             zen_angle=za_EW, map_slice=rf0XX_EW[0],
             map_error=rf0XX_EW[1], model_slice=XX_EW_slice,
             delta_pow=del_pow_ref0_XX_EW, pow_fit=fit_ref0_XX_EW,
-            slice_label='ref0XX EW', model_label='FEE XX EW')
+            slice_label='ref0XX EW', model_label='FEE XX EW', ylabel=False)
 
     ax3 = plt_slice(
             fig=fig1, sub=323,
@@ -459,7 +471,7 @@ if __name__=='__main__':
             zen_angle=za_EW, map_slice=rf1XX_EW[0],
             map_error=rf1XX_EW[1], model_slice=XX_EW_slice,
             delta_pow=del_pow_ref1_XX_EW, pow_fit=fit_ref1_XX_EW,
-            slice_label='ref1XX EW', model_label='FEE XX EW')
+            slice_label='ref1XX EW', model_label='FEE XX EW', ylabel=False)
 
     ax5 = plt_null_test(
             fig=fig1,sub=325, 
@@ -473,7 +485,7 @@ if __name__=='__main__':
             zen_angle=za_EW, del_pow=ref01_XX_EW, 
             del_err=error_ref01_XX_EW, del_beam=beam_ref01_XX_EW, 
             del_fit=fit_ref01_XX_EW, null_label='EW rf0-rf1', 
-            beam_label='FEE Null', fit_label='Fit rf0-rf1')
+            beam_label='FEE Null', fit_label='Fit rf0-rf1', ylabel=False)
 
 
     plt.tight_layout()
@@ -494,7 +506,7 @@ if __name__=='__main__':
             zen_angle=za_EW, map_slice=rf0YY_EW[0],
             map_error=rf0YY_EW[1], model_slice=YY_EW_slice,
             delta_pow=del_pow_ref0_YY_EW, pow_fit=fit_ref0_YY_EW,
-            slice_label='ref0YY EW', model_label='FEE YY EW')
+            slice_label='ref0YY EW', model_label='FEE YY EW', ylabel=False)
     
     ax9 = plt_slice(
             fig=fig2, sub=323,
@@ -508,7 +520,7 @@ if __name__=='__main__':
             zen_angle=za_EW, map_slice=rf1YY_EW[0],
             map_error=rf1YY_EW[1], model_slice=YY_EW_slice,
             delta_pow=del_pow_ref1_YY_EW, pow_fit=fit_ref1_YY_EW,
-            slice_label='ref1YY EW', model_label='FEE YY EW')
+            slice_label='ref1YY EW', model_label='FEE YY EW', ylabel=False)
     
     ax11 = plt_null_test(
             fig=fig2,sub=325, 
@@ -522,7 +534,7 @@ if __name__=='__main__':
             zen_angle=za_EW, del_pow=ref01_YY_EW, 
             del_err=error_ref01_YY_EW, del_beam=beam_ref01_YY_EW, 
             del_fit=fit_ref01_YY_EW, null_label='EW rf0-rf1', 
-            beam_label='FEE Null', fit_label='Fit rf0-rf1')
+            beam_label='FEE Null', fit_label='Fit rf0-rf1', ylabel=False)
 
     plt.tight_layout()
     fig2.savefig(f'{out_dir}/null_test_YY_slices.png')
