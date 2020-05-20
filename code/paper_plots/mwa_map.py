@@ -15,7 +15,7 @@ parser.add_argument(
         help='Directory where metafits files live. Default=./../../outputs/beam_pointings/metafits/1262518040.metafits')
 
 parser.add_argument(
-        '--out_dir', metavar='\b', default='./../../outputs/beam_pointings/', 
+        '--out_dir', metavar='\b', default='./../../outputs/paper_plots/', 
         help='Directory where metafits files live. Default=./../../outputs/paper_plots/')
 
 args = parser.parse_args()
@@ -35,10 +35,10 @@ tiles_14 = [
 
 
 
+# Read metafits file and extract positions of each tile in N, E coordinates
 tiles = []
 N = []
 E = []
-
 hdu = fits.open(metafits)
 tile_names = hdu[1].data['TileName']
 north = hdu[1].data['North']
@@ -46,26 +46,24 @@ east = hdu[1].data['East']
 pols = hdu[1].data['Pol']
 
 for t in range(len(tile_names)):
-    #if 'HexS' in tile_names[t] and 'X' in pols[t]: 
     if 'X' in pols[t]: 
         tiles.append(tile_names[t])
         N.append(north[t])
         E.append(east[t])
 
+# Positions of the references
 rf_n = [-39.74, -10.88]
 rf_e = [36.26, 67.48]
 
+# positions of 14 tiles used
 n_14 = []
 e_14 = []
 for n in tiles_14:
     idx_n = np.where(np.array(tiles) == n)[0][0]
     e_14.append(E[idx_n])
     n_14.append(N[idx_n])
+
     
-#print(n_14)
-#print(e_14)
-
-
 nice_fonts = {
         # Use LaTeX to write all text
         "text.usetex": True,
@@ -84,20 +82,27 @@ plt.rcParams.update(nice_fonts)
 
 fig, ax = plt.subplots(figsize=(3.6, 3.6))
 #fig, ax = plt.subplots(figsize=(16, 16))
-ax.scatter(E, N, marker='.', color='#f9ed69')
-ax.scatter(rf_e, rf_n, marker='.', color='red')
-ax.scatter(e_14, n_14, marker='.', color='blue')
+ax.scatter(E, N, marker='s', s=4.9, color='#ffbe00', label='MWA')
+ax.scatter(e_14, n_14, marker='s', s=4.9, color='#78bbe6', label='AUT')
+ax.scatter(rf_e, rf_n, marker='s', s=4.9, color='#00b906', label='REF')
+#ax.scatter(-8.5, 0.9, marker='s', s=4.9, color='green', label='Center')
 
 #for i, txt in enumerate(tiles):
 #    ax.annotate(txt, (E[i], N[i]))
 
+leg = ax.legend(loc="upper right", frameon=True, framealpha=0.4, markerscale=1.7)
+leg.get_frame().set_edgecolor('white')
+for text in leg.get_texts():
+    text.set_color('Black')
+for l in leg.legendHandles:
+    l.set_alpha(1)
+
+#ax.legend()
 ax.set_aspect('equal')
 ax.set_ylim(-100, 400)
 ax.set_xlim(-200, 300)
-#ax.set_ylim(50, 200)
-#ax.set_xlim(-50, 100)
 ax.set_ylabel('North [m]')
 ax.set_xlabel('East [m]')
 
-plt.savefig('test.png', transparent=True, bbox_inches='tight')
+plt.savefig(f'{out_dir}/mwa_map.pdf', transparent=True, bbox_inches='tight')
 
