@@ -219,10 +219,10 @@ def plt_slice(
     ax.errorbar(
            zen_angle, map_slice, yerr=map_error, 
            fmt='.', color='#326765', ecolor='#7da87b',
-           elinewidth=1, capsize=1, capthick=1.2,
-           alpha=0.9, ms=5.4, label=slice_label)
+           elinewidth=1.4, capsize=1.4, capthick=1.6,
+           alpha=0.9, ms=7, label=slice_label)
 
-    ax.plot(zen_angle,model_slice, color='#c70039', linewidth=1.2, alpha=0.9, label=model_label)
+    ax.plot(zen_angle,model_slice, color='#c70039', linewidth=1.4, alpha=0.9, label=model_label)
 
     #ax.set_ylim(bottom=-30)
     #ax.set_xlabel('Zenith Angle (degrees)')
@@ -238,8 +238,8 @@ def plt_slice(
     dax = divider.append_axes("bottom", size="30%", pad=0.1)
 
     #dax = fig.add_subplot(2,1,2)
-    dax.scatter(zen_angle, delta_pow, marker='.', s=28, color='#27296d')
-    dax.plot(zen_angle, pow_fit, linewidth=1.2, alpha=0.9, color='#ff8264')
+    dax.scatter(zen_angle, delta_pow, marker='.', s=30, color='#27296d')
+    dax.plot(zen_angle, pow_fit, linewidth=1.4, alpha=0.9, color='#ff8264')
     dax.set_xlim([-82,82])
     dax.set_xticklabels([])
     dax.set_ylim([-5,5])
@@ -267,12 +267,12 @@ def plt_null_test(
     ax.errorbar(
            zen_angle, del_pow, yerr=del_err, 
            fmt='.', color='#326765', ecolor='#7da87b',
-           elinewidth=1, capsize=1, capthick=1.2,
-           alpha=0.9, ms=5.4, label=null_label)
+           elinewidth=1.4, capsize=1.4, capthick=1.6,
+           alpha=0.9, ms=7, label=null_label)
 
-    ax.plot(zen_angle,del_beam, color='#c70039', linewidth=1.2, alpha=0.9, label=beam_label)
+    ax.plot(zen_angle,del_beam, color='#c70039', linewidth=1.4, alpha=0.9, label=beam_label)
     
-    ax.plot(zen_angle,del_fit, color='#ff8264', linewidth=1.2, alpha=0.9, label=fit_label)
+    ax.plot(zen_angle,del_fit, color='#ff8264', linewidth=1.4, alpha=0.9, label=fit_label)
     
     ax.set_xlim([-82,82])
     ax.set_ylim([-10,10])
