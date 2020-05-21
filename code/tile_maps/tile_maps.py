@@ -323,11 +323,12 @@ def project_tile_healpix(tile_pair):
     # Rotate the fee models by -pi/2 to move model from spherical (E=0) to Alt/Az (N=0)
     ref_fee_model = np.load(ref_model, allow_pickle=True)
     
-    # Tile S33YY has it's 9th dipole flagged
-    if tile is 'S33YY':
-        fee_m = np.load(fee_map_flagged, allow_pickle=True)
-    else:
-        fee_m = np.load(fee_map, allow_pickle=True)
+#    # Tile S33YY has it's 9th dipole flagged
+#    if tile is 'S33YY':
+#        fee_m = np.load(fee_map_flagged, allow_pickle=True)
+#    else:
+#        fee_m = np.load(fee_map, allow_pickle=True)
+    fee_m = np.load(fee_map, allow_pickle=True)
         
     if 'XX' in tile:    
         ref_fee = ref_fee_model['XX']
@@ -600,8 +601,8 @@ if __name__=='__main__':
     Path(out_dir).mkdir(parents=True, exist_ok=True)
     sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
-#    project_tile_healpix(tile_pairs[0])
-    project_tile_healpix(['rf0YY', 'S33YY'])
+    project_tile_healpix(tile_pairs[0])
+#    project_tile_healpix(['rf0YY', 'S33YY'])
         
     # Parallization magic happens here
     #with concurrent.futures.ProcessPoolExecutor() as executor:
