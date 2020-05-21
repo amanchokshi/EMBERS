@@ -10,11 +10,11 @@ def ring_indices(nside=None):
     hp_indices = np.arange(hp.nside2npix(nside))
     θ, ɸ = hp.pix2ang(nside, hp_indices)
 
-    za = np.arange(0,81,2)
+    za = np.arange(0,87,2)
 
     ring_indices = []
     for i in range(len(za)):
-        if i < 40:
+        if i < 43:
             r_indices = np.where(np.logical_and(θ >= np.radians(za[i]), θ < np.radians(za[i+1])))[0]
             ring_indices.append(r_indices)
     za_cen = za[:-1] + 1
