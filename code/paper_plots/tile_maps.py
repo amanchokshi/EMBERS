@@ -14,6 +14,8 @@ import matplotlib.gridspec as gs
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.stats import chisquare
 from scipy.stats import median_absolute_deviation as mad
+import scipy.optimize as opt
+import numpy.polynomial.polynomial as poly
 
 sys.path.append('../sat_ephemeris')
 from sat_ids import norad_ids
@@ -121,6 +123,15 @@ def fit_test(map_data=None,fee=None):
 
     return pvalue
 
+def poly_fit(x, y, order):
+    '''Fit polynominal of order to data'''
+    
+    x = np.asarray(x)
+    y = np.asarray(y)
+
+    coefs = poly.polyfit(x, y, order)
+    fit = poly.polyval(x, coefs)
+    return fit
 
 def plt_fee_fit(t, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat):
 
@@ -381,38 +392,48 @@ def project_tile_healpix(tile_pair):
                                                 pval = fit_test(map_data=mwa_pass_fit, fee=mwa_fee_pass)
 
 
-                                                peak = np.where(mwa_fee_pass >= -40)
-                                                mwa_fee_pass = mwa_fee_pass[peak]
-                                                mwa_pass_fit = mwa_pass_fit[peak]
-                                                times_pass = times_pass[peak]
-
-                                                residuals = mwa_fee_pass - mwa_pass_fit
-                                                filtr = np.where(residuals > -1)
-                                                mwa_fee_pass = mwa_fee_pass[filtr]
-                                                mwa_pass_fit = mwa_pass_fit[filtr]
-                                                times_pass = times_pass[filtr]
-                                                
-                                                
-                                                resi = mwa_fee_pass - mwa_pass_fit
-
-                                                pass_data.extend(mwa_pass_fit)
-                                                pass_resi.extend(resi)
                                                 
                                                 
                                                 # a goodness of fit threshold
                                                 if pval >= 0.9:
-                                                    if plots == 'True':
-                                                        if mwa_fee_pass.size !=0:
-                                                            if np.amax(mwa_fee_pass) >= -30:
-                                                                plt_fee_fit(
-                                                                        times_pass,
-                                                                        mwa_fee_pass, 
-                                                                        mwa_pass_fit, 
-                                                                        f'{out_dir}/fit_plots/', 
-                                                                        point, timestamp, sat)
-    
+                                                
+                                                    #peak = np.where(mwa_fee_pass >= -40)
+                                                    peak = np.where(mwa_pass_fit >= -40)
+                                                    mwa_fee_pass = mwa_fee_pass[peak]
+                                                    mwa_pass_fit = mwa_pass_fit[peak]
+                                                    times_pass = times_pass[peak]
+
+                                                    #residuals = mwa_fee_pass - mwa_pass_fit
+                                                    #filtr = np.where(residuals > -1)
+                                                    #mwa_fee_pass = mwa_fee_pass[filtr]
+                                                    #mwa_pass_fit = mwa_pass_fit[filtr]
+                                                    #times_pass = times_pass[filtr]
+                                                    
+                                                    
+                                                    resi = mwa_fee_pass - mwa_pass_fit
+
+                                                    pass_data.extend(mwa_pass_fit)
+                                                    pass_resi.extend(resi)
+                                                    
+                                                    #if plots == 'True':
+                                                    #    if mwa_fee_pass.size !=0:
+                                                    #        if np.amax(mwa_fee_pass) >= -30:
+                                                    #            plt_fee_fit(
+                                                    #                    times_pass,
+                                                    #                    mwa_fee_pass, 
+                                                    #                    mwa_pass_fit, 
+                                                    #                    f'{out_dir}/fit_plots/', 
+                                                    #                    point, timestamp, sat)
+   
     plt.style.use('seaborn')
-    plt.scatter(pass_data, pass_resi, marker='.', alpha=0.9, color='seagreen')
+    plt.scatter(pass_data, pass_resi, marker='.', alpha=0.7, color='seagreen')
+    
+    #pass_data = [x for x,_ in sorted(zip(pass_data,pass_resi))]
+    #pass_resi = [x for _,x in sorted(zip(pass_data,pass_resi))]
+    fit = poly_fit(pass_data, pass_resi, 3)
+    plt.plot(sorted(pass_data, reverse=True), sorted(fit, reverse=True), color='crimson')
+    plt.xlabel('Observed power [dB]')
+    plt.ylabel('Residuals [dB]')
     plt.tight_layout()
     plt.savefig(f'{out_dir}/gain_fit.png')
 
