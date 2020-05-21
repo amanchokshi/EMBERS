@@ -80,17 +80,17 @@ if __name__=='__main__':
     out_dir.mkdir(parents=True, exist_ok=True)
     
     # Good sats from which to make plots
-    #good_sats = [
-    #        25338, 25984, 25985,
-    #        28654, 40086, 40087,
-    #        40091, 41179, 41180,
-    #        41182, 41183, 41184,
-    #        41185, 41187, 41188,
-    #        41189, 44387
-    #        ]
+    good_sats = [
+            25338, 25982, 25984, 25985,
+            28654, 40086, 40087,
+            40091, 41179, 41180,
+            41182, 41183, 41184,
+            41185, 41187, 41188,
+            41189, 44387
+            ]
 
     # use all satellites
-    good_sats = list(norad_ids.values())
+    #good_sats = list(norad_ids.values())
 
     # list of beam pointings
     pointings = ['0','2','4','41']
