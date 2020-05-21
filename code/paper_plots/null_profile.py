@@ -146,7 +146,7 @@ if __name__=='__main__':
 
     ref_rings = np.array(ref_rings) - ref_med
 
-    fit_ref = poly_fit(za, ref_rings, 3)  
+    fit_ref = poly_fit(za, ref_rings, 8)  
     
     plt.style.use('seaborn')
     nice_fonts = {
@@ -165,14 +165,20 @@ if __name__=='__main__':
     plt.rcParams.update(nice_fonts)
     
     fig = plt.figure(figsize=(3.6,2.4))
-    
+           
     plt.style.use('seaborn')
-    plt.scatter(za, ref_rings, marker='.', color='seagreen')
-    plt.plot(za, fit_ref, linewidth=1.4, alpha=0.9, color='#ff8264')
+    plt.scatter(za, ref_rings, marker='.', s=77, alpha=0.9,  color='#466844', label=r'$\Delta$ref [$\theta$]')
+    plt.plot(za, fit_ref, linewidth=1.4, alpha=1, color='#fa4659', label=r'8$^{th}$ order fit')
+    
+    leg = plt.legend(frameon=True, markerscale=1, handlelength=1)
+    leg.get_frame().set_facecolor('white')
+    for l in leg.legendHandles:
+        l.set_alpha(1)
+    
     plt.xlabel(r'Zenith Angle [$^\circ$]')
     plt.ylabel('Residual Power [dB]')
     plt.tight_layout()
-    plt.savefig('test.png', bbox_inches='tight')
+    plt.savefig('../../outputs/paper_plots/ref_residuals.pdf', bbox_inches='tight')
 
 
 
