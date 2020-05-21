@@ -10,6 +10,8 @@ import concurrent.futures
 import scipy.optimize as opt
 from null_test import rotate
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gs
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.stats import chisquare
 from scipy.stats import median_absolute_deviation as mad
 
@@ -131,13 +133,7 @@ def plt_fee_fit(t, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat):
     
 
     ax1.scatter(t, mwa_fee_pass, color='#c70039', alpha=0.6, marker=".", label="fee_slice")
-
-    where_nan = np.isnan(mwa_pass_fit)
-    
-    t = t[~where_nan]
-    p = mwa_pass_fit[~where_nan]
-    
-    ax1.scatter(t, p, color='#7da87b', alpha=0.9, marker=".", label="data fit")
+    ax1.scatter(t, mwa_pass_fit, color='#7da87b', alpha=0.9, marker=".", label="data fit")
     #ax1.set_ylim(-50, 2)
     
     leg = ax1.legend(frameon=True)
@@ -146,9 +142,22 @@ def plt_fee_fit(t, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat):
     for l in leg.legendHandles:
         l.set_alpha(1)
     
-    plt.title(f'Goodness of Fit: {pval} ')
+    
+    delta_p = mwa_fee_pass - mwa_pass_fit
+    
+    divider = make_axes_locatable(ax1)
+    dax = divider.append_axes("bottom", size="30%", pad=0.1)
+
+    dax.scatter(t, delta_p, marker='.', s=30, color='#27296d')
+    #dax.plot(zen_angle, pow_fit, linewidth=1.4, alpha=0.9, color='#ff8264')
+    #dax.set_xlim([-82,82])
+    #dax.set_xticklabels([])
+    #dax.set_ylim([-5,5])
+    #ax.set_ylabel('Power [dB]')
+    #dax.set_ylabel(r'$\Delta$ref [dB]')
+    
     plt.tight_layout()
-    plt.savefig(f'{out_dir}/{point}/{timestamp}_{sat}.png')
+    plt.savefig(f'{out_dir}/{timestamp}_{sat}.png')
     plt.close()
 
 
@@ -225,15 +234,15 @@ def power_ephem(
 
 def project_tile_healpix(tile_pair):
 
+    pass_data = []
+    pass_resi = []
+
     ref, tile = tile_pair
 
     pointings = ['0','2','4', '41']
     
     if plots == 'True':
-        Path(f'{out_dir}/fit_plots/{tile}_{ref}/0').mkdir(parents=True, exist_ok=True)
-        Path(f'{out_dir}/fit_plots/{tile}_{ref}/2').mkdir(parents=True, exist_ok=True)
-        Path(f'{out_dir}/fit_plots/{tile}_{ref}/4').mkdir(parents=True, exist_ok=True)
-        Path(f'{out_dir}/fit_plots/{tile}_{ref}/41').mkdir(parents=True, exist_ok=True)
+        Path(f'{out_dir}/fit_plots/').mkdir(parents=True, exist_ok=True)
 
     # Initialize an empty dictionary for tile data
     # The map is list of length 12288 of empty lists to append pixel values to
@@ -275,175 +284,137 @@ def project_tile_healpix(tile_pair):
             
                 # pointing at timestamp
                 point = check_pointing(timestamp, point_0, point_2, point_4, point_41)
+                 
+                if point is 0:
 
-                if 'XX' in tile:    
-                    mwa_fee = fee_m[str(point)][0]
-                else:
-                    mwa_fee = fee_m[str(point)][1]
+                    if 'XX' in tile:    
+                        mwa_fee = fee_m[str(point)][0]
+                    else:
+                        mwa_fee = fee_m[str(point)][1]
 
-                ali_file = Path(f'{align_dir}/{dates[day]}/{timestamp}/{ref}_{tile}_{timestamp}_aligned.npz')
+                    ali_file = Path(f'{align_dir}/{dates[day]}/{timestamp}/{ref}_{tile}_{timestamp}_aligned.npz')
 
-                # check if file exists
-                if ali_file.is_file():
+                    # check if file exists
+                    if ali_file.is_file():
 
-                    # Chrono and map Ephemeris file
-                    chrono_file = Path(f'{chrono_dir}/{timestamp}.json')
-                    channel_map = f'{map_dir}/{timestamp}.json'
+                        # Chrono and map Ephemeris file
+                        chrono_file = Path(f'{chrono_dir}/{timestamp}.json')
+                        channel_map = f'{map_dir}/{timestamp}.json'
 
-                    with open(chrono_file) as chrono:
-                        chrono_ephem = json.load(chrono)
-                    
-                        if chrono_ephem != []:
-                
-                            norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))]
-
-                            if norad_list != []:
-
-                                with open(channel_map) as ch_map:
-                                    chan_map = json.load(ch_map)
-                                
-                                    chan_sat_ids = [int(i) for i in list(chan_map.keys())]
+                        with open(chrono_file) as chrono:
+                            chrono_ephem = json.load(chrono)
                         
-                                    for sat in chan_sat_ids:
+                            if chrono_ephem != []:
+                    
+                                norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))]
 
-                                        chan = chan_map[f'{sat}']
+                                if norad_list != []:
 
-                                        sat_data = power_ephem(
-                                                ref, tile,
-                                                ali_file,
-                                                chrono_file,
-                                                sat,
-                                                chan,
-                                                point,
-                                                pow_thresh,
-                                                timestamp
-                                                )
+                                    with open(channel_map) as ch_map:
+                                        chan_map = json.load(ch_map)
+                                    
+                                        chan_sat_ids = [int(i) for i in list(chan_map.keys())]
+                            
+                                        for sat in chan_sat_ids:
 
-                                        if sat_data != 0:
-                                        
-                                            ref_power, tile_power, alt, az, times = sat_data
+                                            chan = chan_map[f'{sat}']
 
+                                            sat_data = power_ephem(
+                                                    ref, tile,
+                                                    ali_file,
+                                                    chrono_file,
+                                                    sat,
+                                                    chan,
+                                                    point,
+                                                    pow_thresh,
+                                                    timestamp
+                                                    )
 
-                                            # Altitude is in deg while az is in radians
-                                            # convert alt to radians
-                                            # za - zenith angle
-                                            alt = np.radians(alt)
-                                            za = np.pi/2 - alt
-                                            az  = np.asarray(az)
-
-
-                                            # Now convert to healpix coordinates
-                                            #healpix_index = hp.ang2pix(nside,θ, ɸ)
-                                            healpix_index = hp.ang2pix(nside, za, az)
+                                            if sat_data != 0:
                                             
-                                            # multiple data points fall within a single healpix pixel
-                                            # find the unique pixels
-                                            u = np.unique(healpix_index)
-
-                                            ref_pass = np.array([np.nanmean(ref_power[np.where(healpix_index==i)[0]]) for i in u])
-                                            tile_pass = np.array([np.nanmean(tile_power[np.where(healpix_index==i)[0]]) for i in u])
-                                            times_pass = np.array([np.mean(times[np.where(healpix_index==i)][0]) for i in u])
-                                            ref_fee_pass = np.array([rotated_fee[i] for i in u])
-                                            
-                                            #clipped_idx = np.where(tile_pass == np.nan)
-                                            #ref_fee_pass[clipped_idx] == np.nan
-                                            
-                                            mwa_fee_pass = np.array([mwa_fee[i] for i in u])
-
-                                            # magic here
-                                            # the beam shape finally emerges
-                                            #mwa_pass = np.array(tile_pass)
-                                            mwa_pass = np.array(tile_pass) - np.array(ref_pass) + np.array(ref_fee_pass)
-                                            offset = fit_gain(map_data=tile_pass, fee=mwa_pass)
-                                            mwa_pass = mwa_pass + offset[0]
+                                                ref_power, tile_power, alt, az, times = sat_data
 
 
-                                            # fit the power level of the pass to the mwa_fee model using a single gain value
-                                            #offset = fit_gain(map_data=mwa_pass, fee=mwa_fee_pass)
-                                            #mwa_pass_fit = mwa_pass - offset[0]
-                                            
-                                            offset = fit_gain(map_data=mwa_pass, fee=mwa_fee_pass)
-                                            mwa_fee_pass = mwa_fee_pass + offset
-                                            mwa_pass_fit = mwa_pass
-                                            
-                                            # determine how well the data fits the model with chi-square  
-                                            pval = fit_test(map_data=mwa_pass_fit, fee=mwa_fee_pass)
-                                            
-                                            
-                                            # a goodness of fit threshold
-                                            if pval >= 0.9:
-                                                if plots == 'True':
-                                                    if np.amax(mwa_fee_pass) >= -30:
-                                                        plt_fee_fit(
-                                                                times_pass,
-                                                                mwa_fee_pass, 
-                                                                mwa_pass_fit, 
-                                                                f'{out_dir}/fit_plots/{tile}_{ref}/', 
-                                                                point, timestamp, sat)
+                                                # Altitude is in deg while az is in radians
+                                                # convert alt to radians
+                                                # za - zenith angle
+                                                alt = np.radians(alt)
+                                                za = np.pi/2 - alt
+                                                az  = np.asarray(az)
 
-#                                                # loop though all healpix pixels for the pass
-#                                                for i in range(len(u)):
-#
-#                                                    tile_data['mwa_maps'][f'{point}'][u[i]].append(mwa_pass_fit[i])
-#                                                    tile_data['ref_maps'][f'{point}'][u[i]].append(ref_pass[i])
-#                                                    tile_data['tile_maps'][f'{point}'][u[i]].append(tile_pass[i])
-#                                                    tile_data['times'][f'{point}'][u[i]].append(times_pass[i])
-#                                                    tile_data['sat_map'][f'{point}'][u[i]].append(sat)
-#                                           
-#
-#                else:
-#                    print(f'Missing {ref}_{tile}_{timestamp}_aligned.npz')
-#                    continue
-#
-#    # Sort data by satellites
-#
-#    # list of all possible satellites
-#    sat_ids = list(norad_ids.values())
-#    
-#    # create a dictionary, with the keys being sat_ids and the values being healpix maps of data from those sats
-#    # Fist level keys are pointings with dictionaty values
-#    # Second level keys are satellite ids with healpix map lists
-#    mwa_sat_data = {}
-#    ref_sat_data = {}
-#    tile_sat_data = {}
-#    time_sat_data = {}
-#
-#    # loop over pointings for all maps
-#    for p in pointings:
-#        
-#        mwa_map     = np.asarray(tile_data['mwa_maps'][p])
-#        tile_map    = np.asarray(tile_data['tile_maps'][p])
-#        ref_map     = np.asarray(tile_data['ref_maps'][p])
-#        sat_map     = np.asarray(tile_data['sat_map'][p])
-#        time_map    = np.asarray(tile_data['times'][p])
-#
-#        mwa_sat_data[p]     = {}
-#        ref_sat_data[p]     = {}
-#        tile_sat_data[p]    = {}
-#        time_sat_data[p]    = {}
-#        
-#        # loop over all sats
-#        for s in sat_ids:
-#
-#            mwa_sat_data[p][s]      = [] 
-#            ref_sat_data[p][s]      = [] 
-#            tile_sat_data[p][s]     = [] 
-#            time_sat_data[p][s]     = [] 
-#            
-#
-#            # loop over every healpix pixel
-#            for i in range(len(ref_map)):
-#
-#                # Find subset of data for each sat
-#                sat_idx = np.where(np.asarray(sat_map[i]) == s)
-#                mwa_sat_data[p][s].append((np.asarray(mwa_map[i])[sat_idx]).tolist())
-#                ref_sat_data[p][s].append((np.asarray(ref_map[i])[sat_idx]).tolist())
-#                tile_sat_data[p][s].append((np.asarray(tile_map[i])[sat_idx]).tolist())
-#                time_sat_data[p][s].append((np.asarray(time_map[i])[sat_idx]).tolist())
-#
-#    # Save map arrays to npz file
-#    tile_sat_data = {'mwa_map':mwa_sat_data, 'ref_map':ref_sat_data, 'tile_map':tile_sat_data, 'time_map':time_sat_data}
-#    np.savez_compressed(f'{out_dir}/{tile}_{ref}_sat_maps.npz', **tile_sat_data)
+
+                                                # Now convert to healpix coordinates
+                                                #healpix_index = hp.ang2pix(nside,θ, ɸ)
+                                                healpix_index = hp.ang2pix(nside, za, az)
+                                                
+                                                # multiple data points fall within a single healpix pixel
+                                                # find the unique pixels
+                                                u = np.unique(healpix_index)
+
+                                                ref_pass = np.array([np.nanmean(ref_power[np.where(healpix_index==i)[0]]) for i in u])
+                                                tile_pass = np.array([np.nanmean(tile_power[np.where(healpix_index==i)[0]]) for i in u])
+                                                times_pass = np.array([np.mean(times[np.where(healpix_index==i)][0]) for i in u])
+                                                ref_fee_pass = np.array([rotated_fee[i] for i in u])
+                                                
+                                                #clipped_idx = np.where(tile_pass == np.nan)
+                                                #ref_fee_pass[clipped_idx] == np.nan
+                                                
+                                                mwa_fee_pass = np.array([mwa_fee[i] for i in u])
+
+                                                # magic here
+                                                # the beam shape finally emerges
+                                                #mwa_pass = np.array(tile_pass)
+                                                mwa_pass = np.array(tile_pass) - np.array(ref_pass) + np.array(ref_fee_pass)
+                                                offset = fit_gain(map_data=tile_pass, fee=mwa_pass)
+                                                mwa_pass = mwa_pass + offset[0]
+
+
+                                                # fit the power level of the pass to the mwa_fee model using a single gain value
+                                                #offset = fit_gain(map_data=mwa_pass, fee=mwa_fee_pass)
+                                                #mwa_pass_fit = mwa_pass - offset[0]
+                                                
+                                                offset = fit_gain(map_data=mwa_pass, fee=mwa_fee_pass)
+                                                mwa_fee_pass = mwa_fee_pass + offset
+                                                mwa_pass_fit = mwa_pass
+                                                
+                                                # determine how well the data fits the model with chi-square  
+                                                pval = fit_test(map_data=mwa_pass_fit, fee=mwa_fee_pass)
+
+
+                                                peak = np.where(mwa_fee_pass >= -40)
+                                                mwa_fee_pass = mwa_fee_pass[peak]
+                                                mwa_pass_fit = mwa_pass_fit[peak]
+                                                times_pass = times_pass[peak]
+
+                                                residuals = mwa_fee_pass - mwa_pass_fit
+                                                filtr = np.where(residuals > -1)
+                                                mwa_fee_pass = mwa_fee_pass[filtr]
+                                                mwa_pass_fit = mwa_pass_fit[filtr]
+                                                times_pass = times_pass[filtr]
+                                                
+                                                
+                                                resi = mwa_fee_pass - mwa_pass_fit
+
+                                                pass_data.extend(mwa_pass_fit)
+                                                pass_resi.extend(resi)
+                                                
+                                                
+                                                # a goodness of fit threshold
+                                                if pval >= 0.9:
+                                                    if plots == 'True':
+                                                        if mwa_fee_pass.size !=0:
+                                                            if np.amax(mwa_fee_pass) >= -30:
+                                                                plt_fee_fit(
+                                                                        times_pass,
+                                                                        mwa_fee_pass, 
+                                                                        mwa_pass_fit, 
+                                                                        f'{out_dir}/fit_plots/', 
+                                                                        point, timestamp, sat)
+    
+    plt.style.use('seaborn')
+    plt.scatter(pass_data, pass_resi, marker='.', alpha=0.9, color='seagreen')
+    plt.tight_layout()
+    plt.savefig(f'{out_dir}/gain_fit.png')
 
 
 if __name__=='__main__':
@@ -541,7 +512,7 @@ if __name__=='__main__':
 
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+#    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
     project_tile_healpix(tile_pairs[0])
 #    project_tile_healpix(['rf0YY', 'S33YY'])
