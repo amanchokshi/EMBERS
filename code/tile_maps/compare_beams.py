@@ -206,6 +206,7 @@ def plt_slice(
     dax.scatter(zen_angle, delta_pow, marker='.', color='#27296d')
     dax.plot(zen_angle, pow_fit, linewidth=1.2, alpha=0.9, color='#ff8264')
     dax.set_ylabel('Data - Model (dB)')
+    dax.set_ylim([-10,10])
     #dax.set_xticklabels([])
     dax.set_xlim([-92,92])
 
@@ -325,7 +326,7 @@ def beam_slice(f):
                 slice_label='Tile EW', model_label='FEE EW')
         
         ax4 = fig1.add_axes([0.48, 0.02, 0.48, 0.43])
-        plot_healpix(data_map=residuals, sub=(2,2,4), fig=fig1, title='diff map', cmap='inferno',  cbar=False)
+        plot_healpix(data_map=residuals, sub=(2,2,4), fig=fig1, title='diff map', cmap='inferno', vmin=-10, vmax=5,  cbar=False)
         ax8 = plt.gca()
         image = ax8.get_images()[0]
         cax = fig1.add_axes([0.92, 0.02, 0.015, 0.43])
