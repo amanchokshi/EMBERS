@@ -14,6 +14,7 @@ import matplotlib.gridspec as gs
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.stats import chisquare
 from scipy.stats import median_absolute_deviation as mad
+from scipy.interpolate import make_interp_spline, BSpline
 import scipy.optimize as opt
 import numpy.polynomial.polynomial as poly
 
@@ -138,37 +139,76 @@ def plt_fee_fit(t, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat):
     pval = fit_test(map_data=mwa_pass_fit, fee=mwa_fee_pass)
 
     plt.style.use('seaborn')
-
-    fig = plt.figure(figsize=(8,6))
+    
+    nice_fonts = {
+            # Use LaTeX to write all text
+            #"text.usetex": True,
+            "font.family": "sans-serif",
+            # Use 10pt font in plots, to match 10pt font in document
+            "axes.labelsize": 10,
+            "font.size": 10,
+            # Make the legend/label fonts a little smaller
+            "legend.fontsize": 6,
+            "xtick.labelsize": 8,
+            "ytick.labelsize": 8,
+            }
+    
+    plt.rcParams.update(nice_fonts)
+    
+    
+    fig = plt.figure(figsize=(3.6,2.4))
     ax1 = fig.add_subplot(1, 1, 1)
     
+    t = np.array(t)
+    mwa_fee_pass = [x for _,x in sorted(zip(t,mwa_fee_pass))]
+    mwa_pass_fit = [x for _,x in sorted(zip(t,mwa_pass_fit))]
+    t = sorted(t)
+    t = (t - t[0])/60
 
-    ax1.scatter(t, mwa_fee_pass, color='#c70039', alpha=0.6, marker=".", label="fee_slice")
-    ax1.scatter(t, mwa_pass_fit, color='#7da87b', alpha=0.9, marker=".", label="data fit")
-    #ax1.set_ylim(-50, 2)
+    t_new = np.linspace(t.min(), t.max(), 49)
+    spl = make_interp_spline(t, mwa_fee_pass, k=3)  # type: BSpline
+    mwa_fee_pass = spl(t_new)
     
-    leg = ax1.legend(frameon=True)
+    spl = make_interp_spline(t, mwa_pass_fit, k=3)  # type: BSpline
+    mwa_pass_fit = spl(t_new)
+
+    ax1.plot(t_new, mwa_fee_pass, color='#7da87b', alpha=0.9, lw=2, label="FEE model")
+    ax1.plot(t_new, mwa_pass_fit, color='#c70039', alpha=0.9, lw=2, label="RF data")
+    #ax1.scatter(t, mwa_fee_pass, color='#7da87b', alpha=0.6, marker=".", s=21, label="FEE model")
+    #ax1.scatter(t, mwa_pass_fit, color='#c70039', alpha=0.9, marker=".", s=21, label="RF data")
+    ax1.set_ylabel('Power [dB]')
+    ax1.set_ylim([-84,-16])
+    ax1.set_xticklabels([])
+    
+    leg = ax1.legend(loc="upper left", frameon=True, markerscale=2, handlelength=1)
     leg.get_frame().set_facecolor('grey')
-    leg.get_frame().set_alpha(0.2)
+    leg.get_frame().set_alpha(0.4)
     for l in leg.legendHandles:
         l.set_alpha(1)
     
     
-    delta_p = mwa_fee_pass - mwa_pass_fit
+    delta_p = np.array(mwa_fee_pass) - np.array(mwa_pass_fit)
     
     divider = make_axes_locatable(ax1)
-    dax = divider.append_axes("bottom", size="30%", pad=0.1)
+    dax = divider.append_axes("bottom", size="40%", pad=0.10)
 
-    dax.scatter(t, delta_p, marker='.', s=30, color='#27296d')
+    dax.plot(t_new, delta_p, lw=2,alpha=0.7, color='#27296d', label='Residuals')
+    leg = dax.legend(loc="lower left", frameon=True, markerscale=2, handlelength=1)
+    leg.get_frame().set_facecolor('grey')
+    leg.get_frame().set_alpha(0.4)
+    for l in leg.legendHandles:
+        l.set_alpha(1)
+    #dax.scatter(t, delta_p, marker='.', s=21,alpha=0.7, color='#27296d')
+    dax.set_xlabel('Times [min]')
     #dax.plot(zen_angle, pow_fit, linewidth=1.4, alpha=0.9, color='#ff8264')
-    #dax.set_xlim([-82,82])
+    #dax.set_ylim([-21,12])
+    dax.set_yticks([-20,0,10])
     #dax.set_xticklabels([])
     #dax.set_ylim([-5,5])
-    #ax.set_ylabel('Power [dB]')
-    #dax.set_ylabel(r'$\Delta$ref [dB]')
+    dax.set_ylabel(r'$\Delta$P [dB]')
     
     plt.tight_layout()
-    plt.savefig(f'{out_dir}/{timestamp}_{sat}.png')
+    plt.savefig(f'{out_dir}/{timestamp}_{sat}.pdf', bbox_inches='tight')
     plt.close()
 
 
@@ -402,10 +442,10 @@ def project_tile_healpix(tile_pair):
                                                 if pval >= 0.9:
                                                 
                                                     #peak = np.where(mwa_fee_pass >= -40)
-                                                    peak = np.where(mwa_pass_fit >= -40)
-                                                    mwa_fee_pass = mwa_fee_pass[peak]
-                                                    mwa_pass_fit = mwa_pass_fit[peak]
-                                                    times_pass = times_pass[peak]
+                                                    #peak = np.where(mwa_pass_fit >= -40)
+                                                    #mwa_fee_pass = mwa_fee_pass[peak]
+                                                    #mwa_pass_fit = mwa_pass_fit[peak]
+                                                    #times_pass = times_pass[peak]
 
                                                     #residuals = mwa_fee_pass - mwa_pass_fit
                                                     #filtr = np.where(residuals > -1)
@@ -414,36 +454,36 @@ def project_tile_healpix(tile_pair):
                                                     #times_pass = times_pass[filtr]
                                                     
                                                     
-                                                    resi = mwa_fee_pass - mwa_pass_fit
+                                                    #resi = mwa_fee_pass - mwa_pass_fit
 
-                                                    #pass_data.extend(mwa_pass_fit)
-                                                    #pass_resi.extend(resi)
-                                                    resi_gain['pass_data'].extend(mwa_pass_fit)
-                                                    resi_gain['pass_resi'].extend(resi)
+                                                    ##pass_data.extend(mwa_pass_fit)
+                                                    ##pass_resi.extend(resi)
+                                                    #resi_gain['pass_data'].extend(mwa_pass_fit)
+                                                    #resi_gain['pass_resi'].extend(resi)
                                                     
-                                                    #if plots == 'True':
-                                                    #    if mwa_fee_pass.size !=0:
-                                                    #        if np.amax(mwa_fee_pass) >= -30:
-                                                    #            plt_fee_fit(
-                                                    #                    times_pass,
-                                                    #                    mwa_fee_pass, 
-                                                    #                    mwa_pass_fit, 
-                                                    #                    f'{out_dir}/fit_plots/', 
-                                                    #                    point, timestamp, sat)
+                                                    if plots == 'True':
+                                                        if mwa_fee_pass.size !=0:
+                                                            if np.amax(mwa_fee_pass) >= -30:
+                                                                plt_fee_fit(
+                                                                        times_pass,
+                                                                        mwa_fee_pass, 
+                                                                        mwa_pass_fit, 
+                                                                        f'{out_dir}/fit_plots/', 
+                                                                        point, timestamp, sat)
    
-    with open(f'{out_dir}/{tile}_{ref}_gain_fit.json', 'w') as outfile:
-        json.dump(resi_gain, outfile, indent=4)    
-    plt.style.use('seaborn')
-    plt.scatter(resi_gain['pass_data'], resi_gain['pass_resi'], marker='.', alpha=0.7, color='seagreen')
-    
-    #pass_data = [x for x,_ in sorted(zip(pass_data,pass_resi))]
-    #pass_resi = [x for _,x in sorted(zip(pass_data,pass_resi))]
-    fit = poly_fit(resi_gain['pass_data'], resi_gain['pass_resi'], 3)
-    plt.plot(sorted(resi_gain['pass_data'], reverse=True), sorted(fit, reverse=True), color='crimson')
-    plt.xlabel('Observed power [dB]')
-    plt.ylabel('Residuals [dB]')
-    plt.tight_layout()
-    plt.savefig(f'{out_dir}/{tile}_{ref}_gain_fit.png')
+    #with open(f'{out_dir}/{tile}_{ref}_gain_fit.json', 'w') as outfile:
+    #    json.dump(resi_gain, outfile, indent=4)    
+#    plt.style.use('seaborn')
+#    plt.scatter(resi_gain['pass_data'], resi_gain['pass_resi'], marker='.', alpha=0.7, color='seagreen')
+#    
+#    #pass_data = [x for x,_ in sorted(zip(pass_data,pass_resi))]
+#    #pass_resi = [x for _,x in sorted(zip(pass_data,pass_resi))]
+#    fit = poly_fit(resi_gain['pass_data'], resi_gain['pass_resi'], 3)
+#    plt.plot(sorted(resi_gain['pass_data'], reverse=True), sorted(fit, reverse=True), color='crimson')
+#    plt.xlabel('Observed power [dB]')
+#    plt.ylabel('Residuals [dB]')
+#    plt.tight_layout()
+#    plt.savefig(f'{out_dir}/{tile}_{ref}_gain_fit.png')
 
 
 if __name__=='__main__':
@@ -543,11 +583,11 @@ if __name__=='__main__':
     Path(out_dir).mkdir(parents=True, exist_ok=True)
 #    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
-    #project_tile_healpix(tile_pairs[0])
+    project_tile_healpix(tile_pairs[0])
 #    project_tile_healpix(['rf0YY', 'S33YY'])
         
     # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(project_tile_healpix, tile_pairs)
+#    with concurrent.futures.ProcessPoolExecutor() as executor:
+#        results = executor.map(project_tile_healpix, tile_pairs)
 
 
