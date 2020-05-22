@@ -77,9 +77,12 @@ def beam_maps(f):
     return maps
 
 
-def plt_grid(f_xx, f_yy):
+def plt_grid(tile_name, ref_name):
     # This is an Awesome plot
 
+    f_xx = f'{map_dir}/{tile_name}XX_{ref_name}XX_tile_maps.npz'
+    f_yy = f'{map_dir}/{tile_name}YY_{ref_name}YY_tile_maps.npz'
+    
     maps_xx = beam_maps(f_xx) 
     maps_yy = beam_maps(f_yy)
     
@@ -104,16 +107,16 @@ def plt_grid(f_xx, f_yy):
     fig1 = plt.figure(figsize=(7.6,9.0))
 
     ax1  = fig1.add_axes([0.60, 0.75, 0.29, 0.22])
-    plot_healpix(data_map=maps_xx[2][0],  sub=(4,3,1),  fig=fig1, title='S07XX @ 4', cmap=jade, vmin=-50, vmax=0,  cbar=False)
+    plot_healpix(data_map=maps_xx[2][0],  sub=(4,3,1),  fig=fig1, title=f'{tile_name}XX @ 4', cmap=jade, vmin=-50, vmax=0,  cbar=False)
     ax1 = plt.gca()
     image = ax1.get_images()[0]
     cax1 = fig1.add_axes([0.91, 0.75, 0.015, 0.22])
     cbar1 = fig1.colorbar(image, cax=cax1, label='Power [dB]')
     
     ax2  = fig1.add_axes([0.30, 0.75, 0.29, 0.22])
-    plot_healpix(data_map=maps_xx[1][0],  sub=(4,3,2),  fig=fig1, title='S07XX @ 2', cmap=jade, vmin=-50, vmax=0,  cbar=False)
+    plot_healpix(data_map=maps_xx[1][0],  sub=(4,3,2),  fig=fig1, title=f'{tile_name}XX @ 2', cmap=jade, vmin=-50, vmax=0,  cbar=False)
     ax3  = fig1.add_axes([0.01, 0.75, 0.29, 0.22])
-    plot_healpix(data_map=maps_xx[0][0],  sub=(4,3,3),  fig=fig1, title='S07XX @ Zenith', cmap=jade, vmin=-50, vmax=0,  cbar=False)
+    plot_healpix(data_map=maps_xx[0][0],  sub=(4,3,3),  fig=fig1, title=f'{tile_name}XX @ Zenith', cmap=jade, vmin=-50, vmax=0,  cbar=False)
     ax4  = fig1.add_axes([0.60, 0.50, 0.29, 0.22])
     plot_healpix(data_map=maps_xx[2][1],  sub=(4,3,4),  fig=fig1, title='FEE XX @ 4', cmap=jade, vmin=-50, vmax=0,  cbar=False)
     ax4 = plt.gca()
@@ -126,16 +129,16 @@ def plt_grid(f_xx, f_yy):
     ax6  = fig1.add_axes([0.01, 0.50, 0.29, 0.22])
     plot_healpix(data_map=maps_xx[0][1],  sub=(4,3,6),  fig=fig1, title='FEE XX @ Zenith', cmap=jade, vmin=-50, vmax=0,  cbar=False)
     ax7  = fig1.add_axes([0.60, 0.25, 0.29, 0.22])
-    plot_healpix(data_map=maps_yy[2][0], sub=(4,3,7),  fig=fig1, title='S07YY @ 4', cmap=jade, vmin=-50, vmax=0,  cbar=False)
+    plot_healpix(data_map=maps_yy[2][0], sub=(4,3,7),  fig=fig1, title=f'{tile_name}YY @ 4', cmap=jade, vmin=-50, vmax=0,  cbar=False)
     ax7 = plt.gca()
     image = ax7.get_images()[0]
     cax3 = fig1.add_axes([0.91, 0.25, 0.015, 0.22])
     cbar3 = fig1.colorbar(image, cax=cax3, label='Power [dB]')
     
     ax8  = fig1.add_axes([0.30, 0.25, 0.29, 0.22])
-    plot_healpix(data_map=maps_yy[1][0], sub=(4,3,8),  fig=fig1, title='S07YY @ 2', cmap=jade, vmin=-50, vmax=0,  cbar=False)
+    plot_healpix(data_map=maps_yy[1][0], sub=(4,3,8),  fig=fig1, title=f'{tile_name}YY @ 2', cmap=jade, vmin=-50, vmax=0,  cbar=False)
     ax9  = fig1.add_axes([0.01, 0.25, 0.29, 0.22])
-    plot_healpix(data_map=maps_yy[0][0],  sub=(4,3,9),  fig=fig1, title='S07YY @ Zenith', cmap=jade, vmin=-50, vmax=0,  cbar=False)
+    plot_healpix(data_map=maps_yy[0][0],  sub=(4,3,9),  fig=fig1, title=f'{tile_name}YY @ Zenith', cmap=jade, vmin=-50, vmax=0,  cbar=False)
     ax10 = fig1.add_axes([0.60, 0.0, 0.29, 0.22])
     plot_healpix(data_map=maps_yy[2][1],  sub=(4,3,10), fig=fig1, title='FEE YY @ 4', cmap=jade, vmin=-50, vmax=0,  cbar=False)
     ax10 = plt.gca()
@@ -148,44 +151,8 @@ def plt_grid(f_xx, f_yy):
     ax12 = fig1.add_axes([0.01, 0.0, 0.29, 0.22])
     plot_healpix(data_map=maps_yy[0][1], sub=(4,3,12), fig=fig1, title='FEE YY @ Zenith', cmap=jade, vmin=-50, vmax=0,  cbar=False)
     
-    plt.savefig('test.pdf', bbox_inches='tight', dpi=300)
-
-
-#    fig1 = plt.figure(figsize=(10, 8))
-#
-#    ax1 = plt.subplot(2,2,1)
-#    plt_slice(
-#            fig=fig1, sub=221,
-#            zen_angle=NS_tile[2], map_slice=NS_tile_med,
-#            map_error=NS_tile[1], model_slice=NS_fee[0],
-#            delta_pow=del_NS, pow_fit=fit_NS, 
-#            slice_label='Tile NS', model_label='FEE NS')
-#
-#    ax2 = fig1.add_axes([0.48, 0.52, 0.48, 0.43])
-#    plot_healpix(data_map=tile_med, sub=(2,2,2), fig=fig1, title='tile map', cmap=jade, vmin=-50, vmax=0, cbar=False)
-#    ax7 = plt.gca()
-#    image = ax7.get_images()[0]
-#    cax = fig1.add_axes([0.92, 0.52, 0.015, 0.43])
-#    cbar = fig1.colorbar(image, cax=cax, label='dB')
-#    
-#    ax3 = plt.subplot(2,2,3)
-#    plt_slice(
-#            fig=fig1, sub=223,
-#            zen_angle=EW_tile[2], map_slice=EW_tile_med,
-#            map_error=EW_tile[1], model_slice=EW_fee[0],
-#            delta_pow=del_EW, pow_fit=fit_EW, 
-#            slice_label='Tile EW', model_label='FEE EW')
-#    
-#    ax4 = fig1.add_axes([0.48, 0.02, 0.48, 0.43])
-#    plot_healpix(data_map=residuals, sub=(2,2,4), fig=fig1, title='diff map', cmap='inferno', vmin=-10, vmax=5,  cbar=False)
-#    ax8 = plt.gca()
-#    image = ax8.get_images()[0]
-#    cax = fig1.add_axes([0.92, 0.02, 0.015, 0.43])
-#    cbar = fig1.colorbar(image, cax=cax, label='dB')
-#
-#    plt.tight_layout()
-#    plt.savefig(f'{out_dir}/{p}/{t_name}_{r_name}_{p}_beam_slices.png')
-#    plt.close()
+    plt.savefig(f'{out_dir}/{tile_name}_{ref_name}_maps.pdf', bbox_inches='tight', dpi=420)
+    plt.close()
 
 
 if __name__=='__main__':
@@ -212,8 +179,8 @@ if __name__=='__main__':
         Plot healpix map of reference data
         """)
     
-    parser.add_argument('--out_dir', metavar='\b', default='../../outputs/tile_maps/compare_beams/',
-            help='Output directory. Default=../../outputs/tile_maps/compare_beams/')
+    parser.add_argument('--out_dir', metavar='\b', default='../../outputs/paper_plots/tile_grids/',
+            help='Output directory. Default=../../outputs/paper_plots/tile_grids')
     parser.add_argument('--map_dir', metavar='\b', default='../../outputs/tile_maps/tile_maps_norm/',
             help='Tile map directory. Default=../../outputs/tile_maps/tile_maps_norm/')
     parser.add_argument('--fee_map', metavar='\b', default='../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz',
@@ -228,22 +195,20 @@ if __name__=='__main__':
     fee_map     = args.fee_map
     nside       = args.nside
     
-#    # make output dir if it doesn't exist
-#    out_dir.mkdir(parents=True, exist_ok=True)
-#
-#    # MWA beam pointings
-#    pointings = ['0', '2', '4', '41']
-#
-#    # Create output directory structure
-#    for p in pointings:
-#        Path(f'{out_dir}/{p}/').mkdir(parents=True, exist_ok=True)
+    # make output dir if it doesn't exist
+    out_dir.mkdir(parents=True, exist_ok=True)
 
-    # find all map files
-    map_files = [item for item in map_dir.glob('*.npz')]
+    tiles = [
+            'S06', 'S07', 'S08', 'S09',
+            'S10', 'S12', 'S29', 'S30',
+            'S31', 'S32', 'S33', 'S34',
+            'S35', 'S36'
+            ]
 
-    plt_grid(f'{map_dir}/S07XX_rf1XX_tile_maps.npz',f'{map_dir}/S07YY_rf1YY_tile_maps.npz' )
+    refs = ['rf0', 'rf1']
+    
+    for r in refs:
+        for t in tiles:
+            plt_grid(t, r)
 
-    # Parallization magic happens here
-#    with concurrent.futures.ProcessPoolExecutor() as executor:
-#        results = executor.map(beam_slice, map_files)
-#    beam_slice(map_files[0])
+
