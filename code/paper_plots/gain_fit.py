@@ -26,10 +26,27 @@ for f in gain_files:
         pass_resi.extend(rfe['pass_resi'])
 
 
-plt.style.use('seaborn')
+nice_fonts = {
+        # Use LaTeX to write all text
+        "text.usetex": True,
+        "font.family": "sans-serif",
+        # Use 10pt font in plots, to match 10pt font in document
+        "axes.labelsize": 10,
+        "font.size": 10,
+        # Make the legend/label fonts a little smaller
+        "legend.fontsize": 6,
+        "xtick.labelsize": 8,
+        "ytick.labelsize": 8,
+        }
+
+plt.rcParams.update(nice_fonts)
+
+#plt.style.use('seaborn')
+
+fig = plt.figure(figsize=(3.6,2.4))
 
 #plt.scatter(pass_data, pass_resi, marker='.', alpha=0.7, color='seagreen')
-plt.hexbin(pass_data, pass_resi, gridsize=77, bins='log',cmap='Blues')
+plt.hexbin(pass_data, pass_resi, gridsize=36, bins='log',cmap='Blues', alpha=0.9)
 
 pass_data = np.array(pass_data)
 pass_resi = np.array(pass_resi)
@@ -48,15 +65,24 @@ f = np.poly1d(z)
 x_f = np.linspace(-40, -15)
 y_f = f(x_f)
 
-plt.plot(x_f, y_f, color='#ffba5a', lw=3)
-plt.scatter(bin_centers, bin_med, color='#fe6845', marker='s', s=84)
+plt.plot(x_f, y_f, color='#ffd800', lw=2.1, alpha=1, label='Gain fit')
+plt.scatter(bin_centers, bin_med, color='#fe6845', marker='s', s=28, alpha=1, label='Gain Binned')
+
+leg = plt.legend(loc="lower right", frameon=True, markerscale=1, handlelength=1)
+leg.get_frame().set_facecolor('w')
+for l in leg.legendHandles:
+    l.set_alpha(1)
 
 
 plt.xlabel('Observed power [dB]')
-plt.ylabel('Residuals [dB]')
+plt.ylabel('Residuals power [dB]')
+plt.yticks([-20, -10, 0, 10])
 plt.xlim([-40,-15])
 plt.ylim([-20,15])
+plt.tick_params(axis='both', length = 0)
+plt.grid(color='w', alpha=0.42, lw=1.2)
+plt.box(False)
 plt.tight_layout()
-plt.savefig(f'global_gain_fit.png')
+plt.savefig(f'../../outputs/paper_plots/rfe_gain_fit.pdf', bbox_inches='tight')
 
 
