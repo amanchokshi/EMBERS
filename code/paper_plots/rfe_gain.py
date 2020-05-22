@@ -172,11 +172,11 @@ def plt_fee_fit(t, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat):
     spl = make_interp_spline(t, mwa_pass_fit, k=3)  # type: BSpline
     mwa_pass_fit = spl(t_new)
 
-    ax1.plot(t_new, mwa_fee_pass, color='#7da87b', alpha=0.9, lw=2, label=r"$P_{FEE}$")
-    ax1.plot(t_new, mwa_pass_fit, color='#c70039', alpha=0.9, lw=2, label=r"$P_{AUT}$")
+    ax1.plot(t_new, mwa_fee_pass, color='#7da87b', alpha=0.9, lw=2, label=r"$B_{FEE}$")
+    ax1.plot(t_new, mwa_pass_fit, color='#c70039', alpha=0.9, lw=2, label=r"$B_{dist}$")
     #ax1.scatter(t, mwa_fee_pass, color='#7da87b', alpha=0.6, marker=".", s=21, label="FEE model")
     #ax1.scatter(t, mwa_pass_fit, color='#c70039', alpha=0.9, marker=".", s=21, label="RF data")
-    ax1.set_ylabel('Power [dB]')
+    ax1.set_ylabel('Power [dBm]')
     ax1.set_ylim([-84,-16])
     ax1.set_xticklabels([])
     
@@ -205,7 +205,7 @@ def plt_fee_fit(t, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat):
     dax.set_yticks([-20,0,10])
     #dax.set_xticklabels([])
     #dax.set_ylim([-5,5])
-    dax.set_ylabel(r'$\Delta$P [dB]')
+    dax.set_ylabel(r'$\Delta$P [dBm]')
     
     plt.tight_layout()
     plt.savefig(f'{out_dir}/{timestamp}_{sat}.pdf', bbox_inches='tight')
