@@ -14,7 +14,7 @@ import numpy.polynomial.polynomial as poly
 from scipy.stats import binned_statistic
 import scipy.optimize as opt
 
-gain_files = [item for item in Path('./gain_fit/').glob('*.json')]
+gain_files = [item for item in Path('../../outputs/paper_plots/gain_fit/').glob('*.json')]
 
 pass_data = []
 pass_resi = []
@@ -80,9 +80,8 @@ plt.yticks([-20, -10, 0, 10])
 plt.xlim([-40,-15])
 plt.ylim([-20,15])
 plt.tick_params(axis='both', length = 0)
-plt.grid(color='w', alpha=0.42, lw=1.2)
-plt.box(False)
+plt.grid(color='#cccccc', alpha=0.42, lw=1.2)
+plt.box(None)
 plt.tight_layout()
 plt.savefig(f'../../outputs/paper_plots/rfe_gain_fit.pdf', bbox_inches='tight')
-
 
