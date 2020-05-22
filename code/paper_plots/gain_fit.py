@@ -14,6 +14,10 @@ import numpy.polynomial.polynomial as poly
 from scipy.stats import binned_statistic
 import scipy.optimize as opt
 
+sys.path.append('../decode_rf_data')
+from colormap import spectral
+cmap = spectral()
+
 gain_files = [item for item in Path('../../outputs/paper_plots/gain_fit/').glob('*.json')]
 
 pass_data = []
@@ -28,7 +32,7 @@ for f in gain_files:
 
 nice_fonts = {
         # Use LaTeX to write all text
-        "text.usetex": True,
+        #"text.usetex": True,
         "font.family": "sans-serif",
         # Use 10pt font in plots, to match 10pt font in document
         "axes.labelsize": 10,
@@ -46,7 +50,7 @@ plt.rcParams.update(nice_fonts)
 fig = plt.figure(figsize=(3.6,2.4))
 
 #plt.scatter(pass_data, pass_resi, marker='.', alpha=0.7, color='seagreen')
-plt.hexbin(pass_data, pass_resi, gridsize=36, bins='log',cmap='Blues', alpha=0.9)
+plt.hexbin(pass_data, pass_resi, gridsize=36, bins='log',cmap=cmap, alpha=0.9)
 
 pass_data = np.array(pass_data)
 pass_resi = np.array(pass_resi)
@@ -65,16 +69,16 @@ f = np.poly1d(z)
 x_f = np.linspace(-40, -15)
 y_f = f(x_f)
 
-plt.plot(x_f, y_f, color='#ffd800', lw=2.1, alpha=1, label='Gain fit')
-plt.scatter(bin_centers, bin_med, color='#fe6845', marker='s', s=28, alpha=1, label='Gain Binned')
+plt.plot(x_f, y_f, color='w', lw=2.1, alpha=0.88, label='Gain fit')
+plt.scatter(bin_centers, bin_med, color='#fe6845', marker='o', s=36,  facecolors='none',lw=2, edgecolors='k', alpha=1, label='Gain Binned')
 
 leg = plt.legend(loc="lower right", frameon=True, markerscale=1, handlelength=1)
-leg.get_frame().set_facecolor('w')
+leg.get_frame().set_facecolor('#cccccc')
 for l in leg.legendHandles:
-    l.set_alpha(1)
+    l.set_alpha(0.77)
 
 
-plt.xlabel('Observed power [dB]')
+plt.xlabel('Observed power [dBm]')
 plt.ylabel('Residuals power [dB]')
 plt.yticks([-20, -10, 0, 10])
 plt.xlim([-40,-15])
