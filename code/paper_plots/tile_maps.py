@@ -245,8 +245,12 @@ def power_ephem(
 
 def project_tile_healpix(tile_pair):
 
-    pass_data = []
-    pass_resi = []
+    #pass_data = []
+    #pass_resi = []
+
+    resi_gain = {}
+    resi_gain['pass_data'] = []
+    resi_gain['pass_resi'] = []
 
     ref, tile = tile_pair
 
@@ -412,8 +416,10 @@ def project_tile_healpix(tile_pair):
                                                     
                                                     resi = mwa_fee_pass - mwa_pass_fit
 
-                                                    pass_data.extend(mwa_pass_fit)
-                                                    pass_resi.extend(resi)
+                                                    #pass_data.extend(mwa_pass_fit)
+                                                    #pass_resi.extend(resi)
+                                                    resi_gain['pass_data'].extend(mwa_pass_fit)
+                                                    resi_gain['pass_resi'].extend(resi)
                                                     
                                                     #if plots == 'True':
                                                     #    if mwa_fee_pass.size !=0:
@@ -425,17 +431,19 @@ def project_tile_healpix(tile_pair):
                                                     #                    f'{out_dir}/fit_plots/', 
                                                     #                    point, timestamp, sat)
    
+    with open(f'{out_dir}/{tile}_{ref}_gain_fit.json', 'w') as outfile:
+        json.dump(resi_gain, outfile, indent=4)    
     plt.style.use('seaborn')
-    plt.scatter(pass_data, pass_resi, marker='.', alpha=0.7, color='seagreen')
+    plt.scatter(resi_gain['pass_data'], resi_gain['pass_resi'], marker='.', alpha=0.7, color='seagreen')
     
     #pass_data = [x for x,_ in sorted(zip(pass_data,pass_resi))]
     #pass_resi = [x for _,x in sorted(zip(pass_data,pass_resi))]
-    fit = poly_fit(pass_data, pass_resi, 3)
-    plt.plot(sorted(pass_data, reverse=True), sorted(fit, reverse=True), color='crimson')
+    fit = poly_fit(resi_gain['pass_data'], resi_gain['pass_resi'], 3)
+    plt.plot(sorted(resi_gain['pass_data'], reverse=True), sorted(fit, reverse=True), color='crimson')
     plt.xlabel('Observed power [dB]')
     plt.ylabel('Residuals [dB]')
     plt.tight_layout()
-    plt.savefig(f'{out_dir}/gain_fit.png')
+    plt.savefig(f'{out_dir}/{tile}_{ref}_gain_fit.png')
 
 
 if __name__=='__main__':
@@ -535,11 +543,11 @@ if __name__=='__main__':
     Path(out_dir).mkdir(parents=True, exist_ok=True)
 #    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
-    project_tile_healpix(tile_pairs[0])
+    #project_tile_healpix(tile_pairs[0])
 #    project_tile_healpix(['rf0YY', 'S33YY'])
         
     # Parallization magic happens here
-    #with concurrent.futures.ProcessPoolExecutor() as executor:
-    #    results = executor.map(project_tile_healpix, tile_pairs)
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(project_tile_healpix, tile_pairs)
 
 
