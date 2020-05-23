@@ -151,7 +151,7 @@ if __name__=='__main__':
     plt.style.use('seaborn')
     nice_fonts = {
             # Use LaTeX to write all text
-            "text.usetex": True,
+            #"text.usetex": True,
             "font.family": "sans-serif",
             # Use 10pt font in plots, to match 10pt font in document
             "axes.labelsize": 8,
