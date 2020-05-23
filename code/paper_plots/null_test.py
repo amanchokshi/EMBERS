@@ -203,7 +203,7 @@ def poly_fit(x, y, map_data, order):
 
 
 def plt_slice(
-        fig=None, sub=None,
+        fig=None, sub=(None, None, None),
         zen_angle=None, map_slice=None,
         map_error=None, model_slice=None, 
         delta_pow=None, pow_fit=None, 
@@ -214,7 +214,7 @@ def plt_slice(
     to the data. Also plot the diff b/w data and
     the model'''
 
-    ax = fig.add_subplot(sub)
+    ax = fig.add_subplot(sub[0], sub[1], sub[2])
 
     ax.errorbar(
            zen_angle, map_slice, yerr=map_error, 
@@ -254,7 +254,7 @@ def plt_slice(
     return ax
 
 def plt_null_test(
-        fig=None, sub=None, 
+        fig=None, sub=(None, None, None), 
         zen_angle=None, del_pow=None, 
         del_err=None, del_beam=None, 
         del_fit=None, null_label=None,
@@ -262,7 +262,7 @@ def plt_null_test(
 
     '''Plot graphs for a null test'''
 
-    ax = fig.add_subplot(sub)
+    ax = fig.add_subplot(sub[0], sub[1], sub[2])
     
     ax.errorbar(
            zen_angle, del_pow, yerr=del_err, 
@@ -278,7 +278,7 @@ def plt_null_test(
     ax.set_ylim([-10,10])
     ax.set_xlabel('Zenith Angle [degrees]')
     #ax.legend(loc='upper left')
-    leg = ax.legend(loc="upper left", frameon=True, handlelength=1)
+    leg = ax.legend(loc="lower center", frameon=True, handlelength=1)
     leg.get_frame().set_facecolor('white')
     for l in leg.legendHandles:
         l.set_alpha(1)
@@ -452,7 +452,7 @@ if __name__=='__main__':
     plt.style.use('seaborn')
     nice_fonts = {
             # Use LaTeX to write all text
-            "text.usetex": True,
+            #"text.usetex": True,
             "font.family": "sans-serif",
             # Use 10pt font in plots, to match 10pt font in document
             "axes.labelsize": 8,
@@ -465,24 +465,24 @@ if __name__=='__main__':
     
     plt.rcParams.update(nice_fonts)
     
-    fig1 = plt.figure(figsize=(6,7))
-
+    fig1 = plt.figure(figsize=(12,7)) 
+    
     ax1 = plt_slice(
-            fig=fig1, sub=321,
+            fig=fig1, sub=(3,4,1),
             zen_angle=za_NS, map_slice=rf0XX_NS[0],
             map_error=rf0XX_NS[1], model_slice=XX_NS_slice,
             delta_pow=del_pow_ref0_XX_NS, pow_fit=fit_ref0_XX_NS, 
             slice_label='ref0XX NS', model_label='FEE XX NS')
 
     ax2 = plt_slice(
-            fig=fig1, sub=322,
+            fig=fig1, sub=(3,4,2),
             zen_angle=za_EW, map_slice=rf0XX_EW[0],
             map_error=rf0XX_EW[1], model_slice=XX_EW_slice,
             delta_pow=del_pow_ref0_XX_EW, pow_fit=fit_ref0_XX_EW,
             slice_label='ref0XX EW', model_label='FEE XX EW', ylabel=False)
 
     ax3 = plt_slice(
-            fig=fig1, sub=323,
+            fig=fig1, sub=(3,4,5),
             zen_angle=za_NS, map_slice=rf1XX_NS[0],
             map_error=rf1XX_NS[1], model_slice=XX_NS_slice,
             delta_pow=del_pow_ref1_XX_NS, pow_fit=fit_ref1_XX_NS,
@@ -490,75 +490,69 @@ if __name__=='__main__':
             slice_label='ref1XX NS', model_label='FEE XX NS')
 
     ax4 = plt_slice(
-            fig=fig1, sub=324,
+            fig=fig1, sub=(3,4,6),
             zen_angle=za_EW, map_slice=rf1XX_EW[0],
             map_error=rf1XX_EW[1], model_slice=XX_EW_slice,
             delta_pow=del_pow_ref1_XX_EW, pow_fit=fit_ref1_XX_EW,
             slice_label='ref1XX EW', model_label='FEE XX EW', ylabel=False)
 
     ax5 = plt_null_test(
-            fig=fig1,sub=325, 
+            fig=fig1,sub=(3,4,9), 
             zen_angle=za_NS, del_pow=ref01_XX_NS, 
             del_err=error_ref01_XX_NS, del_beam=beam_ref01_XX_NS, 
             del_fit=fit_ref01_XX_NS, null_label='NS rf0-rf1', 
             beam_label='FEE Null', fit_label='Fit rf0-rf1') 
     
     ax6 = plt_null_test(
-            fig=fig1,sub=326, 
+            fig=fig1,sub=(3,4,10), 
             zen_angle=za_EW, del_pow=ref01_XX_EW, 
             del_err=error_ref01_XX_EW, del_beam=beam_ref01_XX_EW, 
             del_fit=fit_ref01_XX_EW, null_label='EW rf0-rf1', 
             beam_label='FEE Null', fit_label='Fit rf0-rf1', ylabel=False)
-
-
-    plt.tight_layout()
-    fig1.savefig(f'../../outputs/paper_plots/null_test_XX_slices.pdf', bbox_inches='tight')
-   
-
-    fig2 = plt.figure(figsize=(6,7))
     
     ax7 = plt_slice(
-            fig=fig2, sub=321,
+            fig=fig1, sub=(3,4,3),
             zen_angle=za_NS, map_slice=rf0YY_NS[0],
             map_error=rf0YY_NS[1], model_slice=YY_NS_slice,
             delta_pow=del_pow_ref0_YY_NS, pow_fit=fit_ref0_YY_NS,
-            slice_label='ref0YY NS', model_label='FEE YY NS')
+            slice_label='ref0YY NS', model_label='FEE YY NS', ylabel=False)
     
     ax8 = plt_slice(
-            fig=fig2, sub=322,
+            fig=fig1, sub=(3,4,4),
             zen_angle=za_EW, map_slice=rf0YY_EW[0],
             map_error=rf0YY_EW[1], model_slice=YY_EW_slice,
             delta_pow=del_pow_ref0_YY_EW, pow_fit=fit_ref0_YY_EW,
             slice_label='ref0YY EW', model_label='FEE YY EW', ylabel=False)
     
     ax9 = plt_slice(
-            fig=fig2, sub=323,
+            fig=fig1, sub=(3,4,7),
             zen_angle=za_NS, map_slice=rf1YY_NS[0],
             map_error=rf1YY_NS[1], model_slice=YY_NS_slice,
             delta_pow=del_pow_ref1_YY_NS, pow_fit=fit_ref1_YY_NS,
-            slice_label='ref1YY NS', model_label='FEE YY NS')
+            slice_label='ref1YY NS', model_label='FEE YY NS', ylabel=False)
     
     ax10 = plt_slice(
-            fig=fig2, sub=324,
+            fig=fig1, sub=(3,4,8),
             zen_angle=za_EW, map_slice=rf1YY_EW[0],
             map_error=rf1YY_EW[1], model_slice=YY_EW_slice,
             delta_pow=del_pow_ref1_YY_EW, pow_fit=fit_ref1_YY_EW,
             slice_label='ref1YY EW', model_label='FEE YY EW', ylabel=False)
     
     ax11 = plt_null_test(
-            fig=fig2,sub=325, 
+            fig=fig1,sub=(3,4,11), 
             zen_angle=za_NS, del_pow=ref01_YY_NS, 
             del_err=error_ref01_YY_NS, del_beam=beam_ref01_YY_NS, 
             del_fit=fit_ref01_YY_NS, null_label='NS rf0-rf1', 
-            beam_label='FEE Null', fit_label='Fit rf0-rf1')
+            beam_label='FEE Null', fit_label='Fit rf0-rf1', ylabel=False)
     
     ax12 = plt_null_test(
-            fig=fig2,sub=326, 
+            fig=fig1,sub=(3,4,12), 
             zen_angle=za_EW, del_pow=ref01_YY_EW, 
             del_err=error_ref01_YY_EW, del_beam=beam_ref01_YY_EW, 
             del_fit=fit_ref01_YY_EW, null_label='EW rf0-rf1', 
             beam_label='FEE Null', fit_label='Fit rf0-rf1', ylabel=False)
 
     plt.tight_layout()
-    fig2.savefig(f'../../outputs/paper_plots/null_test_YY_slices.pdf', bbox_inches='tight')
-
+    fig1.savefig(f'../../outputs/paper_plots/null_test.pdf', bbox_inches='tight')
+    
+    
