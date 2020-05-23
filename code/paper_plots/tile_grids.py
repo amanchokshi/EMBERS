@@ -92,6 +92,7 @@ def plt_grid(tile_name, ref_name):
             "font.family": "sans-serif",
             # Use 10pt font in plots, to match 10pt font in document
             "axes.labelsize": 8,
+            "axes.titlesize": 9,
             "font.size": 8,
             # Make the legend/label fonts a little smaller
             "legend.fontsize": 6,
@@ -107,11 +108,11 @@ def plt_grid(tile_name, ref_name):
     fig1 = plt.figure(figsize=(7.6,9.0))
 
     ax1  = fig1.add_axes([0.01, 0.75, 0.29, 0.22])
-    plot_healpix(data_map=maps_xx[0][0],  fig=fig1, title=f'{tile_name}XX [Zenith]', cmap=jade, vmin=-50, vmax=0,  cbar=False)
+    plot_healpix(data_map=maps_xx[0][0],  fig=fig1, title=fr'($i$) {tile_name}XX [Zenith]', cmap=jade, vmin=-50, vmax=0,  cbar=False)
     ax2  = fig1.add_axes([0.30, 0.75, 0.29, 0.22])
-    plot_healpix(data_map=maps_xx[1][0],  fig=fig1, title=f'{tile_name}XX [2]', cmap=jade, vmin=-50, vmax=0,  cbar=False)
+    plot_healpix(data_map=maps_xx[1][0],  fig=fig1, title=fr'($ii$) {tile_name}XX [2]', cmap=jade, vmin=-50, vmax=0,  cbar=False)
     ax3  = fig1.add_axes([0.60, 0.75, 0.29, 0.22])
-    plot_healpix(data_map=maps_xx[2][0],  fig=fig1, title=f'{tile_name}XX [4]', cmap=jade, vmin=-50, vmax=0,  cbar=False)
+    plot_healpix(data_map=maps_xx[2][0],  fig=fig1, title=fr'($iii$) {tile_name}XX [4]', cmap=jade, vmin=-50, vmax=0,  cbar=False)
     ax3 = plt.gca()
     image = ax3.get_images()[0]
     cax1 = fig1.add_axes([0.91, 0.75, 0.015, 0.22])
@@ -120,33 +121,33 @@ def plt_grid(tile_name, ref_name):
     
     
     ax4  = fig1.add_axes([0.01, 0.50, 0.29, 0.22])
-    plot_healpix(data_map=maps_xx[0][1],  fig=fig1, title=f'{tile_name}XX - FEE [Zenith]', cmap='RdYlGn', vmin=-5, vmax=5,  cbar=False)
+    plot_healpix(data_map=maps_xx[0][1],  fig=fig1, title=fr'($iv$) {tile_name}XX - FEE [Zenith]', cmap='RdYlGn', vmin=-5, vmax=5,  cbar=False)
     ax5  = fig1.add_axes([0.30, 0.50, 0.29, 0.22])
-    plot_healpix(data_map=maps_xx[1][1],  fig=fig1, title=f'{tile_name}XX - FEE [2]',      cmap='RdYlGn', vmin=-5, vmax=5,  cbar=False)
+    plot_healpix(data_map=maps_xx[1][1],  fig=fig1, title=fr'($v$) {tile_name}XX - FEE [2]',      cmap='RdYlGn', vmin=-5, vmax=5,  cbar=False)
     ax6  = fig1.add_axes([0.60, 0.50, 0.29, 0.22])
-    plot_healpix(data_map=maps_xx[2][1],  fig=fig1, title=f'{tile_name}XX - FEE [4]',      cmap='RdYlGn', vmin=-5, vmax=5,  cbar=False)
+    plot_healpix(data_map=maps_xx[2][1],  fig=fig1, title=fr'($vi$) {tile_name}XX - FEE [4]',      cmap='RdYlGn', vmin=-5, vmax=5,  cbar=False)
     ax6 = plt.gca()
     image = ax6.get_images()[0]
     cax2 = fig1.add_axes([0.91, 0.50, 0.015, 0.22])
     cbar2 = fig1.colorbar(image, cax=cax2, label='Power [dB]')
     
     ax7  = fig1.add_axes([0.01, 0.25, 0.29, 0.22])
-    plot_healpix(data_map=maps_yy[0][0],  fig=fig1, title=f'{tile_name}YY [Zenith]', cmap=jade, vmin=-50, vmax=0,  cbar=False)
+    plot_healpix(data_map=maps_yy[0][0],  fig=fig1, title=fr'($vii$) {tile_name}YY [Zenith]', cmap=jade, vmin=-50, vmax=0,  cbar=False)
     ax8  = fig1.add_axes([0.30, 0.25, 0.29, 0.22])
-    plot_healpix(data_map=maps_yy[1][0],  fig=fig1, title=f'{tile_name}YY [2]', cmap=jade, vmin=-50, vmax=0,  cbar=False)
+    plot_healpix(data_map=maps_yy[1][0],  fig=fig1, title=fr'($viii$) {tile_name}YY [2]', cmap=jade, vmin=-50, vmax=0,  cbar=False)
     ax9  = fig1.add_axes([0.60, 0.25, 0.29, 0.22])
-    plot_healpix(data_map=maps_yy[2][0],  fig=fig1, title=f'{tile_name}YY [4]', cmap=jade, vmin=-50, vmax=0,  cbar=False)
+    plot_healpix(data_map=maps_yy[2][0],  fig=fig1, title=fr'($ix$) {tile_name}YY [4]', cmap=jade, vmin=-50, vmax=0,  cbar=False)
     ax9 = plt.gca()
     image = ax9.get_images()[0]
     cax3 = fig1.add_axes([0.91, 0.25, 0.015, 0.22])
     cbar3 = fig1.colorbar(image, cax=cax3, label='Power [dB]')
     
     ax10 = fig1.add_axes([0.01, 0.0, 0.29, 0.22])
-    plot_healpix(data_map=maps_yy[0][1], fig=fig1, title=f'{tile_name}YY - FEE [Zenith]', cmap='RdYlGn', vmin=-5, vmax=5,  cbar=False)
+    plot_healpix(data_map=maps_yy[0][1], fig=fig1, title=fr'($x$) {tile_name}YY - FEE [Zenith]', cmap='RdYlGn', vmin=-5, vmax=5,  cbar=False)
     ax11 = fig1.add_axes([0.30, 0.0, 0.29, 0.22])
-    plot_healpix(data_map=maps_yy[1][1], fig=fig1, title=f'{tile_name}YY - FEE [2]',      cmap='RdYlGn', vmin=-5, vmax=5,  cbar=False)
+    plot_healpix(data_map=maps_yy[1][1], fig=fig1, title=fr'($xi$) {tile_name}YY - FEE [2]',      cmap='RdYlGn', vmin=-5, vmax=5,  cbar=False)
     ax12 = fig1.add_axes([0.60, 0.0, 0.29, 0.22])
-    plot_healpix(data_map=maps_yy[2][1], fig=fig1, title=f'{tile_name}YY - FEE [4]',      cmap='RdYlGn', vmin=-5, vmax=5,  cbar=False)
+    plot_healpix(data_map=maps_yy[2][1], fig=fig1, title=fr'($xii$) {tile_name}YY - FEE [4]',      cmap='RdYlGn', vmin=-5, vmax=5,  cbar=False)
     ax12 = plt.gca()
     image = ax12.get_images()[0]
     cax4 = fig1.add_axes([0.91, 0.0, 0.015, 0.22])
