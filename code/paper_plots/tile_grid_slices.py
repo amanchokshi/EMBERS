@@ -173,7 +173,7 @@ def plt_slice(
         map_error=None, model_slice=None, 
         delta_pow=None, pow_fit=None, 
         slice_label=None, model_label=None,
-        xlabel=False, ylabel=False):
+        xlabel=False, ylabel=False, title=None):
 
     '''Plot a slice of the beam, with measured
     data, errorbars, and fit the simulated beam
@@ -199,6 +199,7 @@ def plt_slice(
     #ax.set_ylim(bottom=-30)
     ax.set_xlim([-92,92])
     ax.set_ylim([-50,5])
+    ax.set_title(title)
 
     divider = make_axes_locatable(ax)
     dax = divider.append_axes("bottom", size="30%", pad=0.05)
@@ -295,20 +296,6 @@ def plt_grid(tile_name, ref_name):
     maps_xx = beam_maps(f_xx) 
     maps_yy = beam_maps(f_yy)
     
-    nice_fonts = {
-            # Use LaTeX to write all text
-            #"text.usetex": True,
-            "font.family": "sans-serif",
-            # Use 10pt font in plots, to match 10pt font in document
-            "axes.labelsize": 8,
-            "font.size": 8,
-            # Make the legend/label fonts a little smaller
-            "legend.fontsize": 6,
-            "xtick.labelsize": 8,
-            "ytick.labelsize": 8,
-            }
-    plt.rcParams.update(nice_fonts)
-    
     plt.style.use('seaborn')
     
     nice_fonts = {
@@ -316,8 +303,8 @@ def plt_grid(tile_name, ref_name):
             "text.usetex": True,
             "font.family": "sans-serif",
             # Use 10pt font in plots, to match 10pt font in document
-            "axes.labelsize": 8,
-            "font.size": 10,
+            "axes.labelsize": 7,
+            "font.size": 8,
             # Make the legend/label fonts a little smaller
             "legend.fontsize": 6,
             "xtick.labelsize": 8,
@@ -341,7 +328,8 @@ def plt_grid(tile_name, ref_name):
             pow_fit=        maps_xx[0][0][4], 
             slice_label=    'Tile NS',
             model_label=    'FEE NS',
-            ylabel=         True)
+            ylabel=         True,
+            title=          f'NS slice of {tile_name}XX [zenith]')
     
     ax2 = plt.subplot(4,3,2)
     plt_slice(
@@ -353,7 +341,8 @@ def plt_grid(tile_name, ref_name):
             delta_pow=      maps_xx[1][0][3],
             pow_fit=        maps_xx[1][0][4], 
             slice_label=    'Tile NS',
-            model_label=    'FEE NS')
+            model_label=    'FEE NS',
+            title=          f'NS slice of {tile_name}XX [2]')
     
     ax3 = plt.subplot(4,3,3)
     plt_slice(
@@ -365,7 +354,8 @@ def plt_grid(tile_name, ref_name):
             delta_pow=      maps_xx[2][0][3],
             pow_fit=        maps_xx[2][0][4], 
             slice_label=    'Tile NS',
-            model_label=    'FEE NS')
+            model_label=    'FEE NS',
+            title=          f'NS slice of {tile_name}XX [4]')
     
     ax4 = plt.subplot(4,3,4)
     plt_slice(
@@ -378,7 +368,8 @@ def plt_grid(tile_name, ref_name):
             pow_fit=        maps_xx[0][1][4], 
             slice_label=    'Tile EW',
             model_label=    'FEE EW',
-            ylabel=         True)
+            ylabel=         True,
+            title=          f'EW slice of {tile_name}XX [zenith]')
     
     ax5 = plt.subplot(4,3,5)
     plt_slice(
@@ -390,7 +381,8 @@ def plt_grid(tile_name, ref_name):
             delta_pow=      maps_xx[1][1][3],
             pow_fit=        maps_xx[1][1][4], 
             slice_label=    'Tile EW',
-            model_label=    'FEE EW')
+            model_label=    'FEE EW',
+            title=          f'EW slice of {tile_name}XX [2]')
     
     ax6 = plt.subplot(4,3,6)
     plt_slice(
@@ -402,7 +394,8 @@ def plt_grid(tile_name, ref_name):
             delta_pow=      maps_xx[2][1][3],
             pow_fit=        maps_xx[2][1][4], 
             slice_label=    'Tile EW',
-            model_label=    'FEE EW')
+            model_label=    'FEE EW',
+            title=          f'EW slice of {tile_name}XX [4]')
     
     ax7 = plt.subplot(4,3,7)
     plt_slice(
@@ -415,7 +408,8 @@ def plt_grid(tile_name, ref_name):
             pow_fit=        maps_yy[0][0][4], 
             slice_label=    'Tile NS',
             model_label=    'FEE NS',
-            ylabel=         True)
+            ylabel=         True,
+            title=          f'NS slice of {tile_name}YY [zenith]')
     
     ax8 = plt.subplot(4,3,8)
     plt_slice(
@@ -427,7 +421,8 @@ def plt_grid(tile_name, ref_name):
             delta_pow=      maps_yy[1][0][3],
             pow_fit=        maps_yy[1][0][4], 
             slice_label=    'Tile NS',
-            model_label=    'FEE NS')
+            model_label=    'FEE NS',
+            title=          f'NS slice of {tile_name}YY [2]')
     
     ax9 = plt.subplot(4,3,9)
     plt_slice(
@@ -439,7 +434,8 @@ def plt_grid(tile_name, ref_name):
             delta_pow=      maps_yy[2][0][3],
             pow_fit=        maps_yy[2][0][4], 
             slice_label=    'Tile NS',
-            model_label=    'FEE NS')
+            model_label=    'FEE NS',
+            title=          f'NS slice of {tile_name}YY [4]')
     
     ax10 = plt.subplot(4,3,10)
     plt_slice(
@@ -453,7 +449,8 @@ def plt_grid(tile_name, ref_name):
             slice_label=    'Tile EW',
             model_label=    'FEE EW',
             ylabel=         True,
-            xlabel=         True)
+            xlabel=         True,
+            title=          f'EW slice of {tile_name}YY [Zenith]')
     
     ax11 = plt.subplot(4,3,11)
     plt_slice(
@@ -466,7 +463,8 @@ def plt_grid(tile_name, ref_name):
             pow_fit=        maps_yy[1][1][4], 
             slice_label=    'Tile EW',
             model_label=    'FEE EW',
-            xlabel=         True)
+            xlabel=         True,
+            title=          f'EW slice of {tile_name}YY [2]')
     
     ax12 = plt.subplot(4,3,12)
     plt_slice(
@@ -479,7 +477,8 @@ def plt_grid(tile_name, ref_name):
             pow_fit=        maps_yy[2][1][4], 
             slice_label=    'Tile EW',
             model_label=    'FEE EW',
-            xlabel=         True)
+            xlabel=         True,
+            title=          f'EW slice of {tile_name}YY [4]')
     
     
     
