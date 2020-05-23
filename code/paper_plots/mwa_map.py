@@ -90,8 +90,9 @@ ax.scatter(rf_e, rf_n, marker='s', s=10.0, color='crimson', label='REF')
 for i, txt in enumerate([r'$Ref_1$', r'$Ref_0$']):
     ax.annotate(txt, (rf_e[i], rf_n[i]),xytext=(1.28*rf_e[i],rf_n[i]), va='center', color='w', fontsize=7)
 
-leg = ax.legend(loc="lower right", frameon=True, framealpha=0.2, markerscale=1, prop={'weight':'heavy'})
-leg.get_frame().set_edgecolor('white')
+leg = ax.legend(loc="lower right", frameon=True, framealpha=0.5, markerscale=1, prop={'weight':'heavy'})
+leg.get_frame().set_edgecolor('w')
+leg.get_frame().set_facecolor('#222222')
 for text in leg.get_texts():
     text.set_color('white')
 for l in leg.legendHandles:
