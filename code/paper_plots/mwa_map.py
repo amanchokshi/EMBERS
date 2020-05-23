@@ -66,7 +66,7 @@ for n in tiles_14:
     
 nice_fonts = {
         # Use LaTeX to write all text
-        "text.usetex": True,
+        #"text.usetex": True,
         "font.family": "sans-serif",
         # Use 10pt font in plots, to match 10pt font in document
         "axes.labelsize": 10,
@@ -87,8 +87,8 @@ ax.scatter(e_14, n_14, marker='s', s=10.0, color='cornflowerblue', label='AUT')
 ax.scatter(rf_e, rf_n, marker='s', s=10.0, color='crimson', label='REF')
 #ax.scatter(-8.5, 0.9, marker='s', s=10.0, color='green', label='Center')
 
-#for i, txt in enumerate(tiles):
-#    ax.annotate(txt, (E[i], N[i]))
+for i, txt in enumerate([r'$Ref_1$', r'$Ref_0$']):
+    ax.annotate(txt, (rf_e[i], rf_n[i]),xytext=(1.28*rf_e[i],rf_n[i]), va='center', color='w', fontsize=7)
 
 leg = ax.legend(loc="lower right", frameon=True, framealpha=0.2, markerscale=1, prop={'weight':'heavy'})
 leg.get_frame().set_edgecolor('white')
