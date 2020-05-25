@@ -175,7 +175,7 @@ if __name__=='__main__':
     for l in leg.legendHandles:
         l.set_alpha(1)
     
-    plt.xlabel(r'Zenith Angle [$^\circ$]')
+    plt.xlabel(r'Zenith Angle [degrees]')
     plt.ylabel('Residual Power [dB]')
     plt.tight_layout()
     plt.savefig('../../outputs/paper_plots/ref_residuals.pdf', bbox_inches='tight')
