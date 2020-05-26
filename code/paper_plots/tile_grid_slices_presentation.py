@@ -194,7 +194,7 @@ def plt_slice(
     leg = ax.legend(loc="lower center", frameon=True, framealpha=0.3, handlelength=1)
     leg.get_frame().set_facecolor('white')
     for l in leg.legendHandles:
-        l.set_alpha(0.3)
+        l.set_alpha(1)
     for text in leg.get_texts():
         plt.setp(text, color = 'w')
 
@@ -375,6 +375,7 @@ def plt_grid(tile_name, ref_name):
             slice_label=    'Tile EW',
             model_label=    'FEE EW',
             ylabel=         True,
+            xlabel=         True,
             title=          fr'($iv$) EW slice of {tile_name}XX [zenith]')
     
     ax5 = plt.subplot(2,3,5)
@@ -388,6 +389,7 @@ def plt_grid(tile_name, ref_name):
             pow_fit=        maps_xx[1][1][4], 
             slice_label=    'Tile EW',
             model_label=    'FEE EW',
+            xlabel=         True,
             title=          fr'($v$) EW slice of {tile_name}XX [2]')
     
     ax6 = plt.subplot(2,3,6)
@@ -401,6 +403,7 @@ def plt_grid(tile_name, ref_name):
             pow_fit=        maps_xx[2][1][4], 
             slice_label=    'Tile EW',
             model_label=    'FEE EW',
+            xlabel=         True,
             title=          fr'($vi$) EW slice of {tile_name}XX [4]')
     
     
