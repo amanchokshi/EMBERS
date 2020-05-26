@@ -319,8 +319,8 @@ if __name__=='__main__':
     from scipy.stats import median_absolute_deviation as mad
 
     import sys
-    sys.path.append('../decode_rf_data')
-    sys.path.append('../tile_maps')
+    sys.path.append('../../decode_rf_data')
+    sys.path.append('../../tile_maps')
     from plot_tile_maps import plot_healpix
     from colormap import spectral
     
@@ -331,12 +331,12 @@ if __name__=='__main__':
         Plot healpix map of reference data
         """)
     
-    parser.add_argument('--out_dir', metavar='\b', default='../../outputs/tile_maps/null_test/',
-            help='Output directory. Default=../../outputs/tile_maps/null_test/')
-    parser.add_argument('--map_dir', metavar='\b', default='../../outputs/tile_maps/tile_maps_raw/',
-            help='Output directory. Default=../../outputs/tile_maps/tile_maps_raw/')
-    parser.add_argument('--ref_model', metavar='\b', default='../../outputs/reproject_ref/ref_dipole_models.npz',
-            help='Healpix reference FEE model file. default=../../outputs/reproject_ref/ref_dipole_models.npz')
+    parser.add_argument('--out_dir', metavar='\b', default='../../../outputs/tile_maps/null_test/',
+            help='Output directory. Default=../../../outputs/tile_maps/null_test/')
+    parser.add_argument('--map_dir', metavar='\b', default='../../../outputs/tile_maps/tile_maps_raw/',
+            help='Output directory. Default=../../../outputs/tile_maps/tile_maps_raw/')
+    parser.add_argument('--ref_model', metavar='\b', default='../../../outputs/reproject_ref/ref_dipole_models.npz',
+            help='Healpix reference FEE model file. default=../../../outputs/reproject_ref/ref_dipole_models.npz')
     parser.add_argument('--nside', metavar='\b',type=int, default=32,help='Healpix Nside. Default = 32')
     
     
@@ -493,12 +493,19 @@ if __name__=='__main__':
             delta_pow=del_pow_ref0_XX_NS, pow_fit=fit_ref0_XX_NS, 
             slice_label='ref0XX NS', model_label='FEE XX NS')
 
-    ax2 = plt_slice(
+   # ax2 = plt_slice(
+   #         fig=fig1, sub=(2,2,2),
+   #         zen_angle=za_EW, map_slice=rf0XX_EW[0],
+   #         map_error=rf0XX_EW[1], model_slice=XX_EW_slice,
+   #         delta_pow=del_pow_ref0_XX_EW, pow_fit=fit_ref0_XX_EW,
+   #         slice_label='ref0XX EW', model_label='FEE XX EW', ylabel=False)
+    
+    ax3 = plt_slice(
             fig=fig1, sub=(2,2,2),
-            zen_angle=za_EW, map_slice=rf0XX_EW[0],
-            map_error=rf0XX_EW[1], model_slice=XX_EW_slice,
-            delta_pow=del_pow_ref0_XX_EW, pow_fit=fit_ref0_XX_EW,
-            slice_label='ref0XX EW', model_label='FEE XX EW', ylabel=False)
+            zen_angle=za_NS, map_slice=rf1XX_NS[0],
+            map_error=rf1XX_NS[1], model_slice=XX_NS_slice,
+            delta_pow=del_pow_ref1_XX_NS, pow_fit=fit_ref1_XX_NS,
+            slice_label='ref1XX NS', model_label='FEE XX NS', ylabel=False)
 
     ax5 = plt_null_test(
             fig=fig1,sub=(2,1,2), 
