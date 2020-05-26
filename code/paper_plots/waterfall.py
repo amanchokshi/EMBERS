@@ -57,6 +57,10 @@ nice_fonts = {
         "legend.fontsize": 8,
         "xtick.labelsize": 8,
         "ytick.labelsize": 8,
+        #"ytick.color" : "w",
+        #"xtick.color" : "w",
+        #"axes.labelcolor" : "w",
+        #"axes.edgecolor" : "w"
         }
 
 plt.rcParams.update(nice_fonts)
@@ -142,5 +146,7 @@ ax2.set_xlabel('Freqency [MHz]')
 ax2.set_yticklabels([])
 ax2.set_yticks([])
 
+
 plt.savefig(f'{out_dir}/waterfall.png', dpi=600, bbox_inches='tight')
+#plt.savefig(f'waterfall.png', dpi=600, transparent=True, bbox_inches='tight')
 
