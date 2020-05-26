@@ -158,8 +158,8 @@ if __name__=='__main__':
             "font.size": 14,
             # Make the legend/label fonts a little smaller
             "legend.fontsize": 12,
-            "xtick.labelsize": 11,
-            "ytick.labelsize": 11,
+            "xtick.labelsize": 10,
+            "ytick.labelsize": 10,
             "ytick.color" : "w",
             "xtick.color" : "w",
             "axes.labelcolor" : "w",
@@ -168,15 +168,17 @@ if __name__=='__main__':
     
     plt.rcParams.update(nice_fonts)
     
-    fig = plt.figure(figsize=(10,6))
+    fig = plt.figure(figsize=(11,6))
            
     plt.scatter(za, ref_rings, marker='.', s=99, alpha=0.9,  color='#a7ff83', label=r'$\Delta$ref [$\theta$]')
     plt.plot(za, fit_ref, linewidth=2.1, alpha=1, color='#fa4659', label=r'8$^{th}$ order fit')
     
-    leg = plt.legend(frameon=True, framealpha=0.3, markerscale=1, handlelength=1)
+    leg = plt.legend(loc="lower left", frameon=True, framealpha=0.3, markerscale=1, handlelength=1)
     leg.get_frame().set_facecolor('white')
     for l in leg.legendHandles:
         l.set_alpha(1)
+    for text in leg.get_texts():
+        plt.setp(text, color = 'w')
     
     plt.xlabel(r'Zenith Angle [degrees]')
     plt.ylabel('Residual Power [dB]')

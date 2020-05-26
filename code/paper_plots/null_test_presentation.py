@@ -236,8 +236,11 @@ def plt_slice(
     leg.get_frame().set_facecolor('white')
     for l in leg.legendHandles:
         l.set_alpha(1)
+    for text in leg.get_texts():
+        plt.setp(text, color = 'w')
     ax.set_xlim([-82,82])
     ax.set_ylim([-26,12])
+    ax.set_xticklabels([])
 
     divider = make_axes_locatable(ax)
     dax = divider.append_axes("bottom", size="30%", pad=0.1)
@@ -288,10 +291,12 @@ def plt_null_test(
     ax.set_ylim([-10,10])
     ax.set_xlabel('Zenith Angle [degrees]')
     #ax.legend(loc='upper left')
-    leg = ax.legend(loc="lower center", frameon=True, framealpha=0.3, handlelength=1)
+    leg = ax.legend(loc="lower left", frameon=True, framealpha=0.3, handlelength=1)
     leg.get_frame().set_facecolor('white')
     for l in leg.legendHandles:
         l.set_alpha(1)
+    for text in leg.get_texts():
+        plt.setp(text, color = 'w')
     
     if ylabel is True:
         ax.set_ylabel('Power [dB]')
@@ -465,12 +470,12 @@ if __name__=='__main__':
             #"text.usetex": True,
             "font.family": "sans-serif",
             # Use 10pt font in plots, to match 10pt font in document
-            "axes.labelsize": 8,
-            "font.size": 10,
+            "axes.labelsize": 14,
+            "font.size": 14,
             # Make the legend/label fonts a little smaller
-            "legend.fontsize": 6,
-            "xtick.labelsize": 8,
-            "ytick.labelsize": 8,
+            "legend.fontsize": 12,
+            "xtick.labelsize": 10,
+            "ytick.labelsize": 10,
             "ytick.color" : "w",
             "xtick.color" : "w",
             "axes.labelcolor" : "w",
@@ -479,7 +484,7 @@ if __name__=='__main__':
     
     plt.rcParams.update(nice_fonts)
     
-    fig1 = plt.figure(figsize=(9,5)) 
+    fig1 = plt.figure(figsize=(11,6)) 
     
     ax1 = plt_slice(
             fig=fig1, sub=(2,2,1),
