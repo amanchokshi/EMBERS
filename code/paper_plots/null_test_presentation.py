@@ -491,24 +491,21 @@ if __name__=='__main__':
             zen_angle=za_NS, map_slice=rf0XX_NS[0],
             map_error=rf0XX_NS[1], model_slice=XX_NS_slice,
             delta_pow=del_pow_ref0_XX_NS, pow_fit=fit_ref0_XX_NS, 
-            slice_label='ref0XX NS', model_label='FEE XX NS',
-            title=r'($i$)')
+            slice_label='ref0XX NS', model_label='FEE XX NS')
 
     ax2 = plt_slice(
             fig=fig1, sub=(2,2,2),
             zen_angle=za_EW, map_slice=rf0XX_EW[0],
             map_error=rf0XX_EW[1], model_slice=XX_EW_slice,
             delta_pow=del_pow_ref0_XX_EW, pow_fit=fit_ref0_XX_EW,
-            slice_label='ref0XX EW', model_label='FEE XX EW', ylabel=False,
-            title=r'($ii$)')
+            slice_label='ref0XX EW', model_label='FEE XX EW', ylabel=False)
 
     ax5 = plt_null_test(
             fig=fig1,sub=(2,1,2), 
             zen_angle=za_NS, del_pow=ref01_XX_NS, 
             del_err=error_ref01_XX_NS, del_beam=beam_ref01_XX_NS, 
             del_fit=fit_ref01_XX_NS, null_label='NS rf0-rf1', 
-            beam_label='FEE Null', fit_label='Fit rf0-rf1',
-            title=r'($ix$)')
+            beam_label='FEE Null', fit_label='Fit rf0-rf1')
     
     plt.tight_layout()
     fig1.savefig(f'null_test.png', transparent=True, bbox_inches='tight')
