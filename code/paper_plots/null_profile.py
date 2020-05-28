@@ -2,6 +2,7 @@ import numpy as np
 import healpy as hp
 import scipy.optimize as opt
 import numpy.polynomial.polynomial as poly
+from scipy.stats import median_absolute_deviation as mad
 
 
 def ring_indices(nside=None):
@@ -33,7 +34,7 @@ def good_maps(ref_map):
     
     # Good sats from which to make plots
     good_sats = [
-            25338, 25984, 25985,
+            25338, 25982, 25984, 25985,
             28654, 40086, 40087,
             40091, 41179, 41180,
             41182, 41183, 41184,
@@ -41,19 +42,39 @@ def good_maps(ref_map):
             41189, 44387
             ]
     
+    orbcomm = [
+            25982, 25984, 25985,
+            40086, 40087, 40091,
+            41179, 41180, 41182, 
+            41183, 41184, 41185, 
+            41187, 41188, 41189
+            ]
+    noaa = [25338, 28654]
+
+    meteor = [44387]
+    
     # Empty good map
     good_map = [[] for pixel in range(hp.nside2npix(nside))]
     
     for p in pointings:
         
         # append to good map from all good sat data
-        for sat in good_sats:
+        for sat in meteor:
             for pix in range(hp.nside2npix(nside)):
                 good_map[pix].extend(ref_map[p][sat][pix])
+        
+    mad_map = []
+    for j in good_map:
+        if j != []:
+            j = np.asarray(j)
+            j = j[~np.isnan(j)]
+            mad_map.append(mad(j))
+        else:
+            mad_map.append(np.nan)
     
     good_map = [np.nanmedian(pixel) for pixel in good_map]
         
-    return good_map
+    return (good_map, mad_map)
 
 def poly_fit(x, y, order):
     '''Fit polynominal of order to data'''
@@ -118,35 +139,43 @@ if __name__=='__main__':
 
     
     za, indices = ring_indices(nside=nside)
-    good_rf0XX = good_maps(ref_tiles[0])
-    good_rf0YY = good_maps(ref_tiles[1])
-    good_rf1XX = good_maps(ref_tiles[2])
-    good_rf1YY = good_maps(ref_tiles[3])
+    
+    # median and mad values of induvidual ref maps 
+    good_rf0XX, mad_rf0XX = good_maps(ref_tiles[0])
+    good_rf0YY, mad_rf0YY = good_maps(ref_tiles[1])
+    good_rf1XX, mad_rf1XX = good_maps(ref_tiles[2])
+    good_rf1YY, mad_rf1YY = good_maps(ref_tiles[3])
 
     # Load reference FEE model
     ref_fee_model = np.load(ref_model, allow_pickle=True)
     beam_XX = ref_fee_model['XX']
     beam_YY = ref_fee_model['YY']
-    
-    good_rf0XX = good_rf0XX - beam_XX
-    good_rf0YY = good_rf0YY - beam_YY
-    good_rf1XX = good_rf1XX - beam_XX
-    good_rf1YY = good_rf1YY - beam_YY
-
-    sum_array = np.array([good_rf0XX, good_rf0YY, good_rf1XX, good_rf1YY])
-
-    ref_median = np.nanmedian(sum_array, axis=0)
-    
-    ref_rings = []
-    for i in indices:
-        ref_rings.append(np.nanmedian(ref_median[i]))
-
    
-    ref_med = np.median(ref_rings)
+    # residuals of individual maps
+    res_rf0XX = good_rf0XX - beam_XX
+    res_rf0YY = good_rf0YY - beam_YY
+    res_rf1XX = good_rf1XX - beam_XX
+    res_rf1YY = good_rf1YY - beam_YY
 
-    ref_rings = np.array(ref_rings) - ref_med
+    sum_array = np.array([res_rf0XX, res_rf0YY, res_rf1XX, res_rf1YY])
+    mad_array = np.array([mad_rf0XX, mad_rf0YY, mad_rf1XX, mad_rf1YY])
+    
+    # sum along corresponding pixels
+    res_median = np.nanmedian(sum_array, axis=0)
+    mad_average = np.nanmean(mad_array, axis=0)
+   
+    # median of values in zenith angle rings
+    res_rings = []
+    mad_rings = []
+    for i in indices:
+        res_rings.append(np.nanmedian(res_median[i]))
+        mad_rings.append(np.nanmedian(mad_average[i]))
 
-    fit_ref = poly_fit(za, ref_rings, 8)  
+    # Scale the residuals to 0 median 
+    res_med = np.median(res_rings)
+    res_rings = np.array(res_rings) - res_med
+
+    fit_res = poly_fit(za, res_rings, 8)  
     
     plt.style.use('seaborn')
     nice_fonts = {
@@ -167,8 +196,14 @@ if __name__=='__main__':
     fig = plt.figure(figsize=(3.6,2.4))
            
     plt.style.use('seaborn')
-    plt.scatter(za, ref_rings, marker='.', s=77, alpha=0.9,  color='#466844', label=r'$\Delta$ref [$\theta$]')
-    plt.plot(za, fit_ref, linewidth=1.4, alpha=1, color='#fa4659', label=r'8$^{th}$ order fit')
+    plt.errorbar(
+           za, res_rings, yerr=mad_rings, 
+           fmt='.', color='#326765', ecolor='#7da87b',
+           elinewidth=1.4, capsize=1.4, capthick=1.6,
+           alpha=0.9, ms=9, label=r'$\Delta$ref [$\theta$]')
+    
+    #plt.scatter(za, res_rings, marker='.', s=77, alpha=0.9,  color='#466844', label=r'$\Delta$ref [$\theta$]')
+    plt.plot(za, fit_res, linewidth=1.4, alpha=1, color='#fa4659', label=r'8$^{th}$ order fit')
     
     leg = plt.legend(frameon=True, markerscale=1, handlelength=1)
     leg.get_frame().set_facecolor('white')
@@ -178,7 +213,8 @@ if __name__=='__main__':
     plt.xlabel(r'Zenith Angle [degrees]')
     plt.ylabel('Residual Power [dB]')
     plt.tight_layout()
-    plt.savefig('../../outputs/paper_plots/ref_residuals.pdf', bbox_inches='tight')
+    #plt.savefig('../../outputs/paper_plots/ref_residuals.pdf', bbox_inches='tight')
+    plt.savefig('ref_residuals_meteor.pdf', bbox_inches='tight')
 
 
 
