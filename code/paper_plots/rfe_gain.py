@@ -506,10 +506,12 @@ def project_tile_healpix(tile_pair):
 
                                                 # magic here
                                                 # the beam shape finally emerges
+                                                
                                                 mwa_pass = np.array(tile_pass) - np.array(ref_pass) + np.array(ref_fee_pass)
 
-                                                # fit the mwa_pass data to the tile_pass power level. RFE clipping occurs at the tile_pass power levels
-                                                offset = fit_gain(map_data=tile_pass, fee=mwa_pass)
+                                                # fit the mwa_pass data to the tile_pass power level. RFE clipping occurs at the tile_pass power levels                     
+                                                peak_filter = np.where(tile_pass >= -40)
+                                                offset = fit_gain(map_data=tile_pass[peak_filter], fee=mwa_pass[peak_filter])
                                                 mwa_pass = mwa_pass + offset[0]
 
 

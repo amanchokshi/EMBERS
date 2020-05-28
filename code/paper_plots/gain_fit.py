@@ -47,26 +47,28 @@ plt.rcParams.update(nice_fonts)
 
 #plt.style.use('seaborn')
 
-fig = plt.figure(figsize=(3.6,2.4))
+#fig = plt.figure(figsize=(3.6,2.4))
+fig = plt.figure()
 
 #plt.scatter(pass_data, pass_resi, marker='.', alpha=0.7, color='seagreen')
-plt.hexbin(pass_data, pass_resi, gridsize=36, bins='log',cmap=cmap, alpha=0.9)
+#plt.hexbin(pass_data, pass_resi, gridsize=36, bins='log',cmap=cmap, alpha=0.9)
+plt.hexbin(pass_data, pass_resi, gridsize=144,cmap=cmap, alpha=0.9)
 
 pass_data = np.array(pass_data)
 pass_resi = np.array(pass_resi)
-filtr = np.where(pass_data <= -20)
+filtr = np.where(np.logical_and(pass_data <= -20, pass_data >=-70))
 pass_data = pass_data[filtr]
 pass_resi = pass_resi[filtr]
 
-bin_med, bin_edges, binnumber = binned_statistic(pass_data, pass_resi, statistic='median', bins=11)
+bin_med, bin_edges, binnumber = binned_statistic(pass_data, pass_resi, statistic='median', bins=14)
 bin_width = (bin_edges[1] - bin_edges[0])
 bin_centers = bin_edges[1:] - bin_width/2
 
 
-z = np.polyfit(bin_centers, bin_med, 3)
+z = np.polyfit(bin_centers, bin_med, 4)
 f = np.poly1d(z)
 
-x_f = np.linspace(-40, -15)
+x_f = np.linspace(-80, -10)
 y_f = f(x_f)
 
 plt.plot(x_f, y_f, color='w', lw=2.1, alpha=0.88, label='Gain fit')
@@ -80,9 +82,11 @@ for l in leg.legendHandles:
 
 plt.xlabel('Observed power [dBm]')
 plt.ylabel('Residuals power [dB]')
-plt.yticks([-20, -10, 0, 10])
-plt.xlim([-40,-15])
-plt.ylim([-20,15])
+#plt.yticks([-20, -10, 0, 10])
+#plt.xlim([-40,-15])
+#plt.ylim([-20,15])
+plt.xlim([-80,-10])
+plt.ylim([-30,30])
 plt.tick_params(axis='both', length = 0)
 plt.grid(color='#cccccc', alpha=0.42, lw=1.2)
 plt.box(None)
