@@ -518,7 +518,14 @@ def project_tile_healpix(tile_pair):
                                                 #mwa_pass_fit = mwa_pass - offset[0]
                                                 
                                                 # here, we fit the mwa_fee_pass down to the tile_pass level
-                                                offset = fit_gain(map_data=mwa_pass, fee=mwa_fee_pass)
+                                                # mask out distorted poetion >= -40 dBm
+                                                dis_filter = np.where(mwa_pass <= -40) 
+                                                mwa_pass_fil = mwa_pass[dis_filter]
+                                                mwa_fee_pass_fil = mwa_fee_pass[dis_filter]
+                                                # ignore fee nulls in fit
+                                                null_filter = np.where(mwa_fee_pass_fil >= -60)
+
+                                                offset = fit_gain(map_data=mwa_pass_fil[null_filter], fee=mwa_fee_pass_fil[null_filter])
                                                 mwa_fee_pass = mwa_fee_pass + offset
                                                 mwa_pass_fit = mwa_pass
                                                 
@@ -682,11 +689,11 @@ if __name__=='__main__':
     Path(out_dir).mkdir(parents=True, exist_ok=True)
 #    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
-    project_tile_healpix(tile_pairs[0])
+#    project_tile_healpix(tile_pairs[0])
 #    project_tile_healpix(['rf0YY', 'S33YY'])
         
     # Parallization magic happens here
-#    with concurrent.futures.ProcessPoolExecutor() as executor:
-#        results = executor.map(project_tile_healpix, tile_pairs)
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(project_tile_healpix, tile_pairs)
 
 
