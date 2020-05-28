@@ -450,11 +450,11 @@ def project_tile_healpix(tile_pair):
                                                     times_pass = times_pass[peak]
                                                     hp_indices = u[peak]
 
-                                                    residuals = mwa_fee_pass - mwa_pass_fit
-                                                    filtr = np.where(residuals > -1)
-                                                    mwa_fee_pass = mwa_fee_pass[filtr]
-                                                    mwa_pass_fit = mwa_pass_fit[filtr]
-                                                    times_pass = times_pass[filtr]
+                                                    #residuals = mwa_fee_pass - mwa_pass_fit
+                                                    #filtr = np.where(residuals > -1)
+                                                    #mwa_fee_pass = mwa_fee_pass[filtr]
+                                                    #mwa_pass_fit = mwa_pass_fit[filtr]
+                                                    #times_pass = times_pass[filtr]
                                                     #resi = mwa_fee_pass - mwa_pass_fit
                                                    
                                                     # consider residuals in the primary lobe approximately
