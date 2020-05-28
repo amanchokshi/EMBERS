@@ -415,6 +415,94 @@ def project_tile_healpix(tile_pair):
                                                 #clipped_idx = np.where(tile_pass == np.nan)
                                                 #ref_fee_pass[clipped_idx] == np.nan
                                                 
+                                                #plt.style.use('seaborn')
+                                                #nice_fonts = {
+                                                #        # Use LaTeX to write all text
+                                                #        #"text.usetex": True,
+                                                #        "font.family": "sans-serif",
+                                                #        # Use 10pt font in plots, to match 10pt font in document
+                                                #        "axes.labelsize": 12,
+                                                #        "font.size": 12,
+                                                #        # Make the legend/label fonts a little smaller
+                                                #        "legend.fontsize": 10,
+                                                #        "xtick.labelsize": 9,
+                                                #        "ytick.labelsize": 9,
+                                                #        }
+                                                #
+                                                #plt.rcParams.update(nice_fonts)
+                                                #fig = plt.figure(figsize=(9,5))
+                                                #
+                                                #ax1 = fig.add_subplot(2, 2, 1)
+                                                #ax1.scatter(times_pass-times_pass[0], tile_pass, marker='.', color='#ff6464', label=r'P$_{AUT}$')
+                                                #ax1.scatter(times_pass-times_pass[0], ref_pass, marker='.', color='#5e63b6', label=r'P$_{ref}$')
+                                                #ax1.scatter(times_pass-times_pass[0], ref_fee_pass, marker='.', color='#17b978', label=r'B$_{ref}$')
+                                                #ax1.set_xlabel('Times [s]')
+                                                #ax1.set_ylabel('Raw Power [dBm]')
+                                                #ax1.legend()
+                                                #leg = ax1.legend(loc="upper right", frameon=True, markerscale=2, handlelength=1)
+                                                #leg.get_frame().set_facecolor('grey')
+                                                #leg.get_frame().set_alpha(0.4)
+                                                #for l in leg.legendHandles:
+                                                #    l.set_alpha(1)
+                                                #
+                                                #ax2 = fig.add_subplot(2, 2, 3)
+                                                #ax2.scatter(times_pass-times_pass[0], tile_pass-ref_pass+ref_fee_pass, marker='.', color='#ff7c38', label=r'B$_{dist}$ = $\frac{P_{AUT}}{P_{ref}}B_{ref}$')
+                                                #ax2.scatter(times_pass-times_pass[0], mwa_fee_pass, marker='.', color='#307672', label=r'B$_{FEE}$')
+                                                #ax2.set_xlabel('Times [s]')
+                                                #ax2.set_ylabel('Power [dB]')
+                                                #ax2.legend()
+                                                #leg = ax2.legend(loc="upper right", frameon=True, markerscale=2, handlelength=1)
+                                                #leg.get_frame().set_facecolor('grey')
+                                                #leg.get_frame().set_alpha(0.4)
+                                                #for l in leg.legendHandles:
+                                                #    l.set_alpha(1)
+                                                #
+                                                #ax3 = fig.add_subplot(1, 2, 2)
+                                                #mwa_pass = np.array(tile_pass) - np.array(ref_pass) + np.array(ref_fee_pass)
+                                                #offset = fit_gain(map_data=tile_pass, fee=mwa_pass)
+                                                #mwa_pass = mwa_pass + offset[0]
+                                                #offset = fit_gain(map_data=mwa_pass, fee=mwa_fee_pass)
+                                                #mwa_fee_pass = mwa_fee_pass + offset
+                                                #mwa_pass_fit = mwa_pass
+                                                #
+                                                #ax3.scatter(times_pass-times_pass[0], mwa_fee_pass, color='#7da87b', alpha=0.9, marker=".", label="FEE slice fit to P$_{AUT}$")
+                                                #ax3.scatter(times_pass-times_pass[0], mwa_pass_fit, color='#c70039', alpha=0.9, marker=".", label="B$_{dist}$ fit to P$_{AUT}$")
+                                                #ax3.set_ylabel('Power [dBm]')
+                                                ##ax1.set_ylim([-84,-16])
+                                                ##ax1.set_xticklabels([])
+                                            
+                                                #leg = ax3.legend(loc="upper right", frameon=True, markerscale=2, handlelength=1)
+                                                #leg.get_frame().set_facecolor('grey')
+                                                #leg.get_frame().set_alpha(0.4)
+                                                #for l in leg.legendHandles:
+                                                #    l.set_alpha(1)
+                                                #
+                                                #
+                                                #delta_p = np.array(mwa_fee_pass) - np.array(mwa_pass_fit)
+                                                #
+                                                #divider = make_axes_locatable(ax3)
+                                                #dax = divider.append_axes("bottom", size="40%", pad=0.10)
+
+                                                #dax.scatter(times_pass-times_pass[0], delta_p, marker='.', alpha=0.7, color='#27296d', label='Residuals')
+                                                #leg = dax.legend(loc="upper right", frameon=True, markerscale=2, handlelength=1)
+                                                #leg.get_frame().set_facecolor('grey')
+                                                #leg.get_frame().set_alpha(0.4)
+                                                #for l in leg.legendHandles:
+                                                #    l.set_alpha(1)
+                                                ##dax.scatter(t, delta_p, marker='.', s=21,alpha=0.7, color='#27296d')
+                                                #dax.set_xlabel('Times [s]')
+                                                ##dax.plot(zen_angle, pow_fit, linewidth=1.4, alpha=0.9, color='#ff8264')
+                                                ##dax.set_ylim([-21,12])
+                                                #dax.set_yticks([-20,0,10])
+                                                ##dax.set_xticklabels([])
+                                                ##dax.set_ylim([-5,5])
+                                                #dax.set_ylabel(r'$\Delta$P [dB]')
+                                                #
+                                                #
+                                                #
+                                                #plt.tight_layout()
+                                                #plt.savefig(f'{out_dir}/{timestamp}_{sat}.png')
+                                                #plt.close()
 
                                                 # magic here
                                                 # the beam shape finally emerges
@@ -443,12 +531,12 @@ def project_tile_healpix(tile_pair):
                                                 # a goodness of fit threshold
                                                 if pval >= 0.9:
                                                 
-                                                    #peak = np.where(mwa_fee_pass >= -50)
-                                                    peak = np.where(mwa_pass_fit >= -40)
-                                                    mwa_fee_pass = mwa_fee_pass[peak]
-                                                    mwa_pass_fit = mwa_pass_fit[peak]
-                                                    times_pass = times_pass[peak]
-                                                    hp_indices = u[peak]
+                                                    ##peak = np.where(mwa_fee_pass >= -50)
+                                                    #peak = np.where(mwa_pass_fit >= -40)
+                                                    #mwa_fee_pass = mwa_fee_pass[peak]
+                                                    #mwa_pass_fit = mwa_pass_fit[peak]
+                                                    #times_pass = times_pass[peak]
+                                                    #hp_indices = u[peak]
 
                                                     #residuals = mwa_fee_pass - mwa_pass_fit
                                                     #filtr = np.where(residuals > -1)
@@ -594,11 +682,11 @@ if __name__=='__main__':
     Path(out_dir).mkdir(parents=True, exist_ok=True)
 #    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
-#    project_tile_healpix(tile_pairs[0])
+    project_tile_healpix(tile_pairs[0])
 #    project_tile_healpix(['rf0YY', 'S33YY'])
         
     # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(project_tile_healpix, tile_pairs)
+#    with concurrent.futures.ProcessPoolExecutor() as executor:
+#        results = executor.map(project_tile_healpix, tile_pairs)
 
 
