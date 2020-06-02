@@ -72,13 +72,15 @@ f = np.poly1d(z)
 x_f = [f.roots[0], -45, -40, -35, -30, -25, -20]
 y_f = f(x_f)
 
-plt.plot(x_f, y_f, color='w', lw=2.1, marker='s', markeredgecolor='k', markeredgewidth=1.6, markersize=4.9, alpha=1, label='Gain fit', zorder=1)
-plt.scatter(bin_centers, bin_med, marker='X', s=14,  facecolors='w',lw=0.7, edgecolors='w', alpha=1, label='Median residuals', zorder=2)
+#plt.plot(x_f, y_f, color='w', lw=2.1, marker='X', markeredgecolor='k', markeredgewidth=0.7, markersize=2.1, alpha=1, label='Gain fit', zorder=1)
+plt.plot(x_f, y_f, color='w', lw=1.8, alpha=1, label='Gain fit', zorder=1)
+plt.scatter(bin_centers, bin_med, marker='h', s=14,  facecolors='w',lw=0.7, edgecolors='k', alpha=1, label='Median residuals', zorder=2)
+plt.scatter(f.roots[0], 0, marker='o', s=9,  facecolors='w', alpha=1)
 
-leg = plt.legend(loc="lower right", frameon=True, markerscale=0.9, handlelength=1.4)
+leg = plt.legend(loc="lower right", frameon=True, markerscale=0.9, handlelength=1)
 leg.get_frame().set_facecolor('#cccccc')
 for l in leg.legendHandles:
-    l.set_alpha(0.77)
+    l.set_alpha(0.9)
 
 
 plt.xlabel('Observed power [dBm]')
