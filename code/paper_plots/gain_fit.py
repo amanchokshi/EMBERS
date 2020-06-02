@@ -18,7 +18,7 @@ sys.path.append('../decode_rf_data')
 from colormap import spectral
 cmap = spectral()
 
-gain_files = [item for item in Path('../../outputs/paper_plots/gain_fit_4/').glob('*.json')]
+gain_files = [item for item in Path('../../outputs/paper_plots/gain_fit/').glob('*.json')]
 names = [i.name.split('.')[0] for i in gain_files]
 
 pass_data = []
