@@ -30,36 +30,6 @@ for n,f in enumerate(gain_files):
         pass_data.extend(rfe['pass_data'])
         pass_resi.extend(rfe['pass_resi'])
         
-        #pass_data = rfe['pass_data']
-        #pass_resi = rfe['pass_resi']
-        #nice_fonts = {
-        #        # Use LaTeX to write all text
-        #        #"text.usetex": True,
-        #        "font.family": "sans-serif",
-        #        # Use 10pt font in plots, to match 10pt font in document
-        #        "axes.labelsize": 10,
-        #        "font.size": 10,
-        #        # Make the legend/label fonts a little smaller
-        #        "legend.fontsize": 6,
-        #        "xtick.labelsize": 8,
-        #        "ytick.labelsize": 8,
-        #        }
-        #
-        #plt.rcParams.update(nice_fonts)
-        #
-        #plt.style.use('seaborn')
-        #fig = plt.figure()
-        #plt.scatter(pass_data, pass_resi, marker='.', alpha=0.7, color='seagreen')
-        #plt.xlabel('Observed power [dBm]')
-        #plt.ylabel('Residuals power [dB]')
-        #plt.xlim([-80,-20])
-        #plt.ylim([-20,20])
-        #plt.tight_layout()
-        #plt.savefig(f'../../outputs/paper_plots/{names[n]}.png', bbox_inches='tight')
-        #plt.close()
-
-
-
 nice_fonts = {
         # Use LaTeX to write all text
         #"text.usetex": True,
@@ -75,10 +45,10 @@ nice_fonts = {
 
 plt.rcParams.update(nice_fonts)
 
-#fig = plt.figure(figsize=(3.6,2.4))
-fig = plt.figure()
+fig = plt.figure(figsize=(3.6,2.4))
+#fig = plt.figure()
 
-plt.hexbin(pass_data, pass_resi, gridsize=121,cmap=cmap, alpha=0.97, zorder=0)
+plt.hexbin(pass_data, pass_resi, gridsize=77,cmap=cmap, alpha=0.97, zorder=0)
 
 pass_data = np.array(pass_data)
 pass_resi = np.array(pass_resi)
@@ -103,7 +73,7 @@ x_f = [f.roots[0], -45, -40, -35, -30, -25, -20]
 y_f = f(x_f)
 
 plt.plot(x_f, y_f, color='w', lw=2.1, marker='s', markeredgecolor='k', markeredgewidth=1.6, markersize=4.9, alpha=1, label='Gain fit', zorder=1)
-plt.scatter(bin_centers, bin_med, marker='X', s=36,  facecolors='#ee4540',lw=0.9, edgecolors='w', alpha=1, label='Median residuals', zorder=2)
+plt.scatter(bin_centers, bin_med, marker='X', s=14,  facecolors='w',lw=0.7, edgecolors='w', alpha=1, label='Median residuals', zorder=2)
 
 leg = plt.legend(loc="lower right", frameon=True, markerscale=0.9, handlelength=1.4)
 leg.get_frame().set_facecolor('#cccccc')
