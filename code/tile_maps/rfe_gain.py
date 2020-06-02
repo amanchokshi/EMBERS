@@ -283,7 +283,7 @@ def power_ephem(
             return 0
 
 
-def project_tile_healpix(tile_pair):
+def rfe_gain(tile_pair):
 
     #pass_data = []
     #pass_resi = []
@@ -315,11 +315,6 @@ def project_tile_healpix(tile_pair):
     # Rotate the fee models by -pi/2 to move model from spherical (E=0) to Alt/Az (N=0)
     ref_fee_model = np.load(ref_model, allow_pickle=True)
     
-#    # Tile S33YY has it's 9th dipole flagged
-#    if tile is 'S33YY':
-#        fee_m = np.load(fee_map_flagged, allow_pickle=True)
-#    else:
-#        fee_m = np.load(fee_map, allow_pickle=True)
     fee_m = np.load(fee_map, allow_pickle=True)
         
     if 'XX' in tile:    
@@ -412,30 +407,23 @@ def project_tile_healpix(tile_pair):
                                                 ref_fee_pass = np.array([rotated_fee[i] for i in u])
                                                 mwa_fee_pass = np.array([mwa_fee[i] for i in u])
                                                 
-                                                #clipped_idx = np.where(tile_pass == np.nan)
-                                                #ref_fee_pass[clipped_idx] == np.nan
-                                                
-                                                # magic here
-                                                # the beam shape finally emerges
-                                                
+                                                # This is the magic. Equation [1] of the paper
                                                 mwa_pass = np.array(tile_pass) - np.array(ref_pass) + np.array(ref_fee_pass)
 
-                                                # fit the mwa_pass data to the tile_pass power level. RFE clipping occurs at the tile_pass power levels                     
+                                                # RFE distortion is seen in tile_pass when raw power is above -40dBm
+                                                # fit the mwa_pass data to the tile_pass power level
+                                                # Mask everything below -40dBm to fit distorted MWA and tile pass
                                                 peak_filter = np.where(tile_pass >= -40)
                                                 offset = fit_gain(map_data=tile_pass[peak_filter], fee=mwa_pass[peak_filter])
+                                                # This is a slice of the MWA beam, scaled back to the power level of the raw, distorted tile data
                                                 mwa_pass = mwa_pass + offset[0]
 
-
-                                                # fit the power level of the pass to the mwa_fee model using a single gain value
-                                                #offset = fit_gain(map_data=mwa_pass, fee=mwa_fee_pass)
-                                                #mwa_pass_fit = mwa_pass - offset[0]
-                                                
-                                                # here, we fit the mwa_fee_pass down to the tile_pass level
-                                                # mask out distorted poetion >= -40 dBm
+                                                # Single multiplicative gain factor to fit MWA FEE beam slice down to tile pass power level
+                                                # Data above -40dBm masked out because it is distorted
+                                                # Data below -60dBm maked out because FEE nulls are much deeper than the dynamic range of satellite passes
                                                 dis_filter = np.where(mwa_pass <= -40) 
                                                 mwa_pass_fil = mwa_pass[dis_filter]
                                                 mwa_fee_pass_fil = mwa_fee_pass[dis_filter]
-                                                # ignore fee nulls in fit
                                                 null_filter = np.where(mwa_fee_pass_fil >= -60)
 
                                                 offset = fit_gain(map_data=mwa_pass_fil[null_filter], fee=mwa_fee_pass_fil[null_filter])
@@ -445,41 +433,21 @@ def project_tile_healpix(tile_pair):
                                                 # determine how well the data fits the model with chi-square  
                                                 pval = fit_test(map_data=mwa_pass_fit, fee=mwa_fee_pass)
 
-
-                                                
-                                                
                                                 # a goodness of fit threshold
                                                 if pval >= 0.9:
                                                 
-                                                    ##peak = np.where(mwa_fee_pass >= -50)
-                                                    #peak = np.where(mwa_pass_fit >= -40)
-                                                    #mwa_fee_pass = mwa_fee_pass[peak]
-                                                    #mwa_pass_fit = mwa_pass_fit[peak]
-                                                    #times_pass = times_pass[peak]
-                                                    #hp_indices = u[peak]
-
-                                                    #residuals = mwa_fee_pass - mwa_pass_fit
-                                                    #filtr = np.where(residuals > -1)
-                                                    #mwa_fee_pass = mwa_fee_pass[filtr]
-                                                    #mwa_pass_fit = mwa_pass_fit[filtr]
-                                                    #times_pass = times_pass[filtr]
-                                                    #resi = mwa_fee_pass - mwa_pass_fit
-                                                   
-                                                    # consider residuals in the primary lobe approximately
+                                                    # consider residuals of sats which pass within 10 deg of zenith
                                                     # an hp index of 111 approx corresponds to a zenith angle of 10 degrees
                                                     hp_10_deg = 111
                                                    
                                                     if np.amin(u) <= hp_10_deg:
-                                                        #filtr = np.where(u <= hp_10_deg)
-                                                        #mwa_fee_pass = mwa_fee_pass[filtr]
-                                                        #mwa_pass_fit = mwa_pass_fit[filtr]
-                                                        #times_pass = times_pass[filtr]
-                                                    
+                                                        
+                                                        # residuals between scaled FEE and mwa pass
                                                         resi = mwa_fee_pass - mwa_pass_fit
                                                         resi_gain['pass_data'].extend(mwa_pass_fit)
                                                         resi_gain['pass_resi'].extend(resi)
 
-
+                                                        # Plot individual passes
                                                         if plots == 'True':
                                                             if mwa_fee_pass.size !=0:
                                                                 if np.amax(mwa_fee_pass) >= -30:
@@ -489,21 +457,10 @@ def project_tile_healpix(tile_pair):
                                                                             mwa_pass_fit, 
                                                                             f'{out_dir}/fit_plots/', 
                                                                             point, timestamp, sat)
-   
+
+    # Save gain residuals to json file
     with open(f'{out_dir}/{tile}_{ref}_gain_fit.json', 'w') as outfile:
         json.dump(resi_gain, outfile, indent=4)    
-#    plt.style.use('seaborn')
-#    plt.scatter(resi_gain['pass_data'], resi_gain['pass_resi'], marker='.', alpha=0.7, color='seagreen')
-#    
-#    #pass_data = [x for x,_ in sorted(zip(pass_data,pass_resi))]
-#    #pass_resi = [x for _,x in sorted(zip(pass_data,pass_resi))]
-#    fit = poly_fit(resi_gain['pass_data'], resi_gain['pass_resi'], 3)
-#    plt.plot(sorted(resi_gain['pass_data'], reverse=True), sorted(fit, reverse=True), color='crimson')
-#    plt.xlabel('Observed power [dB]')
-#    plt.ylabel('Residuals [dB]')
-#    plt.tight_layout()
-#    plt.savefig(f'{out_dir}/{tile}_{ref}_gain_fit.png')
-
 
 if __name__=='__main__':
 
@@ -516,8 +473,8 @@ if __name__=='__main__':
             help='Dir where agligned data date is saved. Default:../../outputs/align_data')
 
     parser.add_argument(
-            '--out_dir', metavar='\b', default='./../../outputs/tile_maps/tile_maps_raw/',
-            help='Output directory. Default=./../../outputs/tile_maps/tile_maps_raw/')
+            '--out_dir', metavar='\b', default='./../../outputs/tile_maps/rfe_gain/',
+            help='Output directory. Default=./../../outputs/tile_maps/rfe_gain/')
     
     parser.add_argument(
             '--obs_point', metavar='\b', default='../../outputs/beam_pointings/obs_pointings.json',
@@ -536,9 +493,6 @@ if __name__=='__main__':
     
     parser.add_argument('--fee_map', metavar='\b', default='../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz',
             help='Healpix FEE map of mwa tile. default=../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz')
-    
-    parser.add_argument('--fee_map_flagged', metavar='\b', default='../../outputs/tile_maps/FEE_maps/mwa_fee_beam_9_flagged.npz',
-            help='Healpix FEE map of mwa tile. default=../../outputs/tile_maps/FEE_maps/mwa_fee_beam_9_flagged.npz')
     
     parser.add_argument('--fit_thresh', metavar='\b', default=0.9, help='Goodness of fit threshold. 0.9 seems to only reject obvious outliers')
     parser.add_argument('--noi_thresh', metavar='\b', type=int, default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
@@ -564,7 +518,6 @@ if __name__=='__main__':
     plots           = args.plots
     ref_model       = args.ref_model
     fee_map         = args.fee_map
-    fee_map_flagged = args.fee_map_flagged
     
     align_dir       = Path(args.align_dir)
     chrono_dir      = Path(args.chrono_dir)
@@ -602,11 +555,10 @@ if __name__=='__main__':
     Path(out_dir).mkdir(parents=True, exist_ok=True)
 #    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
-#    project_tile_healpix(tile_pairs[0])
-#    project_tile_healpix(['rf0YY', 'S33YY'])
+    rfe_gain(tile_pairs[0])
         
     # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(project_tile_healpix, tile_pairs)
+#    with concurrent.futures.ProcessPoolExecutor() as executor:
+#        results = executor.map(rfe_gain, tile_pairs)
 
 
