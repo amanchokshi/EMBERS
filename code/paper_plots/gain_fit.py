@@ -25,7 +25,6 @@ pass_data = []
 pass_resi = []
 
 for n,f in enumerate(gain_files):
-    print(n)
     with open(f, 'r') as data:
         rfe = json.load(data)
         pass_data.extend(rfe['pass_data'])
@@ -76,14 +75,10 @@ nice_fonts = {
 
 plt.rcParams.update(nice_fonts)
 
-#plt.style.use('seaborn')
-
 #fig = plt.figure(figsize=(3.6,2.4))
 fig = plt.figure()
 
-#plt.scatter(pass_data, pass_resi, marker='.', alpha=0.7, color='seagreen')
-#plt.hexbin(pass_data, pass_resi, gridsize=36, bins='log',cmap=cmap, alpha=0.9)
-plt.hexbin(pass_data, pass_resi, gridsize=144,cmap=cmap, alpha=0.9)
+plt.hexbin(pass_data, pass_resi, gridsize=121,cmap=cmap, alpha=0.97, zorder=0)
 
 pass_data = np.array(pass_data)
 pass_resi = np.array(pass_resi)
@@ -91,21 +86,26 @@ filtr = np.where(np.logical_and(pass_data <= -20, pass_data >=-70))
 pass_data = pass_data[filtr]
 pass_resi = pass_resi[filtr]
 
-bin_med, bin_edges, binnumber = binned_statistic(pass_data, pass_resi, statistic='median', bins=14)
+# Median of binned data
+bin_med, bin_edges, binnumber = binned_statistic(pass_data, pass_resi, statistic='median', bins=20)
 bin_width = (bin_edges[1] - bin_edges[0])
 bin_centers = bin_edges[1:] - bin_width/2
 
+# Now look at data between -50, -30, where gains vary
+filtr = np.where(np.logical_and(pass_data <= -28, pass_data >=-52))
+pass_data = pass_data[filtr]
+pass_resi = pass_resi[filtr]
 
-z = np.polyfit(bin_centers, bin_med, 4)
+z = np.polyfit(pass_data, pass_resi, 1)
 f = np.poly1d(z)
 
-x_f = np.linspace(-80, -10)
+x_f = [f.roots[0], -45, -40, -35, -30, -25, -20]
 y_f = f(x_f)
 
-plt.plot(x_f, y_f, color='w', lw=2.1, alpha=0.88, label='Gain fit')
-plt.scatter(bin_centers, bin_med, color='#fe6845', marker='o', s=36,  facecolors='none',lw=2, edgecolors='k', alpha=1, label='Gain Binned')
+plt.plot(x_f, y_f, color='w', lw=2.1, marker='s', markeredgecolor='k', markeredgewidth=1.6, markersize=4.9, alpha=1, label='Gain fit', zorder=1)
+plt.scatter(bin_centers, bin_med, marker='X', s=36,  facecolors='#ee4540',lw=0.9, edgecolors='w', alpha=1, label='Median residuals', zorder=2)
 
-leg = plt.legend(loc="lower right", frameon=True, markerscale=1, handlelength=1)
+leg = plt.legend(loc="lower right", frameon=True, markerscale=0.9, handlelength=1.4)
 leg.get_frame().set_facecolor('#cccccc')
 for l in leg.legendHandles:
     l.set_alpha(0.77)
@@ -113,13 +113,10 @@ for l in leg.legendHandles:
 
 plt.xlabel('Observed power [dBm]')
 plt.ylabel('Residuals power [dB]')
-#plt.yticks([-20, -10, 0, 10])
-#plt.xlim([-40,-15])
-#plt.ylim([-20,15])
-plt.xlim([-80,-10])
-plt.ylim([-30,30])
+plt.xlim([-70,-20])
+plt.ylim([-10,15])
 plt.tick_params(axis='both', length = 0)
-plt.grid(color='#cccccc', alpha=0.42, lw=1.2)
+plt.grid(color='#cccccc', alpha=0.36, lw=1.2)
 plt.box(None)
 plt.tight_layout()
 plt.savefig(f'../../outputs/paper_plots/rfe_gain_fit.pdf', bbox_inches='tight')
