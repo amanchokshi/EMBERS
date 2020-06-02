@@ -48,7 +48,7 @@ plt.rcParams.update(nice_fonts)
 fig = plt.figure(figsize=(3.6,2.4))
 #fig = plt.figure()
 
-plt.hexbin(pass_data, pass_resi, gridsize=77,cmap=cmap, alpha=1, zorder=0)
+plt.hexbin(pass_data, pass_resi, gridsize=77,cmap=cmap, alpha=0.99, zorder=0)
 
 pass_data = np.array(pass_data)
 pass_resi = np.array(pass_resi)
@@ -77,10 +77,10 @@ plt.plot(x_f, y_f, color='w', lw=1.8, alpha=1, label='Gain fit', zorder=1)
 plt.scatter(bin_centers, bin_med, marker='h', s=14,  facecolors='w',lw=0.7, edgecolors='k', alpha=1, label='Median residuals', zorder=2)
 plt.scatter(f.roots[0], 0, marker='o', s=9,  facecolors='w', alpha=1)
 
-leg = plt.legend(loc="lower right", frameon=True, markerscale=0.9, handlelength=1)
+leg = plt.legend(loc="lower right", frameon=True,framealpha=0.7, markerscale=0.9, handlelength=1)
 leg.get_frame().set_facecolor('#cccccc')
 for l in leg.legendHandles:
-    l.set_alpha(0.9)
+    l.set_alpha(1)
 
 
 plt.xlabel('Observed power [dBm]')
