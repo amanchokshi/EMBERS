@@ -91,9 +91,8 @@ pass_resi = pass_resi[filtr]
 poly = np.polyfit(pass_data, pass_resi, 1)
 # Mathematical function of fit, which can be evaluated anywhere
 f = np.poly1d(poly)
-print(poly)
-print(f)
-np.save('rfe_gain_fit.npy', poly)
+# save polyfit to file
+np.save(f'{rfe_dir}/rfe_gain_fit.npy', poly)
 
 x_f = [f.roots[0], -45, -40, -35, -30, -25, -20]
 y_f = f(x_f)
