@@ -18,9 +18,28 @@ sys.path.append('../decode_rf_data')
 from colormap import spectral
 cmap = spectral()
 
-gain_files = [item for item in Path('../../outputs/paper_plots/gain_fit/').glob('*.json')]
+parser = argparse.ArgumentParser(description="""
+    Liner Fit for RF Explorer Gain variations
+    """)
+
+parser.add_argument(
+        '--rfe_dir', metavar='\b',default='../../outputs/tile_maps/rfe_gain/',
+        help='Dir where RFE residual json files live. Default:../../outputs/tile_maps/rfe_gain/')
+
+parser.add_argument('--start_gain', metavar='\b', default=-52, help='Power at which RFE gain variations begin. Default: -52dBm')
+parser.add_argument('--stop_gain', metavar='\b', default=-28, help='Power at which RFE gain variations saturate. Default: -28dBm')
+
+args = parser.parse_args()
+
+start_gain  = args.start_gain
+stop_gain   = args.stop_gain
+rfe_dir     = Path(args.rfe_dir)
+
+# find all rfe_gain json files
+gain_files = [item for item in rfe_dir.glob('*.json')]
 names = [i.name.split('.')[0] for i in gain_files]
 
+# Combine data from all RF Explorers
 pass_data = []
 pass_resi = []
 
@@ -75,10 +94,9 @@ nice_fonts = {
 
 plt.rcParams.update(nice_fonts)
 
-#fig = plt.figure(figsize=(3.6,2.4))
 fig = plt.figure()
 
-plt.hexbin(pass_data, pass_resi, gridsize=121,cmap=cmap, alpha=0.97, zorder=0)
+plt.hexbin(pass_data, pass_resi, gridsize=121,cmap=cmap, alpha=0.99, zorder=0)
 
 pass_data = np.array(pass_data)
 pass_resi = np.array(pass_resi)
@@ -92,7 +110,7 @@ bin_width = (bin_edges[1] - bin_edges[0])
 bin_centers = bin_edges[1:] - bin_width/2
 
 # Now look at data between -50, -30, where gains vary
-filtr = np.where(np.logical_and(pass_data <= -28, pass_data >=-52))
+filtr = np.where(np.logical_and(pass_data>=start_gain, pass_data<=stop_gain))
 pass_data = pass_data[filtr]
 pass_resi = pass_resi[filtr]
 
@@ -119,5 +137,5 @@ plt.tick_params(axis='both', length = 0)
 plt.grid(color='#cccccc', alpha=0.36, lw=1.2)
 plt.box(None)
 plt.tight_layout()
-plt.savefig(f'../../outputs/paper_plots/rfe_gain_fit.pdf', bbox_inches='tight')
+plt.savefig(f'{rfe_dir}/rfe_gain_fit.png', bbox_inches='tight')
 
