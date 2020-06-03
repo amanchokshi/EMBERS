@@ -51,20 +51,6 @@ for n,f in enumerate(gain_files):
         
         #pass_data = rfe['pass_data']
         #pass_resi = rfe['pass_resi']
-        #nice_fonts = {
-        #        # Use LaTeX to write all text
-        #        #"text.usetex": True,
-        #        "font.family": "sans-serif",
-        #        # Use 10pt font in plots, to match 10pt font in document
-        #        "axes.labelsize": 10,
-        #        "font.size": 10,
-        #        # Make the legend/label fonts a little smaller
-        #        "legend.fontsize": 6,
-        #        "xtick.labelsize": 8,
-        #        "ytick.labelsize": 8,
-        #        }
-        #
-        #plt.rcParams.update(nice_fonts)
         #
         #plt.style.use('seaborn')
         #fig = plt.figure()
@@ -79,27 +65,14 @@ for n,f in enumerate(gain_files):
 
 
 
-nice_fonts = {
-        # Use LaTeX to write all text
-        #"text.usetex": True,
-        "font.family": "sans-serif",
-        # Use 10pt font in plots, to match 10pt font in document
-        "axes.labelsize": 10,
-        "font.size": 10,
-        # Make the legend/label fonts a little smaller
-        "legend.fontsize": 6,
-        "xtick.labelsize": 8,
-        "ytick.labelsize": 8,
-        }
-
-plt.rcParams.update(nice_fonts)
-
 fig = plt.figure()
 
 plt.hexbin(pass_data, pass_resi, gridsize=121,cmap=cmap, alpha=0.99, zorder=0)
 
 pass_data = np.array(pass_data)
 pass_resi = np.array(pass_resi)
+
+# Clean up huge noisy outliers
 filtr = np.where(np.logical_and(pass_data <= -20, pass_data >=-70))
 pass_data = pass_data[filtr]
 pass_resi = pass_resi[filtr]
@@ -114,8 +87,13 @@ filtr = np.where(np.logical_and(pass_data>=start_gain, pass_data<=stop_gain))
 pass_data = pass_data[filtr]
 pass_resi = pass_resi[filtr]
 
-z = np.polyfit(pass_data, pass_resi, 1)
-f = np.poly1d(z)
+# Linear fit to RFE data between -50, -30 dBm
+poly = np.polyfit(pass_data, pass_resi, 1)
+# Mathematical function of fit, which can be evaluated anywhere
+f = np.poly1d(poly)
+print(poly)
+print(f)
+np.save('rfe_gain_fit.npy', poly)
 
 x_f = [f.roots[0], -45, -40, -35, -30, -25, -20]
 y_f = f(x_f)
