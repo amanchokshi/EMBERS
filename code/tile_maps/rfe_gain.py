@@ -107,8 +107,8 @@ def fit_test(map_data=None,fee=None):
     
     #map_data = np.asarray(map_data) + 120
     #fee = np.asarray(fee) + 120
-    map_data = np.asarray(map_data) + 120
-    fee = np.asarray(fee) + 120
+    map_data = np.asarray(map_data) - np.nanmin(fee) + 20
+    fee = np.asarray(fee) - np.nanmin(fee) + 20
 
    
     _, pvalue = chisquare(map_data, f_exp=fee)
@@ -404,18 +404,18 @@ def rfe_gain(tile_pair):
                                                 mwa_pass_fit = mwa_pass
                                                
                                                 # more than 30 non distorted samples
-                                                if mwa_fee_pass[dis_filter].size >= 30:
+                                                if mwa_fee_pass[dis_filter][null_filter].size >= 30:
                                                 
                                                     # determine how well the data fits the model with chi-square  
-                                                    pval = fit_test(map_data=mwa_pass_fit[dis_filter], fee=mwa_fee_pass[dis_filter])
+                                                    pval = fit_test(map_data=mwa_pass_fit[dis_filter][null_filter], fee=mwa_fee_pass[dis_filter][null_filter])
 
                                                     # a goodness of fit threshold
-                                                    if pval >= 0.9:
+                                                    if pval >= 0.8:
                                                     
                                                         # consider residuals of sats which pass within 10 deg of zenith
                                                         # an hp index of 111 approx corresponds to a zenith angle of 10 degrees
                                                         hp_10_deg = 111
-                                                       
+                                                        
                                                         if np.amin(u) <= hp_10_deg:
                                                             
                                                             # only passes longer than 10 minutes
