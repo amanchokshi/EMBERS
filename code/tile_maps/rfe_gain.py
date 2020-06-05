@@ -140,23 +140,8 @@ def plt_fee_fit(t, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat):
 
     plt.style.use('seaborn')
     
-    nice_fonts = {
-            # Use LaTeX to write all text
-            #"text.usetex": True,
-            "font.family": "sans-serif",
-            # Use 10pt font in plots, to match 10pt font in document
-            "axes.labelsize": 10,
-            "font.size": 10,
-            # Make the legend/label fonts a little smaller
-            "legend.fontsize": 6,
-            "xtick.labelsize": 8,
-            "ytick.labelsize": 8,
-            }
-    
-    plt.rcParams.update(nice_fonts)
-    
-    
-    fig = plt.figure(figsize=(3.6,2.4))
+    #fig = plt.figure(figsize=(3.6,2.4))
+    fig = plt.figure()
     ax1 = fig.add_subplot(1, 1, 1)
     
     t = np.array(t)
@@ -208,7 +193,7 @@ def plt_fee_fit(t, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat):
     dax.set_ylabel(r'$\Delta$P [dBm]')
     
     plt.tight_layout()
-    plt.savefig(f'{out_dir}/{timestamp}_{sat}.pdf', bbox_inches='tight')
+    plt.savefig(f'{out_dir}/{timestamp}_{sat}.png', bbox_inches='tight')
     plt.close()
 
 
@@ -555,10 +540,10 @@ if __name__=='__main__':
     Path(out_dir).mkdir(parents=True, exist_ok=True)
     sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
-#    rfe_gain(tile_pairs[0])
+    rfe_gain(tile_pairs[0])
         
     # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(rfe_gain, tile_pairs)
+#    with concurrent.futures.ProcessPoolExecutor() as executor:
+#        results = executor.map(rfe_gain, tile_pairs)
 
 
