@@ -55,17 +55,6 @@ def read_aligned(ali_file=None):
 
     return [ref_p, tile_p, times]
 
-def flag_clipped(ref_p, tile_p):
-    '''When the input power to the RF Explorer
-    exceeds -30 dBm, it is distored. We replace 
-    all such values with nans'''
-
-    tile_clip = np.where(tile_p >= rfe_clip)
-    ref_p[tile_clip] = np.nan
-    tile_p[tile_clip] = np.nan
-
-    return (ref_p, tile_p)
-
 def noise_floor(sat_thresh, noi_thresh, data=None):
     '''Computes the noise floor of the data '''
     
@@ -253,9 +242,6 @@ def power_ephem(
                     good_tile   = tile_c[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
                     good_alt    = alt[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
                     good_az     = az[np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]]
-
-                    # Clip data
-                    #good_ref, good_tile = flag_clipped(good_ref, good_tile)
 
                     return [good_ref, good_tile, good_alt, good_az, times_c]
 
@@ -487,7 +473,6 @@ if __name__=='__main__':
     parser.add_argument('--noi_thresh', metavar='\b', type=int, default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
     parser.add_argument('--sat_thresh', metavar='\b', type=int, default=1,help='σ threshold to detect sats Default=1.')
     parser.add_argument('--pow_thresh', metavar='\b', type=int, default=5,help='Power Threshold to detect sats. Default=10 dB.')
-    parser.add_argument('--rfe_clip', metavar='\b', type=int, default=-30, help='RF Explorer clipping level. Default: -30dBm.')
     parser.add_argument('--nside', metavar='\b', type=int,  default=32,help='Healpix Nside. Default = 32')
     parser.add_argument('--plots', metavar='\b', default=False,help='If True, create a gazzillion plots for each sat pass. Default = False')
     parser.add_argument('--start_date', metavar='\b', help='Date from which to start aligning data. Ex: 2019-10-10')
@@ -502,7 +487,6 @@ if __name__=='__main__':
     sat_thresh      = args.sat_thresh
     pow_thresh      = args.pow_thresh
     fit_thresh      = args.fit_thresh
-    rfe_clip        = args.rfe_clip
     nside           = args.nside
     plots           = args.plots
     ref_model       = args.ref_model
