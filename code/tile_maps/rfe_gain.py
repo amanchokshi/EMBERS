@@ -530,12 +530,12 @@ if __name__=='__main__':
 
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-#    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
-    rfe_gain(tile_pairs[0])
+#    rfe_gain(tile_pairs[0])
         
     # Parallization magic happens here
-#    with concurrent.futures.ProcessPoolExecutor() as executor:
-#        results = executor.map(rfe_gain, tile_pairs)
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(rfe_gain, tile_pairs)
 
 
