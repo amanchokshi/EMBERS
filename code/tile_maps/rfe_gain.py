@@ -17,6 +17,7 @@ from scipy.stats import median_absolute_deviation as mad
 from scipy.interpolate import make_interp_spline, BSpline
 import scipy.optimize as opt
 import numpy.polynomial.polynomial as poly
+np.seterr(divide='ignore')
 
 sys.path.append('../sat_ephemeris')
 from sat_ids import norad_ids
@@ -397,16 +398,16 @@ def rfe_gain(tile_pair):
 
                                                 # RFE distortion is seen in tile_pass when raw power is above -40dBm
                                                 # fit the mwa_pass data to the tile_pass power level
-                                                # Mask everything below -40dBm to fit distorted MWA and tile pass
-                                                peak_filter = np.where(tile_pass >= -40)
+                                                # Mask everything below -50dBm to fit distorted MWA and tile pass
+                                                peak_filter = np.where(tile_pass >= -50)
                                                 offset = fit_gain(map_data=tile_pass[peak_filter], fee=mwa_pass[peak_filter])
                                                 # This is a slice of the MWA beam, scaled back to the power level of the raw, distorted tile data
                                                 mwa_pass = mwa_pass + offset[0]
 
                                                 # Single multiplicative gain factor to fit MWA FEE beam slice down to tile pass power level
-                                                # Data above -40dBm masked out because it is distorted
+                                                # MWA pass Data above -50dBm masked out because it is distorted
                                                 # Data below -60dBm maked out because FEE nulls are much deeper than the dynamic range of satellite passes
-                                                dis_filter = np.where(mwa_pass <= -40) 
+                                                dis_filter = np.where(mwa_pass <= -50) 
                                                 mwa_pass_fil = mwa_pass[dis_filter]
                                                 mwa_fee_pass_fil = mwa_fee_pass[dis_filter]
                                                 null_filter = np.where(mwa_fee_pass_fil >= -60)
@@ -427,21 +428,24 @@ def rfe_gain(tile_pair):
                                                    
                                                     if np.amin(u) <= hp_10_deg:
                                                         
-                                                        # residuals between scaled FEE and mwa pass
-                                                        resi = mwa_fee_pass - mwa_pass_fit
-                                                        resi_gain['pass_data'].extend(mwa_pass_fit)
-                                                        resi_gain['pass_resi'].extend(resi)
+                                                        # only passes longer than 10 minutes
+                                                        if (np.amax(times_pass) - np.amin(times_pass)) >= 600:
+                                                        
+                                                            # residuals between scaled FEE and mwa pass
+                                                            resi = mwa_fee_pass - mwa_pass_fit
+                                                            resi_gain['pass_data'].extend(mwa_pass_fit)
+                                                            resi_gain['pass_resi'].extend(resi)
 
-                                                        # Plot individual passes
-                                                        if plots == 'True':
-                                                            if mwa_fee_pass.size !=0:
-                                                                if np.amax(mwa_fee_pass) >= -30:
-                                                                    plt_fee_fit(
-                                                                            times_pass,
-                                                                            mwa_fee_pass, 
-                                                                            mwa_pass_fit, 
-                                                                            f'{out_dir}/fit_plots/', 
-                                                                            point, timestamp, sat)
+                                                            # Plot individual passes
+                                                            if plots == 'True':
+                                                                if mwa_fee_pass.size !=0:
+                                                                    if np.amax(mwa_fee_pass) >= -30:
+                                                                        plt_fee_fit(
+                                                                                times_pass,
+                                                                                mwa_fee_pass, 
+                                                                                mwa_pass_fit, 
+                                                                                f'{out_dir}/fit_plots/', 
+                                                                                point, timestamp, sat)
 
     # Save gain residuals to json file
     with open(f'{out_dir}/{tile}_{ref}_gain_fit.json', 'w') as outfile:
@@ -538,7 +542,7 @@ if __name__=='__main__':
 
     # Save logs 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
+#    sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
     rfe_gain(tile_pairs[0])
         
