@@ -101,8 +101,10 @@ def fit_test(map_data=None,fee=None):
     map_data = map_data[~bad_values]
     fee = fee[~bad_values]
     
-    map_data = np.asarray(map_data) + 120
-    fee = np.asarray(fee) + 120
+    #map_data = np.asarray(map_data) + 120
+    #fee = np.asarray(fee) + 120
+    map_data = np.asarray(map_data) - np.nanmin(fee) + 20
+    fee = np.asarray(fee) - np.nanmin(fee) + 20
 
    
     _, pvalue = chisquare(map_data, f_exp=fee)
@@ -424,27 +426,29 @@ def project_tile_healpix(tile_pair):
 
                                             mwa_pass_fit = mwa_pass - offset[0]
                                             
-                                            # determine how well the data fits the model with chi-square  
-                                            pval = fit_test(map_data=mwa_pass_fit, fee=mwa_fee_pass)
-                                            
-                                            if plots == 'True':
-                                                mwa_pass_raw = np.array(tile_pass) - np.array(ref_pass) + np.array(ref_fee_pass)
-                                                offset = fit_gain(map_data=mwa_pass_raw, fee=mwa_fee_pass)
-                                                mwa_pass_fit_raw = mwa_pass_raw - offset[0]
+                                            if mwa_pass_fit.size != 0:
                                                 
-                                                plt_fee_fit(times_pass, mwa_fee_pass, mwa_pass_fit, mwa_pass_fit_raw, f'{out_dir}/fit_plots/{tile}_{ref}/', point, timestamp, sat)
-                                            
-                                            # a goodness of fit threshold
-                                            if pval >= 0.9:
+                                                # determine how well the data fits the model with chi-square  
+                                                pval = fit_test(map_data=mwa_pass_fit, fee=mwa_fee_pass)
+                                                
+                                                if plots == 'True':
+                                                    mwa_pass_raw = np.array(tile_pass) - np.array(ref_pass) + np.array(ref_fee_pass)
+                                                    offset = fit_gain(map_data=mwa_pass_raw, fee=mwa_fee_pass)
+                                                    mwa_pass_fit_raw = mwa_pass_raw - offset[0]
+                                                    
+                                                    plt_fee_fit(times_pass, mwa_fee_pass, mwa_pass_fit, mwa_pass_fit_raw, f'{out_dir}/fit_plots/{tile}_{ref}/', point, timestamp, sat)
+                                                
+                                                # a goodness of fit threshold
+                                                if pval >= 0.8:
 
-                                                # loop though all healpix pixels for the pass
-                                                for i in range(len(u)):
+                                                    # loop though all healpix pixels for the pass
+                                                    for i in range(len(u)):
 
-                                                    tile_data['mwa_maps'][f'{point}'][u[i]].append(mwa_pass_fit[i])
-                                                    tile_data['ref_maps'][f'{point}'][u[i]].append(ref_pass[i])
-                                                    tile_data['tile_maps'][f'{point}'][u[i]].append(tile_pass[i])
-                                                    tile_data['times'][f'{point}'][u[i]].append(times_pass[i])
-                                                    tile_data['sat_map'][f'{point}'][u[i]].append(sat)
+                                                        tile_data['mwa_maps'][f'{point}'][u[i]].append(mwa_pass_fit[i])
+                                                        tile_data['ref_maps'][f'{point}'][u[i]].append(ref_pass[i])
+                                                        tile_data['tile_maps'][f'{point}'][u[i]].append(tile_pass[i])
+                                                        tile_data['times'][f'{point}'][u[i]].append(times_pass[i])
+                                                        tile_data['sat_map'][f'{point}'][u[i]].append(sat)
                                            
 
                 else:
@@ -601,11 +605,11 @@ if __name__=='__main__':
     Path(out_dir).mkdir(parents=True, exist_ok=True)
     sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
-#    project_tile_healpix(tile_pairs[0])
+    project_tile_healpix(tile_pairs[0])
 #    project_tile_healpix(['rf0YY', 'S33YY'])
         
     # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(project_tile_healpix, tile_pairs)
+#    with concurrent.futures.ProcessPoolExecutor() as executor:
+#        results = executor.map(project_tile_healpix, tile_pairs)
 
 
