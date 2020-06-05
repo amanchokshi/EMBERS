@@ -17,7 +17,6 @@ from scipy.stats import median_absolute_deviation as mad
 from scipy.interpolate import make_interp_spline, BSpline
 import scipy.optimize as opt
 import numpy.polynomial.polynomial as poly
-np.seterr(divide='ignore')
 
 sys.path.append('../sat_ephemeris')
 from sat_ids import norad_ids
@@ -106,6 +105,8 @@ def fit_test(map_data=None,fee=None):
     map_data = map_data[~bad_values]
     fee = fee[~bad_values]
     
+    #map_data = np.asarray(map_data) + 120
+    #fee = np.asarray(fee) + 120
     map_data = np.asarray(map_data) + 120
     fee = np.asarray(fee) + 120
 
@@ -124,7 +125,7 @@ def poly_fit(x, y, order):
     fit = poly.polyval(x, coefs)
     return fit
 
-def plt_fee_fit(t, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat):
+def plt_fee_fit(t, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat, p_val):
 
     pval = fit_test(map_data=mwa_pass_fit, fee=mwa_fee_pass)
 
@@ -133,6 +134,7 @@ def plt_fee_fit(t, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat):
     #fig = plt.figure(figsize=(3.6,2.4))
     fig = plt.figure()
     ax1 = fig.add_subplot(1, 1, 1)
+    ax1.set_title(f'P_val: {p_val}')
     
     t = np.array(t)
     mwa_fee_pass = [x for _,x in sorted(zip(t,mwa_fee_pass))]
@@ -355,8 +357,7 @@ def rfe_gain(tile_pair):
                                             if sat_data != 0:
                                             
                                                 ref_power, tile_power, alt, az, times = sat_data
-
-
+                                                
                                                 # Altitude is in deg while az is in radians
                                                 # convert alt to radians
                                                 # za - zenith angle
@@ -372,7 +373,7 @@ def rfe_gain(tile_pair):
                                                 # multiple data points fall within a single healpix pixel
                                                 # find the unique pixels
                                                 u = np.unique(healpix_index)
-
+                                                
                                                 ref_pass = np.array([np.nanmean(ref_power[np.where(healpix_index==i)[0]]) for i in u])
                                                 tile_pass = np.array([np.nanmean(tile_power[np.where(healpix_index==i)[0]]) for i in u])
                                                 times_pass = np.array([np.mean(times[np.where(healpix_index==i)][0]) for i in u])
@@ -401,37 +402,40 @@ def rfe_gain(tile_pair):
                                                 offset = fit_gain(map_data=mwa_pass_fil[null_filter], fee=mwa_fee_pass_fil[null_filter])
                                                 mwa_fee_pass = mwa_fee_pass + offset
                                                 mwa_pass_fit = mwa_pass
+                                               
+                                                # more than 30 non distorted samples
+                                                if mwa_fee_pass[dis_filter].size >= 30:
                                                 
-                                                # determine how well the data fits the model with chi-square  
-                                                pval = fit_test(map_data=mwa_pass_fit, fee=mwa_fee_pass)
+                                                    # determine how well the data fits the model with chi-square  
+                                                    pval = fit_test(map_data=mwa_pass_fit[dis_filter], fee=mwa_fee_pass[dis_filter])
 
-                                                # a goodness of fit threshold
-                                                if pval >= 0.9:
-                                                
-                                                    # consider residuals of sats which pass within 10 deg of zenith
-                                                    # an hp index of 111 approx corresponds to a zenith angle of 10 degrees
-                                                    hp_10_deg = 111
-                                                   
-                                                    if np.amin(u) <= hp_10_deg:
-                                                        
-                                                        # only passes longer than 10 minutes
-                                                        if (np.amax(times_pass) - np.amin(times_pass)) >= 600:
-                                                        
-                                                            # residuals between scaled FEE and mwa pass
-                                                            resi = mwa_fee_pass - mwa_pass_fit
-                                                            resi_gain['pass_data'].extend(mwa_pass_fit)
-                                                            resi_gain['pass_resi'].extend(resi)
+                                                    # a goodness of fit threshold
+                                                    if pval >= 0.9:
+                                                    
+                                                        # consider residuals of sats which pass within 10 deg of zenith
+                                                        # an hp index of 111 approx corresponds to a zenith angle of 10 degrees
+                                                        hp_10_deg = 111
+                                                       
+                                                        if np.amin(u) <= hp_10_deg:
+                                                            
+                                                            # only passes longer than 10 minutes
+                                                            if (np.amax(times_pass) - np.amin(times_pass)) >= 600:
+                                                            
+                                                                # residuals between scaled FEE and mwa pass
+                                                                resi = mwa_fee_pass - mwa_pass_fit
+                                                                resi_gain['pass_data'].extend(mwa_pass_fit)
+                                                                resi_gain['pass_resi'].extend(resi)
 
-                                                            # Plot individual passes
-                                                            if plots == 'True':
-                                                                if mwa_fee_pass.size !=0:
-                                                                    if np.amax(mwa_fee_pass) >= -30:
-                                                                        plt_fee_fit(
-                                                                                times_pass,
-                                                                                mwa_fee_pass, 
-                                                                                mwa_pass_fit, 
-                                                                                f'{out_dir}/fit_plots/', 
-                                                                                point, timestamp, sat)
+                                                                # Plot individual passes
+                                                                if plots == 'True':
+                                                                    if mwa_fee_pass.size !=0:
+                                                                        if np.amax(mwa_fee_pass) >= -30:
+                                                                            plt_fee_fit(
+                                                                                    times_pass,
+                                                                                    mwa_fee_pass, 
+                                                                                    mwa_pass_fit, 
+                                                                                    f'{out_dir}/fit_plots/', 
+                                                                                    point, timestamp, sat, pval)
 
     # Save gain residuals to json file
     with open(f'{out_dir}/{tile}_{ref}_gain_fit.json', 'w') as outfile:
