@@ -5,7 +5,7 @@ import scipy.optimize as opt
 import numpy.polynomial.polynomial as poly
 from mwa_pb.mwa_sweet_spots import all_grid_points
 
-sys.path.append('../decode_rf_data')
+sys.path.append('../../decode_rf_data')
 from colormap import spectral, jade, kelp
 
 # Custom spectral colormap
@@ -436,12 +436,12 @@ if __name__=='__main__':
         Plot healpix map of reference data
         """)
     
-    parser.add_argument('--out_dir', metavar='\b', default='../../outputs/paper_plots/tile_grids/',
-            help='Output directory. Default=../../outputs/paper_plots/tile_grids')
-    parser.add_argument('--map_dir', metavar='\b', default='../../outputs/tile_maps/tile_maps_norm/',
-            help='Tile map directory. Default=../../outputs/tile_maps/tile_maps_norm/')
-    parser.add_argument('--fee_map', metavar='\b', default='../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz',
-            help='Healpix FEE map of mwa tile. default=../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz')
+    parser.add_argument('--out_dir', metavar='\b', default='../../../outputs/paper_plots/tile_grids/',
+            help='Output directory. Default=../../../outputs/paper_plots/tile_grids')
+    parser.add_argument('--map_dir', metavar='\b', default='../../../outputs/tile_maps/tile_maps_norm/',
+            help='Tile map directory. Default=../../../outputs/tile_maps/tile_maps_norm/')
+    parser.add_argument('--fee_map', metavar='\b', default='../../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz',
+            help='Healpix FEE map of mwa tile. default=../../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz')
     parser.add_argument('--nside', metavar='\b',type=int, default=32,help='Healpix Nside. Default = 32')
     
     

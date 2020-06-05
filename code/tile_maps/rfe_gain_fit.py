@@ -26,8 +26,8 @@ parser.add_argument(
         '--rfe_dir', metavar='\b',default='../../outputs/tile_maps/rfe_gain/',
         help='Dir where RFE residual json files live. Default:../../outputs/tile_maps/rfe_gain/')
 
-parser.add_argument('--start_gain', metavar='\b', default=-52, help='Power at which RFE gain variations begin. Default: -52dBm')
-parser.add_argument('--stop_gain', metavar='\b', default=-28, help='Power at which RFE gain variations saturate. Default: -28dBm')
+parser.add_argument('--start_gain', metavar='\b', default=-52, type=int, help='Power at which RFE gain variations begin. Default: -52dBm')
+parser.add_argument('--stop_gain', metavar='\b', default=-28, type=int, help='Power at which RFE gain variations saturate. Default: -28dBm')
 
 args = parser.parse_args()
 

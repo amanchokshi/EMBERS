@@ -49,16 +49,6 @@ def read_aligned(ali_file=None):
 
     return [ref_p, tile_p, times]
 
-def flag_clipped(ref_p, tile_p):
-    '''When the input power to the RF Explorer
-    exceeds -30 dBm, it is distored. We replace 
-    all such values with nans'''
-
-    tile_clip = np.where(tile_p >= rfe_clip)
-    ref_p[tile_clip] = np.nan
-    tile_p[tile_clip] = np.nan
-
-    return (ref_p, tile_p)
 
 def noise_floor(sat_thresh, noi_thresh, data=None):
     '''Computes the noise floor of the data '''
@@ -185,7 +175,7 @@ def plt_channel(
     plt.close()
 
 
-def plt_fee_fit(t, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat):
+def plt_fee_fit(t, mwa_fee_pass, mwa_pass_fit, mwa_pass_fit_raw, out_dir, point, timestamp, sat):
 
     pval = fit_test(map_data=mwa_pass_fit, fee=mwa_fee_pass)
 
@@ -199,10 +189,10 @@ def plt_fee_fit(t, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat):
 
     where_nan = np.isnan(mwa_pass_fit)
     
-    t = t[~where_nan]
-    p = mwa_pass_fit[~where_nan]
+    ax1.scatter(t, mwa_pass_fit_raw, color='#7da87b', alpha=0.9, marker=".", label="RFE raw")
+    ax1.set_ylim(-50, 2)
     
-    ax1.scatter(t, p, color='#7da87b', alpha=0.9, marker=".", label="data fit")
+    ax1.scatter(t, mwa_pass_fit, color='#4f8a8b', alpha=0.9, marker=".", label="RFE cali")
     ax1.set_ylim(-50, 2)
     
     leg = ax1.legend(frameon=True)
@@ -276,8 +266,6 @@ def power_ephem(
                     if plots == 'True':
                         plt_channel(f'{out_dir}/pass_plots/{tile}_{ref}/{point}', times_c, ref_c, tile_c, ref_noise, tile_noise, sat_chan, sat_id, point, timestamp, point)
                     
-                    good_ref, good_tile = flag_clipped(good_ref, good_tile)
-
                     return [good_ref, good_tile, good_alt, good_az, times_c]
 
                 else:
@@ -416,13 +404,19 @@ def project_tile_healpix(tile_pair):
                                             tile_pass = np.array([np.nanmean(tile_power[np.where(healpix_index==i)[0]]) for i in u])
                                             times_pass = np.array([np.mean(times[np.where(healpix_index==i)][0]) for i in u])
                                             ref_fee_pass = np.array([rotated_fee[i] for i in u])
-                                            clipped_idx = np.where(tile_pass == np.nan)
-                                            ref_fee_pass[clipped_idx] == np.nan
                                             mwa_fee_pass = np.array([mwa_fee[i] for i in u])
+
+                                            # implement RFE gain corrections here
+                                            rfe_polyfit = np.load(rfe_gain)
+                                            gain_cal = np.poly1d(rfe_polyfit)
+                                            rfe_thresh = gain_cal.roots[0]
+                                            tile_pass_rfe = [i+gain_cal(i) if i >= rfe_thresh else i for i in tile_pass]
+                                            
 
                                             # magic here
                                             # the beam shape finally emerges
-                                            mwa_pass = np.array(tile_pass) - np.array(ref_pass) + np.array(ref_fee_pass)
+                                            #mwa_pass = np.array(tile_pass) - np.array(ref_pass) + np.array(ref_fee_pass)
+                                            mwa_pass = np.array(tile_pass_rfe) - np.array(ref_pass) + np.array(ref_fee_pass)
 
 
                                             # fit the power level of the pass to the mwa_fee model using a single gain value
@@ -434,7 +428,11 @@ def project_tile_healpix(tile_pair):
                                             pval = fit_test(map_data=mwa_pass_fit, fee=mwa_fee_pass)
                                             
                                             if plots == 'True':
-                                                plt_fee_fit(times_pass, mwa_fee_pass, mwa_pass_fit, f'{out_dir}/fit_plots/{tile}_{ref}/', point, timestamp, sat)
+                                                mwa_pass_raw = np.array(tile_pass) - np.array(ref_pass) + np.array(ref_fee_pass)
+                                                offset = fit_gain(map_data=mwa_pass_raw, fee=mwa_fee_pass)
+                                                mwa_pass_fit_raw = mwa_pass_raw - offset[0]
+                                                
+                                                plt_fee_fit(times_pass, mwa_fee_pass, mwa_pass_fit, mwa_pass_fit_raw, f'{out_dir}/fit_plots/{tile}_{ref}/', point, timestamp, sat)
                                             
                                             # a goodness of fit threshold
                                             if pval >= 0.9:
@@ -533,6 +531,9 @@ if __name__=='__main__':
     parser.add_argument('--ref_model', metavar='\b', default='../../outputs/reproject_ref/ref_dipole_models.npz',
             help='Healpix reference FEE model file. default=../../outputs/reproject_ref/ref_dipole_models.npz')
     
+    parser.add_argument('--rfe_gain', metavar='\b', default='../../outputs/tile_maps/rfe_gain/rfe_gain_fit.npy',
+            help='RF Explorer gain fit. default=../../outputs/tile_maps/rfe_gain/rfe_gain_fit.npy')
+    
     parser.add_argument('--fee_map', metavar='\b', default='../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz',
             help='Healpix FEE map of mwa tile. default=../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz')
     
@@ -543,7 +544,6 @@ if __name__=='__main__':
     parser.add_argument('--noi_thresh', metavar='\b', type=int, default=3,help='Noise Threshold: Multiples of MAD. Default=3.')
     parser.add_argument('--sat_thresh', metavar='\b', type=int, default=1,help='σ threshold to detect sats Default=1.')
     parser.add_argument('--pow_thresh', metavar='\b', type=int, default=5,help='Power Threshold to detect sats. Default=10 dB.')
-    parser.add_argument('--rfe_clip', metavar='\b', type=int, default=-30, help='RF Explorer clipping level. Default: -30dBm.')
     parser.add_argument('--nside', metavar='\b', type=int,  default=32,help='Healpix Nside. Default = 32')
     parser.add_argument('--plots', metavar='\b', default=False,help='If True, create a gazzillion plots for each sat pass. Default = False')
     parser.add_argument('--start_date', metavar='\b', help='Date from which to start aligning data. Ex: 2019-10-10')
@@ -558,10 +558,10 @@ if __name__=='__main__':
     sat_thresh      = args.sat_thresh
     pow_thresh      = args.pow_thresh
     fit_thresh      = args.fit_thresh
-    rfe_clip        = args.rfe_clip
     nside           = args.nside
     plots           = args.plots
     ref_model       = args.ref_model
+    rfe_gain        = args.rfe_gain
     fee_map         = args.fee_map
     fee_map_flagged = args.fee_map_flagged
     
@@ -601,11 +601,11 @@ if __name__=='__main__':
     Path(out_dir).mkdir(parents=True, exist_ok=True)
     sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
-    project_tile_healpix(tile_pairs[0])
+#    project_tile_healpix(tile_pairs[0])
 #    project_tile_healpix(['rf0YY', 'S33YY'])
         
     # Parallization magic happens here
-    #with concurrent.futures.ProcessPoolExecutor() as executor:
-    #    results = executor.map(project_tile_healpix, tile_pairs)
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(project_tile_healpix, tile_pairs)
 
 
