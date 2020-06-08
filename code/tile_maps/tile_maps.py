@@ -411,7 +411,8 @@ def project_tile_healpix(tile_pair):
                                             # implement RFE gain corrections here
                                             rfe_polyfit = np.load(rfe_gain)
                                             gain_cal = np.poly1d(rfe_polyfit)
-                                            rfe_thresh = gain_cal.roots[0]
+                                            #rfe_thresh = gain_cal.roots[0]
+                                            rfe_thresh = max(gain_cal.roots)
                                             tile_pass_rfe = [i+gain_cal(i) if i >= rfe_thresh else i for i in tile_pass]
                                             
 
