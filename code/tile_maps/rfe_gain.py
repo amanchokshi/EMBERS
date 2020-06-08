@@ -142,17 +142,17 @@ def plt_fee_fit(t, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat, p
     t = sorted(t)
     t = (t - t[0])/60
 
-    t_new = np.linspace(t.min(), t.max(), 49)
-    spl = make_interp_spline(t, mwa_fee_pass, k=3)  # type: BSpline
-    mwa_fee_pass = spl(t_new)
-    
-    spl = make_interp_spline(t, mwa_pass_fit, k=3)  # type: BSpline
-    mwa_pass_fit = spl(t_new)
+    #t_new = np.linspace(t.min(), t.max(), 49)
+    #spl = make_interp_spline(t, mwa_fee_pass, k=3)  # type: BSpline
+    #mwa_fee_pass = spl(t_new)
+    #
+    #spl = make_interp_spline(t, mwa_pass_fit, k=3)  # type: BSpline
+    #mwa_pass_fit = spl(t_new)
 
-    ax1.plot(t_new, mwa_fee_pass, color='#7da87b', alpha=0.9, lw=2, label=r"$B_{FEE}$")
-    ax1.plot(t_new, mwa_pass_fit, color='#c70039', alpha=0.9, lw=2, label=r"$B_{dist}$")
-    #ax1.scatter(t, mwa_fee_pass, color='#7da87b', alpha=0.6, marker=".", s=21, label="FEE model")
-    #ax1.scatter(t, mwa_pass_fit, color='#c70039', alpha=0.9, marker=".", s=21, label="RF data")
+    #ax1.plot(t_new, mwa_fee_pass, color='#7da87b', alpha=0.9, lw=2, label=r"$B_{FEE}$")
+    #ax1.plot(t_new, mwa_pass_fit, color='#c70039', alpha=0.9, lw=2, label=r"$B_{dist}$")
+    ax1.scatter(t, mwa_fee_pass, color='#7da87b', alpha=0.9, marker=".", s=36, label="FEE model")
+    ax1.scatter(t, mwa_pass_fit, color='#c70039', alpha=0.9, marker=".", s=36, label="RF data")
     ax1.set_ylabel('Power [dBm]')
     ax1.set_ylim([-84,-16])
     ax1.set_xticklabels([])
@@ -169,7 +169,7 @@ def plt_fee_fit(t, mwa_fee_pass, mwa_pass_fit, out_dir, point, timestamp, sat, p
     divider = make_axes_locatable(ax1)
     dax = divider.append_axes("bottom", size="40%", pad=0.10)
 
-    dax.plot(t_new, delta_p, lw=2,alpha=0.7, color='#27296d', label='Residuals')
+    dax.scatter(t, delta_p, color='#27296d', alpha=0.9, marker=".", s=36, label="Residuals")
     leg = dax.legend(loc="lower left", frameon=True, markerscale=2, handlelength=1)
     leg.get_frame().set_facecolor('grey')
     leg.get_frame().set_alpha(0.4)
@@ -386,7 +386,7 @@ def rfe_gain(tile_pair):
                                                 # RFE distortion is seen in tile_pass when raw power is above -40dBm
                                                 # fit the mwa_pass data to the tile_pass power level
                                                 # Mask everything below -50dBm to fit distorted MWA and tile pass
-                                                peak_filter = np.where(tile_pass >= -50)
+                                                peak_filter = np.where(tile_pass >= -30)
                                                 offset = fit_gain(map_data=tile_pass[peak_filter], fee=mwa_pass[peak_filter])
                                                 # This is a slice of the MWA beam, scaled back to the power level of the raw, distorted tile data
                                                 mwa_pass = mwa_pass + offset[0]
@@ -394,10 +394,10 @@ def rfe_gain(tile_pair):
                                                 # Single multiplicative gain factor to fit MWA FEE beam slice down to tile pass power level
                                                 # MWA pass Data above -50dBm masked out because it is distorted
                                                 # Data below -60dBm maked out because FEE nulls are much deeper than the dynamic range of satellite passes
-                                                dis_filter = np.where(mwa_pass <= -50) 
+                                                dis_filter = np.where(mwa_pass <= -30) 
                                                 mwa_pass_fil = mwa_pass[dis_filter]
                                                 mwa_fee_pass_fil = mwa_fee_pass[dis_filter]
-                                                null_filter = np.where(mwa_fee_pass_fil >= -60)
+                                                null_filter = np.where(mwa_fee_pass_fil >= -50)
 
                                                 offset = fit_gain(map_data=mwa_pass_fil[null_filter], fee=mwa_fee_pass_fil[null_filter])
                                                 mwa_fee_pass = mwa_fee_pass + offset
@@ -428,14 +428,14 @@ def rfe_gain(tile_pair):
 
                                                                 # Plot individual passes
                                                                 if plots == 'True':
-                                                                    if mwa_fee_pass.size !=0:
-                                                                        if np.amax(mwa_fee_pass) >= -30:
-                                                                            plt_fee_fit(
-                                                                                    times_pass,
-                                                                                    mwa_fee_pass, 
-                                                                                    mwa_pass_fit, 
-                                                                                    f'{out_dir}/fit_plots/', 
-                                                                                    point, timestamp, sat, pval)
+                                                                    #if mwa_fee_pass.size !=0:
+                                                                    #    if np.amax(mwa_fee_pass) >= -30:
+                                                                    plt_fee_fit(
+                                                                            times_pass,
+                                                                            mwa_fee_pass, 
+                                                                            mwa_pass_fit, 
+                                                                            f'{out_dir}/fit_plots/', 
+                                                                            point, timestamp, sat, pval)
 
     # Save gain residuals to json file
     with open(f'{out_dir}/{tile}_{ref}_gain_fit.json', 'w') as outfile:
@@ -532,10 +532,10 @@ if __name__=='__main__':
     Path(out_dir).mkdir(parents=True, exist_ok=True)
     sys.stdout = open(f'{out_dir}/logs_{start_date}_{stop_date}.txt', 'a')
    
-#    rfe_gain(tile_pairs[0])
+    rfe_gain(tile_pairs[0])
         
     # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(rfe_gain, tile_pairs)
+#    with concurrent.futures.ProcessPoolExecutor() as executor:
+#        results = executor.map(rfe_gain, tile_pairs)
 
 
