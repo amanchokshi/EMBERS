@@ -98,7 +98,7 @@ leg = ax.legend(loc="lower right", frameon=True, framealpha=0.5, markerscale=1, 
 leg.get_frame().set_edgecolor('w')
 leg.get_frame().set_facecolor('#222222')
 for text in leg.get_texts():
-    text.set_color('#696969')
+    text.set_color('white')
 for l in leg.legendHandles:
     l.set_alpha(1)
 
