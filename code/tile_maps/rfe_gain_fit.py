@@ -73,12 +73,12 @@ pass_data = np.array(pass_data)
 pass_resi = np.array(pass_resi)
 
 # Clean up huge noisy outliers
-filtr = np.where(np.logical_and(pass_data <= -20, pass_data >=-70))
+filtr = np.where(np.logical_and(pass_data <= -25, pass_data >=-65))
 pass_data = pass_data[filtr]
 pass_resi = pass_resi[filtr]
 
 # Median of binned data
-bin_med, bin_edges, binnumber = binned_statistic(pass_data, pass_resi, statistic='median', bins=20)
+bin_med, bin_edges, binnumber = binned_statistic(pass_data, pass_resi, statistic='median', bins=16)
 bin_width = (bin_edges[1] - bin_edges[0])
 bin_centers = bin_edges[1:] - bin_width/2
 
@@ -88,13 +88,14 @@ pass_data = pass_data[filtr]
 pass_resi = pass_resi[filtr]
 
 # Linear fit to RFE data between -50, -30 dBm
-poly = np.polyfit(pass_data, pass_resi, 1)
+poly = np.polyfit(pass_data, pass_resi, 2)
 # Mathematical function of fit, which can be evaluated anywhere
 f = np.poly1d(poly)
 # save polyfit to file
 np.save(f'{rfe_dir}/rfe_gain_fit.npy', poly)
 
-x_f = [f.roots[0], -45, -40, -35, -30, -25, -20]
+#x_f = [f.roots[0], -45, -40, -35, -30, -25, -20]
+x_f = np.linspace(max(f.roots), -25, num=10)
 y_f = f(x_f)
 
 plt.plot(x_f, y_f, color='w', lw=2.1, marker='s', markeredgecolor='k', markeredgewidth=1.6, markersize=4.9, alpha=1, label='Gain fit', zorder=1)
@@ -108,7 +109,7 @@ for l in leg.legendHandles:
 
 plt.xlabel('Observed power [dBm]')
 plt.ylabel('Residuals power [dB]')
-plt.xlim([-70,-20])
+plt.xlim([-65,-25])
 plt.ylim([-10,15])
 plt.tick_params(axis='both', length = 0)
 plt.grid(color='#cccccc', alpha=0.36, lw=1.2)
