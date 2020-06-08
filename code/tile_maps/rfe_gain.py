@@ -394,10 +394,10 @@ def rfe_gain(tile_pair):
                                                 # Single multiplicative gain factor to fit MWA FEE beam slice down to tile pass power level
                                                 # MWA pass Data above -50dBm masked out because it is distorted
                                                 # Data below -60dBm maked out because FEE nulls are much deeper than the dynamic range of satellite passes
-                                                dis_filter = np.where(mwa_pass <= -30) 
+                                                dis_filter = np.where(mwa_pass <= -35) 
                                                 mwa_pass_fil = mwa_pass[dis_filter]
                                                 mwa_fee_pass_fil = mwa_fee_pass[dis_filter]
-                                                null_filter = np.where(mwa_fee_pass_fil >= -50)
+                                                null_filter = np.where(mwa_fee_pass_fil >= -55)
 
                                                 offset = fit_gain(map_data=mwa_pass_fil[null_filter], fee=mwa_fee_pass_fil[null_filter])
                                                 mwa_fee_pass = mwa_fee_pass + offset
