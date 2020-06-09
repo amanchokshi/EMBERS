@@ -26,8 +26,8 @@ parser.add_argument(
         '--rfe_dir', metavar='\b',default='../../outputs/tile_maps/rfe_gain/',
         help='Dir where RFE residual json files live. Default:../../outputs/tile_maps/rfe_gain/')
 
-parser.add_argument('--start_gain', metavar='\b', default=-50, type=int, help='Power at which RFE gain variations begin. Default: -52dBm')
-parser.add_argument('--stop_gain', metavar='\b', default=-30, type=int, help='Power at which RFE gain variations saturate. Default: -28dBm')
+parser.add_argument('--start_gain', metavar='\b', default=-50, type=int, help='Power at which RFE gain variations begin. Default: -50dBm')
+parser.add_argument('--stop_gain', metavar='\b', default=-25, type=int, help='Power at which RFE gain variations saturate. Default: -25dBm')
 
 args = parser.parse_args()
 
@@ -88,7 +88,7 @@ pass_data = pass_data[filtr]
 pass_resi = pass_resi[filtr]
 
 # Linear fit to RFE data between -50, -30 dBm
-poly = np.polyfit(pass_data, pass_resi, 2)
+poly = np.polyfit(pass_data, pass_resi, 1)
 # Mathematical function of fit, which can be evaluated anywhere
 f = np.poly1d(poly)
 # save polyfit to file
