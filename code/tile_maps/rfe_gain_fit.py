@@ -48,7 +48,7 @@ for n,f in enumerate(gain_files):
         rfe = json.load(data)
         pass_data.extend(rfe['pass_data'])
         pass_resi.extend(rfe['pass_resi'])
-        
+
         #pass_data = rfe['pass_data']
         #pass_resi = rfe['pass_resi']
         #
