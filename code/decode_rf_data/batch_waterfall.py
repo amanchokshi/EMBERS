@@ -66,6 +66,7 @@ def plt_single_waterfall(rf_filename, out_dir):
     os.makedirs(os.path.dirname(out_dir), exist_ok=True)
     
     plt.savefig(f'{out_dir}/{rf_filename}.png')
+    plt.close()
 
 
 def waterfall_plot(time_stamp):
