@@ -56,7 +56,7 @@ data_dir = Path(data_dir)
 out_dir = Path(out_dir)
 
 
-def plt_single_waterfall(rf_filename):
+def plt_single_waterfall(rf_filename, out_dir):
     """Plot a single waterfall"""
 
     power, times = rf.read_data(f'{rf_filename}.txt')
