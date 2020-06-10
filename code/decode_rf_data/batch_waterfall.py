@@ -3,6 +3,7 @@ import sys
 import rf_data as rf
 from pathlib import Path
 import concurrent.futures
+from itertools import repeat
 from datetime import datetime, timedelta
 
 
@@ -19,7 +20,7 @@ def plt_single_waterfall(rf_dir, rf_filename, out_dir):
     plt.close()
 
 
-def waterfall_plot(time_stamp):
+def waterfall_plot(tile, time_stamp):
     rf_name = f'{tile}_{time_stamp}'
     
     try:
@@ -94,7 +95,7 @@ if __name__ == "__main__":
             rf_path = data_dir/tile/dates[d]
             
             with concurrent.futures.ProcessPoolExecutor() as executor:
-                results = executor.map(waterfall_plot, date_time[d])
+                results = executor.map(waterfall_plot, repeat(tile), date_time[d])
                
             for result in results:
                 print(result)
