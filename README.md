@@ -1,5 +1,5 @@
 # MWA Satellites
-**E**xperimental *M*easurement of **BE**am **R**esponses with **S**atellites  
+**E**xperimental **M**easurement of **BE**am **R**esponses with **S**atellites  
 
 ### Conda Environment
 
