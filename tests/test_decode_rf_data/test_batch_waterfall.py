@@ -41,10 +41,6 @@ class Test_batch_waterfall(unittest.TestCase):
             shutil.rmtree(Path(f'waterfalls'))
 
 
-
-
-
-
 if __name__ == "__main__":
     unittest.main()
 
