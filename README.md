@@ -43,24 +43,16 @@ The RF Explorers saves a single line of data, per time step, to a text file. Thi
 ```
 cd ./code/decode_rf_data/
 
-python plot_waterfall.py --help
-
-python plot_waterfall.py --rf_name=rf0XX_2019-10-10-02:30
-python plot_waterfall.py --rf_name=S10XX_2019-10-10-02:30
+python batch_waterfall.py --help
+python batch_waterfall.py --data_dir=../../data/rf_data/ --start_date=2019-10-10 --stop_date=2019-10-10
 ```
 
-Can be used to plot a waterfall from a single rf data file. The above code creates waterfall plots from the two sample data files provided in the `data` directory. On the left is the waterfall plot of the reference antenna, with an obvious broadband weather satellite pass visible at the bottom right. The narrower vertical lines are ORBCOMM satellites. The plot on the right shows the same satellites as seen by an MWA tile. The nulls in the primary beam are clearly visible. 
+Can be used to create a batch of waterfall plots from data in a time interval. The above code creates waterfall plots from the two sample data files provided in the `data/rf_data` directory. On the left is the waterfall plot of the reference antenna, with an obvious broadband weather satellite pass visible at the bottom right. The narrower vertical lines are ORBCOMM satellites. The plot on the right shows the same satellites as seen by an MWA tile. The nulls in the primary beam are clearly visible. 
 
 <p float="left">
   <img src="./docs/rf0XX_2019-10-10-02:30.png" width="49%" />
-  <img src="./docs/S10XX_2019-10-10-02:30.png" width="49%" /> 
+  <img src="./docs/S06XX_2019-10-10-02:30.png" width="49%" /> 
 </p>
-
-To plot a large batch of waterfall plots, use `batch_waterfall.py`. Using a start date, and stop date, it plots waterfall plots of all data found between them.
-
-```
-python batch_waterfall.py --help
-```
 
 A `logs.txt` file is saved to the output directory. This shows what plots were saved by `batch_waterfall.py`, and also which data files were missing.
 
