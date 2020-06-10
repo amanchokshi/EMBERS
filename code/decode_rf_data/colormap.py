@@ -31,8 +31,11 @@ def spectral():
             for j in range(255):
                 c_array.append(linfit(j+1))
     
-    newcmp = ListedColormap(c_array)
-    return newcmp
+    #newcmp = ListedColormap(c_array)
+    spec_cmap = ListedColormap(c_array, name='spec', N=len(c_array))
+
+    return spec_cmap
+    #return newcmp
 
 def jade():
     colorlist = [
@@ -561,7 +564,7 @@ def kelp():
             ]
     
     
-    kelp = ListedColormap(colorlist, name='jade', N=len(colorlist))
+    kelp = ListedColormap(colorlist, name='kelp', N=len(colorlist))
     kelp_r = kelp.reversed()
 
     return [kelp, kelp_r]
@@ -571,15 +574,13 @@ def kelp():
 
 if __name__=="__main__":
     
-    newcmp = spectral()
+    spec = spectral()
     jade, jade_r = jade()
     kelp, kelp_r = kelp()
-    
-    def sinus2d(x, y):
-        return np.sin(x) + np.sin(y)
+
     
     xx, yy = np.meshgrid(np.linspace(0,3*np.pi,512), np.linspace(0,3*np.pi,512))
-    z = sinus2d(xx, yy)
-    plt.imshow(z, origin='lower', interpolation='none', cmap=newcmp)
+    z = np.sin(xx) + np.sin(yy)
+    plt.imshow(z, origin='lower', interpolation='none', cmap=spec)
     cbar = plt.colorbar()
     plt.show()
