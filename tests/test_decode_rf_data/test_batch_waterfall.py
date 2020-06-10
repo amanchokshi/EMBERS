@@ -44,11 +44,11 @@ data_dir = Path(data_dir)
 out_dir = Path(out_dir)
 
 for tile in tiles:
+    print(tile)
     for d in range(len(dates)):
         rf_path = data_dir/tile/dates[d]
-        for t in date_time[d]:
-            rf_name = f'{tile}_{t}'
-            bf.waterfall_plot(t)
+        for time_stamp in date_time[d]:
+            bf.waterfall_plot(time_stamp)
         #with concurrent.futures.ProcessPoolExecutor() as executor:
         #    results = executor.map(bf.waterfall_plot, date_time[d])
 

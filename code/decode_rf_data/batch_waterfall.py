@@ -20,8 +20,9 @@ def plt_single_waterfall(rf_dir, rf_filename, out_dir):
 
 
 def waterfall_plot(time_stamp):
+    rf_name = f'{tile}_{time_stamp}'
+    
     try:
-        rf_name = f'{tile}_{time_stamp}'
         power, times = rf.read_data(f'{rf_path}/{rf_name}.txt')
         plt = rf.plot_waterfall(power, times, rf_name)
 
