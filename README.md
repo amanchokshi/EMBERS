@@ -1,5 +1,5 @@
 # MWA Satellites
-Code to measure the beam shapes of MWA Tiles using satellites.  
+**E**xperimental *M*easurement of **BE**am **R**esponses with **S**atellites  
 
 ### Conda Environment
 
