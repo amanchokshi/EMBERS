@@ -56,6 +56,18 @@ data_dir = Path(data_dir)
 out_dir = Path(out_dir)
 
 
+def plt_single_waterfall(rf_filename):
+    """Plot a single waterfall"""
+
+    power, times = rf.read_data(f'{rf_filename}.txt')
+    plt = rf.plot_waterfall(power, times, rf_filename)
+    
+    # Make output dir if it doesn't exist
+    os.makedirs(os.path.dirname(out_dir), exist_ok=True)
+    
+    plt.savefig(f'{out_dir}/{rf_filename}.png')
+
+
 def waterfall_plot(time_stamp):
     try:
         rf_name = f'{tile}_{time_stamp}'
