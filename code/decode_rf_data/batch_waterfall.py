@@ -20,15 +20,16 @@ def plt_single_waterfall(rf_dir, rf_filename, out_dir):
     plt.close()
 
 
-def waterfall_plot(tile, out_dir, date, time_stamp):
+def waterfall_plot(tile, out_dir, data_dir, date, time_stamp):
     rf_name = f'{tile}_{time_stamp}'
+    rf_path = Path(f'{data_dir}/{tile}/{date}')
     
     try:
         power, times = rf.read_data(f'{rf_path}/{rf_name}.txt')
 
         plt = rf.plot_waterfall(power, times, rf_name)
 
-        save_dir = out_dir/'waterfalls'/date/time_stamp
+        save_dir = Path(f'{out_dir}/waterfalls/{date}/{time_stamp}')
         save_dir.mkdir(parents=True, exist_ok=True)
         
         
@@ -93,10 +94,15 @@ if __name__ == "__main__":
     
     for tile in tiles:
         for d in range(len(dates)):
-            rf_path = data_dir/tile/dates[d]
             
             with concurrent.futures.ProcessPoolExecutor() as executor:
-                results = executor.map(waterfall_plot, repeat(tile), repeat(out_dir), repeat(dates[d]), date_time[d])
+                results = executor.map(
+                        waterfall_plot,
+                        repeat(tile),
+                        repeat(out_dir), 
+                        repeat(data_dir), 
+                        repeat(dates[d]), 
+                        date_time[d])
                
             for result in results:
                 print(result)
