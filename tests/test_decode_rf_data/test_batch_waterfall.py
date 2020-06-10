@@ -31,29 +31,29 @@ for i in range(n_days+1):
     date = day.strftime('%Y-%m-%d')
     dates.append(date)
     d_t = []
-
+                                            
     for j in range(48):
         t_delta = datetime.strptime(date,'%Y-%m-%d') + timedelta(minutes=30*j)
         d_time = t_delta.strftime('%Y-%m-%d-%H:%M')
         d_t.append(d_time)
-
-        date_time.append(d_t)
-
+                                                                                                
+        date_time.append(d_t)    
 
 data_dir = Path(data_dir)
 out_dir = Path(out_dir)
 
 for tile in tiles:
-    print(tile)
     for d in range(len(dates)):
         rf_path = data_dir/tile/dates[d]
-        for time_stamp in date_time[d]:
-            bf.waterfall_plot(time_stamp)
-        #with concurrent.futures.ProcessPoolExecutor() as executor:
-        #    results = executor.map(bf.waterfall_plot, date_time[d])
+                                            
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            results = executor.map(bf.waterfall_plot, date_time[d])
+                                                                                           
+        for result in results:
+            print(result)
 
-            #for result in results:
-            #    print(result)
+
+
 
 class Test_batch_waterfall(unittest.TestCase):
 
