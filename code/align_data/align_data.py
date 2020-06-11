@@ -6,6 +6,7 @@ import sys
 sys.path.append('../decode_rf_data')
 from rf_data import read_data
 
+from pathlib import Path
 from scipy import interpolate
 from scipy.signal import savgol_filter
 
@@ -87,45 +88,10 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     
 
-#    ch =59
-#    ref_t, ref_p, tile_t, tile_p, ref_p_aligned, tile_p_aligned, time_array = savgol_interp(
-#            './../../data/rf0XX_2019-10-10-02:30.txt',
-#            './../../data/S10XX_2019-10-10-02:30.txt',
-#            savgol_window_1 =11,
-#            savgol_window_2 =15,
-#            polyorder=2,
-#            interp_type='cubic',
-#            interp_freq=1
-#            )
-
-
-#    ch =23
-#    ref_t, ref_p, tile_t, tile_p, ref_p_aligned, tile_p_aligned, time_array = savgol_interp(
-#            '../../../tiles_data/rf0XX/2019-09-12/rf0XX_2019-09-12-09:30.txt',
-#            '../../../tiles_data/S06XX/2019-09-12/S06XX_2019-09-12-09:30.txt',
-#            savgol_window_1 =11,
-#            savgol_window_2 =15,
-#            polyorder=2,
-#            interp_type='cubic',
-#            interp_freq=1
-#            )
-
-#    ch =13
-#    ref_t, ref_p, tile_t, tile_p, ref_p_aligned, tile_p_aligned, time_array = savgol_interp(
-#            '../../../tiles_data/rf0XX/2019-09-14/rf0XX_2019-09-14-11:30.txt',
-#            '../../../tiles_data/S06XX/2019-09-14/S06XX_2019-09-14-11:30.txt',
-#            savgol_window_1 =11,
-#            savgol_window_2 =15,
-#            polyorder=2,
-#            interp_type='cubic',
-#            interp_freq=1
-#            )
-
-
-    ch =8
+    ch =59
     ref_t, ref_p, tile_t, tile_p, ref_p_aligned, tile_p_aligned, time_array = savgol_interp(
-            '../../../tiles_data/rf0XX/2019-09-15/rf0XX_2019-09-15-11:00.txt',
-            '../../../tiles_data/S06XX/2019-09-15/S06XX_2019-09-15-11:00.txt',
+            './../../data/rf_data/rf0XX/2019-10-10/rf0XX_2019-10-10-02:30.txt',
+            './../../data/rf_data/S06XX/2019-10-10/S06XX_2019-10-10-02:30.txt',
             savgol_window_1 =11,
             savgol_window_2 =15,
             polyorder=2,
@@ -133,37 +99,22 @@ if __name__ == '__main__':
             interp_freq=1
             )
 
-# Plots
-    fig = plt.figure(figsize=(12,9))
+
+
+    # Sample align plot
     plt.style.use('seaborn')
-#    plt.rcParams["figure.figsize"] = (6,9)
-#    plt.rcParams.update({
-#    "lines.color": "white",
-#    "text.color": "black",
-#    "axes.facecolor": "#b3b3b3",
-#    "axes.edgecolor": "lightgray",
-#    "axes.labelcolor": "white",
-#    "xtick.color": "white",
-#    "ytick.color": "white",
-#    "grid.color": "lightgray",
-#    "figure.facecolor": "#2F1543",
-#    "figure.edgecolor": "black",
-#    "savefig.facecolor": "#2F1543",
-#    "savefig.edgecolor": "black"})
+    plt.rcParams["figure.figsize"] = (9,6)
+    
+    time_array = (time_array - time_array[0])/60
+    ref_t = (ref_t - ref_t[0])/60
+    tile_t = (tile_t - tile_t[0])/60
 
 
     plt.plot(time_array,tile_p_aligned[::, ch], color='#e23a4e', alpha=0.9, label='aut savgol')
-    #plt.fill_between(time_array,tile_p_aligned[::, 59], np.full(len(time_array), min(ref_p_aligned[::, 59])), color='#ff5453', alpha=0.8)	
     plt.scatter(tile_t, tile_p[::, ch], color='#f78b51',marker='.', alpha=0.6, label='aut tile')
     
     plt.plot(time_array,ref_p_aligned[::, ch], color='#252b40', alpha=0.9, label='ref savgol')	
-    #plt.fill_between(time_array,ref_p_aligned[::, 59], np.full(len(time_array), min(ref_p_aligned[::, 59])), color='#252b40', alpha=0.8)	
     plt.scatter(ref_t, ref_p[::, ch], color='#6a82bb',marker='.', alpha=0.6, label='ref tile')
-#    plt.scatter(ref_t, ref_p[::, 59], color='#fe6845',marker='.', alpha=0.7)
-#    plt.plot(time_array,ref_p_aligned[::, 59], color='#ec9b3b', alpha=0.9, label='Ref Tile')	
-#
-#    plt.scatter(tile_t, tile_p[::, 59], color='#3a1f5d',marker='.', alpha=0.7)
-#    plt.plot(time_array,tile_p_aligned[::, 59], color='#916dd5', alpha=0.9, label='MWA Tile')
 
     leg = plt.legend(loc="upper left", frameon=True)
     leg.get_frame().set_facecolor('white')
@@ -171,30 +122,11 @@ if __name__ == '__main__':
         l.set_alpha(1)
 
    
-
-#    t_sta = 1570646700
-#    t_sto = 1570647550
-#    plt.xlim(t_sta, t_sto)
-#    
-#    times = np.linspace(t_sta, t_sto, 5)
-#    
-#    t_tz = []
-#    
-#    # Convert UNIX time to local HH:MM time
-#    for i in range(len(times)):
-#        
-#        perth_t = float(times[i])+28800 #28800=+8GMT @ PERTH
-#        hms = time.strftime('%H:%M', time.gmtime(perth_t))
-#        t_tz.append(hms)
-
-
-    
-    #plt.xlabel('Time [HH:MM]')
-    #plt.xticks(times, t_tz)
-    plt.ylim(-120, 5)
-    plt.ylabel('Power')
+    plt.ylim(-110, -20)
+    plt.ylabel('Power [dBm]')
+    plt.xlabel('Time [min]')
     plt.tight_layout()
-    plt.savefig('test.png', dpi=300)
-    #plt.show()
+    Path('../../outputs/align_data/').mkdir(parents=True, exist_ok=True)
+    plt.savefig('../../outputs/align_data/align_data_test.png', dpi=300)
 
 
