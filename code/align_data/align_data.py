@@ -1,11 +1,6 @@
 import math
 import time
 import numpy as np
-
-import sys
-sys.path.append('../decode_rf_data')
-from rf_data import read_data
-
 from pathlib import Path
 from scipy import interpolate
 from scipy.signal import savgol_filter
@@ -38,6 +33,11 @@ def savgol_interp(ref, tile, savgol_window_1 =None,savgol_window_2=None, polyord
         tile_p_aligned: Aligned tile power array
         time_array:     Time array corresponding to power arrays
     """
+
+    # Import custom rf_data module
+    import sys
+    sys.path.append('../decode_rf_data')
+    from rf_data import read_data
     
     # Read time and power arrays from data files
     ref_p, ref_t = read_data(ref)
