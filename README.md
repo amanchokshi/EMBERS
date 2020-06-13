@@ -183,13 +183,13 @@ python window_chan_map.py --help
 
 
 <p float="left">
-  <img src="./docs/2019-09-20-05:00_25478_[8, 13]_waterfall.png" width="49%" />
-  <img src="./docs/2019-09-20-10:00_41187_[25, 45]_waterfall.png" width="49%" />
+  <img src="./docs/2019-10-10-02:30_40086_[4, 8]_waterfall.png" width="49%" />
+  <img src="./docs/2019-10-10-02:30_44387_[56, 57, 58, 59, 60, 61, 62, 63]_waterfall.png" width="49%" />
 </p>
 
 <p float="left">
-  <img src="./docs/2019-09-20-05:00_25478_8_channel.png" width="49%" />
-  <img src="./docs/2019-09-20-10:00_41187_45_channel.png" width="49%" />
+  <img src="./docs/2019-10-10-02:30_40086_4_channel.png" width="49%" />
+  <img src="./docs/2019-10-10-02:30_44387_59_channel.png" width="49%" />
 </p>
 
 
