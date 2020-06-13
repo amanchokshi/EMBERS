@@ -6,8 +6,8 @@ import healpy as hp
 from pathlib import Path
 import concurrent.futures
 import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
 from scipy.stats import median_absolute_deviation as mad
-#from sat_channels import time_tree, time_filter,center_of_gravity
 from channels_plt import plt_waterfall_pass, plt_channel_basic, sat_plot
 
 
@@ -15,6 +15,34 @@ from channels_plt import plt_waterfall_pass, plt_channel_basic, sat_plot
 sys.path.append('../decode_rf_data')
 from colormap import spectral
 cmap = spectral()
+
+
+def time_tree(start_date, stop_date):
+    '''Split the time interval into 30 min obs'''
+
+    t_start = datetime.strptime(start_date, '%Y-%m-%d')
+    t_stop = datetime.strptime(stop_date, '%Y-%m-%d')
+    n_days = (t_stop - t_start).days
+    
+    dates = []
+    date_time = []
+   
+    # Every Day
+    for i in range(n_days+1):
+        day = t_start + timedelta(days=i)
+        date = day.strftime('%Y-%m-%d')
+        dates.append(date)
+        d_t = []
+        
+        # Every 30 min in the day
+        for j in range(48):
+            t_delta = datetime.strptime(date,'%Y-%m-%d') + timedelta(minutes=30*j)
+            d_time = t_delta.strftime('%Y-%m-%d-%H:%M')
+            d_t.append(d_time)
+    
+        date_time.append(d_t)
+
+    return (dates, date_time)
 
 
 def time_filter(s_rise, s_set, times):
