@@ -143,8 +143,8 @@ if __name__ == '__main__':
             d_time = t_delta.strftime('%Y-%m-%d-%H:%M')
             d_t.append(d_time)
     
-        date_time.append(d_t)    
-    
+        date_time.append(d_t)
+
     
     data_dir = Path(data_dir)
     out_dir = Path(out_dir)
@@ -173,7 +173,7 @@ if __name__ == '__main__':
                         repeat(interp_type), 
                         repeat(interp_freq), 
                         repeat(out_dir),
-                        repeat(date),
+                        repeat(dates[d]),
                         date_time[d])
     
     
