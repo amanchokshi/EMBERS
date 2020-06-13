@@ -10,7 +10,6 @@ from datetime import datetime, timedelta
 from scipy.stats import median_absolute_deviation as mad
 from channels_plt import plt_waterfall_pass, plt_channel_basic, sat_plot
 
-
 # Custom spectral colormap
 sys.path.append('../decode_rf_data')
 from colormap import spectral
@@ -176,7 +175,7 @@ def power_ephem(
                     max_s = np.amax(channel_power)
                     min_s = np.amin(channel_power)
 
-                    # Arbitrary threshold below which satellites aren't counted
+                    # Power threshold below which satellites aren't counted
                     # Only continue if there is signal for more than 80% of satellite pass
                     if (max(channel_power) >= pow_thresh and 
                             occ_thresh <= window_occupancy < 1.00):
@@ -352,10 +351,6 @@ if __name__=='__main__':
     dates, date_time = time_tree(start_date, stop_date)
     obs_list = [[dates[d], date_time[d][dt]] for d in range(len(dates)) for dt in range(len(date_time[d]))]
 
-#    for o in obs_list:
-#        print(o)
-#        window_chan_map(o)
-#        break
 
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor() as executor:
