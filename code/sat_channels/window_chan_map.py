@@ -7,7 +7,7 @@ from pathlib import Path
 import concurrent.futures
 import matplotlib.pyplot as plt
 from scipy.stats import median_absolute_deviation as mad
-from sat_channels import time_tree, time_filter,center_of_gravity
+#from sat_channels import time_tree, time_filter,center_of_gravity
 from channels_plt import plt_waterfall_pass, plt_channel_basic, sat_plot
 
 
