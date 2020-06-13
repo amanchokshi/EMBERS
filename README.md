@@ -154,10 +154,7 @@ python chrono_ephem.py --help
 
 As access to the ORBCOMM interface box was not available, the channels in which each satellite transimits can be determined with a careful analysis of the RF data and satellite ephemeris.
 
-We use reference data to detect satellite channels and it is much less noisy. Pairings a reference RF data file, with it's corresponding chrono_ephem file gives us the raw data as well as all the satellite which we expect to be present in 30 minute observation window. The chrono_ephem.json file containes the ephemeris for each of these satellites.
-
-
-Looping over our 72 satellites, we identify when each is present in the data and select the temporal region of the rf data where we expect to see its signal. Let us call this the *window*. We now use a series of thresholding criteria to help identify the most probable channel.
+We use reference data to detect satellite channels because it has the best SNR. Pairing a reference RF data file, with it's corresponding chrono_ephem json file gives us the satellite expected within each 30 minute observation. Looping over the satellites in the chrono_ephem files, we identify the temporal region of the rf data where we expect to see its signal. Let us call this the *window*. We now use a series of thresholding criteria to help identify the most probable channel.
 
 #### Channel Filtering 
 
@@ -168,7 +165,7 @@ The following thresholds were used to identify the correct channel:
 * Window Occupancy
 
 
-The peak signal in our data is `~ 30 dB` above the noise floor. We define an arbitrary threshold at `10 dB` and require that the maximum signal in a channel must exceed this value, if it contains a satellit.
+The peak signal in our data is `~ 30 dB` above the noise floor. We define an power threshold at `15 dB` and require that the maximum signal in a channel must exceed this value, if it contains a satellite.
 
 Our observation windows are sparesely populated with satellite signal. We classify any channel with a maximum signal below *1σ* to be *noisy data*. We find the *median [μ_noise]* of the *noisy data* and it *Median Absolute Deviatio [σ_noise]*. Using these we construct a noise threshold of *μ_noise + N x σ_noise*. By default N = 3. We now use this noise threshold to more rigorously choose channels with satellites present.
 
@@ -176,33 +173,11 @@ We also demand that the signal at the edges of the *window* be below the noise t
 
 A fractional occupancy of the window is computed by finding length of signal above the noise floor and dividing it by the window length. We require that *0.8 ≤ occupancy < 1.0*. By requiring that occupancy is less than `1.0`, we ensure that satellite passes longer than the window are not classified as potential channels.
 
-We use `sat_channels.py` to determine all the possible channels that each satellite occupies, and the total number of passes in each channel. This data is saved as json files in `/outputs/sat_channels/channel_data`. `channel_occupancy.py` uses the json files to plot histograms of occupied channels for each satellite in `/outputs/sat_channels/histograms`.
+The satellites periodically shift frequency channel over the 5 month period of our experiment, we make a *window map* for every half hour observation using `window_chan_map.py`. Each map identified the channels of all satellites in the 30 minute observation using the criteria described above - noise, power and occupation thresholds. if the `--plots=True` argparse option is used, a waterfall plot of each observation are generated, with the time window of the satellite and possible channels highlighted. The most probable channel is highlighted in green, as seen below.
 
 ```
 cd ../sat_channels
 
-python sat_channels.py --help
-
-python channel_occupancy.py
-```
-
-<p float="left">
-  <img src="./docs/41189_channels_histo_1903_passes_[41].png" width="49%" />
-  <img src="./docs/44387_channels_histo_969_passes_[59].png" width="49%" />
-</p>
-
-<p float="left">
-  <img src="./docs/23545_channels_histo_46_passes_[8].png" width="49%" />
-  <img src="./docs/23546_channels_histo_52_passes_[8, 13].png" width="49%" />
-</p>
-
-From the ephemeris plots, we know that we expect at least hundreds of passes per satellite. In the first two histograms we have more than 1000 passes each. The top right histogram is of a NOAA Weather satellite, which emits in multiple frequencies. The bottom two histograms have less than hundred passes each, which indicates that the satellite probably emits outside our band, and the passes identified in the histogram were misclassified. Using the histograms, we identify satellites with less than hundred passes and remove them from our satellite list `/sat_ephemeris/sat_ids.py`. This reduces the computation and complexity in the future. Based on our data, 17 satellites were found to not emit in our frequency band. 
-
-#### Window Channel Maps
-
-Since our satellites did not constantly emit in one frequency channel over the 5 month period of our experiment, we make a *window map* for every half hour observation using `window_chan_map.py`. Each map identified the channels of all satellites in the 30 minute observation using similar criteria as above - noise, arbitrary and occupation thresholds. if the `--plots=True` argparse option is used, a waterfall plot of each observation is generated, with the time window of the satellite and possible channels highlighted. The most probable channel is highlighted in green, as seen below.
-
-```
 python window_chan_map.py --help
 ```
 
