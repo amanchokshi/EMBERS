@@ -17,6 +17,45 @@ from colormap import spectral
 cmap = spectral()
 
 
+def time_filter(s_rise, s_set, times):
+    '''Slice obs window to size of ephem of norad sat
+    Args:
+        s_rise          : ephem rise time
+        s_set           : ephem set time
+        times           : time array of obs
+        '''
+    # I. sat rises before times, sets within times window
+    if (s_rise < times[0] and s_set > times[0] and s_set <= times[-1]):
+        i_0 = np.where(times == times[0])[0][0]
+        i_1 = np.where(times == s_set)[0][0]
+        intvl = [i_0, i_1]
+    
+    # II. sat rises and sets within times
+    elif (s_rise >= times[0] and s_set <= times[-1]):
+        i_0 = np.where(times == s_rise)[0][0]
+        i_1 = np.where(times == s_set)[0][0]
+        intvl = [i_0, i_1]
+    
+    # III. sat rises within times, and sets after
+    elif (s_rise >= times[0] and s_rise < times[-1] and s_set > times[-1]):
+        i_0 = np.where(times == s_rise)[0][0]
+        i_1 = np.where(times == times[-1])[0][0]
+        intvl = [i_0, i_1]
+    
+    # IV. sat rises before times and sets after
+    elif (s_rise < times[0] and s_set > times[-1]):
+        i_0 = np.where(times == times[0])[0][0]
+        i_1 = np.where(times == times[-1])[0][0]
+        intvl = [i_0, i_1]
+   
+    # V. sat completely out of times. Could be on either side
+    else:
+        intvl = None
+    
+    # intvl = interval
+    return intvl
+
+
 def read_aligned(ali_file=None):
     '''Read aligned data npz file'''
     paired_data = np.load(ali_file, allow_pickle=True)
