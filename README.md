@@ -156,15 +156,14 @@ As access to the ORBCOMM interface box was not available, the channels in which 
 
 We use reference data to detect satellite channels and it is much less noisy. Pairings a reference RF data file, with it's corresponding chrono_ephem file gives us the raw data as well as all the satellite which we expect to be present in 30 minute observation window. The chrono_ephem.json file containes the ephemeris for each of these satellites.
 
-We initially chose 72 satellites, which we hoped transimited in our frequency band. We need to verify whether this is actually the case, and eliminate satellite which are out of our band.
 
-Looping over all satellites, we identify when each is present in the data and select the temporal region of the rf data where we expect to see its signal. Let us call this the *window*. We now use a series of thresholding criteria to help identify the most probable channel.
+Looping over our 72 satellites, we identify when each is present in the data and select the temporal region of the rf data where we expect to see its signal. Let us call this the *window*. We now use a series of thresholding criteria to help identify the most probable channel.
 
 #### Channel Filtering 
 
 The following thresholds were used to identify the correct channel:
 
-* Arbitrary threshold
+* Power threshold
 * Noise threshold
 * Window Occupancy
 
