@@ -53,64 +53,6 @@ def plt_waterfall_pass(power, sat_id, start, stop, date, cmap, chs=None, good_ch
     plt.rcParams.update(plt.rcParamsDefault)
 
 
-def plt_channel(
-        out_dir, times, channel_power,
-        chan_num, min_s, max_s, noise_threshold,
-        arbitrary_threshold, center, cog, c_thresh, sat_id, date):
-
-    '''Plot power in channel, with various thresholds
-    
-    Args:
-        times:          Time array
-        channel_power:  Power in channel
-        chan_num:       Channel Number
-        min_s:          Minimum signal in channel_power
-        max_s:          Maximum signal in channel_power
-        noise_threshold: Noise Threshold (n*MAD)
-        arbitrary_threshold: Arbitrary threshold used to only select bright passes
-        center:         Center of channel_power
-        cog:            Center of gravity of channel_power
-        c_thresh:       Threshold about center
-        sat_id:         Norad Cat ID
-        date:           Date of observation
-        '''
-    
-    
-    plt.style.use('seaborn')
-    
-    # plt channel power
-    plt.plot(times, channel_power, linestyle='-', linewidth=2, alpha=1.0, color='#db3751', label='Data')
-    plt.fill_between(times, channel_power, color='#db3751', alpha=0.7)
-    
-    plt.axhline(arbitrary_threshold,alpha=1.0, linestyle='-', linewidth=2,
-            color='#fba95f', label=f'Arbitrary Cut: {arbitrary_threshold} dBm')
-    plt.axhspan(-1, arbitrary_threshold, color='#fba95f', alpha=0.4)
-    
-    plt.axhline(noise_threshold, linestyle='-', linewidth=2, color='#5cb7a9',
-            label=f'Noise Cut: {noise_threshold:.2f} dBm')
-    plt.axhspan(-1, noise_threshold, color='#5cb7a9', alpha=0.4)
-    
-    plt.axvspan(center-(c_thresh*len(times)), center+(c_thresh*len(times)), color='#2b2e4a', alpha=0.4)
-    plt.axvline(center, color='#2b2e4a', alpha=1, label=f'Center ± {c_thresh*100}% ')
-    plt.axvline(cog, color='#8cba51', alpha=1, label='CoG')
-    
-    
-    plt.ylim([min_s - 1, max_s + 1])
-    plt.xlim([times[0], times[-1]])
-    plt.ylabel('Power [dBm]')
-    plt.xlabel('Time [s]')
-    plt.title(f'Satellite Pass in Channel: [{chan_num}]')
-    plt.tight_layout()
-    leg = plt.legend(frameon=True)
-    leg.get_frame().set_facecolor('grey')
-    leg.get_frame().set_alpha(0.2)
-    for l in leg.legendHandles:
-        l.set_alpha(1)
-    plt.savefig(f'{out_dir}/{date}_{sat_id}_{chan_num}_channel.png')
-    plt.close()
-    plt.rcParams.update(plt.rcParamsDefault)
-
-
 def plt_channel_basic(
         out_dir, times, channel_power,
         chan_num, min_s, max_s, noise_threshold,
@@ -202,24 +144,5 @@ def sat_plot(out_dir, ids, norad_id, alt, az, num_passes, date, name):
     plt.close()
     plt.rcParams.update(plt.rcParamsDefault)
 
-
-def plt_hist(values, counts, x_label, y_label, title, saveout, cmap):
-    '''Plt histogram of occupied channels'''
-    
-    #plt.rcParams.update(plt.rcParamsDefault)
-    sns.set()
-    index = np.arange(len(values))
-    
-    plt.bar(index, counts, color=sns.color_palette(cmap, len(counts)))
-    
-    plt.xlabel(x_label)
-    plt.xticks(index, values, rotation=90)
-    plt.ylabel(y_label)
-    plt.title(title)
-    plt.tight_layout()
-    
-    plt.savefig(saveout)
-    plt.close()
-    plt.rcParams.update(plt.rcParamsDefault)
 
 
