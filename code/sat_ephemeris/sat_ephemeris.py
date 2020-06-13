@@ -8,7 +8,6 @@ from skyfield.api import Topos, load
 try:
     ts = load.timescale()
 except:
-    print('Time Scale files failed to download. Using inbuilt ones. May be slightly out of date')
     ts = load.timescale(builtin=True)
 
 # Position of MWA site in Lat/Lon/Elevation
