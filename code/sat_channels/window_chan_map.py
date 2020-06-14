@@ -1,9 +1,11 @@
+import sys
 import json
 import argparse
 import numpy as np
 import healpy as hp
 from pathlib import Path
 import concurrent.futures
+from itertools import repeat
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 from scipy.stats import median_absolute_deviation as mad
@@ -149,7 +151,6 @@ def good_chans(
             
         rise_ephem  = norad_ephem["time_array"][0] 
         set_ephem   = norad_ephem["time_array"][-1]
-        sat_alt     = norad_ephem["sat_alt"]
 
         
         intvl = time_filter(rise_ephem, set_ephem, np.asarray(times))
@@ -174,8 +175,6 @@ def good_chans(
                 
                 # Percentage of signal occupancy above noise threshold
                 window_occupancy = (np.where(channel_power >= noise_threshold))[0].size/window_len
-            
-                max_s = np.amax(channel_power)
                 min_s = np.amin(channel_power)
 
                 # Power threshold below which satellites aren't counted
@@ -248,7 +247,17 @@ def good_chans(
             return 0
 
 
-def window_chan_map(obs_stamp):
+def window_chan_map(
+        ali_dir,
+        chrono_dir,
+        sat_thresh,
+        noi_thresh,
+        pow_thresh,
+        occ_thresh,
+        out_dir,
+        plots, 
+        plt_dir, 
+        obs_stamp):
 
     date, timestamp = obs_stamp
 
@@ -291,7 +300,8 @@ def window_chan_map(obs_stamp):
                                 pow_thresh,
                                 occ_thresh,
                                 date,
-                                timestamp
+                                timestamp,
+                                plots
                                 )
                        
                         if sat_data != 0:
@@ -356,7 +366,16 @@ if __name__=='__main__':
 
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(window_chan_map, obs_list)
-
-    
+        results = executor.map(
+                window_chan_map, 
+                repeat(ali_dir),
+                repeat(chrono_dir),
+                repeat(sat_thresh),
+                repeat(noi_thresh),
+                repeat(pow_thresh),
+                repeat(occ_thresh),
+                repeat(out_dir),
+                repeat(plots), 
+                repeat(plt_dir), 
+                obs_list)
 
