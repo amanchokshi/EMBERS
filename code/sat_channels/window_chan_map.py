@@ -315,6 +315,7 @@ def window_chan_map(
         # Exception message is forwarded from ../decode_rf_data/rf_data.py
 
     # Save channel map
+    Path(f'{out_dir}/window_maps').mkdir(parents=True, exist_ok=True)
     with open(f'{out_dir}/window_maps/{timestamp}.json','w') as f: 
         json.dump(channel_map, f, indent=4) 
 
