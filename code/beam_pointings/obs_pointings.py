@@ -112,7 +112,8 @@ def obs_pointing(
         start_gps,
         stop_gps,
         start_date, 
-        stop_date
+        stop_date,
+        out_dir
         ):
 
     """Find pointing of 30 min obs
@@ -201,7 +202,8 @@ if __name__ == "__main__":
         start_gps,
         stop_gps,
         start_date, 
-        stop_date
+        stop_date,
+        out_dir
         )
 
 
