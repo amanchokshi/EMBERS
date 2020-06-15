@@ -11,8 +11,6 @@ class Test_sort_pointings(unittest.TestCase):
     meta_dir = Path('../../data/tests/mwa_pointings')
     out_dir = Path('./')
 
-        
-        
     def test_org_pointing_json(self):
         start_gps, stop_gps, obs_length, pointings = sp.org_pointing_json(self.meta_dir)
         
@@ -21,7 +19,6 @@ class Test_sort_pointings(unittest.TestCase):
         self.assertEqual(np.median(obs_length), 120)
         self.assertEqual(pointings[0], 100) 
         self.assertEqual(pointings[-1], 4) 
-
     
     def test_combine_obs(self):
         start_gps, stop_gps, obs_length, pointings = sp.org_pointing_json(self.meta_dir)
