@@ -48,7 +48,7 @@ def point_integration(f_name, out_dir, int_thresh):
     return (time_point, point)
 
 
-def pointing_hist(time_point, point):
+def pointing_hist(time_point, point, out_dir):
     """Pointing histogram"""
 
     x = range(len(time_point))
@@ -97,5 +97,5 @@ if __name__ == "__main__":
     int_thresh  = args.int_thresh
 
     time_point, point = point_integration(f_name, out_dir, int_thresh)
-    pointing_hist(time_point, point)
+    pointing_hist(time_point, point, out_dir)
 
