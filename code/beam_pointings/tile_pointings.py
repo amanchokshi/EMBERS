@@ -1,19 +1,17 @@
-import sys
 import json
-import argparse
 import numpy as np
 import seaborn as sns
 from pathlib import Path
 import matplotlib.pyplot as plt
-
-sys.path.append('../decode_rf_data')
-from rf_data import tile_names
-
+    
+import sys
 sys.path.append('../sat_channels')
-from sat_channels import time_tree
+from window_chan_map import time_tree
 
 
-def point_int(tile, start, stop, point_0, point_2, point_4, point_41):
+
+def point_int(tile, start_date, stop_date, point_0, point_2, point_4, point_41, data_dir):
+    """Calculate integration at each pointing for every tile"""
     
     # increment this by 0.5, for every obs which is in point_list. 
     # 0.5 = 30 min
@@ -42,7 +40,8 @@ def point_int(tile, start, stop, point_0, point_2, point_4, point_41):
                     pass
     return [p_0, p_2, p_4, p_41]
 
-def plt_pointing_hist(a, b, c, int_dict=None, tile=None, x_ticks=None):
+
+def plt_pointing_hist(a, b, c, fig, int_dict=None, tile=None, x_ticks=None):
 
     ax = fig.add_subplot(a,b,c)
 
@@ -74,10 +73,7 @@ def plt_pointing_hist(a, b, c, int_dict=None, tile=None, x_ticks=None):
     
     ax.set_xticklabels([])
     ax.set_ylim(0, 1.1*y_max)
-    #plt.xticks(x, ['0','2','4'])
     
-    #plt.ylabel('Hours')
-    #plt.xlabel('MWA Grid Pointing Number')
 
     return ax
 
@@ -85,6 +81,11 @@ def plt_pointing_hist(a, b, c, int_dict=None, tile=None, x_ticks=None):
 
 if __name__=='__main__':
 
+    import sys
+    import argparse
+    sys.path.append('../decode_rf_data')
+    from rf_data import tile_names
+    
     parser = argparse.ArgumentParser(description="""
         Determine total integration time, per pointing, for all tiles
         """)
@@ -98,6 +99,7 @@ if __name__=='__main__':
    
     data_dir    = Path(args.data_dir)
     out_dir     = Path(args.out_dir)
+
 
     # Tile names
     tiles  = tile_names()
@@ -114,53 +116,53 @@ if __name__=='__main__':
 
     tile_integration = {}
     for tile in tiles:
-        p_integration = point_int(tile, start_date, stop_date, point_0, point_2, point_4, point_41)
+        p_integration = point_int(tile, start_date, stop_date, point_0, point_2, point_4, point_41, data_dir)
         tile_integration[f'{tile}'] = p_integration
 
 
     plt.style.use('seaborn')
     fig = plt.figure(figsize=(14,10))
 
-    ax01 = plt_pointing_hist(4,8,1, int_dict=tile_integration, tile=tiles[0])
-    ax02 = plt_pointing_hist(4,8,2, int_dict=tile_integration, tile=tiles[4])
-    ax03 = plt_pointing_hist(4,8,3, int_dict=tile_integration, tile=tiles[5])
-    ax04 = plt_pointing_hist(4,8,4, int_dict=tile_integration, tile=tiles[6])
-    ax05 = plt_pointing_hist(4,8,5, int_dict=tile_integration, tile=tiles[7])
-    ax06 = plt_pointing_hist(4,8,6, int_dict=tile_integration, tile=tiles[8])
-    ax07 = plt_pointing_hist(4,8,7, int_dict=tile_integration, tile=tiles[9])
-    ax08 = plt_pointing_hist(4,8,8, int_dict=tile_integration, tile=tiles[10])
-    ax09 = plt_pointing_hist(4,8,9, int_dict=tile_integration, tile=tiles[1])
-    ax10 = plt_pointing_hist(4,8,10, int_dict=tile_integration, tile=tiles[11])
-    ax11 = plt_pointing_hist(4,8,11, int_dict=tile_integration, tile=tiles[12])
-    ax12 = plt_pointing_hist(4,8,12, int_dict=tile_integration, tile=tiles[13])
-    ax12 = plt_pointing_hist(4,8,13, int_dict=tile_integration, tile=tiles[14])
-    ax13 = plt_pointing_hist(4,8,14, int_dict=tile_integration, tile=tiles[15])
-    ax14 = plt_pointing_hist(4,8,15, int_dict=tile_integration, tile=tiles[16])
-    ax15 = plt_pointing_hist(4,8,16, int_dict=tile_integration, tile=tiles[17])
-    ax16 = plt_pointing_hist(4,8,17, int_dict=tile_integration, tile=tiles[2])
-    ax17 = plt_pointing_hist(4,8,18, int_dict=tile_integration, tile=tiles[18])
-    ax18 = plt_pointing_hist(4,8,19, int_dict=tile_integration, tile=tiles[19])
-    ax19 = plt_pointing_hist(4,8,20, int_dict=tile_integration, tile=tiles[20])
-    ax20 = plt_pointing_hist(4,8,21, int_dict=tile_integration, tile=tiles[21])
-    ax21 = plt_pointing_hist(4,8,22, int_dict=tile_integration, tile=tiles[22])
-    ax22 = plt_pointing_hist(4,8,23, int_dict=tile_integration, tile=tiles[23])
-    ax23 = plt_pointing_hist(4,8,24, int_dict=tile_integration, tile=tiles[24])
-    ax24 = plt_pointing_hist(4,8,25, int_dict=tile_integration, tile=tiles[3])
-    ax25 = plt_pointing_hist(4,8,26, int_dict=tile_integration, tile=tiles[25])
-    ax26 = plt_pointing_hist(4,8,27, int_dict=tile_integration, tile=tiles[26])
-    ax27 = plt_pointing_hist(4,8,28, int_dict=tile_integration, tile=tiles[27])
-    ax28 = plt_pointing_hist(4,8,29, int_dict=tile_integration, tile=tiles[28])
-    ax29 = plt_pointing_hist(4,8,30, int_dict=tile_integration, tile=tiles[29])
-    ax30 = plt_pointing_hist(4,8,31, int_dict=tile_integration, tile=tiles[30])
-    ax31 = plt_pointing_hist(4,8,32, int_dict=tile_integration, tile=tiles[31])
+    ax01 = plt_pointing_hist(4,8,1, fig, int_dict=tile_integration, tile=tiles[0])
+    ax02 = plt_pointing_hist(4,8,2, fig, int_dict=tile_integration, tile=tiles[4])
+    ax03 = plt_pointing_hist(4,8,3, fig, int_dict=tile_integration, tile=tiles[5])
+    ax04 = plt_pointing_hist(4,8,4, fig, int_dict=tile_integration, tile=tiles[6])
+    ax05 = plt_pointing_hist(4,8,5, fig, int_dict=tile_integration, tile=tiles[7])
+    ax06 = plt_pointing_hist(4,8,6, fig, int_dict=tile_integration, tile=tiles[8])
+    ax07 = plt_pointing_hist(4,8,7, fig, int_dict=tile_integration, tile=tiles[9])
+    ax08 = plt_pointing_hist(4,8,8, fig, int_dict=tile_integration, tile=tiles[10])
+    ax09 = plt_pointing_hist(4,8,9, fig, int_dict=tile_integration, tile=tiles[1])
+    ax10 = plt_pointing_hist(4,8,10, fig, int_dict=tile_integration, tile=tiles[11])
+    ax11 = plt_pointing_hist(4,8,11, fig, int_dict=tile_integration, tile=tiles[12])
+    ax12 = plt_pointing_hist(4,8,12, fig, int_dict=tile_integration, tile=tiles[13])
+    ax12 = plt_pointing_hist(4,8,13, fig, int_dict=tile_integration, tile=tiles[14])
+    ax13 = plt_pointing_hist(4,8,14, fig, int_dict=tile_integration, tile=tiles[15])
+    ax14 = plt_pointing_hist(4,8,15, fig, int_dict=tile_integration, tile=tiles[16])
+    ax15 = plt_pointing_hist(4,8,16, fig, int_dict=tile_integration, tile=tiles[17])
+    ax16 = plt_pointing_hist(4,8,17, fig, int_dict=tile_integration, tile=tiles[2])
+    ax17 = plt_pointing_hist(4,8,18, fig, int_dict=tile_integration, tile=tiles[18])
+    ax18 = plt_pointing_hist(4,8,19, fig, int_dict=tile_integration, tile=tiles[19])
+    ax19 = plt_pointing_hist(4,8,20, fig, int_dict=tile_integration, tile=tiles[20])
+    ax20 = plt_pointing_hist(4,8,21, fig, int_dict=tile_integration, tile=tiles[21])
+    ax21 = plt_pointing_hist(4,8,22, fig, int_dict=tile_integration, tile=tiles[22])
+    ax22 = plt_pointing_hist(4,8,23, fig, int_dict=tile_integration, tile=tiles[23])
+    ax23 = plt_pointing_hist(4,8,24, fig, int_dict=tile_integration, tile=tiles[24])
+    ax24 = plt_pointing_hist(4,8,25, fig, int_dict=tile_integration, tile=tiles[3])
+    ax25 = plt_pointing_hist(4,8,26, fig, int_dict=tile_integration, tile=tiles[25])
+    ax26 = plt_pointing_hist(4,8,27, fig, int_dict=tile_integration, tile=tiles[26])
+    ax27 = plt_pointing_hist(4,8,28, fig, int_dict=tile_integration, tile=tiles[27])
+    ax28 = plt_pointing_hist(4,8,29, fig, int_dict=tile_integration, tile=tiles[28])
+    ax29 = plt_pointing_hist(4,8,30, fig, int_dict=tile_integration, tile=tiles[29])
+    ax30 = plt_pointing_hist(4,8,31, fig, int_dict=tile_integration, tile=tiles[30])
+    ax31 = plt_pointing_hist(4,8,32, fig, int_dict=tile_integration, tile=tiles[31])
 
 
 
-    #plt.title('Pointing Integration per Tile')
-    #plt.ylabel('Hours')
-    #plt.xlabel('Pointing [0, 2, 4]')
-    #fig.text(0.5, 0.04, 'MWA Receiver Pointing [0, 2, 4]', ha='center')
-    #fig.text(0.04, 0.5, 'Hours', va='center', rotation='vertical')
+#    plt.title('Pointing Integration per Tile')
+#    plt.ylabel('Hours')
+#    plt.xlabel('Pointing [0, 2, 4]')
+#    fig.text(0.5, 0.04, 'MWA Receiver Pointing [0, 2, 4]', ha='center')
+#    fig.text(0.04, 0.5, 'Hours', va='center', rotation='vertical')
     plt.tight_layout()
     fig.savefig(f'{out_dir}/tiles_pointing_integration.png')
 
