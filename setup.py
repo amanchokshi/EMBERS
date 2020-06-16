@@ -48,5 +48,6 @@ setup(
     keywords=("embers radio astronomy satellites beam measurement"),
     python_requires='>=3.6, <4',
     install_requires=requirements,
+    dependency_links=['https://github.com/MWATelescope/mwa_pb@master#egg=mwa_pb']
     zip_safe=False,
 )
