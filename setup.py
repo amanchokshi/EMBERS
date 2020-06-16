@@ -30,8 +30,7 @@ setup(
     project_urls={
         "https://github.com/amanchokshi/EMBERS",
     },
-    package_dir={'embers': "embers"},
-    packages=find_packages(where='embers'),
+    packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Science/Research",
