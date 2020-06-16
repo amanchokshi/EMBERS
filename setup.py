@@ -51,6 +51,9 @@ setup(
         requirements,
         'mwa_pb @ git+https://git@github.com/MWATelescope/mwa_pb@master#egg=mwa_pb',
         ],
-    include_package_data=True
+    include_package_data=True,
+    package_data={
+    "embers": ["data/*"],
+    }
     zip_safe=False,
 )
