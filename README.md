@@ -8,8 +8,8 @@ The *EMBERS* package may be installed by cloning the repository. Using a virtual
 ```
 git clone https://github.com/amanchokshi/EMBERS.git
 cd EMBERS
-python -m venv embers
-source embers/bin/activate
+python -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
