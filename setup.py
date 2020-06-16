@@ -11,7 +11,7 @@ with open('requirements.txt', 'r') as f:
     requirements = f.read().splitlines()
 
 # Read the __version__.py file
-with open('cmasher/__version__.py', 'r') as f:
+with open('embers/__version__.py', 'r') as f:
     vf = f.read()
 
 # Obtain version from read-in __version__.py file
