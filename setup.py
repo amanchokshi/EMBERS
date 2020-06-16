@@ -35,6 +35,7 @@ setup(
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Science/Research",
+        "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
         "Operating System :: MacOS",
@@ -50,4 +51,5 @@ setup(
     keywords=("embers radio astronomy satellites beam measurement"),
     python_requires='>=3.6, <4',
     install_requires=requirements,
+    zip_safe=False,
 )
