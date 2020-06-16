@@ -1,5 +1,6 @@
 # Package imports
 from setuptools import setup, find_namespace_packages
+from pathlib import Path
 import re
 
 # Get long description from README
@@ -53,7 +54,8 @@ setup(
         ],
     include_package_data=True,
     package_data={
-    "embers": ["data/*"],
-    }
+    "embers": ["data/*.ffe"],
+    "embers.kindle": ["data/*"],
+    },
     zip_safe=False,
 )
