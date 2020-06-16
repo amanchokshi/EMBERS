@@ -1,24 +1,18 @@
 # MWA Satellites
 **E**xperimental **M**easurement of **BE**am **R**esponses with **S**atellites  
 
-### Conda Environment
+### Installation
 
-A conda virtual enviroment is used to install the correct version of python and all required packages in an isolated enviroment, ensuring that our code performs as expecteted. Either [Anaconda](https://www.anaconda.com/distribution/) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html) are required before proceeding further. All the required packages are in `env.yml`, which can be installed using:
-```
-source setup.sh
-```
-It also installs the [MWA Primary Beam](https://github.com/MWATelescope/mwa_pb) repository and downloads the required FEE beam data.
-
-A conda enviroment, called `beam-env` have been created locally, for out mwa-satellites repository. This virtual conda enviroment can be activated and deactivated with:
+The *EMBERS* package may be installed by cloning the repository. Using a virtual environment is suggested to prevent conflicting dependancies.
 
 ```
-conda activate ./beam-env
-
-conda deactivate
+git clone https://github.com/amanchokshi/EMBERS.git
+cd EMBERS
+python -m venv embers
+source embers/bin/activate
+pip install -r requirements.txt
 ```
-while in the home dir of this repository.
 
-When running code in this repository, ensure that `beam-env`is active.
 
 &nbsp;
 #### Directory Structure
