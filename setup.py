@@ -9,6 +9,7 @@ with open("README.md", "r", encoding='utf-8') as fh:
 # Get the requirements list
 with open('requirements.txt', 'r') as f:
     requirements = f.read().splitlines()
+    requirements = requirements[:-1]
 
 # Read the __version__.py file
 with open('embers/__version__.py', 'r') as f:
@@ -27,9 +28,6 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/amanchokshi/EMBERS",
-    project_urls={
-        "https://github.com/amanchokshi/EMBERS",
-    },
     packages=find_namespace_packages(include=["embers.*"]),
     classifiers=[
         "Development Status :: 3 - Alpha",
