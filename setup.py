@@ -1,5 +1,5 @@
 # Package imports
-from setuptools import find_packages, setup
+from setuptools import setup, find_namespace_packages
 import re
 
 # Get long description from README
@@ -30,7 +30,7 @@ setup(
     project_urls={
         "https://github.com/amanchokshi/EMBERS",
     },
-    packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
+    packages=find_namespace_packages(include=["embers.*"]),
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Science/Research",
