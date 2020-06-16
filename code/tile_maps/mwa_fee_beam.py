@@ -19,7 +19,6 @@ if Path(f'{fee_dir}/mwa_full_embedded_element_pattern.h5').is_file() is not True
     url = 'http://cerberus.mwa128t.org/mwa_full_embedded_element_pattern.h5'
     wget.download(url, f'{fee_dir}')
 
-#MWAPY_H5PATH='../../beam-env/lib/python3.7/site-packages/mwa_pb-1.1.0-py3.7.egg/mwa_pb/data/mwa_full_embedded_element_pattern.h5'
 MWAPY_H5PATH=f'{fee_dir}/mwa_full_embedded_element_pattern.h5'
 from mwa_pb import primary_beam
 from mwa_pb import beam_full_EE
