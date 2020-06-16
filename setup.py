@@ -18,7 +18,7 @@ with open('embers/__version__.py', 'r') as f:
 
 # Recursive data files in embers.kindle
 kindle_data = Path(f'{__file__}/embers/kindle/data')
-files = [str(p.relative_to(kindle_dir)) for p in kindle_dir.rglob('*.txt')]
+files = [str(p.relative_to(kindle_data)) for p in kindle_data.rglob('*.txt')]
 
 # Obtain version from read-in __version__.py file
 version = re.search(r"^_*version_* = ['\"]([^'\"]*)['\"]", vf, re.M).group(1)
