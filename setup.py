@@ -50,7 +50,7 @@ setup(
     dependency_links=['https://github.com/MWATelescope/mwa_pb/tarball/master#egg=mwa_pb-1.1.0'],
     install_requires=[
         requirements,
-        'mwa_pb==1.1.0',
+        'mwa_pb @ git+https://git@github.com/MWATelescope/mwa_pb@master#egg=mwa_pb',
         ],
     zip_safe=False,
 )
