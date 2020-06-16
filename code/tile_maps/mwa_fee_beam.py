@@ -1,5 +1,8 @@
+import os
+import wget
 import numpy as np
 import healpy as hp
+from pathlib import Path
 import matplotlib.pyplot as plt
 from astropy.stats import median_absolute_deviation
 from itertools import cycle
@@ -9,7 +12,15 @@ from os import environ
 import scipy.optimize as opt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-MWAPY_H5PATH='../../beam-env/lib/python3.7/site-packages/mwa_pb-1.1.0-py3.7.egg/mwa_pb/data/mwa_full_embedded_element_pattern.h5'
+import mwa_pb
+fee_dir = Path(f'{os.path.dirname(mwa_pb.__file__)}/data')
+if Path(f'{fee_dir}/mwa_full_embedded_element_pattern.h5').is_file() is not True:
+    print('Downloading MWA FEE model from Cerberus')
+    url = 'http://cerberus.mwa128t.org/mwa_full_embedded_element_pattern.h5'
+    wget.download(url, f'{fee_dir}')
+
+#MWAPY_H5PATH='../../beam-env/lib/python3.7/site-packages/mwa_pb-1.1.0-py3.7.egg/mwa_pb/data/mwa_full_embedded_element_pattern.h5'
+MWAPY_H5PATH=f'{fee_dir}/mwa_full_embedded_element_pattern.h5'
 from mwa_pb import primary_beam
 from mwa_pb import beam_full_EE
 from mwa_pb import mwa_tile
