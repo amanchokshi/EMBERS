@@ -11,10 +11,6 @@ with open("README.md", "r", encoding="utf-8") as fh:
 with open("requirements.txt", "r") as f:
     requirements = f.read().splitlines()
 
-# Read the __version__.py file
-with open("embers/__version__.py", "r") as f:
-    vf = f.read()
-
 # Recursive data files in embers.kindle
 kindle_data = Path(f"{__file__}/embers/kindle/data")
 files = [str(p.relative_to(kindle_data)) for p in kindle_data.rglob("*.txt")]
@@ -26,7 +22,7 @@ version = __version__
 
 setup(
     name="embers",
-    version="0.0.1",
+    version=version,
     license="MIT",
     author="Aman Chokshi",
     author_email="achokshi@student.unimelb.edu.au",
