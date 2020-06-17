@@ -4,20 +4,20 @@ from pathlib import Path
 import re
 
 # Get long description from README
-with open("README.md", "r", encoding='utf-8') as fh:
+with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 # Get the requirements list
-with open('requirements.txt', 'r') as f:
+with open("requirements.txt", "r") as f:
     requirements = f.read().splitlines()
 
 # Read the __version__.py file
-with open('embers/__version__.py', 'r') as f:
+with open("embers/__version__.py", "r") as f:
     vf = f.read()
 
 # Recursive data files in embers.kindle
-kindle_data = Path(f'{__file__}/embers/kindle/data')
-files = [str(p.relative_to(kindle_data)) for p in kindle_data.rglob('*.txt')]
+kindle_data = Path(f"{__file__}/embers/kindle/data")
+files = [str(p.relative_to(kindle_data)) for p in kindle_data.rglob("*.txt")]
 
 # Obtain version from read-in __version__.py file
 version = re.search(r"^_*version_* = ['\"]([^'\"]*)['\"]", vf, re.M).group(1)
@@ -26,7 +26,7 @@ version = re.search(r"^_*version_* = ['\"]([^'\"]*)['\"]", vf, re.M).group(1)
 setup(
     name="embers",
     version="0.0.1",
-    license='MIT',
+    license="MIT",
     author="Aman Chokshi",
     author_email="achokshi@student.unimelb.edu.au",
     description="Experimental Measurement of BEam Response with Satellites",
@@ -51,12 +51,9 @@ setup(
         "Topic :: Scientific/Engineering :: Physics",
     ],
     keywords=("embers radio astronomy satellites beam measurement"),
-    python_requires='>=3.6, <4',
+    python_requires=">=3.6, <4",
     install_requires=requirements,
     include_package_data=True,
-    package_data={
-    "embers": ["data/*.ffe"],
-    "embers.kindle": files,
-    },
+    package_data={"embers": ["data/*.ffe"], "embers.kindle": files,},
     zip_safe=False,
 )
