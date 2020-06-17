@@ -16,15 +16,17 @@ kindle_data = Path(f"{__file__}/embers/kindle/data")
 files = [str(p.relative_to(kindle_data)) for p in kindle_data.rglob("*.txt")]
 
 # Obtain version from read-in __version__.py file
-from embers import __version__
+from embers import __title__, __version__, __author__
+title = __title__
 version = __version__
+author = __author__
 
 
 setup(
-    name="embers",
+    name=title,
     version=version,
     license="MIT",
-    author="Aman Chokshi",
+    author=author,
     author_email="achokshi@student.unimelb.edu.au",
     description="Experimental Measurement of BEam Response with Satellites",
     long_description=long_description,
