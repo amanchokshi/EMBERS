@@ -10,7 +10,6 @@ with open("README.md", "r", encoding='utf-8') as fh:
 # Get the requirements list
 with open('requirements.txt', 'r') as f:
     requirements = f.read().splitlines()
-    requirements = requirements[:-1]
 
 # Read the __version__.py file
 with open('embers/__version__.py', 'r') as f:
@@ -53,10 +52,7 @@ setup(
     ],
     keywords=("embers radio astronomy satellites beam measurement"),
     python_requires='>=3.6, <4',
-    install_requires=[
-        requirements,
-        'mwa_pb @ git+https://git@github.com/MWATelescope/mwa_pb@master#egg=mwa_pb',
-        ],
+    install_requires=requirements,
     include_package_data=True,
     package_data={
     "embers": ["data/*.ffe"],
