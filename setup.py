@@ -20,7 +20,8 @@ kindle_data = Path(f"{__file__}/embers/kindle/data")
 files = [str(p.relative_to(kindle_data)) for p in kindle_data.rglob("*.txt")]
 
 # Obtain version from read-in __version__.py file
-version = re.search(r"^_*version_* = ['\"]([^'\"]*)['\"]", vf, re.M).group(1)
+from embers import __version__
+version = __version__
 
 
 setup(
