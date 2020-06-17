@@ -9,3 +9,4 @@ conda_env_export.sh
 /code/sat_ephemeris/deltat.data
 /code/sat_ephemeris/deltat.preds
 /code/tile_maps/outlier_tests/.ipynb_checkpoints
+embers.egg-info/
