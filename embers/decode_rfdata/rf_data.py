@@ -20,7 +20,7 @@ def read_data(rf_file=None):
     """
 
     try:
-        with open(filename, "rb") as f:
+        with open(rf_file, "rb") as f:
             next(f)
             lines = f.readlines()
 
