@@ -1,9 +1,8 @@
 import time
 import numpy as np
-import matplotlib
-
-matplotlib.use("Agg")
-from colormap import spectral
+#import matplotlib
+#matplotlib.use("Agg")
+from embers.decode_rfdata.colormap import spectral
 import matplotlib.pyplot as plt
 
 
