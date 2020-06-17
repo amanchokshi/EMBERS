@@ -44,8 +44,8 @@ python batch_waterfall.py --data_dir=../../data/rf_data/ --start_date=2019-10-10
 Can be used to create a batch of waterfall plots from data in a time interval. The above code creates waterfall plots from the two sample data files provided in the `data/rf_data` directory, saving the results in `outputs/decode_rf_data`. On the left is the waterfall plot of the reference antenna, with an obvious broadband weather satellite pass visible at the bottom right. The narrower vertical lines are ORBCOMM satellites. The plot on the right shows the same satellites as seen by an MWA tile. The nulls in the primary beam are clearly visible. 
 
 <p float="left">
-  <img src="./docs/rf0XX_2019-10-10-02:30.png" width="49%" />
-  <img src="./docs/S06XX_2019-10-10-02:30.png" width="49%" /> 
+  <img src="./imgs/rf0XX_2019-10-10-02:30.png" width="49%" />
+  <img src="./imgs/S06XX_2019-10-10-02:30.png" width="49%" /> 
 </p>
 
 A `logs.txt` file is saved to the output directory. This shows what plots were saved by `batch_waterfall.py`, and also which data files were missing.
@@ -62,7 +62,7 @@ python align_data.py
 ```
 
 <p float="left">
-  <img src="./docs/align_data.png" width="110%" /> 
+  <img src="./imgs/align_data.png" width="110%" /> 
 </p>
 
 This illustrates how `align_data.py` smoothes the noisy power data. The image displayed above represents only one frequency channel  [59] from the 2D power array. This channel was chosen to best show the spectral features of satellite passes as seen by the reference and mwa tiles. 
@@ -130,7 +130,7 @@ This will plot all the json ephemeris files that were generated in the previous 
 &nbsp;
 
 <p float="left">
-  <img src="./docs/sat_ephem.jpg" width="100%" />
+  <img src="./imgs/sat_ephem.jpg" width="100%" />
 </p>
 
 
@@ -177,13 +177,13 @@ python window_chan_map.py --help
 
 
 <p float="left">
-  <img src="./docs/2019-10-10-02:30_40086_[4, 8]_waterfall.png" width="49%" />
-  <img src="./docs/2019-10-10-02:30_44387_[56, 57, 58, 59, 60, 61, 62, 63]_waterfall.png" width="49%" />
+  <img src="./imgs/2019-10-10-02:30_40086_[4, 8]_waterfall.png" width="49%" />
+  <img src="./imgs/2019-10-10-02:30_44387_[56, 57, 58, 59, 60, 61, 62, 63]_waterfall.png" width="49%" />
 </p>
 
 <p float="left">
-  <img src="./docs/2019-10-10-02:30_40086_4_channel.png" width="49%" />
-  <img src="./docs/2019-10-10-02:30_44387_59_channel.png" width="49%" />
+  <img src="./imgs/2019-10-10-02:30_40086_4_channel.png" width="49%" />
+  <img src="./imgs/2019-10-10-02:30_44387_59_channel.png" width="49%" />
 </p>
 
 
@@ -201,7 +201,7 @@ python project_beam2healpix.py
 This will create `ref_dipole_models.npz` and a diagnostic plot of the beams in the output directory `../../outputs/reproject_ref/reproject_dipole_models.png`.
 
 <p float="left">
-  <img src="./docs/reproject_dipole_models.png" width="110%" /> 
+  <img src="./imgs/reproject_dipole_models.png" width="110%" /> 
 </p>
 
 
@@ -233,13 +233,13 @@ Next, open [http://ws.mwatelescope.org](http://ws.mwatelescope.org/metadata/find
 
 
 <p float="left">
-  <img src="./docs/metadata-1.jpg" width="1200" />
+  <img src="./imgs/metadata-1.jpg" width="1200" />
 </p>
 
 The important thing to note is the number of pages that are returned by the search. In this particular case it is 74.
 
 <p float="left">
-  <img src="./docs/metadata-2.jpg" width="700" />
+  <img src="./imgs/metadata-2.jpg" width="700" />
 </p>
 
 Using this information we can download the required metadata using `download_pointings.sh`. The site limits queries to approximately 200 per minute, which is why these steps were necessary.
@@ -267,7 +267,7 @@ python plot_pointings.py
 ```
 
 <p float="left">
-  <img src="./docs/pointing_integration.png" width="100%" />
+  <img src="./imgs/pointing_integration.png" width="100%" />
 </p>
 
 We now need to classify the pointing of each 30 minute observation. 
@@ -283,7 +283,7 @@ python tile_pointings.py --help
 ```
 
 <p float="left">
-  <img src="./docs/tiles_pointing_integration.png" width="100%" />
+  <img src="./imgs/tiles_pointing_integration.png" width="100%" />
 </p>
 
 We also need to check whether any of the tiles have flagged dipoles. This information can be found in the metafits files saved by the mwa. We download these files with
@@ -299,7 +299,7 @@ python dead_dipoles.py
 ```
 
 <p float="left">
-  <img src="./docs/dead_dipoles.png" width="98%" />
+  <img src="./imgs/dead_dipoles.png" width="98%" />
 </p>
 
 We can see that dipole `9` of tile `HexS33Y` is flagged. We need to take this into account in later stages.
@@ -318,10 +318,10 @@ We can then use `mwa_fee_beam.py` to make simulated FEE beam maps at the 4 point
 
 #### MWA FEE Beam Maps
 <p float="left">
-  <img src="./docs/mwa_fee_beam_4.png" width="24%" />
-  <img src="./docs/mwa_fee_beam_0.png" width="24%" />
-  <img src="./docs/mwa_fee_beam_2.png" width="24%" />
-  <img src="./docs/mwa_fee_beam_41.png" width="24%" />
+  <img src="./imgs/mwa_fee_beam_4.png" width="24%" />
+  <img src="./imgs/mwa_fee_beam_0.png" width="24%" />
+  <img src="./imgs/mwa_fee_beam_2.png" width="24%" />
+  <img src="./imgs/mwa_fee_beam_41.png" width="24%" />
 </p>
 
 Finally, everything can come together.  We project the aligned satellite data onto healpix maps according to their ephemeris, using the channel maps to only project the good data. We use the power and noise threshold described in the satellite channel section. Signal which pass both thresholds are considered good, and their corresponding altitude and azimuth are determined from the ephem file. The RF Explorers distort input signals above -30dBm. We clip any such data to prevent inaccuracies in out final maps. Each satellite pass is git to the fee model using a single gain offset, by a least squares method. A goodness of fit chi-squared test is also used to reject outliers which may have slipped throught he channel map section. The resulting normalized passes are projected to a healpix map. The crutial step of dividing the tile data by the reference data, and then multyplying by the reference fee model is also done using `tile_maps.py` The resulting maps are stored in `.npz` files in the `./outputs/tile_maps/tile_maps_raw` directory. The data is stored as nested dictionaries.
@@ -365,9 +365,9 @@ python plot_sat_maps.py
 
 #### Satellite Maps
 <p float="left">
-  <img src="./docs/23545_0_S07XX_rf0XX_passes.png" width="32%" />
-  <img src="./docs/28654_0_S07XX_rf0XX_passes.png" width="32%" />
-  <img src="./docs/41188_0_S07XX_rf0XX_passes.png" width="32%" />
+  <img src="./imgs/23545_0_S07XX_rf0XX_passes.png" width="32%" />
+  <img src="./imgs/28654_0_S07XX_rf0XX_passes.png" width="32%" />
+  <img src="./imgs/41188_0_S07XX_rf0XX_passes.png" width="32%" />
 </p>
 
 These are three example sat maps. The first map has almost no data, so we don't use it in our final map. The other two show a lot of satellite passes / sky coverage, and we can almost make out the beam structure. The satellites will be included in out final "good maps". 
@@ -388,30 +388,30 @@ python plot_tile_maps.py
 
 #### Zenith Maps
 <p float="left">
-  <img src="./docs/S35XX_rf0XX_0_good_map.png" width="32%" />
-  <img src="./docs/S35XX_rf0XX_0_good_map_counts.png" width="32%" />
-  <img src="./docs/S35XX_rf0XX_0_good_map_errors.png" width="32%" />
+  <img src="./imgs/S35XX_rf0XX_0_good_map.png" width="32%" />
+  <img src="./imgs/S35XX_rf0XX_0_good_map_counts.png" width="32%" />
+  <img src="./imgs/S35XX_rf0XX_0_good_map_errors.png" width="32%" />
 </p>
 
 #### Sweet Point 2
 <p float="left">
-  <img src="./docs/S35XX_rf0XX_2_good_map.png" width="32%" />
-  <img src="./docs/S35XX_rf0XX_2_good_map_counts.png" width="32%" />
-  <img src="./docs/S35XX_rf0XX_2_good_map_errors.png" width="32%" />
+  <img src="./imgs/S35XX_rf0XX_2_good_map.png" width="32%" />
+  <img src="./imgs/S35XX_rf0XX_2_good_map_counts.png" width="32%" />
+  <img src="./imgs/S35XX_rf0XX_2_good_map_errors.png" width="32%" />
 </p>
 
 #### Sweet Point 4
 <p float="left">
-  <img src="./docs/S35XX_rf0XX_4_good_map.png" width="32%" />
-  <img src="./docs/S35XX_rf0XX_4_good_map_counts.png" width="32%" />
-  <img src="./docs/S35XX_rf0XX_4_good_map_errors.png" width="32%" />
+  <img src="./imgs/S35XX_rf0XX_4_good_map.png" width="32%" />
+  <img src="./imgs/S35XX_rf0XX_4_good_map_counts.png" width="32%" />
+  <img src="./imgs/S35XX_rf0XX_4_good_map_errors.png" width="32%" />
 </p>
 
 #### Sweet Point 41
 <p float="left">
-  <img src="./docs/S35XX_rf0XX_41_good_map.png" width="32%" />
-  <img src="./docs/S35XX_rf0XX_41_good_map_counts.png" width="32%" />
-  <img src="./docs/S35XX_rf0XX_41_good_map_errors.png" width="32%" />
+  <img src="./imgs/S35XX_rf0XX_41_good_map.png" width="32%" />
+  <img src="./imgs/S35XX_rf0XX_41_good_map_counts.png" width="32%" />
+  <img src="./imgs/S35XX_rf0XX_41_good_map_errors.png" width="32%" />
 </p>
 
 
@@ -429,8 +429,8 @@ python null_test.py --help
 We now compare corresponding EW and NS slices of both reference antennas. The four reference maps we created above are slices along the two cardinal axes. We compute the meadian value of each pixel, and estimate it's error using the Median Absolute Deviation. We rotate our FEE models by (π/4), to match the rotation of our data, and slice it along NS & EW. We use a least square minimization to determine a single gain factor which will best fit out model to our data. We plot the residuals to see if it has any significant structure. The null test is performed by subtracting corresponding data from one ref with the other. For Example, in the plot below, consider the first column. The first plot shows the NS slice of the rf0XX beam, with the NS slice of the rf1XX beam below it. The green points represent our data and errors, while the crimson curve represents the FEE model fitted to the data. The blue data points are the residuals between our data and the FEE model, while the orange curve is a 3rd order polynomial fit to it. The last plot displays the difference between the two plots above it. 
 
 <p float="left">
-  <img src="./docs/null_test_XX_slices.png" width="49%" />
-  <img src="./docs/null_test_YY_slices.png" width="49%" />
+  <img src="./imgs/null_test_XX_slices.png" width="49%" />
+  <img src="./imgs/null_test_YY_slices.png" width="49%" />
 </p>
 
 
@@ -443,8 +443,8 @@ python compare_beams.py
 ```
 
 <p float="left">
-  <img src="./docs/S35XX_rf1XX_0_beam_slices.png" width="49%" />
-  <img src="./docs/S35YY_rf1YY_0_beam_slices.png" width="49%" />
+  <img src="./imgs/S35XX_rf1XX_0_beam_slices.png" width="49%" />
+  <img src="./imgs/S35YY_rf1YY_0_beam_slices.png" width="49%" />
 </p>
 
 
