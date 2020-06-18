@@ -1,7 +1,7 @@
 """
-==========
-Waterfalls
-==========
+=========
+Waterfall
+=========
 Saves a single waterfall plot to ``./embers_out/condition_data``
 
 """
