@@ -54,6 +54,7 @@ setup(
         "console_scripts": [
             "colormaps=embers.kindle.colormaps:main",
             "waterfall=embers.kindle.waterfall:main",
+            "waterfall_batch=embers.kindle.waterfall_batch:main",
         ],
     },
     keywords=("embers radio astronomy satellites beam measurement"),
