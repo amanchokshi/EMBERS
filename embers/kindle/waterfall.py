@@ -16,7 +16,9 @@ parser = argparse.ArgumentParser(
     """
 )
 
-parser.add_argument("--rf_file", metavar="\b", help="Path to raw rf data file")
+parser.add_argument(
+    "--rf_file", metavar="\b", required=True, help="Path to raw rf data file"
+)
 parser.add_argument(
     "--out_dir",
     metavar="\b",

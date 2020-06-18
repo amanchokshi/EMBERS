@@ -37,7 +37,7 @@ def read_data(rf_file=None):
     :rtype: (float, numpy.array(float))
 
     """
-    
+
     with open(rf_file, "rb") as f:
         next(f)
         lines = f.readlines()
@@ -257,7 +257,7 @@ def single_waterfall(rf_file, out_dir):
     """
 
     rf_name = Path(rf_file).stem
-    
+
     power, times = read_data(rf_file)
     plt = plt_waterfall(power, times, rf_name)
 
@@ -296,12 +296,12 @@ def batch_waterfall(tile, time_stamp, data_dir, out_dir):
     rf_path = Path(f"{data_dir}/{tile}/{date}/{rf_name}.txt")
 
     try:
-        open(rf_path, 'r')
+        open(rf_path, "r")
     except FileNotFoundError as e:
         return e
     except Exception as e:
         return e
-    
+
     power, times = read_data(rf_path)
     plt = plt_waterfall(power, times, rf_name)
 
@@ -313,4 +313,3 @@ def batch_waterfall(tile, time_stamp, data_dir, out_dir):
     plt.close()
 
     return f"Waterfall plot saved to {save_dir}/{rf_name}.png"
-
