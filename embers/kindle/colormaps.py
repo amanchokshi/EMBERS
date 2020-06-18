@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """Visualise custom colormaps used bt embers
 .. code-block:: bash
 
@@ -11,10 +13,30 @@ import numpy as np
 from pathlib import Path
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from embers.decode_rfdata.colormaps import spectral, jade
+from embers.condition_data.colormaps import spectral, jade
 
 spec, spec_r = spectral()
 jade, jade_r = jade()
+
+
+parser = argparse.ArgumentParser(
+    description="""
+    Visualization of custom ember colormaps
+    """
+)
+
+parser.add_argument(
+    "--out_dir",
+    metavar="\b",
+    default="./embers_out/condition_data",
+    help="Dir where colormap sample plot is saved. Default=./embers_out/condition_data",
+)
+
+args = parser.parse_args()
+out_dir = Path(args.out_dir)
+
+# Make outdir if it doesn't exist
+out_dir.mkdir(parents=True, exist_ok=True)
 
 
 def waves_2d():
@@ -25,26 +47,10 @@ def waves_2d():
     return z
 
 
-if __name__ == "__main__":
+def plt_colormaps(spec, spec_r, jade, jade_r, out_dir):
+    """Plot a 2x2 grid of sample colormaps
 
-    parser = argparse.ArgumentParser(
-        description="""
-        Visualization of custom ember colormaps
-        """
-    )
-
-    parser.add_argument(
-        "--out_dir",
-        metavar="\b",
-        default="./outputs",
-        help="Dir where colormap sample plot is saved. Default=./",
-    )
-
-    args = parser.parse_args()
-    out_dir = Path(args.out_dir)
-
-    # Make outdir if it doesn't exist
-    out_dir.mkdir(parents=True, exist_ok=True)
+    """
 
     fig = plt.figure(figsize=(9, 8))
 
@@ -82,3 +88,8 @@ if __name__ == "__main__":
 
     plt.tight_layout()
     plt.savefig(f"{out_dir}/colormaps.png")
+
+
+def main():
+    print(f'Saved sample colormaps in ./{out_dir}/colormaps.png')
+    plt_colormaps(spec, spec_r, jade, jade_r, out_dir)

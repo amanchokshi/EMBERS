@@ -49,6 +49,7 @@ def read_data(rf_file=None):
 
 def tile_names():
     """A list of tile reference and MWA tile names """
+
     tiles = [
         "rf0XX",
         "rf0YY",
