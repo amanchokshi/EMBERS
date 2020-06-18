@@ -1,12 +1,10 @@
+/embers_out/*
 /outputs/*
 /venv/*
-/venv-dev/*
 *.DS_Store*
 *._.DS_Store*
 *__pycache__*
-conda_env_export.sh
-/code/sat_ephemeris/Leap_Second.dat
-/code/sat_ephemeris/deltat.data
-/code/sat_ephemeris/deltat.preds
-/code/tile_maps/outlier_tests/.ipynb_checkpoints
+/embers/sat_utils/Leap_Second.dat
+/embers/sat_utils/deltat.data
+/embers/sat_utils/deltat.preds
 embers.egg-info/
