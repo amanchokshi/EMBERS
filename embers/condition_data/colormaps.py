@@ -1,3 +1,11 @@
+"""
+=======
+Colormaps
+=======
+A set of custom colormaps used by embers.
+
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -6,6 +14,19 @@ from scipy.interpolate import interp1d
 
 
 def spectral():
+    """A beautiful non-linear spectral colormap
+
+    Spectral is not perceptually uniform and is
+    only used to easily preview raw data with
+    high contrast
+
+    Returns
+    -------
+    :returns:
+        - spectral, spectral_r - ember colormap obj:`~matplotlib.colors.Colormap`
+
+
+    """
 
     A = np.array([219 / 256, 55 / 256, 82 / 256, 1])
     B = np.array([226 / 256, 57 / 256, 79 / 256, 1])
@@ -39,6 +60,12 @@ def spectral():
 
 
 def jade():
+    """A beautiful perceptually uniform jade colormap
+
+    Returns
+    -------
+    :returns:
+        - jade, jade_r - ember colormap obj:`~matplotlib.colors.Colormap`
 
     colorlist = [
         [0.08048525330056805, 0.05201415138494773, 0.18107886855112176],
