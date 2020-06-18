@@ -16,15 +16,15 @@ kindle_data = Path(f"{__file__}/embers/kindle/data")
 files = [str(p.relative_to(kindle_data)) for p in kindle_data.rglob("*.txt")]
 
 # Obtain name, version, author from __init__.py file
-from embers import __title__, __version__, __author__
+from embers import __name__, __version__, __author__
 
-title = __title__
+name = __name__
 version = __version__
 author = __author__
 
 
 setup(
-    name=title,
+    name=name,
     version=version,
     license="MIT",
     author=author,
