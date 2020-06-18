@@ -36,38 +36,28 @@ def read_data(rf_file=None):
 
     :rtype: (float, numpy.array(float))
 
-    Exeptions
-    ---------
-    :raises FileNotFoundError: input file does not exist
-
     """
+    
+    with open(rf_file, "rb") as f:
+        next(f)
+        lines = f.readlines()
 
-    try:
-        with open(rf_file, "rb") as f:
-            next(f)
-            lines = f.readlines()
+        times = []
+        data_lines = []
 
-            times = []
-            data_lines = []
+        for line in lines:
+            time, data = line.split("$Sp".encode())
+            times.append(time.decode())
 
-            for line in lines:
-                time, data = line.split("$Sp".encode())
-                times.append(time.decode())
+            # List converts bytes to list of bytes
+            # The last two charachters are excluded - Newline char
+            data_lines.append(list(data[:-2]))
 
-                # List converts bytes to list of bytes
-                # The last two charachters are excluded - Newline char
-                data_lines.append(list(data[:-2]))
+        # The (-1/2) converts an unsigned byte to a real value
+        power = np.single(np.asarray(data_lines) * (-1 / 2))
+        times = np.double(np.asarray(times))
 
-            # The (-1/2) converts an unsigned byte to a real value
-            power = np.single(np.asarray(data_lines) * (-1 / 2))
-            times = np.double(np.asarray(times))
-
-            return (power, times)
-
-    except FileNotFoundError as e:
-        print(e)
-    except Exception as e:
-        print(e)
+        return (power, times)
 
 
 def tile_names():
@@ -197,6 +187,7 @@ def plt_waterfall(power, times, name):
     Returns
     -------
         - plt - `.pyplot.plot` object
+
     """
 
     # setting dynamic range of waterfall to be 30 dB above the median
@@ -212,7 +203,7 @@ def plt_waterfall(power, times, name):
     cax = fig.add_axes([0.88, 0.1, 0.03, 0.85])
     fig.colorbar(im, cax=cax)
     ax.set_aspect("auto")
-    ax.set_title(f"Waterfall plot: {rf_name}")
+    ax.set_title(f"Waterfall plot: {name}")
 
     # Number of time steps on y-axis
     number_t = 5
@@ -266,7 +257,7 @@ def single_waterfall(rf_file, out_dir):
     """
 
     rf_name = Path(rf_file).stem
-
+    
     power, times = read_data(rf_file)
     plt = plt_waterfall(power, times, rf_name)
 
@@ -293,29 +284,33 @@ def batch_waterfall(tile, time_stamp, data_dir, out_dir):
     Returns
     -------
     :return: waterfall plot saved by `matplotlib.pyplot.savefig`
+    
+    Exeptions
+    ---------
+    :raises FileNotFoundError: input file does not exist
 
     """
 
     rf_name = f"{tile}_{time_stamp}"
     date = re.search(r"\d{4}.\d{2}.\d{2}", time_stamp)[0]
-    rf_path = Path(f"{data_dir}/{tile}/{date}")
+    rf_path = Path(f"{data_dir}/{tile}/{date}/{rf_name}.txt")
 
     try:
-        power, times = read_data(f"{rf_path}/{rf_name}.txt")
-
-        plt = plt_waterfall(power, times, rf_name)
-
-        # Make out_dir if it doesn't exist
-        save_dir = Path(f"{out_dir}/waterfalls/{date}/{time_stamp}")
-        save_dir.mkdir(parents=True, exist_ok=True)
-
-        plt.savefig(f"{save_dir}/{rf_name}.png")
-        plt.close()
-
-        return f"Waterfall {rf_name}.png saved"
-
+        open(rf_path, 'r')
+    except FileNotFoundError as e:
+        return e
     except Exception as e:
         return e
+    
+    power, times = read_data(rf_path)
+    plt = plt_waterfall(power, times, rf_name)
 
+    # Make out_dir if it doesn't exist
+    save_dir = Path(f"{out_dir}/waterfalls/{date}/{time_stamp}")
+    save_dir.mkdir(parents=True, exist_ok=True)
 
+    plt.savefig(f"{save_dir}/{rf_name}.png")
+    plt.close()
+
+    return f"Waterfall plot saved to {save_dir}/{rf_name}.png"
 
