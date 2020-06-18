@@ -159,7 +159,7 @@ def time_tree(start_date, stop_date):
     n_days = (t_stop - t_start).days
 
     dates = []
-    date_time = []
+    time_stamps = []
 
     # Every Day
     for i in range(n_days + 1):
@@ -174,12 +174,12 @@ def time_tree(start_date, stop_date):
             d_time = t_delta.strftime("%Y-%m-%d-%H:%M")
             d_t.append(d_time)
 
-        date_time.append(d_t)
+        time_stamps.append(d_t)
 
     return (dates, time_stamps)
 
 
-def plt_waterfall(power, times):
+def plt_waterfall(power, times, name):
     """
     Create waterfall `.pyplot.plot` object
 
@@ -192,6 +192,7 @@ def plt_waterfall(power, times):
     ----------
     :param power: `numpy.ndarray` object from :func:`~embers.condition_data.rf_data.read_data`
     :param times: `numpy.ndarray` object from :func:`~embers.condition_data.rf_data.read_data`
+    :param name: name of rf data identifier to add to plot title
 
     Returns
     -------
@@ -211,6 +212,7 @@ def plt_waterfall(power, times):
     cax = fig.add_axes([0.88, 0.1, 0.03, 0.85])
     fig.colorbar(im, cax=cax)
     ax.set_aspect("auto")
+    ax.set_title(f"Waterfall plot: {rf_name}")
 
     # Number of time steps on y-axis
     number_t = 5
@@ -266,8 +268,7 @@ def single_waterfall(rf_file, out_dir):
     rf_name = Path(rf_file).stem
 
     power, times = read_data(rf_file)
-    plt = plt_waterfall(power, times)
-    plt.title(f"Waterfall plot: {rf_name}")
+    plt = plt_waterfall(power, times, rf_name)
 
     # Make out_dir if it doesn't exist
     Path(out_dir).mkdir(parents=True, exist_ok=True)
@@ -302,8 +303,7 @@ def batch_waterfall(tile, time_stamp, data_dir, out_dir):
     try:
         power, times = read_data(f"{rf_path}/{rf_name}.txt")
 
-        plt = plt_waterfall(power, times)
-        plt.title(f"Waterfall plot: {rf_name}")
+        plt = plt_waterfall(power, times, rf_name)
 
         # Make out_dir if it doesn't exist
         save_dir = Path(f"{out_dir}/waterfalls/{date}/{time_stamp}")
