@@ -1,6 +1,11 @@
-"""Visualise custom colormaps used by embers
+"""
+=======
+Colormaps
+=======
+Visualise custom colormaps used by embers.
+Creates sample plot of ember colormaps 
+saved to ``./embers_out/condition_data/colormaps.png``
 
-:return: Plot of ember colormaps saved to ``./embers_out/condition_data/colormaps.png``
 """
 
 import argparse
@@ -35,15 +40,34 @@ out_dir.mkdir(parents=True, exist_ok=True)
 
 
 def waves_2d():
-    """Creates 2d sine wave"""
+    """Creates 2d sine wave
+
+    Returns
+    -------
+    :return:
+        - sine2d- 2d sine wave
+    :rtype: (float, numpy.array(float))
+
+    """
 
     xx, yy = np.meshgrid(np.linspace(0, 3 * np.pi, 512), np.linspace(0, 3 * np.pi, 512))
-    z = np.sin(xx) + np.sin(yy)
-    return z
+    sine2d = np.sin(xx) + np.sin(yy)
+    return sine2d
 
 
 def plt_colormaps(spec, spec_r, jade, jade_r, out_dir):
     """Plot a 2x2 grid of sample colormaps
+    
+    Parameters
+    ----------
+    :param ember_cmaps: custom ember colormaps
+    :type ember_cmaps: `~matplotlib.colors.Colormap`
+    :param out_dir: path to output directory
+    :type out_dir: str
+
+    Returns
+    -------
+    :return: waterfall plot saved by `matplotlib.pyplot.savefig`
 
     """
 
@@ -88,5 +112,5 @@ def plt_colormaps(spec, spec_r, jade, jade_r, out_dir):
 def main():
     """Execute colormaps from terminal"""
 
-    print(f'Plot of embers colormaps saved to ./{out_dir}/colormaps.png')
+    print(f"Plot of embers colormaps saved to ./{out_dir}/colormaps.png")
     plt_colormaps(spec, spec_r, jade, jade_r, out_dir)
