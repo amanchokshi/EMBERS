@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 
 """Visualise custom colormaps used bt embers
-.. code-block:: bash
 
-   python -m embers.kindle.colormaps
-
-:return: Saved plot showing included colormaps. By default save to ``./outputs/colormaps.png``
+:return: Plot of ember colormaps saved to ``./embers_out/condition_data/colormaps.png``
 """
 
 import argparse
@@ -91,5 +88,7 @@ def plt_colormaps(spec, spec_r, jade, jade_r, out_dir):
 
 
 def main():
+    """Execute colormaps from terminal"""
+
     print(f'Saved sample colormaps in ./{out_dir}/colormaps.png')
     plt_colormaps(spec, spec_r, jade, jade_r, out_dir)
