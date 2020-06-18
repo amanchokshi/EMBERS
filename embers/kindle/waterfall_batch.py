@@ -77,5 +77,5 @@ def main():
     """Execute waterfall from terminal"""
 
     print(f"Processing rf data files between {start_date} and {stop_date}")
-    print(f"Saving waterfall plots to: {log_dir}")
+    print(f"Saving waterfall plots to: ./{log_dir}")
     waterfall_batch(start_date, stop_date, data_dir, out_dir)
