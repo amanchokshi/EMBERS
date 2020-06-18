@@ -1,4 +1,4 @@
-"""Visualise custom colormaps used bt embers
+"""Visualise custom colormaps used by embers
 
 :return: Plot of ember colormaps saved to ``./embers_out/condition_data/colormaps.png``
 """
