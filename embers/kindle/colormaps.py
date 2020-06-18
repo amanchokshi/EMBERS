@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """Visualise custom colormaps used bt embers
 
 :return: Plot of ember colormaps saved to ``./embers_out/condition_data/colormaps.png``
@@ -90,5 +88,5 @@ def plt_colormaps(spec, spec_r, jade, jade_r, out_dir):
 def main():
     """Execute colormaps from terminal"""
 
-    print(f'Saved sample colormaps in ./{out_dir}/colormaps.png')
+    print(f'Plot of embers colormaps saved to ./{out_dir}/colormaps.png')
     plt_colormaps(spec, spec_r, jade, jade_r, out_dir)
