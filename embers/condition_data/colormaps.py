@@ -332,5 +332,3 @@ def jade():
     jade_cmap_r = jade_cmap.reversed()
 
     return [jade_cmap, jade_cmap_r]
-
-

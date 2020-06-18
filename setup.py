@@ -50,7 +50,12 @@ setup(
         "Topic :: Scientific/Engineering :: Astronomy",
         "Topic :: Scientific/Engineering :: Physics",
     ],
-    entry_points={"console_scripts": ["colormaps=embers.kindle.colormaps:main"],},
+    entry_points={
+        "console_scripts": [
+            "colormaps=embers.kindle.colormaps:main",
+            "waterfall=embers.kindle.waterfall:main",
+        ],
+    },
     keywords=("embers radio astronomy satellites beam measurement"),
     python_requires=">=3.6, <4",
     install_requires=requirements,
