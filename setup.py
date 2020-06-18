@@ -1,5 +1,5 @@
 # Package imports
-from setuptools import setup, find_namespace_packages
+from setuptools import setup, find_packages
 from pathlib import Path
 import re
 
@@ -33,7 +33,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/amanchokshi/EMBERS",
-    packages=find_namespace_packages(include=["embers.*"]),
+    packages=find_packages(),
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Science/Research",
