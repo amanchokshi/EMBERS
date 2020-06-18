@@ -12,6 +12,7 @@ import time
 import numpy as np
 from pathlib import Path
 import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
 from embers.condition_data.colormaps import spectral
 
 spec, _ = spectral()
@@ -65,7 +66,7 @@ def read_data(rf_file=None):
 
     except FileNotFoundError as e:
         print(e)
-    except Exeption as e:
+    except Exception as e:
         print(e)
 
 
@@ -114,6 +115,68 @@ def tile_names():
     ]
 
     return tiles
+
+
+def time_tree(start_date, stop_date):
+    """Split a date interval into 30 min observation chunks
+
+    This is used to travers the following directory tree.
+    The data_root dir contains a sub-dir for every tile in
+    :func:`~embers.condition_data.rf_data.tile_names` within
+    which are dirs for every day, containg raw rf data files
+    recorded every 30 minutes
+
+    .. code-block:: text
+    
+        data_root
+        ├── tile1
+        │   └── YYYY-MM-DD
+        │       └── tile1_YYYY-MM-DD-HH:MM.txt
+        └── tile2 
+            └── YYYY-MM-DD
+                └── tile2_YYYY-MM-DD-HH:MM.txt
+
+    Parameters
+    ----------
+    :param start_date: Start date in ``YYYY-MM-DD`` format
+    :type start_date: str
+    :param stop_date: Stop date is inclusive, in ``YYYY-MM-DD`` format. 
+    :type stop_date: str
+
+    Returns
+    -------
+    :returns:
+        - dates - list of dates between `start_date` and `stop_date`
+        - time_stamps - list of list of 30 minute observation in each day
+
+    :rtype: list[str]
+
+
+    """
+
+    t_start = datetime.strptime(start_date, "%Y-%m-%d")
+    t_stop = datetime.strptime(stop_date, "%Y-%m-%d")
+    n_days = (t_stop - t_start).days
+
+    dates = []
+    date_time = []
+
+    # Every Day
+    for i in range(n_days + 1):
+        day = t_start + timedelta(days=i)
+        date = day.strftime("%Y-%m-%d")
+        dates.append(date)
+        d_t = []
+
+        # Every 30 min in the day
+        for j in range(48):
+            t_delta = datetime.strptime(date, "%Y-%m-%d") + timedelta(minutes=30 * j)
+            d_time = t_delta.strftime("%Y-%m-%d-%H:%M")
+            d_t.append(d_time)
+
+        date_time.append(d_t)
+
+    return (dates, time_stamps)
 
 
 def plt_waterfall(power, times):
@@ -253,3 +316,6 @@ def batch_waterfall(tile, time_stamp, data_dir, out_dir):
 
     except Exception as e:
         return e
+
+
+
