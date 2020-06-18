@@ -54,6 +54,5 @@ setup(
     python_requires=">=3.6, <4",
     install_requires=requirements,
     include_package_data=True,
-    package_data={"embers": ["data/*.ffe"], "embers.kindle": files,},
     zip_safe=False,
 )
