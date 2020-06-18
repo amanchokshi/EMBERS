@@ -12,8 +12,16 @@ with open("requirements.txt", "r") as f:
     requirements = f.read().splitlines()
 
 # Recursive data files in embers.kindle
-kindle_data = Path(f"{__file__}/embers/kindle/data")
-files = [str(p.relative_to(kindle_data)) for p in kindle_data.rglob("*.txt")]
+def data_files(data_dir, data_types):
+    """Returns a list of data files"""
+
+    data_dir = Path(data_dir)
+    data_files = []
+    for d in data_types:
+        files = [p.relative_to(Path(f"embers")) for p in data_dir.rglob(d)]
+        data_files.extend(files)
+    return [p.as_posix() for p in data_files]
+
 
 # Obtain name, version, author from __init__.py file
 from embers import __name__, __version__, __author__
@@ -58,8 +66,9 @@ setup(
         ],
     },
     keywords=("embers radio astronomy satellites beam measurement"),
-    python_requires=">=3.6, <4",
+    package_data={"": data_files("embers/kindle/data", ["*.txt", "*.ffe"])},
     install_requires=requirements,
+    python_requires=">=3.6, <4",
     include_package_data=True,
     zip_safe=False,
 )
