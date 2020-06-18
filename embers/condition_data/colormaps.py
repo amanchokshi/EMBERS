@@ -67,6 +67,8 @@ def jade():
     :returns:
         - jade, jade_r - ember colormap obj:`~matplotlib.colors.Colormap`
 
+    """
+
     colorlist = [
         [0.08048525330056805, 0.05201415138494773, 0.18107886855112176],
         [0.08282174108497872, 0.05548264112853812, 0.18701136971548327],
@@ -330,3 +332,5 @@ def jade():
     jade_cmap_r = jade_cmap.reversed()
 
     return [jade_cmap, jade_cmap_r]
+
+
