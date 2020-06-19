@@ -63,6 +63,7 @@ setup(
             "waterfall=embers.kindle.waterfall:main",
             "waterfall_batch=embers.kindle.waterfall_batch:main",
             "align_single=embers.kindle.align_single:main",
+            "align_batch=embers.kindle.align_batch:main",
         ],
     },
     keywords=("embers radio astronomy satellites beam measurement"),
