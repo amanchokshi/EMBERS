@@ -14,7 +14,7 @@ import numpy as np
 from pathlib import Path
 from scipy import interpolate
 from scipy.signal import savgol_filter
-from embers.condition_data.rf_data import read_data 
+from embers.condition_data.rf_data import read_data
 
 
 def savgol_interp(
@@ -52,28 +52,30 @@ def savgol_interp(
     :returns:
         - ref_ali - aligned reference power array
         - tile_ali - aligned tile power array
+        - time_array - time array corresponding to power arrays
         - ref_power - raw reference power array
         - tile_power - raw tile power array
-        - time_array - time array corresponding to power arrays
+        - ref_time - raw reference time array
+        - tile_time - raw tile time array
 
     :rtype: (float, numpy.array(float))
 
     """
 
     # Read time and power arrays from data files
-    ref_power, ref_t = read_data(ref)
-    tile_power, tile_t = read_data(tile)
+    ref_power, ref_time = read_data(ref)
+    tile_power, tile_time = read_data(tile)
 
     # Round up/down to nearest integer of time
-    start_time = math.ceil(max(ref_t[0], tile_t[0]))
-    stop_time = math.floor(min(ref_t[-1], tile_t[-1]))
+    start_time = math.ceil(max(ref_time[0], tile_time[0]))
+    stop_time = math.floor(min(ref_time[-1], tile_time[-1]))
 
     # Array of times at which to evaluate the interpolated data
     time_array = np.arange(start_time, stop_time, (1 / interp_freq))
 
     # Mathematical interpolation functions
-    f = interpolate.interp1d(ref_t, ref_power, axis=0, kind=interp_type)
-    g = interpolate.interp1d(tile_t, tile_power, axis=0, kind=interp_type)
+    f = interpolate.interp1d(ref_time, ref_power, axis=0, kind=interp_type)
+    g = interpolate.interp1d(tile_time, tile_power, axis=0, kind=interp_type)
 
     # New power array, evaluated at the desired frequency
     ref_ali = f(time_array)
@@ -87,7 +89,7 @@ def savgol_interp(
     ref_ali = savgol_filter(ref_ali, savgol_window_2, polyorder, axis=0)
     tile_ali = savgol_filter(tile_ali, savgol_window_2, polyorder, axis=0)
 
-    return (ref_ali, tile_ali, ref_power, tile_power, time_array)
+    return (ref_ali, tile_ali, time_array, ref_power, tile_power, ref_time, tile_time)
 
 
 def save_aligned(
@@ -131,25 +133,17 @@ def save_aligned(
     :raises FileNotFoundError: an input file does not exist
 
     """
-    
+
     date = re.search(r"\d{4}.\d{2}.\d{2}", time_stamp)[0]
+
     ref_file = f"{data_dir}/{ref}/{date}/{ref}_{time_stamp}.txt"
     tile_file = f"{data_dir}/{tile}/{date}/{tile}_{time_stamp}.txt"
-    
-    try:
-        open(rf_path, "r")
-    except FileNotFoundError as e:
-        return e
-    except Exception as e:
-        return e
-    
-    try:
-        ref_file = f"{ref_path}/{ref}_{time_stamp}.txt"
-        aut_file = f"{aut_path}/{aut}_{time_stamp}.txt"
 
-        _, _, _, _, ref_p_aligned, tile_p_aligned, time_array = savgol_interp(
+    if Path(ref_file) and Path(tile_file):
+
+        ref_ali, tile_ali, time_array, _, _, _, _ = savgol_interp(
             ref_file,
-            aut_file,
+            tile_file,
             savgol_window_1=savgol_window_1,
             savgol_window_2=savgol_window_2,
             polyorder=polyorder,
@@ -166,20 +160,15 @@ def save_aligned(
         # Save as compressed npz file. Seems to drastically reduce size
         np.savez_compressed(
             f"{save_dir}/{ref}_{aut}_{time_stamp}_aligned.npz",
-            ref_p_aligned=np.single(ref_p_aligned),
-            tile_p_aligned=np.single(tile_p_aligned),
+            ref_ali=np.single(ref_ali),
+            tile_ali=np.single(tile_ali),
             time_array=np.double(time_array),
         )
 
-        return f"Saving {ref}_{aut}_{time_stamp}_aligned.npz"
+        return f"Saved aligned file to {save_dir}/{ref}_{aut}_{time_stamp}_aligned.npz"
 
-    except Exception:
-        return f"Cound not save {ref}_{aut}_{time_stamp}_aligned.npz. Missing file"
-
-
-
-
-
+    else:
+        return f"FileNotFoundError: either {ref_file} or {tile_file} missing"
 
 
 if __name__ == "__main__":
