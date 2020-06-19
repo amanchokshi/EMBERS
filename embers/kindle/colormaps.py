@@ -14,7 +14,7 @@ import numpy as np
 from pathlib import Path
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from embers.condition_data.colormaps import spectral, jade
+from embers.rf_tools.colormaps import spectral, jade
 
 _spec, _spec_r = spectral()
 _jade, _jade_r = jade()

@@ -14,7 +14,7 @@ import pkg_resources
 from pathlib import Path
 import concurrent.futures
 from itertools import repeat
-from embers.condition_data.rf_data import tile_names, time_tree, batch_waterfall
+from embers.rf_tools.rf_data import tile_names, time_tree, batch_waterfall
 
 
 _parser = argparse.ArgumentParser(

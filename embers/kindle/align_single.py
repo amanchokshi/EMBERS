@@ -12,7 +12,7 @@ import argparse
 import pkg_resources
 from pathlib import Path
 import matplotlib.pyplot as plt
-from embers.condition_data.align_data import savgol_interp
+from embers.rf_tools.align_data import savgol_interp
 
 _parser = argparse.ArgumentParser(
     description="""
