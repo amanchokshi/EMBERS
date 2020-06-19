@@ -1,7 +1,7 @@
 """
-=======
 RF Data
 =======
+
 A set of tools to decode raw rf data recored by
 RF Explorers and visualise waterfall plots.
 
@@ -20,8 +20,7 @@ spec, _ = spectral()
 
 def read_data(rf_file=None):
     """
-    Converts raw rf binary data into a power array and
-    extracts a list of UNIX timestamps.
+    Convert raw rf binary data into a power array and extracts a list of UNIX timestamps.
 
     Parameters
     ----------
@@ -61,7 +60,7 @@ def read_data(rf_file=None):
 
 
 def tile_names():
-    """A list of reference and MWA tile names 
+    """List of reference and MWA tile names.
 
     Returns
     -------
@@ -108,7 +107,7 @@ def tile_names():
 
 
 def time_tree(start_date, stop_date):
-    """Split a date interval into 30 min observation chunks
+    """Split a date interval into 30 min observation chunks.
 
     This is used to travers the following directory tree.
     The data_root dir contains a sub-dir for every tile in
@@ -171,7 +170,7 @@ def time_tree(start_date, stop_date):
 
 def plt_waterfall(power, times, name):
     """
-    Create waterfall `.pyplot.plot` object
+    Create waterfall `.pyplot.plot` object.
 
     waterfall created using parameters ``power``, ``times``
     from :func:`~embers.condition_data.rf_data.read_data`. 
@@ -241,7 +240,7 @@ def plt_waterfall(power, times, name):
 
 
 def single_waterfall(rf_file, out_dir):
-    """Saves a waterfall plot from rf data file
+    """Save a waterfall plot from rf data file.
     
     Parameters
     ----------
@@ -268,8 +267,8 @@ def single_waterfall(rf_file, out_dir):
 
 
 def batch_waterfall(tile, time_stamp, data_dir, out_dir):
-    """Saves a waterfall plot for a batch of rf data files
-    
+    """Save a waterfall plot for a batch of rf data files.
+
     Parameters
     ----------
     :param tile: tile name 
