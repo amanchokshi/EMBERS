@@ -34,7 +34,10 @@ out_dir = args.out_dir
 
 # if no input file provided, use sample package data
 if rf_file == "":
+    print('--------------------------------------------------')
     print("No input data provided, using packaged sample data")
+    print('>>> waterfall --help, for more options')
+    print('--------------------------------------------------')
     rf_file = pkg_resources.resource_filename(
         "embers.kindle", "data/rf_data/S06XX/2019-10-10/S06XX_2019-10-10-02:30.txt"
     )
