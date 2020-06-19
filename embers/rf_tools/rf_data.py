@@ -14,7 +14,7 @@ from pathlib import Path
 from itertools import product
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
-from embers.condition_data.colormaps import spectral
+from embers.rf_tools.colormaps import spectral
 
 _spec, _ = spectral()
 
