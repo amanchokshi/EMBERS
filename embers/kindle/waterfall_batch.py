@@ -26,12 +26,15 @@ _parser = argparse.ArgumentParser(
 _parser.add_argument(
     "--start_date", metavar="\b", default="", help="start date in YYYY-MM-DD format"
 )
+
 _parser.add_argument(
     "--stop_date", metavar="\b", default="", help="stop date in YYYY-MM-DD format"
 )
+
 _parser.add_argument(
     "--data_dir", metavar="\b", default="", help="root of dir where rf data is saved"
 )
+
 _parser.add_argument(
     "--out_dir",
     metavar="\b",
