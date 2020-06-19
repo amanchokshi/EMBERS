@@ -191,7 +191,7 @@ def plot_savgol_interp(
 
 
 def main():
-    """Execute savgol_interp_sample from terminal."""
+    """Execute align_single from terminal."""
 
     print(f"Saving sample savgol_interp plot to: {_out_dir}")
     plot_savgol_interp(
