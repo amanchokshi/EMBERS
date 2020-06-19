@@ -60,7 +60,7 @@ setup(
     entry_points={
         "console_scripts": [
             "colormaps=embers.kindle.colormaps:main",
-            "waterfall=embers.kindle.waterfall:main",
+            "waterfall_single=embers.kindle.waterfall_single:main",
             "waterfall_batch=embers.kindle.waterfall_batch:main",
             "align_single=embers.kindle.align_single:main",
             "align_batch=embers.kindle.align_batch:main",
