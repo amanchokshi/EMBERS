@@ -107,8 +107,9 @@ def tile_names():
     return tiles
 
 
-def ref_aut_pairs(tiles):
-    "Create a list of all possible AUT ref antenna pairs
+def tile_pairs(tiles):
+    """
+    Create a list of all possible AUT ref antenna pairs
     
     Parameters
     ----------
@@ -120,25 +121,25 @@ def ref_aut_pairs(tiles):
     :return: list of possible tile pairs
     :rtype: list[list, str]
 
-    "
+    """
 
     tiles = tile_names()
     refs = tiles[:4]
     AUTS = tiles[4:]
-    
+
     # Split the list into XX and YY lists
     refs_XX = refs[::2]
     refs_YY = refs[1::2]
-    
+
     AUTS_XX = AUTS[::2]
     AUTS_YY = AUTS[1::2]
-    
+
     # Create a list of pairs of tiles to be aligned.
     # Essentially all possible combinations of Refs, AUTS
     tile_pairs = []
     for pair in list(product(refs_XX, AUTS_XX)):
         tile_pairs.append(pair)
-    
+
     for pair in list(product(refs_YY, AUTS_YY)):
         tile_pairs.append(pair)
 
