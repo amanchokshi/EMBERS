@@ -4,7 +4,7 @@ Align Single
 ============
 
 Plot a single frequency channel of raw rf data and the result of
-interpolation and Savitzky–Golay smoothing. Save plot to ``./embers_out/condition_data``
+interpolation and Savitzky–Golay smoothing. Save plot to ``./embers_out/rf_tools``
 
 """
 
@@ -68,8 +68,8 @@ _parser.add_argument(
 _parser.add_argument(
     "--out_dir",
     metavar="\b",
-    default="./embers_out/condition_data",
-    help="Dir where savgol-interp sample plot is saved. Default=./embers_out/condition_data",
+    default="./embers_out/rf_tools",
+    help="Dir where savgol-interp sample plot is saved. Default=./embers_out/rf_tools",
 )
 
 _args = _parser.parse_args()

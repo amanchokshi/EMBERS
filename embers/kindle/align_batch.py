@@ -5,7 +5,7 @@ Align Batch
 
 Interpolate and Savitzky–Golay smooth a pair of raw rf data files
 before temorally aligning the. Save aligned data as npz files to 
-``./embers_out/condition_data/align_data``
+``./embers_out/rf_tools/align_data``
 
 """
 
@@ -75,8 +75,8 @@ _parser.add_argument(
 _parser.add_argument(
     "--out_dir",
     metavar="\b",
-    default="./embers_out/condition_data/align_data",
-    help="Dir where savgol-interp sample plot is saved. Default=./embers_out/condition_data/align_data",
+    default="./embers_out/rf_tools/align_data",
+    help="Dir where savgol-interp sample plot is saved. Default=./embers_out/rf_tools/align_data",
 )
 
 _args = _parser.parse_args()

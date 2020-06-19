@@ -5,7 +5,7 @@ Colormaps
 
 Visualise custom colormaps used by embers.
 Creates sample plot of ember colormaps 
-saved to ``./embers_out/condition_data/colormaps.png``
+saved to ``./embers_out/rf_tools/colormaps.png``
 
 """
 
@@ -29,8 +29,8 @@ _parser = argparse.ArgumentParser(
 _parser.add_argument(
     "--out_dir",
     metavar="\b",
-    default="./embers_out/condition_data",
-    help="Dir where colormap sample plot is saved. Default=./embers_out/condition_data",
+    default="./embers_out/rf_tools",
+    help="Dir where colormap sample plot is saved. Default=./embers_out/rf_tools",
 )
 
 _args = _parser.parse_args()

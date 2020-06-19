@@ -3,7 +3,7 @@
 Waterfall
 =========
 
-Saves a single waterfall plot to ``./embers_out/condition_data``
+Saves a single waterfall plot to ``./embers_out/rf_tools``
 
 """
 
@@ -25,8 +25,8 @@ _parser.add_argument(
 _parser.add_argument(
     "--out_dir",
     metavar="\b",
-    default="embers_out/condition_data",
-    help="Dir where colormap sample plot is saved. Default=./embers_out/condition_data",
+    default="embers_out/rf_tools",
+    help="Dir where colormap sample plot is saved. Default=./embers_out/rf_tools",
 )
 
 _args = _parser.parse_args()

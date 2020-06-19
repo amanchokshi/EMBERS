@@ -4,7 +4,7 @@ Waterfall Batch
 ===============
 
 Create waterfall plots for all rf data files recorded within a date interval.
-Output files are saved to ``./embers_out/condition_data/waterfalls``
+Output files are saved to ``./embers_out/rf_tools/waterfalls``
 
 """
 
@@ -38,8 +38,8 @@ _parser.add_argument(
 _parser.add_argument(
     "--out_dir",
     metavar="\b",
-    default="./embers_out/condition_data",
-    help="Dir where colormap sample plot is saved. Default=./embers_out/condition_data",
+    default="./embers_out/rf_tools",
+    help="Dir where colormap sample plot is saved. Default=./embers_out/rf_tools",
 )
 
 _args = _parser.parse_args()
