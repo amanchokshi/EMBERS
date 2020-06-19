@@ -2,6 +2,7 @@
 ===============
 Waterfall Batch
 ===============
+
 Create waterfall plots for all rf data files recorded within a date interval.
 Output files are saved to ``./embers_out/condition_data/waterfalls``
 
@@ -16,64 +17,79 @@ from itertools import repeat
 from embers.condition_data.rf_data import tile_names, time_tree, batch_waterfall
 
 
-parser = argparse.ArgumentParser(
+_parser = argparse.ArgumentParser(
     description="""
     Create waterfall plots for all rf_files within a date interval
     """
 )
 
-parser.add_argument(
+_parser.add_argument(
     "--start_date", metavar="\b", default='', help="start date in YYYY-MM-DD format"
 )
-parser.add_argument(
+_parser.add_argument(
     "--stop_date", metavar="\b", default='', help="stop date in YYYY-MM-DD format"
 )
-parser.add_argument(
+_parser.add_argument(
     "--data_dir", metavar="\b", default='', help="root of dir where rf data is saved"
 )
-parser.add_argument(
+_parser.add_argument(
     "--out_dir",
     metavar="\b",
     default="./embers_out/condition_data",
     help="Dir where colormap sample plot is saved. Default=./embers_out/condition_data",
 )
 
-args = parser.parse_args()
-start_date = args.start_date
-stop_date = args.stop_date
-data_dir = args.data_dir
-out_dir = args.out_dir
+_args = _parser.parse_args()
+_start_date = _args.start_date
+_stop_date = _args.stop_date
+_data_dir = _args.data_dir
+_out_dir = _args.out_dir
 
 # if no input file provided, use sample package data
-if data_dir == "":
+if _data_dir == "":
     print('----------------------------------------------------------')
     print("No data dir provided, using packaged sample data")
-    data_dir = pkg_resources.resource_filename(
+    _data_dir = pkg_resources.resource_filename(
         "embers.kindle", "data/rf_data/"
     )
 
-if start_date == "":
+if _start_date == "":
     print('No start_date provided, using 2019-10-01 for sample data')
-    start_date = '2019-10-01'
+    _start_date = '2019-10-01'
 
-if stop_date == "":
+if _stop_date == "":
     print('No stop_date provided, using 2019-10-10 for sample data')
     print('')
     print('>>> waterfall_batch --help, for more options')
     print('----------------------------------------------------------')
-    stop_date = '2019-10-10'
+    _stop_date = '2019-10-10'
 
     # Logging config
-log_dir = Path(f"{out_dir}/waterfalls")
-log_dir.mkdir(parents=True, exist_ok=True)
+_log_dir = Path(f"{_out_dir}/waterfalls")
+_log_dir.mkdir(parents=True, exist_ok=True)
 logging.basicConfig(
-    filename=f"{out_dir}/waterfalls/waterfall_batch.log",
+    filename=f"{_out_dir}/waterfalls/waterfall_batch.log",
     level=logging.INFO,
     format="%(levelname)s: %(funcName)s: %(message)s",
 )
 
 
 def waterfall_batch(start_date, stop_date, data_dir, out_dir):
+    """
+    Save a series of waterfall plots in parallel.
+
+    Parameters
+    ----------
+    :param start_date: date in style YYYY-MM-DD
+    :type start_date: str
+    :param stop_date: date in style YYYY-MM-DD
+    :type stop_date: str
+    :param data_dir: path to root of rf data dir
+    :type data_dir: str
+    :param out_dir: path to output dir
+    :type out_dir: str
+    
+    """
 
     dates, time_stamps = time_tree(start_date, stop_date)
 
@@ -94,8 +110,8 @@ def waterfall_batch(start_date, stop_date, data_dir, out_dir):
 
 
 def main():
-    """Execute waterfall from terminal"""
+    """Execute waterfall from terminal."""
 
-    print(f"Processing rf data files between {start_date} and {stop_date}")
-    print(f"Saving waterfall plots to: ./{log_dir}")
-    waterfall_batch(start_date, stop_date, data_dir, out_dir)
+    print(f"Processing rf data files between {_start_date} and {_stop_date}")
+    print(f"Saving waterfall plots to: ./{_log_dir}")
+    waterfall_batch(_start_date, _stop_date, _data_dir, _out_dir)

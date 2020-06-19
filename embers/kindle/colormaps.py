@@ -2,6 +2,7 @@
 =======
 Colormaps
 =======
+
 Visualise custom colormaps used by embers.
 Creates sample plot of ember colormaps 
 saved to ``./embers_out/condition_data/colormaps.png``
@@ -15,8 +16,8 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from embers.condition_data.colormaps import spectral, jade
 
-spec, spec_r = spectral()
-jade, jade_r = jade()
+_spec, _spec_r = spectral()
+_jade, _jade_r = jade()
 
 
 parser = argparse.ArgumentParser(
@@ -40,7 +41,7 @@ out_dir.mkdir(parents=True, exist_ok=True)
 
 
 def waves_2d():
-    """Creates 2d sine wave
+    """Create 2d sine wave.
 
     Returns
     -------
@@ -56,7 +57,7 @@ def waves_2d():
 
 
 def plt_colormaps(spec, spec_r, jade, jade_r, out_dir):
-    """Plot a 2x2 grid of sample colormaps
+    """Plot 2x2 grid of sample colormaps.
     
     Parameters
     ----------
@@ -75,7 +76,7 @@ def plt_colormaps(spec, spec_r, jade, jade_r, out_dir):
 
     ax1 = fig.add_subplot(221)
     ax1.set_title("Spectral colormap")
-    im1 = ax1.imshow(waves_2d(), origin="lower", interpolation="none", cmap=spec)
+    im1 = ax1.imshow(waves_2d(), origin="lower", interpolation="none", cmap=_spec)
     divider = make_axes_locatable(ax1)
     cax = divider.append_axes("right", size="5%", pad=0.05)
     fig.colorbar(im1, cax=cax, orientation="vertical")
@@ -83,7 +84,7 @@ def plt_colormaps(spec, spec_r, jade, jade_r, out_dir):
 
     ax2 = fig.add_subplot(222)
     ax2.set_title("Jade colormap")
-    im2 = ax2.imshow(waves_2d(), origin="lower", interpolation="none", cmap=jade)
+    im2 = ax2.imshow(waves_2d(), origin="lower", interpolation="none", cmap=_jade)
     divider = make_axes_locatable(ax2)
     cax = divider.append_axes("right", size="5%", pad=0.05)
     fig.colorbar(im2, cax=cax, orientation="vertical")
@@ -92,14 +93,15 @@ def plt_colormaps(spec, spec_r, jade, jade_r, out_dir):
 
     ax3 = fig.add_subplot(223)
     ax3.set_title("Spectral_r colormap")
-    im3 = ax3.imshow(waves_2d(), origin="lower", interpolation="none", cmap=spec_r)
+    im3 = ax3.imshow(waves_2d(), origin="lower", interpolation="none", cmap=_spec_r)
+
     divider = make_axes_locatable(ax3)
     cax = divider.append_axes("right", size="5%", pad=0.05)
     fig.colorbar(im3, cax=cax, orientation="vertical")
 
     ax4 = fig.add_subplot(224)
     ax4.set_title("Jade_r colormap")
-    im4 = ax4.imshow(waves_2d(), origin="lower", interpolation="none", cmap=jade_r)
+    im4 = ax4.imshow(waves_2d(), origin="lower", interpolation="none", cmap=_jade_r)
     divider = make_axes_locatable(ax4)
     cax = divider.append_axes("right", size="5%", pad=0.05)
     fig.colorbar(im4, cax=cax, orientation="vertical")
@@ -110,7 +112,7 @@ def plt_colormaps(spec, spec_r, jade, jade_r, out_dir):
 
 
 def main():
-    """Execute colormaps from terminal"""
+    """Execute colormaps from terminal."""
 
     print(f"Plot of embers colormaps saved to ./{out_dir}/colormaps.png")
     plt_colormaps(spec, spec_r, jade, jade_r, out_dir)
