@@ -1,10 +1,10 @@
 """
-===================================
-Savitzky–Golay Interpolation Sample
-===================================
+============
+Align Single
+============
 
 Plot a single frequency channel of raw rf data and the result of
-interpolation and savgol smoothing. Save plot to ``./embers_out/condition_data``
+interpolation and Savitzky–Golay smoothing. Save plot to ``./embers_out/condition_data``
 
 """
 
