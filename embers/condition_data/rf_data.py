@@ -11,6 +11,7 @@ import re
 import time
 import numpy as np
 from pathlib import Path
+from itertools import product
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 from embers.condition_data.colormaps import spectral
