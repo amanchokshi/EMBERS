@@ -7,8 +7,10 @@ Saves a single waterfall plot to ``./embers_out/condition_data``
 """
 
 import argparse
+import pkg_resources
 from pathlib import Path
 from embers.condition_data.rf_data import single_waterfall
+
 
 parser = argparse.ArgumentParser(
     description="""
@@ -17,18 +19,25 @@ parser = argparse.ArgumentParser(
 )
 
 parser.add_argument(
-    "--rf_file", metavar="\b", required=True, help="Path to raw rf data file"
+    "--rf_file", metavar="\b", default="", help="Path to raw rf data file"
 )
 parser.add_argument(
     "--out_dir",
     metavar="\b",
-    default="./embers_out/condition_data",
+    default="embers_out/condition_data",
     help="Dir where colormap sample plot is saved. Default=./embers_out/condition_data",
 )
 
 args = parser.parse_args()
 rf_file = args.rf_file
 out_dir = args.out_dir
+
+# if no input file provided, use sample package data
+if rf_file == "":
+    print("No input data provided, using packaged sample data")
+    rf_file = pkg_resources.resource_filename(
+        "embers.kindle", "data/rf_data/S06XX/2019-10-10/S06XX_2019-10-10-02:30.txt"
+    )
 
 
 def main():
