@@ -7,6 +7,7 @@ data points.
 
 """
 
+import re
 import math
 import time
 import numpy as np
@@ -87,6 +88,98 @@ def savgol_interp(
     tile_ali = savgol_filter(tile_ali, savgol_window_2, polyorder, axis=0)
 
     return (ref_ali, tile_ali, ref_power, tile_power, time_array)
+
+
+def save_aligned(
+    ref,
+    aut,
+    time_stamp,
+    savgol_window_1,
+    savgol_window_2,
+    polyorder,
+    interp_type,
+    interp_freq,
+    data_dir,
+    out_dir,
+):
+    """Save an aligned set of rf data to an npz file. 
+
+    A pair of rf data files are smoothed, interpolated and aligned
+    with the :func:`~embers.condition_data.align_data.savgol_interp`.
+    The output is written to a npz file and saved to an output 
+    directory tree.
+
+    Parameters
+    ----------
+    :param str ref: name of reference antenna
+    :param str tile: name of tile antenna
+    :param str time_stamp: time when rf observation began. In YYYY-MM-DD-HH-MM format
+    :param int savgol_window_1:  window size of savgol filer, must be odd
+    :param int savgol_window_2:  window size of savgol filer, must be odd
+    :param int polyorder: polynomial order to fit to savgol_window
+    :param str interp_type: type of interpolation. Ex: 'cubic', 'linear'
+    :param int interp_freq: freqency to which power array is interpolated
+    :param str data_dir: root of data dir where rf data is located
+    :param str out_dir: relative path to output directory
+
+    Returns
+    -------
+    :return: aligned rf data saved by `numpy.savez_compressed`
+    
+    Exeptions
+    ---------
+    :raises FileNotFoundError: an input file does not exist
+
+    """
+    
+    date = re.search(r"\d{4}.\d{2}.\d{2}", time_stamp)[0]
+    ref_file = f"{data_dir}/{ref}/{date}/{ref}_{time_stamp}.txt"
+    tile_file = f"{data_dir}/{tile}/{date}/{tile}_{time_stamp}.txt"
+    
+    try:
+        open(rf_path, "r")
+    except FileNotFoundError as e:
+        return e
+    except Exception as e:
+        return e
+    
+    try:
+        ref_file = f"{ref_path}/{ref}_{time_stamp}.txt"
+        aut_file = f"{aut_path}/{aut}_{time_stamp}.txt"
+
+        _, _, _, _, ref_p_aligned, tile_p_aligned, time_array = savgol_interp(
+            ref_file,
+            aut_file,
+            savgol_window_1=savgol_window_1,
+            savgol_window_2=savgol_window_2,
+            polyorder=polyorder,
+            interp_type=interp_type,
+            interp_freq=interp_freq,
+        )
+
+        # creates output directory if it doesn't exist
+        save_dir = Path(f"{out_dir}/{date}/{time_stamp}")
+        save_dir.mkdir(parents=True, exist_ok=True)
+
+        # Convert the power array to float32
+        # Convert list of times to float64 (double)
+        # Save as compressed npz file. Seems to drastically reduce size
+        np.savez_compressed(
+            f"{save_dir}/{ref}_{aut}_{time_stamp}_aligned.npz",
+            ref_p_aligned=np.single(ref_p_aligned),
+            tile_p_aligned=np.single(tile_p_aligned),
+            time_array=np.double(time_array),
+        )
+
+        return f"Saving {ref}_{aut}_{time_stamp}_aligned.npz"
+
+    except Exception:
+        return f"Cound not save {ref}_{aut}_{time_stamp}_aligned.npz. Missing file"
+
+
+
+
+
 
 
 if __name__ == "__main__":
