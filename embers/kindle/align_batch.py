@@ -155,10 +155,8 @@ def align_batch(
                 logging.info(result)
 
 
-#def main():
-#    """Execute align_batch from terminal."""
-
-if __name__ == "__main__":
+def main():
+    """Execute align_batch from terminal."""
 
     print(f"Aligned files saved to: {_out_dir}")
     align_batch(

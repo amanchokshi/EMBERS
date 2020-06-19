@@ -139,8 +139,7 @@ def save_aligned(
     ref_file = f"{data_dir}/{ref}/{date}/{ref}_{time_stamp}.txt"
     tile_file = f"{data_dir}/{tile}/{date}/{tile}_{time_stamp}.txt"
 
-    if Path(ref_file) and Path(tile_file):
-
+    try:
         ref_ali, tile_ali, time_array, _, _, _, _ = savgol_interp(
             ref_file,
             tile_file,
@@ -159,14 +158,15 @@ def save_aligned(
         # Convert list of times to float64 (double)
         # Save as compressed npz file. Seems to drastically reduce size
         np.savez_compressed(
-            f"{save_dir}/{ref}_{aut}_{time_stamp}_aligned.npz",
+            f"{save_dir}/{ref}_{tile}_{time_stamp}_aligned.npz",
             ref_ali=np.single(ref_ali),
             tile_ali=np.single(tile_ali),
             time_array=np.double(time_array),
         )
 
-        return f"Saved aligned file to {save_dir}/{ref}_{aut}_{time_stamp}_aligned.npz"
+        return f"Saved aligned file to {save_dir}/{ref}_{tile}_{time_stamp}_aligned.npz"
 
-    else:
-        return f"FileNotFoundError: either {ref_file} or {tile_file} missing"
-
+    except FileNotFoundError as e:
+        return e
+    except Exception as e:
+        return e
