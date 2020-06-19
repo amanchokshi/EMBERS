@@ -62,7 +62,8 @@ if _stop_date == "":
     print("----------------------------------------------------------")
     _stop_date = "2019-10-10"
 
-    # Logging config
+
+# Logging config
 _log_dir = Path(f"{_out_dir}/waterfalls")
 _log_dir.mkdir(parents=True, exist_ok=True)
 logging.basicConfig(
