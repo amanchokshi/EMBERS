@@ -1,9 +1,19 @@
+"""
+Align Data
+==========
+Tools to time align pairs of rf data files,
+enabling comparisons between corresponding 
+data points.
+
+"""
+
 import math
 import time
 import numpy as np
 from pathlib import Path
 from scipy import interpolate
 from scipy.signal import savgol_filter
+from embers.condition_data.rf_data import read_data 
 
 
 def savgol_interp(
@@ -15,49 +25,44 @@ def savgol_interp(
     interp_type=None,
     interp_freq=None,
 ):
-    """Smooth and interpolate the power array
+    """Interpolate the power array followed by savgol smoothing.
 
     Interpolate to a given frequency which 
-    makes the dimentions of the power arrays
-    from the reference antenna and the tile equal,
-    allowing a one to one comparison at corresponding times.
-
-    Two level of savgol filter applied, first to capture
-    deep nulls + small structure, and second level to
-    smooth over noise.
+    makes the dimensions of the power arrays
+    from the reference and tile antennas equal,
+    enabling comparisons between corresponding
+    data points. Two level of savgol filter applied, 
+    first to capture deep nulls + small structure, 
+    and second level to smooth over noise.
 
     
-    Args:
-        ref:            Path to reference data file
-        tile:           Path to tile data file
-        savgol_window_1:  Window size of savgol filer. Must be odd. Default = 151
-        savgol_window_2:  Window size of savgol filer. Must be odd. Default = 151
-        polyorder:      Order of polynomial to fit to savgol_window. Default = 1
-        interp_type:    Type of interpolation. Ex: 'cubic', 'linear'. Default = cubic
-        interp_freq:    The freqency to which power array is interpolated. Default = 6 Hz
+    Parameters
+    ----------
+    :param str ref: path to reference data file
+    :param str tile: path to tile data file
+    :param int savgol_window_1:  window size of savgol filer, must be odd
+    :param int savgol_window_2:  window size of savgol filer, must be odd
+    :param int polyorder: polynomial order to fit to savgol_window
+    :param str interp_type: type of interpolation. Ex: 'cubic', 'linear'
+    :param int interp_freq: freqency to which power array is interpolated
 
-    Returns:
-        ref_p_aligned:  Aligned reference power array
-        tile_p_aligned: Aligned tile power array
-        time_array:     Time array corresponding to power arrays
+    Returns
+    -------
+    :returns:
+        - ref_ali - aligned reference power array
+        - tile_ali - aligned tile power array
+        - ref_power - raw reference power array
+        - tile_power - raw tile power array
+        - time_array - time array corresponding to power arrays
+
+    :rtype: (float, numpy.array(float))
+
     """
 
-    # Import custom rf_data module
-    import sys
-
-    sys.path.append("../decode_rf_data")
-    from rf_data import read_data
-
     # Read time and power arrays from data files
-    ref_p, ref_t = read_data(ref)
-    tile_p, tile_t = read_data(tile)
+    ref_power, ref_t = read_data(ref)
+    tile_power, tile_t = read_data(tile)
 
-    # Data is recorded at a range of frequencies, depending on the RF Explorer version
-    # The Old models recoreded at 6-7Hz, while the new ones record at 8.5-9.2Hz.
-    # To get around this, we interpolate the data to a desired freqeuncy.
-
-    # Using the start and stop times, we create an array of times at which to
-    # evaluate our interpolated data
     # Round up/down to nearest integer of time
     start_time = math.ceil(max(ref_t[0], tile_t[0]))
     stop_time = math.floor(min(ref_t[-1], tile_t[-1]))
@@ -65,22 +70,23 @@ def savgol_interp(
     # Array of times at which to evaluate the interpolated data
     time_array = np.arange(start_time, stop_time, (1 / interp_freq))
 
-    f = interpolate.interp1d(ref_t, ref_p, axis=0, kind=interp_type)
-    g = interpolate.interp1d(tile_t, tile_p, axis=0, kind=interp_type)
+    # Mathematical interpolation functions
+    f = interpolate.interp1d(ref_t, ref_power, axis=0, kind=interp_type)
+    g = interpolate.interp1d(tile_t, tile_power, axis=0, kind=interp_type)
 
     # New power array, evaluated at the desired frequency
-    ref_p_aligned = f(time_array)
-    tile_p_aligned = g(time_array)
+    ref_ali = f(time_array)
+    tile_ali = g(time_array)
 
     # Savgol level 1. Capture nulls / small scale structure
-    ref_p_aligned = savgol_filter(ref_p_aligned, savgol_window_1, polyorder, axis=0)
-    tile_p_aligned = savgol_filter(tile_p_aligned, savgol_window_1, polyorder, axis=0)
+    ref_ali = savgol_filter(ref_ali, savgol_window_1, polyorder, axis=0)
+    tile_ali = savgol_filter(tile_ali, savgol_window_1, polyorder, axis=0)
 
     # Savgol level 2. Smooth noise
-    ref_p_aligned = savgol_filter(ref_p_aligned, savgol_window_2, polyorder, axis=0)
-    tile_p_aligned = savgol_filter(tile_p_aligned, savgol_window_2, polyorder, axis=0)
+    ref_ali = savgol_filter(ref_ali, savgol_window_2, polyorder, axis=0)
+    tile_ali = savgol_filter(tile_ali, savgol_window_2, polyorder, axis=0)
 
-    return (ref_t, ref_p, tile_t, tile_p, ref_p_aligned, tile_p_aligned, time_array)
+    return (ref_ali, tile_ali, ref_power, tile_power, time_array)
 
 
 if __name__ == "__main__":
