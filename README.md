@@ -3,14 +3,21 @@
 
 ### Installation
 
-The *EMBERS* package may be installed by cloning the repository. Using a virtual environment is suggested to prevent conflicting dependancies.
+The *EMBERS* package can be installed from [PyPI](https://pypi.org/project/embers/).  Using a virtual environment is suggested to prevent conflicting dependancies.
 
+```
+python -m venv embers
+source embers/bin/activate
+pip install embers
+```
+
+or by manually cloning the repository.
 ```
 git clone https://github.com/amanchokshi/EMBERS.git
 cd EMBERS
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+python -m venv embers
+source embers/bin/activate
+pip install .
 ```
 
 
@@ -19,7 +26,7 @@ pip install -r requirements.txt
 
 ```
 .
-├── code                    # Code lives here
+├── embers                  # Code lives here
 ├── docs                    # Documentation files
 ├── data                    # Sample data and beam maps
 ├── outputs                 # All outputs saved here by default
