@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 from embers.condition_data.colormaps import spectral
 
-spec, _ = spectral()
+_spec, _ = spectral()
 
 
 def read_data(rf_file=None):
@@ -198,7 +198,7 @@ def plt_waterfall(power, times, name):
     plt.style.use("dark_background")
     fig = plt.figure(figsize=(7, 10))
     ax = fig.add_axes([0.12, 0.1, 0.72, 0.85])
-    im = ax.imshow(image, vmin=vmin, vmax=vmax, interpolation="none", cmap=spec)
+    im = ax.imshow(image, vmin=vmin, vmax=vmax, interpolation="none", cmap=_spec)
     cax = fig.add_axes([0.88, 0.1, 0.03, 0.85])
     fig.colorbar(im, cax=cax)
     ax.set_aspect("auto")
