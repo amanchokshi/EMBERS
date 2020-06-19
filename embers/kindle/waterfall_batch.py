@@ -24,13 +24,13 @@ _parser = argparse.ArgumentParser(
 )
 
 _parser.add_argument(
-    "--start_date", metavar="\b", default='', help="start date in YYYY-MM-DD format"
+    "--start_date", metavar="\b", default="", help="start date in YYYY-MM-DD format"
 )
 _parser.add_argument(
-    "--stop_date", metavar="\b", default='', help="stop date in YYYY-MM-DD format"
+    "--stop_date", metavar="\b", default="", help="stop date in YYYY-MM-DD format"
 )
 _parser.add_argument(
-    "--data_dir", metavar="\b", default='', help="root of dir where rf data is saved"
+    "--data_dir", metavar="\b", default="", help="root of dir where rf data is saved"
 )
 _parser.add_argument(
     "--out_dir",
@@ -47,22 +47,20 @@ _out_dir = _args.out_dir
 
 # if no input file provided, use sample package data
 if _data_dir == "":
-    print('----------------------------------------------------------')
+    print("----------------------------------------------------------")
     print("No data dir provided, using packaged sample data")
-    _data_dir = pkg_resources.resource_filename(
-        "embers.kindle", "data/rf_data/"
-    )
+    _data_dir = pkg_resources.resource_filename("embers.kindle", "data/rf_data/")
 
 if _start_date == "":
-    print('No start_date provided, using 2019-10-01 for sample data')
-    _start_date = '2019-10-01'
+    print("No start_date provided, using 2019-10-01 for sample data")
+    _start_date = "2019-10-01"
 
 if _stop_date == "":
-    print('No stop_date provided, using 2019-10-10 for sample data')
-    print('')
-    print('>>> waterfall_batch --help, for more options')
-    print('----------------------------------------------------------')
-    _stop_date = '2019-10-10'
+    print("No stop_date provided, using 2019-10-10 for sample data")
+    print("")
+    print(">>> waterfall_batch --help, for more options")
+    print("----------------------------------------------------------")
+    _stop_date = "2019-10-10"
 
     # Logging config
 _log_dir = Path(f"{_out_dir}/waterfalls")

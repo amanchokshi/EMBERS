@@ -24,15 +24,14 @@ def data_files(data_dir, data_types):
 
 
 # Obtain name, version, author from __init__.py file
-from embers import __name__, __version__, __author__
+from embers import __version__, __author__
 
-name = __name__
 version = __version__
 author = __author__
 
 
 setup(
-    name=name,
+    name="embers",
     version=version,
     license="MIT",
     author=author,
