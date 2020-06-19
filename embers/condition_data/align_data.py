@@ -93,8 +93,7 @@ def savgol_interp(
 
 
 def save_aligned(
-    ref,
-    aut,
+    tile_pair,
     time_stamp,
     savgol_window_1,
     savgol_window_2,
@@ -113,8 +112,7 @@ def save_aligned(
 
     Parameters
     ----------
-    :param str ref: name of reference antenna
-    :param str tile: name of tile antenna
+    :param list[str] tile_pair: pair of ref and tile antenna names
     :param str time_stamp: time when rf observation began. In YYYY-MM-DD-HH-MM format
     :param int savgol_window_1:  window size of savgol filer, must be odd
     :param int savgol_window_2:  window size of savgol filer, must be odd
@@ -136,6 +134,8 @@ def save_aligned(
 
     date = re.search(r"\d{4}.\d{2}.\d{2}", time_stamp)[0]
 
+    ref = tile_pair[0]
+    tile = tile_pair[1]
     ref_file = f"{data_dir}/{ref}/{date}/{ref}_{time_stamp}.txt"
     tile_file = f"{data_dir}/{tile}/{date}/{tile}_{time_stamp}.txt"
 
