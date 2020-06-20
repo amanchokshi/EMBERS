@@ -1,5 +1,6 @@
 # Built-in imports
 import os
+import shutil
 from os import path
 
 # Package imports
@@ -134,12 +135,12 @@ def test_single_waterfall():
     if single_waterfall_png.is_file() is True:
         single_waterfall_png.unlink()
 
-#def test_batch_waterfall():
-#    batch_waterfall('S06XX', '2019-10-01-14:30', f"{test_data}/rf_data", f"{test_data}")
-#    #single_waterfall_png = Path(f"{test_data}/single_waterfall.png")
-#    #assert single_waterfall_png.is_file is True
-#    #if single_waterfall_png.is_file is True:
-#    #    single_waterfall_png.unlink()
+def test_batch_waterfall():
+    batch_waterfall('S06XX', '2019-10-01-14:30', f"{test_data}/rf_data", f"{test_data}")
+    batch_waterfall_png = Path(f"{test_data}/waterfalls/2019-10-01/2019-10-01-14:30/S06XX_2019-10-01-14:30.png")
+    assert batch_waterfall_png.is_file() is True
+    if batch_waterfall_png.is_file() is True:
+        shutil.rmtree(f'{test_data}/waterfalls')
 
 
 
