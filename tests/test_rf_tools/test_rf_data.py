@@ -22,7 +22,7 @@ from embers.rf_tools.rf_data import (
 # Save the path to this directory
 dirpath = path.dirname(__file__)
 
-# Obtain path to directory with colormaps
+# Obtain path to directory with test_data
 test_data = path.abspath(path.join(dirpath, "../data"))
 
 
