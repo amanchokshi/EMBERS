@@ -59,10 +59,11 @@ def test_save_aligned_str():
         == f"Saved aligned file to {test_data}/2019-10-01/2019-10-01-14:30/rf0XX_S06XX_2019-10-01-14:30_aligned.npz"
     )
 
+
 def test_save_aligned_file():
-    ali_file = Path(f"{test_data}/2019-10-01/2019-10-01-14:30/rf0XX_S06XX_2019-10-01-14:30_aligned.npz")
+    ali_file = Path(
+        f"{test_data}/2019-10-01/2019-10-01-14:30/rf0XX_S06XX_2019-10-01-14:30_aligned.npz"
+    )
     assert ali_file.is_file() is True
     if ali_file.is_file() is True:
         shutil.rmtree(f"{test_data}/2019-10-01")
-
-
