@@ -1,4 +1,7 @@
+# Package imports
 import pytest
+
+# Embers imports
 from embers.rf_tools.colormaps import spectral, jade
 
 
