@@ -9,7 +9,8 @@ Welcome to embers's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-
+   
+   api/embers
 
 
 Indices and tables
