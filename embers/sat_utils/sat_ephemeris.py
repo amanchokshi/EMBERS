@@ -1,24 +1,49 @@
+"""
+===================
+Satellite Ephemeris
+===================
+
+A set of tools to calculate satellite ephemeris 
+from TLE files. 
+
+"""
+
 import numpy as np
 import skyfield as sf
 from astropy.time import Time
 from skyfield.api import Topos, load
 
-
-# Skyfield Timescale
-try:
-    ts = load.timescale()
-except:
-    ts = load.timescale(builtin=True)
-
 # Position of MWA site in Lat/Lon/Elevation
 MWA = Topos(latitude=-26.703319, longitude=116.670815, elevation_m=337.83)
 
 
-def load_tle(tle_path):
-    """Loads a tle.
+def load_tle(tle_file):
+    """
+    Extract orbital parameters from a TLE file.
     
+    For pair of TLE lines in the TLE file, exctract
+    orbital parameters with the :obj:`~skyfield.sgp4lib.EarthSatellite`.
+    Create a list of EarthSatellite objects for each pair of TLE lines
+    and corresponding epochs where the set of TLE lines in most 
+    accurate.
+
+    Parameters
+    ----------
+    :param str tle_file: path to TLE file
+
+    Returns
+    -------
+    :returns:
+        - sats - list of EarthSatellite objects, one for each pair of TLE lines
+        - epochs - 
+
+
+    
+
+
     Opens TLE file and uses skyfield to load each pair of TLE lines
-    into an EarthSatellite object. Determines epoch for each.
+    into an EarthSatellite object. Determines epoch for each. 
+
 
     Agrs:
         the_path: Path to tle file
@@ -29,7 +54,7 @@ def load_tle(tle_path):
     """
 
     # open a Two Line Element (TLE) file
-    with open(tle_path, "r") as f:
+    with open(tle_file, "r") as f:
         tle_list = [line.strip() for line in f.read().split("\n") if line is not ""]
 
     # List of satellite ephemeris from each set of TLE in the opened file
@@ -86,6 +111,12 @@ def epoch_time_array(epoch_range, index_epoch, cadence):
         t_arr: Skyfield time object
         index_epoch: Same as above
     """
+
+    # Skyfield Timescale
+    try:
+        ts = load.timescale()
+    except:
+        ts = load.timescale(builtin=True)
 
     # find time between epochs/ midpoints in seconds, using Astropy Time
     t1 = Time(epoch_range[index_epoch], scale="tt", format="jd").gps
