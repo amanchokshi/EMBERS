@@ -1,7 +1,7 @@
 """
-=======
+=========
 Colormaps
-=======
+=========
 
 Visualise custom colormaps used by embers.
 Creates sample plot of ember colormaps 

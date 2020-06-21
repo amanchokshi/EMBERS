@@ -1,11 +1,19 @@
 """
+=============
 Satellite IDs
 =============
 
-A dictionary of satellite names and their NORAD Catalogue IDs.
+Dictionary of satellite names and their NORAD Catalogue IDs.
 These satellites are active in the 137 to 139 MHz frequency 
 window. Include ORBCOMM Communication satellites and 
 NOAA & METEOR Weather satellites.
+
+Included is a method to download TLE orbital parameters for 
+these satellites using Space-Track.org.
+
+.. warning::
+    To download orbital parameters (TLEs) from Space-Track.org,
+    make an account and obtain login credentials.
 
 """
 
@@ -101,13 +109,15 @@ def norad_ids():
         "NOAA 18": 28654,
         "NOAA 15": 25338,
         "Meteor M2": 40069,
-        "Meteor M2-2": 44387
+        "Meteor M2-2": 44387,
     }
 
-    return(norad_ids)
+    return norad_ids
 
 
-def download_tle(start_date, stop_date, norad_ids, st_ident=None, st_pass=None, out_dir=None):
+def download_tle(
+    start_date, stop_date, norad_ids, st_ident=None, st_pass=None, out_dir=None
+):
     """
     Download TLEs from space-track.org.
 
@@ -155,5 +165,6 @@ def download_tle(start_date, stop_date, norad_ids, st_ident=None, st_pass=None, 
                 for line in data:
                     fp.write(line + "\n")
     else:
-        print("Space-Track.org credentials not provided. Make an account before downloading TLEs")
-
+        print(
+            "Space-Track.org credentials not provided. Make an account before downloading TLEs"
+        )

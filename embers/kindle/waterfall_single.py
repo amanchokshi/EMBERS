@@ -1,7 +1,7 @@
 """
-=========
-Waterfall
-=========
+================
+Waterfall Single
+================
 
 Saves a single waterfall plot to ``./embers_out/rf_tools``
 

@@ -1,7 +1,7 @@
 """
-============
+===========
 Align Batch
-============
+===========
 
 Interpolate and Savitzky–Golay smooth a pair of raw rf data files
 before temorally aligning the. Save aligned data as npz files to 
