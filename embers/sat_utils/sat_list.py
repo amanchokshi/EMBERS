@@ -147,7 +147,8 @@ def download_tle(
         Path(out_dir).mkdir(parents=True, exist_ok=True)
 
         print("Starting TLE download")
-        for sat_name, sat_id in norad_ids().items():
+        print("Grab a coffee, this may take a while")
+        for sat_name, sat_id in norad_ids.items():
             # Sleep to limit downloads to 200 TLEs per hour
             time.sleep(20)
             data = st.tle(
