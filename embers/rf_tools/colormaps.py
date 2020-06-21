@@ -1,5 +1,4 @@
 """
-=========
 Colormaps
 =========
 A set of custom colormaps used by embers.
