@@ -9,6 +9,12 @@ NOAA & METEOR Weather satellites.
 
 """
 
+import time
+from pathlib import Path
+import spacetrack.operators as op
+from spacetrack import SpaceTrackClient
+
+
 def norad_ids():
     """
     A dictionary of NORAD Satellite Catalogue IDs.
@@ -95,8 +101,59 @@ def norad_ids():
         "NOAA 18": 28654,
         "NOAA 15": 25338,
         "Meteor M2": 40069,
-        "Meteor M2-2": 44387,
+        "Meteor M2-2": 44387
     }
 
     return(norad_ids)
+
+
+def download_tle(start_date, stop_date, norad_ids, st_ident=None, st_pass=None, out_dir=None):
+    """
+    Download TLEs from space-track.org.
+
+    Download satellite TLEs within a date interval
+    for all sats in :func:`~embers.sat_utils.sat_list.norad_ids`.
+
+    Parameters
+    ----------
+    :param str start_date: start date in YYYY-MM-DD format
+    :param str stop_date: stop date in YYYY-MM-DD format
+    :param dict norad_ids: sat_name: NORAD_ID dict
+    :param str st_ident: space-track.org login identity
+    :param str st_pass: space-track.org login password
+    :param str out_dir: output dir to save TLE files
+
+    Returns
+    -------
+        - tle file - saved to output directory
+
+    """
+
+    if st_ident != None and st_pass != None:
+
+        st = SpaceTrackClient(identity=st_ident, password=st_pass)
+
+        # make a TLE directory
+        Path(out_dir).mkdir(parents=True, exist_ok=True)
+
+        print("Starting TLE download")
+        for sat_name, sat_id in norad_ids().items():
+            # Sleep to limit downloads to 200 TLEs per hour
+            time.sleep(20)
+            data = st.tle(
+                iter_lines=True,
+                norad_cat_id=sat_id,
+                orderby="epoch asc",
+                epoch=f"{start_date}--{stop_date}",
+                format="tle",
+            )
+
+            print(
+                f"downloading tle for {sat_name} satellite [{sat_id}] from space-tracks.org"
+            )
+            with open(f"{out_dir}/{sat_id}.txt", "w") as fp:
+                for line in data:
+                    fp.write(line + "\n")
+    else:
+        print("Space-Track.org credentials not provided. Make an account before downloading TLEs")
 
