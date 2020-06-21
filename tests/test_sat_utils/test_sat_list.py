@@ -19,6 +19,11 @@ def test_norad_ids_last():
 
 def test_download_tle_fail(capfd):
     n_ids = norad_ids()
-    download_tle("2020-01-01", "2020-02-01", n_ids, st_ident=None, st_pass=None, out_dir="./")
+    download_tle(
+        "2020-01-01", "2020-02-01", n_ids, st_ident=None, st_pass=None, out_dir="./"
+    )
     captured = capfd.readouterr()
-    assert captured.out == "Space-Track.org credentials not provided. Make an account before downloading TLEs\n"
+    assert (
+        captured.out
+        == "Space-Track.org credentials not provided. Make an account before downloading TLEs\n"
+    )
