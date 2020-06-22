@@ -11,9 +11,9 @@ Documentation
 
 Embers documentation lives here at the main embers web site:
 
-* :doc:`toc`
-* :doc:`installation`
-* :doc:`api`
+- :doc:`toc`
+- :doc:`installation`
+- :doc:`api`
 
 But the source code and issue tracker live on other web sites:
 
