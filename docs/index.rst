@@ -1,21 +1,25 @@
-.. embers documentation master file, created by
-   sphinx-quickstart on Sun Jun 21 23:10:46 2020.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
-Welcome to embers's documentation!
-==================================
+========
+ EMBERS
+========
+.. rst-class:: motto
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-   
-   api/embers
+   *Experimental Measurement of BEam Responses with Satellites*
 
+Documentation
+=============
 
-Indices and tables
-==================
+Embers documentation lives here at the main embers web site:
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+* :doc:`toc`
+* :doc:`installation`
+* :doc:`api`
+
+But the source code and issue tracker live on other web sites:
+
+* `Embers on the Python Package Index <https://pypi.org/project/embers/>`_
+
+* `GitHub repository <https://github.com/amanchokshi/EMBERS/>`_
+
+* `GitHub issue tracker <https://github.com/amanchokshi/EMBERS/issues>`_
+
