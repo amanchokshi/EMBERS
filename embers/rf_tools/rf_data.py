@@ -1,6 +1,6 @@
 """
 RF Data
-=======
+-------
 
 A set of tools to decode raw rf data recored by
 RF Explorers and visualise waterfall plots.
@@ -20,21 +20,17 @@ _spec, _ = spectral()
 
 
 def read_data(rf_file=None):
-    """
-    Convert raw rf binary data into arrays of power and time.
+    """Convert raw rf binary data into arrays of power and time.
 
-    Parameters
-    ----------
-    :param rf_file: path to a rf data file
-    :type rf_file: str
+    .. code-block:: python
+        
+        from embers.rf_tools.rf_data import read_data
+        power, times = read_data(rf_file='~/embers-data/rf.txt')
 
-    Returns
-    -------
-    :returns:
-        - power - array of rf powers in dBm
-        - times - array of UNIX times
-
-    :rtype: (float, numpy.array(float))
+    
+    ``rf_file``  Path to a rf binary data file
+    
+    Returns `numpy.ndarray` of ``power`` in dBm and UNIX ``times``
 
     """
 

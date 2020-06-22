@@ -22,7 +22,10 @@ copyright = '2020, Aman Chokshi'
 author = 'Aman Chokshi'
 
 # The full version, including alpha/beta/rc tags
-release = '0.0.3'
+import embers
+version = embers.__version__
+release = embers.__version__
+#release = '0.0.3'
 
 
 # -- General configuration ---------------------------------------------------
@@ -31,16 +34,12 @@ release = '0.0.3'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 sys.path.append(os.path.dirname(__file__))
-extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.doctest',
-    'sphinx.ext.intersphinx',
-    '_sphinx_ext.pretty_protos'
-]
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx', 'sphinx.ext.autosummary', 'sphinx.ext.doctest', 'sphinx.ext.coverage', 'sphinx.ext.mathjax', '_sphinx_ext.pretty_protos']
+
+# Intersphinx configuration
+intersphinx_mapping = {'python': ('https://docs.python.org/3', None),
+                       'numpy': ('https://docs.scipy.org/doc/numpy', None),
+                       'matplotlib': ('https://matplotlib.org', None)}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -83,4 +82,4 @@ html_static_path = ['_static']
 # -- Options for intersphinx extension ---------------------------------------
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/3/': None}
+#intersphinx_mapping = {'https://docs.python.org/3/': None}
