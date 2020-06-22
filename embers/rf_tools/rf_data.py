@@ -3,7 +3,7 @@ RF Data
 -------
 
 A set of tools to decode raw rf data recored by
-RF Explorers and visualise waterfall plots.
+RF Explorers and visualise waterfall plots
 
 """
 
@@ -20,17 +20,14 @@ _spec, _ = spectral()
 
 
 def read_data(rf_file=None):
-    """Convert raw rf binary data into arrays of power and time.
-
-    .. code-block:: python
+    """Convert raw rf binary data into `numpy.ndarray` of power and time::
         
         from embers.rf_tools.rf_data import read_data
         power, times = read_data(rf_file='~/embers-data/rf.txt')
-
     
     ``rf_file``  Path to a rf binary data file
     
-    Returns `numpy.ndarray` of ``power`` in dBm and UNIX ``times``
+    Returns `numpy.ndarray` of :code:`power` in dBm and UNIX :code:`times`
 
     """
 
@@ -57,12 +54,15 @@ def read_data(rf_file=None):
 
 
 def tile_names():
-    """List of reference and MWA tile names.
+    """List of MWA and reference antenna names
 
-    Returns
-    -------
-    :return: list of tile names
-    :rtype: list[str]
+    .. code-block:: python
+        
+        from embers.rf_tools.rf_data import tile_names
+        tiles = tile_names()
+        
+        print(tiles)
+        >>> ["rf0XX", "rf0YY", "rf1XX", "rf1YY", "S06XX", ....]
 
     """
 
@@ -207,7 +207,7 @@ def time_tree(start_date, stop_date):
 
 def plt_waterfall(power, times, name):
     """
-    Create waterfall `.pyplot.plot` object.
+    Create waterfall `matplotlib.pyplot.plot` object.
 
     waterfall created using parameters ``power``, ``times``
     from :func:`~embers.condition_data.rf_data.read_data`. 

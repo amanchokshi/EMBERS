@@ -1,7 +1,7 @@
 """
 Colormaps
-=========
-A set of custom colormaps used by embers.
+---------
+A set of custom colormaps used by embers
 
 """
 

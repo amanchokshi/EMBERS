@@ -1,9 +1,8 @@
 """
 Align Data
-==========
-Tools to time align pairs of rf data files,
-enabling comparisons between corresponding 
-data points.
+----------
+Tools to temporally align pairs of rf data files,
+enabling comparisons between data sets
 
 """
 

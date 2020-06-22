@@ -1,5 +1,6 @@
 """
-A subpackage of embers used to pre process and condition and preview raw rf data.
-This validates analysis performed at later stages of the embers pipeline.
+:mod:`embers.rf_tools` is used to pre process, condition and preview raw rf data.
+
+It contains :mod:`~embers.rf_tools.rf_data`, :mod:`~embers.rf_tools.align_data`, :mod:`~embers.rf_tools.colormaps` modules.
 
 """
