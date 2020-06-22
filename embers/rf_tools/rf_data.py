@@ -21,7 +21,7 @@ _spec, _ = spectral()
 
 def read_data(rf_file=None):
     """
-    Convert raw rf binary data into a power array and extracts a list of UNIX timestamps.
+    Convert raw rf binary data into arrays of power and time.
 
     Parameters
     ----------
