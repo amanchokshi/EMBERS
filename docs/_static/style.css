@@ -190,6 +190,9 @@ td {
 tr:last-child td {
     border: none;
 }
+tr {
+    line-height: 0.6em;
+}
 .viewcode-link {
     float: right;
     margin-left: 1em;
@@ -205,6 +208,9 @@ dt:target {
 .internal {
     border-bottom: none;
     text-decoration: none;
+}
+.simple {
+    line-height: 0.7em;
 }
 
 @media screen and (min-width: 480px) {body {font-size: 1.125em;}}
