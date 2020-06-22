@@ -1,6 +1,7 @@
 /embers_out/*
 /outputs/*
 /venv/*
+/docs/_build/*
 *.DS_Store*
 *._.DS_Store*
 *__pycache__*
