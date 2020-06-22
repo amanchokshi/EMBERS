@@ -132,6 +132,24 @@ code.py-obj {
     background: none;
     font-family: "Gentium", sans-serif, serif;
 }
+.py-class {
+    font-size: 0.8em;
+}
+.py-mod {
+    font-size: 0.8em;
+}
+.py-func {
+    font-size: 0.8em;
+}
+.samp {
+    font-size: 0.8em;
+}
+/*.literal {
+    font-size: 0.77em;
+}*/
+code {
+    font-size: 1em;
+}
 dd {
     color: #343434;
 }
@@ -211,6 +229,10 @@ dt:target {
 }
 tr {
     line-height: 1.4em;
+}
+.function {
+   padding-top: 0.3em; 
+   padding-bottom: 0.7em; 
 }
 
 @media screen and (min-width: 480px) {body {font-size: 1.125em;}}

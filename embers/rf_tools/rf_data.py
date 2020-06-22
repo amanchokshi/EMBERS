@@ -25,9 +25,11 @@ def read_data(rf_file=None):
         from embers.rf_tools.rf_data import read_data
         power, times = read_data(rf_file='~/embers-data/rf.txt')
     
-    ``rf_file``  Path to a rf binary data file
-    
-    Returns `numpy.ndarray` of :code:`power` in dBm and UNIX :code:`times`
+    :param rf_file: path to rf binary data file :class:`str`
+
+    :returns:
+        - power - power in dBm :class:`~numpy.ndarray` 
+        - times - times in UNIX :class:`~numpy.ndarray`
 
     """
 
@@ -60,10 +62,15 @@ def tile_names():
         
         from embers.rf_tools.rf_data import tile_names
         tiles = tile_names()
-        
+       
+    .. code-block:: python
+
         print(tiles)
         >>> ["rf0XX", "rf0YY", "rf1XX", "rf1YY", "S06XX", ....]
-
+    
+    :returns: 
+        - tiles - antenna names :class:`~list`
+    
     """
 
     tiles = [
@@ -107,17 +114,23 @@ def tile_names():
 def tile_pairs(tiles):
     """
     Create a list of all possible AUT ref antenna pairs from :func:`~embers.rf_tools.rf_data.tile_names`
+
+    Reference and MWA antennas can only pair with antennas of the same polarizarion
     
-    Parameters
-    ----------
-    :param tiles: list of tile names
-    :type tiles: list[str]
+    .. code-block:: python
+        
+        from embers.rf_tools.rf_data import tile_names, tile_pairs
+        tiles = tile_names()
+        tile_pairs = tile_names(tiles)
+       
+    .. code-block:: python
 
-    Returns
-    -------
-    :return: list of possible tile pairs
-    :rtype: list[list, str]
-
+        print(tile_pairs)
+        >>> [["rf0XX", "S06XX"], ["rf0YY", "S06YY"], ....]
+    
+    :returns:
+        - pairs - all possible antenna pairs of same polarization :class:`~list`
+        
     """
 
     tiles = tile_names()
@@ -162,21 +175,27 @@ def time_tree(start_date, stop_date):
             └── YYYY-MM-DD
                 └── tile2_YYYY-MM-DD-HH:MM.txt
 
-    Parameters
-    ----------
-    :param start_date: Start date in ``YYYY-MM-DD`` format
-    :type start_date: str
-    :param stop_date: Stop date is inclusive, in ``YYYY-MM-DD`` format. 
-    :type stop_date: str
+    .. code-block:: python
+        
+        from embers.rf_tools.rf_data import time_tree
+        dates, time_stamps = time_tree("2020-01-01", "2020-01-02")
 
-    Returns
-    -------
+    .. code-block:: python
+        
+        print(dates)
+        >>> ["2020-01-01", "2020-01-02"]
+        print(time_stamps)
+        >>> [["2020-01-01-00:00, 2020-01-01-00:30", ...], 
+                ["2020-01-02-00:00", "2020-01-02-00:30"]]
+
+    :param start_date: in :samp:`YYYY-MM-DD` format :class:`~str`
+    :param stop_date: in :samp:`YYYY-MM-DD` format :class:`~str`
+
     :returns:
-        - dates - list of dates between `start_date` and `stop_date`
-        - time_stamps - list of list of 30 minute observation in each day
+        A :class:`~tuple` (dates, time_stamps)
 
-    :rtype: list[str]
-
+        - dates - list of days between :samp:`start_date` and :samp:`stop_date` :class:`~list`
+        - time_stamps - list of list with all 30 minute observation in each day :class:`~list`
 
     """
 
@@ -207,22 +226,19 @@ def time_tree(start_date, stop_date):
 
 def plt_waterfall(power, times, name):
     """
-    Create waterfall :func:`~matplotlib.pyplot.plot` object.
+    Create waterfall :func:`~matplotlib.pyplot.plot` object from rf data
 
-    waterfall created using parameters ``power``, ``times``
-    from :func:`~embers.condition_data.rf_data.read_data`. 
+    waterfall created using parameters :samp:`power`, :samp:`times`
+    from :func:`read_data`. 
     Default unix times are converted to a human readable
-    *HH:MM* format.
+    :samp:`HH:MM` format.
 
-    Parameters
-    ----------
-    :param power: `numpy.ndarray` object from :func:`~embers.condition_data.rf_data.read_data`
-    :param times: `numpy.ndarray` object from :func:`~embers.condition_data.rf_data.read_data`
+    :param power: :class:`~numpy.ndarray` object from :func:`read_data`
+    :param times: :class:`~numpy.ndarray` object from :func:`read_data`
     :param name: name of rf data identifier to add to plot title
 
-    Returns
-    -------
-        - plt - `.pyplot.plot` object
+    :returns:
+        - plt - :func:`~matplotlib.pyplot.plot` object
 
     """
 
@@ -279,16 +295,11 @@ def plt_waterfall(power, times, name):
 def single_waterfall(rf_file, out_dir):
     """Save a waterfall plot from rf data file.
     
-    Parameters
-    ----------
-    :param rf_file: path to a rf data file
-    :type rf_file: str
-    :param out_dir: path to output directory
-    :type out_dir: str
+    :param rf_file: path to a rf data file :class:`~str`
+    :param out_dir: path to output directory :class:`~str`
 
-    Returns
-    -------
-    :return: waterfall plot saved by `matplotlib.pyplot.savefig`
+    :returns: 
+        waterfall plot saved by :func:`~matplotlib.pyplot.savefig`
 
     """
 
@@ -306,23 +317,14 @@ def single_waterfall(rf_file, out_dir):
 def batch_waterfall(tile, time_stamp, data_dir, out_dir):
     """Save a waterfall plot for a batch of rf data files.
 
-    Parameters
-    ----------
-    :param tile: tile name 
-    :type tile: str
-    :param time_stamp: when the rf observation began 
-    :type time_stamp: str [*YYYY-MM-DD-HH:MM*]
-    :param data_dir: path to root of data directory
-    :type data_dir: str
-    :param out_dir: path to output directory
-    :type out_dir: str
+    :param tile: tile name :class:`~str`
+    :param time_stamp: start of rf observation in :samp:`YYYY-MM-DD-HH:MM` format :class:`~str`
+    :param data_dir: path to root of data directory :class:`~str`
+    :param out_dir: path to output directory :class:`~str`
 
-    Returns
-    -------
-    :return: waterfall plot saved by `matplotlib.pyplot.savefig`
+    :return: 
+        waterfall plot saved by :func:`~matplotlib.pyplot.savefig`
     
-    Exeptions
-    ---------
     :raises FileNotFoundError: input file does not exist
 
     """
