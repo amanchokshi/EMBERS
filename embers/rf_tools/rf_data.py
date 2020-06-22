@@ -106,7 +106,7 @@ def tile_names():
 
 def tile_pairs(tiles):
     """
-    Create a list of all possible AUT ref antenna pairs
+    Create a list of all possible AUT ref antenna pairs from :func:`~embers.rf_tools.rf_data.tile_names`
     
     Parameters
     ----------
