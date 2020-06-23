@@ -25,7 +25,9 @@ def savgol_interp(
     interp_type=None,
     interp_freq=None,
 ):
-    """Interpolate the power array followed by savgol smoothing.
+
+    """
+    Interpolate a power array followed by savgol smoothing.
 
     Interpolate to a given frequency which 
     makes the dimensions of the power arrays
@@ -35,29 +37,40 @@ def savgol_interp(
     first to capture deep nulls + small structure, 
     and second level to smooth over noise.
 
-    
-    Parameters
-    ----------
-    :param str ref: path to reference data file
-    :param str tile: path to tile data file
-    :param int savgol_window_1:  window size of savgol filer, must be odd
-    :param int savgol_window_2:  window size of savgol filer, must be odd
-    :param int polyorder: polynomial order to fit to savgol_window
-    :param str interp_type: type of interpolation. Ex: 'cubic', 'linear'
-    :param int interp_freq: freqency to which power array is interpolated
+    .. code-block:: python
+        
+        from embers.rf_tools.align_data import savgol_interp
 
-    Returns
-    -------
+         sg_interp_tuple = savgol_interp(
+                            "~/embers-data/rf0XX.txt",
+                            "~/embers-data/S06XX", 
+                            savgol_window_1=11, 
+                            savgol_window_2=15, 
+                            polyorder=2, 
+                            interp_type="cubic", 
+                            interp_freq=1)
+
+        (ref_ali, tile_ali, time_array,
+            ref_power, tile_power, ref_time, tile_time) = sg_interp_tuple
+    
+    :param ref: path to reference data file :class:`~str`
+    :param tile: path to tile data file :class:`~str`
+    :param savgol_window_1:  window size of savgol filer, must be odd :class:`~int`
+    :param savgol_window_2:  window size of savgol filer, must be odd :class:`~int`
+    :param polyorder: polynomial order to fit to savgol_window :class:`~int`
+    :param interp_type: type of interpolation. Ex: 'cubic', 'linear' :class:`~str`
+    :param interp_freq: freqency to which power array is interpolated in Hertz :class:`~int`
+
     :returns:
+        A :class:`~tuple` (ref_ali, tile_ali, time_array, ref_power, tile_power, ref_time, tile_time)
+
         - ref_ali - aligned reference power array
         - tile_ali - aligned tile power array
-        - time_array - time array corresponding to power arrays
+        - time_array - corresponding to power arrays
         - ref_power - raw reference power array
         - tile_power - raw tile power array
         - ref_time - raw reference time array
         - tile_time - raw tile time array
-
-    :rtype: (float, numpy.array(float))
 
     """
 
@@ -102,31 +115,42 @@ def save_aligned(
     data_dir,
     out_dir,
 ):
-    """Save an aligned set of rf data to an npz file. 
+    """Save an aligned set of rf data with :func:`~numpy.savez_compressed` to an :samp:`npz` file. 
 
     A pair of rf data files are smoothed, interpolated and aligned
-    with the :func:`~embers.condition_data.align_data.savgol_interp`.
-    The output is written to a npz file and saved to an output 
+    with the :func:`~embers.rf_tools.align_data.savgol_interp`.
+    with the output written to a :samp:`npz` file and saved to an output 
     directory tree.
 
-    Parameters
-    ----------
-    :param list[str] tile_pair: pair of ref and tile antenna names
-    :param str time_stamp: time when rf observation began. In YYYY-MM-DD-HH-MM format
-    :param int savgol_window_1:  window size of savgol filer, must be odd
-    :param int savgol_window_2:  window size of savgol filer, must be odd
-    :param int polyorder: polynomial order to fit to savgol_window
-    :param str interp_type: type of interpolation. Ex: 'cubic', 'linear'
-    :param int interp_freq: freqency to which power array is interpolated
-    :param str data_dir: root of data dir where rf data is located
-    :param str out_dir: relative path to output directory
+    .. code-block:: python
+        
+        from embers.rf_tools.align_data.save_aligned
+        
+        savgol_interp(
+                    ["rf0XX", "S06XX"],
+                    "2020-01-01-00:00"
+                    savgol_window_1=11, 
+                    savgol_window_2=15, 
+                    polyorder=2, 
+                    interp_type="cubic", 
+                    interp_freq=1,
+                    "~/embers-data/",
+                    "~/embers-outputs")
 
-    Returns
-    -------
-    :return: aligned rf data saved by `numpy.savez_compressed`
+
+    :param tile_pair: pair of ref and tile antenna names from :func:`~embers.rf_tools.rf_data.tile_pairs` :class:`list`
+    :param time_stamp: time when rf observation began. In YYYY-MM-DD-HH-MM format :class:`~str`
+    :param savgol_window_1:  window size of savgol filer, must be odd :class:`~int`
+    :param savgol_window_2:  window size of savgol filer, must be odd :class:`~int`
+    :param polyorder: polynomial order to fit to savgol_window :class:`~int`
+    :param interp_type: type of interpolation. Ex: 'cubic', 'linear' :class:`~str`
+    :param interp_freq: freqency to which power array is interpolated :class:`~int`
+    :param data_dir: root of data dir where rf data is located :class:`~str`
+    :param out_dir: relative path to output directory :class:`~str`
+
+    :return:
+        - aligned rf data saved to :samp:`npz` file by :func:`~numpy.savez_compressed`
     
-    Exeptions
-    ---------
     :raises FileNotFoundError: an input file does not exist
 
     """

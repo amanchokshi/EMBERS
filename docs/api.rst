@@ -23,6 +23,7 @@ Contains :mod:`~embers.rf_tools.rf_data`, :mod:`~embers.rf_tools.align_data`, :m
     rf_data.plt_waterfall
     rf_data.single_waterfall
     rf_data.batch_waterfall
+    align_data.savgol_interp
 
 Sat Utils
 =========
