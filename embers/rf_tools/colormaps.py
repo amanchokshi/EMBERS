@@ -13,16 +13,13 @@ from scipy.interpolate import interp1d
 
 
 def spectral():
-    """A beautiful non-linear spectral colormap
+    """Beautiful non-linear spectral colormap
 
-    Spectral is not perceptually uniform and is
-    only used to easily preview raw data with
-    high contrast
+    :func:`~embers.rf_tools.colormaps.spectral` is not perceptually uniform and is
+    only used to easily preview raw data with high contrast
 
-    Returns
-    -------
     :returns:
-        - spectral, spectral_r - ember colormap obj:`~matplotlib.colors.Colormap`
+        - spectral, spectral_r - ember colormap :class:`~matplotlib.colors.ListedColormap`
 
 
     """
@@ -59,12 +56,10 @@ def spectral():
 
 
 def jade():
-    """A beautiful perceptually uniform jade colormap
+    """Beautiful perceptually uniform jade green colormap
 
-    Returns
-    -------
     :returns:
-        - jade, jade_r - ember colormap obj:`~matplotlib.colors.Colormap`
+        - jade, jade_r - ember colormap :class:`~matplotlib.colors.ListedColormap`
 
     """
 
