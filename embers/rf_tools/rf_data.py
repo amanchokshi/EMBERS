@@ -161,7 +161,7 @@ def time_tree(start_date, stop_date):
 
     This is used to travers the following directory tree.
     The data_root dir contains a sub-dir for every tile in
-    :func:`~embers.condition_data.rf_data.tile_names` within
+    :func:`~embers.rf_tools.rf_data.tile_names` within
     which are dirs for every day, containg raw rf data files
     recorded every 30 minutes
 

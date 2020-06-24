@@ -82,7 +82,7 @@ img {
 }
 h1, h2, h3 {
     font-family: "Lato-Bold";
-    color: #2a9d8f;
+    color: #2A9D8F;
 }
 #embers h1 {
     margin-bottom: 0;
@@ -94,14 +94,14 @@ h1, h2, h3 {
     display: block;
 }
 .headerlink {
-    color: white;
+    color: #FFFFFF;
     box-shadow: none;
 }
 :hover > .headerlink {
-    color: #eee;
+    color: #EEEEEE;
 }
 :hover > .headerlink:hover {
-    color: #ddd;
+    color: #DDDDDD;
     box-shadow: none;
 }
 .motto {
@@ -110,22 +110,22 @@ h1, h2, h3 {
 }
 .motto em {
     padding-bottom: 0.75em;
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid #969A9C;
 }
 code, pre, tt, dt {
     font-family: "Fira Code", monospace, serif;
 }
 code, pre, tt {
-    background-color: #f9f8eb;
+    background-color: #F9F8Eb;
 }
 code, tt {
     border-radius: 3px;
-    border: 1px solid #e3dcca;
+    border: 1px solid #E3DCCA;
     padding: 1px 2px 2px;
     font-size: 0.83333333em;
 }
 a code:hover, a tt:hover {
-    border-color: #827c6b;
+    border-color: #827C6B;
 }
 code.py-obj {
     border: none;
@@ -155,7 +155,7 @@ dt {
     display: inline-block;
     padding-left: 4em;
     text-indent: -4em;
-    color: #f25c54;
+    color: #F25C54;
 }
 dt em {
     font-style: normal;
@@ -176,23 +176,23 @@ pre {
 }
 a {
     border-bottom: none;
-    color: #f4845f;
+    color: #F4845F;
     text-decoration: none;
 }
 a:hover {
     border-bottom: none;
-    color: #f25c54;
+    color: #F25C54;
     text-decoration: none;
 }
 
 li a, .motto a {
     border-bottom: dotted 1px;
-    color: #f4845f;
+    color: #F4845F;
     text-decoration: none;
 }
 li a:hover, .motto a:hover {
     border-bottom: none;
-    color: #f25c54;
+    color: #F25C54;
     text-decoration: none;
 }
 
@@ -224,7 +224,7 @@ tr:last-child td {
     color: #888;
 }
 dt:target {
-   background-color: #f7b267;
+   background-color: #ccc;
 }
 .simple {
     line-height: 1.4em;
@@ -240,6 +240,7 @@ tr {
 @media screen and (min-width: 480px) {body {font-size: 1.125em;}}
 @media screen and (min-width: 640px) {body {max-width: 42em;}}
 
+/* The below has been modified with custom colors */
 /* To regenerate the following Pygments palette, run:
    pip install pygments-style-solarized
    pygmentize -S solarizedlight -f html > solarizedlight.css */
@@ -278,17 +279,17 @@ tr {
 .m { color: #2aa198 } /* Literal.Number */
 .s { color: #2aa198 } /* Literal.String */
 .na { color: #657b83 } /* Name.Attribute */
-.nb { color: #268bd2 } /* Name.Builtin */
-.nc { color: #268bd2 } /* Name.Class */
+.nb { color: #028090 } /* Name.Builtin */
+.nc { color: #028090 } /* Name.Class */
 .no { color: #b58900 } /* Name.Constant */
 .nd { color: #cb4b16 } /* Name.Decorator */
 .ni { color: #cb4b16 } /* Name.Entity */
 .ne { color: #cb4b16 } /* Name.Exception */
-.nf { color: #268bd2 } /* Name.Function */
+.nf { color: #028090 } /* Name.Function */
 .nl { color: #657b83 } /* Name.Label */
 .nn { color: #b58900 } /* Name.Namespace */
 .nx { color: #657b83 } /* Name.Other */
-.py { color: #268bd2 } /* Name.Property */
+.py { color: #028090 } /* Name.Property */
 .nt { color: #859900 } /* Name.Tag */
 .nv { color: #cd4b16 } /* Name.Variable */
 .ow { color: #859900 } /* Operator.Word */
@@ -308,8 +309,8 @@ tr {
 .sr { color: #2aa198 } /* Literal.String.Regex */
 .s1 { color: #2aa198 } /* Literal.String.Single */
 .ss { color: #2aa198 } /* Literal.String.Symbol */
-.bp { color: #268bd2; font-weight: bold } /* Name.Builtin.Pseudo */
-.vc { color: #268bd2 } /* Name.Variable.Class */
-.vg { color: #268bd2 } /* Name.Variable.Global */
-.vi { color: #268bd2 } /* Name.Variable.Instance */
+.bp { color: #028090; font-weight: bold } /* Name.Builtin.Pseudo */
+.vc { color: #028090 } /* Name.Variable.Class */
+.vg { color: #028090 } /* Name.Variable.Global */
+.vi { color: #028090 } /* Name.Variable.Instance */
 .il { color: #2aa198 } /* Literal.Number.Integer.Long */

@@ -15,7 +15,7 @@ Embers documentation lives here at the main embers web site:
 - :doc:`installation`
 - :doc:`api`
 
-But the source code and issue tracker live on other web sites:
+The source code and issue tracker live on other web sites:
 
 * `Embers on the Python Package Index <https://pypi.org/project/embers/>`_
 

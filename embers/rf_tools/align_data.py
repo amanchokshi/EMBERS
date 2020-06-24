@@ -124,7 +124,7 @@ def save_aligned(
 
     .. code-block:: python
         
-        from embers.rf_tools.align_data.save_aligned
+        from embers.rf_tools.align_data import save_aligned
         
         savgol_interp(
                     ["rf0XX", "S06XX"],
