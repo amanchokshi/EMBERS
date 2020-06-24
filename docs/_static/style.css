@@ -176,23 +176,23 @@ pre {
 }
 a {
     border-bottom: none;
-    color: #F4845F;
+    color: #F25C54;
     text-decoration: none;
 }
 a:hover {
     border-bottom: none;
-    color: #F25C54;
+    color: #F4845F;
     text-decoration: none;
 }
 
 li a, .motto a {
     border-bottom: dotted 1px;
-    color: #F4845F;
+    color: #F25C54;
     text-decoration: none;
 }
 li a:hover, .motto a:hover {
     border-bottom: none;
-    color: #F25C54;
+    color: #F4845F;
     text-decoration: none;
 }
 
