@@ -45,12 +45,12 @@ table{border-collapse:collapse;border-spacing:0}
 /* Colors darkened and lightened with http://gka.github.io/chroma.js/ */
 
 @font-face {
-    font-family: "Lato";
+    font-family: "Lato-Bold";
     src: url(Lato-Bold.ttf);
 }
 @font-face {
-    font-family: "Gentium";
-    src: url(Gentium.ttf);
+    font-family: "Lato-Regular";
+    src: url(Lato-Regular.ttf);
 }
 @font-face {
     font-family: "Fira Code";
@@ -62,10 +62,11 @@ body, body > img {
     margin-right: auto;
 }
 body {
-    color: #343434;
+    background-color: #F3F6FA;
+    color: #969A9C;
     padding: 0 1em;
     line-height: 1.3;
-    font-family: "Gentium", sans-serif, serif;
+    font-family: "Lato-Regular", sans-serif, serif;
     font-size: 0.8em;
     max-width: 36em;
 }
@@ -80,8 +81,8 @@ img {
     max-width: 100%;
 }
 h1, h2, h3 {
-    font-family: "Lato";
-    color: #c70039;
+    font-family: "Lato-Bold";
+    color: #2a9d8f;
 }
 #embers h1 {
     margin-bottom: 0;
@@ -115,7 +116,7 @@ code, pre, tt, dt {
     font-family: "Fira Code", monospace, serif;
 }
 code, pre, tt {
-    background-color: #FDF6E3;
+    background-color: #f9f8eb;
 }
 code, tt {
     border-radius: 3px;
@@ -130,7 +131,7 @@ code.py-obj {
     border: none;
     border-radius: 0;
     background: none;
-    font-family: "Gentium", sans-serif, serif;
+    font-family: "Lato-Regular", sans-serif, serif;
 }
 .py-class {
     font-size: 0.8em;
@@ -144,20 +145,17 @@ code.py-obj {
 .samp {
     font-size: 0.8em;
 }
-/*.literal {
-    font-size: 0.77em;
-}*/
 code {
     font-size: 1em;
 }
 dd {
-    color: #343434;
+    color: #969A9C;
 }
 dt {
     display: inline-block;
     padding-left: 4em;
     text-indent: -4em;
-    color: #790000
+    color: #f25c54;
 }
 dt em {
     font-style: normal;
@@ -177,15 +175,27 @@ pre {
     border: none;
 }
 a {
-    border-bottom: dotted 1px;
-    color: #f05941;
+    border-bottom: none;
+    color: #f4845f;
     text-decoration: none;
 }
 a:hover {
     border-bottom: none;
-    color: #ff8264;
+    color: #f25c54;
     text-decoration: none;
 }
+
+li a, .motto a {
+    border-bottom: dotted 1px;
+    color: #f4845f;
+    text-decoration: none;
+}
+li a:hover, .motto a:hover {
+    border-bottom: none;
+    color: #f25c54;
+    text-decoration: none;
+}
+
 #api-reference table a {
     box-shadow: none;
 }
@@ -214,15 +224,7 @@ tr:last-child td {
     color: #888;
 }
 dt:target {
-   background-color: #f1d592;
-}
-.external {
-    border-bottom: none;
-    text-decoration: none;
-}
-.internal {
-    border-bottom: none;
-    text-decoration: none;
+   background-color: #f7b267;
 }
 .simple {
     line-height: 1.4em;
