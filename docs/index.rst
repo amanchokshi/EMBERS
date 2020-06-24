@@ -2,6 +2,10 @@
 ========
  EMBERS
 ========
+.. raw:: html
+
+   <img class="logo" src="_static/imgs/embers.gif">
+
 .. rst-class:: motto
 
    *Experimental Measurement of BEam Responses with Satellites*
