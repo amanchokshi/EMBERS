@@ -285,7 +285,7 @@ def sat_plot(sat_id, alt, az, num_passes, alpha=0.5):
     :param alpha: transparency of individual passes, default=0.5
 
     :return:
-        - plt - :func:`~matplotlib.pyplot.plot` object
+        - :func:`~matplotlib.pyplot.plot` object
     
     """
 
