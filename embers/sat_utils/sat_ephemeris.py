@@ -9,6 +9,7 @@ from TLE files.
 
 import numpy as np
 import skyfield as sf
+from pathlib import Path
 from astropy.time import Time
 import matplotlib.pyplot as plt
 from skyfield.api import Topos, Loader
@@ -85,7 +86,7 @@ def epoch_ranges(epochs):
     return epoch_range
 
 
-def epoch_time_array(epoch_range, index_epoch, cadence):
+def epoch_time_array(epoch_range, index_epoch=None, cadence=None):
     """Create a Skyfield :class:`~skyfield.timelib.Timescale` object at which to evaluate satellite positions.
     
     Begins by downloading up-to-date time files, using the skyfield :class:`~skyfield.iokit.Loader` class, 
@@ -134,6 +135,8 @@ def epoch_time_array(epoch_range, index_epoch, cadence):
         ts = load.timescale()
     except Exception as e:
         if e != None:
+            print("Unable to download skyfield time files")
+            print("Falling back to built in time files")
             ts = load.timescale(builtin=True)
 
     # find time between epochs/ midpoints in seconds, using Astropy Time
@@ -197,14 +200,14 @@ def sat_pass(sats, t_arr, index_epoch, location=None):
         latitude=location[0], longitude=location[1], elevation_m=location[2]
     )
 
-    if len(t_arr) > 0:
+    # Select satellite from sats with index_epoch
+    # Find position of sat at each timestep of t_arr
+    satellite = sats[index_epoch]
+    orbit = (satellite - position).at(t_arr)
+    alt, az, _ = orbit.altaz()
 
-        # Select satellite from sats with index_epoch
-        # Find position of sat at each timestep of t_arr
-        satellite = sats[index_epoch]
-        orbit = (satellite - position).at(t_arr)
-        alt, az, _ = orbit.altaz()
-
+    if alt.degrees.shape[0] > 0:
+        
         # Check if sat is above the horizon (above -1 degrees), return boolean array
         above_horizon = alt.degrees >= -1
 
@@ -230,6 +233,9 @@ def sat_pass(sats, t_arr, index_epoch, location=None):
         passes = boundaries.reshape(len(boundaries) // 2, 2)
 
         return (passes, alt, az)
+    
+    else:
+        return None
 
 
 def ephem_data(t_arr, pass_index, alt, az):
@@ -265,18 +271,15 @@ def ephem_data(t_arr, pass_index, alt, az):
 
     # A list of times at which alt/az were calculated
     # Convert to unix time to match the rf explorer timestamps
-    time_array = Time(t_arr[i : j + 1].tt, scale="tt", format="jd").unix
+    time_array = Time(t_arr.tt[i : j + 1], scale="tt", format="jd").unix
 
-    theta = list(az.radians)
-    r = list(alt.degrees)
-
-    sat_az = theta[i : j + 1]
-    sat_alt = r[i : j + 1]
+    sat_az = az.radians[i : j + 1]
+    sat_alt = alt.degrees[i : j + 1]
 
     return (time_array, sat_alt, sat_az)
 
 
-def sat_plot(sat_id, alt, az, num_passes, alpha=0.5):
+def sat_plot(sat_id, alt, az, alpha=0.5):
     """Plots satellite passes
     
     :param sat_id: Norad catalogue ID :class:`~str`
@@ -296,93 +299,57 @@ def sat_plot(sat_id, alt, az, num_passes, alpha=0.5):
     ax.set_rgrids([0, 30, 60, 90], angle=22)
     ax.set_theta_zero_location("N")
     ax.set_theta_direction(-1)
-    ax.grid(color="#8bbabb", linewidth=1.6, alpha=0.6)
+    ax.grid(color="#35635b", linewidth=1.8, alpha=0.7)
 
     for i in range(len(alt)):
-        plt.plot(az[i], alt[i], "-", linewidth=1.6, alpha=alpha, color="#1f4e5f")
+        plt.plot(az[i], alt[i], "-", linewidth=1.8, alpha=alpha, color="#529471")
 
     ax.set_title(f"Satellite {sat_id} Sky Coverage: {len(alt)} Passes", y=1.08)
     plt.tight_layout()
 
     return plt
 
+def save_ephem(sat, tle_dir=None, cadence=None, location=None, alpha=0.5, out_dir=None):
+    """Save ephemeris of all satellite passes and plot sky coverage.
 
-if __name__ == "__main__":
+    """
 
-    import os
-    import json
-    import argparse
-
-    parser = argparse.ArgumentParser(
-        description="""
-            Code which converts the TLE files downloaded with download_TLE.py
-            into satellite ephemeris data: rise time, set time, alt/az arrays
-            at a given time cadence. This is saved to a json file which will 
-            be used to plot the satellite passes.
-            """
-    )
-
-    parser.add_argument(
-        "--sat", metavar="\b", help="The Norad cat ID of satellite. Example: 21576"
-    )
-    parser.add_argument(
-        "--tle_dir",
-        metavar="\b",
-        default="./../../outputs/sat_ephemeris/TLE",
-        help="Directory where TLE files are saved. Default=./../../outputs/sat_ephemeris/TLE",
-    )
-    parser.add_argument(
-        "--cadence",
-        metavar="\b",
-        default=4,
-        help="Rate at which sat alt/az is computed. Default=4s",
-    )
-    parser.add_argument(
-        "--out_dir",
-        metavar="\b",
-        default="./../../outputs/sat_ephemeris/ephem_json/",
-        help="Path to output directory. Default=./../../outputs/sat_ephemeris/ephem_json/",
-    )
-
-    args = parser.parse_args()
-    sat_name = args.sat
-    tle_dir = args.tle_dir
-    cadence = int(args.cadence)
-    out_dir = args.out_dir
-
-    tle_path = f"{tle_dir}/{sat_name}.txt"
-
-    # Position of MWA site in Lat/Lon/Elevation
-    MWA = Topos(latitude=-26.703319, longitude=116.670815, elevation_m=337.83)
-
-    os.makedirs(os.path.dirname(out_dir), exist_ok=True)
-
+    Path(f"{out_dir}/ephem_data").mkdir(parents=True, exist_ok=True)
+    Path(f"{out_dir}/ephem_plots").mkdir(parents=True, exist_ok=True)
+    tle_path = f"{tle_dir}/{sat}.txt"
+    
     sat_ephem = {}
-    sat_ephem["sat_id"] = [sat_name]
+    sat_ephem["sat_id"] = sat
     sat_ephem["time_array"] = []
     sat_ephem["sat_alt"] = []
     sat_ephem["sat_az"] = []
-
+    
     sats, epochs = load_tle(tle_path)
-    epoch_range = epoch_ranges(epochs)
+    
+    if len(epochs) > 0:
+    
+        epoch_range = epoch_ranges(epochs)
+        
+        for i in range(len(epoch_range) - 1):
+            t_arr, index_epoch = epoch_time_array(epoch_range, index_epoch=i, cadence=cadence)
+            s_pass = sat_pass(sats, t_arr, index_epoch, location=location)
 
-    for i in range(len(epoch_range) - 1):
-        try:
-            t_arr, index_epoch = epoch_time_array(epoch_range, i, cadence)
-            passes, alt, az = sat_pass(sats, t_arr, index_epoch)
+            if s_pass is not None:
 
-            for pass_index in passes:
-                time_array, sat_alt, sat_az = ephem_data(t_arr, pass_index, alt, az)
-
-                time_array = list(time_array)
-
-                # We don't care about sat passes shorter than a minute (3*20sec)
-                if len(time_array) >= 3:
+                passes, alt, az = s_pass
+            
+                for pass_index in passes:
+                    time_array, sat_alt, sat_az = ephem_data(t_arr, pass_index, alt, az)
+        
                     sat_ephem["time_array"].append(time_array)
                     sat_ephem["sat_alt"].append(sat_alt)
                     sat_ephem["sat_az"].append(sat_az)
-        except Exception:
-            pass
+        
+        plt= sat_plot(sat, sat_ephem["sat_alt"], sat_ephem["sat_az"], alpha=alpha)
+        plt.savefig(f"{out_dir}/ephem_plots/{sat}.png")
+        
+        np.savez_compressed(f'{out_dir}/ephem_data/{sat}.npz', **sat_ephem)
+    
+    else:
+        print(f"No Data in {sat}.txt TLE file")
 
-    with open(f"{out_dir}/{sat_name}.json", "w") as outfile:
-        json.dump(sat_ephem, outfile, indent=4)
