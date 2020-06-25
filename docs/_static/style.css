@@ -150,6 +150,7 @@ code {
 }
 dd {
     color: #969A9C;
+    line-height: 1.4rem;
 }
 dt {
     display: inline-block;
