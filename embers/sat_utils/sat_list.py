@@ -23,7 +23,7 @@ from spacetrack import SpaceTrackClient
 
 def norad_ids():
     """
-    A dictionary of NORAD Satellite Catalogue IDs.
+    Dictionary of NORAD Satellite Catalogue IDs.
 
     .. code-block:: python
         

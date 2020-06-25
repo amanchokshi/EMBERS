@@ -117,15 +117,15 @@ def epoch_time_array(epoch_range, index_epoch, cadence):
         >>> [#################################] 100% deltat.preds
         >>> [#################################] 100% Leap_Second.dat
 
-    :param index_epoch: Index of :samp:`epoch_range` to be converted to time array
+    :param index_epoch: Index of :samp:`epoch_range` to be converted to time array :class:`~int`
     :param epoch_range: List of times intervals where an epoch is most accurate, from :func:`embers.sat_utils.sat_ephemeris.epoch_ranges` 
-    :param cadence: time cadence at which to evaluate sat position, in seconds
+    :param cadence: time cadence at which to evaluate sat position, in seconds :class:`~int`
 
     :returns:
         A :class:`~tuple` of (t_arr, index_epoch)
 
         - t_arr: Skyfield :class:`~skyfield.timelib.Timescale` object with array of times at given :samp:`cadence`
-        - index_epoch: Index of :samp:`epoch_range` to be converted to time array
+        - index_epoch: Index of :samp:`epoch_range` to be converted to time array :class:`~int`
 
     """
 
@@ -156,22 +156,28 @@ def epoch_time_array(epoch_range, index_epoch, cadence):
 
 
 def sat_pass(sats, t_arr, index_epoch):
-    """Finds satellite passes.
+    """Find when a satellite passes above the horizon. 
     
-    Calculates alt/az of sat at every position instant of time 
-    array (t_arr). Finds all the times that the sat is above
-    the horizon, and returns the index t_arr at which the sat
-    rose and set.
+    Calculate the :samp:`Altitude` & :samp:`Azimuth` of a 
+    :class:`~skyfield.sgp4lib.EarthSatellite` object from 
+    :func:`~embers.sat_utils.sat_ephemeris.load_tle` at 
+    every instant of time in :samp:`t_arr` from  
+    :func:`~embers.sat_utils.sat_ephemeris.epoch_time_array`. 
+    Determine all the times that the satellite is above the 
+    horizon, and returns the pair of indices of :samp:`t_arr` 
+    at which the satellite rose and set.
     
-    Args:
-        sats: list of Skyfield EarthSatellite objects
-        t_arr: Skyfield time object
-        index_epoch: Position in epoch_range
+    :param sats: list of :class:`~skyfield.sgp4lib.EarthSatellite` objects
+    :param t_arr: skyfield :class:`~skyfield.timelib.Timescale` object with array of times
+    :param index_epoch: Index of :samp:`epoch_range` :class:`~int`
     
-    Returns:
-        passes: 2D array with pairs of indicies corresponding to rise/set of sat
-        alt: Array of altitudes of sat at t_arr times
-        az: Array of azimuths of sat at t_arr times
+    :returns:
+        A :class:`~tuple` of (passes, alt, az)
+        
+        - passes: 2D array with pairs of indicies of :samp:`t_arr` corresponding to rise/set of satellite
+        - alt: Array of :samp:`Altitudes` of sat at :samp:`t_arr` times
+        - az: Array of :samp:`Azimuths` of sat at :samp:`t_arr` times
+
     """
 
     # Define Satellite to be the first one in sats list
