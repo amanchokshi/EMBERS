@@ -41,7 +41,7 @@ Alternately, if you already have a correct version of Python installed, you can 
 .. code-block:: console
 
     python -m venv embers
-    source emebrs/bin/activate
+    source embers/bin/activate
     pip install embers
 
 
