@@ -36,6 +36,7 @@ Sat Utils
 
     sat_list.norad_ids
     sat_list.download_tle
+    sat_ephemeris.load_tle
 
 
 MWA Meta

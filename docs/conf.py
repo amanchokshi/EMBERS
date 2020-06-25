@@ -39,7 +39,8 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx', 'sphinx.ext.autosu
 # Intersphinx configuration
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None),
                        'numpy': ('https://docs.scipy.org/doc/numpy', None),
-                       'matplotlib': ('https://matplotlib.org', None)}
+                       'matplotlib': ('https://matplotlib.org', None),
+                       'skyfield': ('https://rhodesmill.org/skyfield/', '_static/skyfield.inv')}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
