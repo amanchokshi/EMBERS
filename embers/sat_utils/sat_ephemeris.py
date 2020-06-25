@@ -12,9 +12,6 @@ import skyfield as sf
 from astropy.time import Time
 from skyfield.api import Topos, Loader
 
-# Position of MWA site in Lat/Lon/Elevation
-MWA = Topos(latitude=-26.703319, longitude=116.670815, elevation_m=337.83)
-
 
 def load_tle(tle_file):
     """
@@ -155,7 +152,7 @@ def epoch_time_array(epoch_range, index_epoch, cadence):
     return (t_arr, index_epoch)
 
 
-def sat_pass(sats, t_arr, index_epoch):
+def sat_pass(sats, t_arr, index_epoch, location=None):
     """Find when a satellite passes above the horizon. 
     
     Calculate the :samp:`Altitude` & :samp:`Azimuth` of a 
@@ -164,12 +161,26 @@ def sat_pass(sats, t_arr, index_epoch):
     every instant of time in :samp:`t_arr` from  
     :func:`~embers.sat_utils.sat_ephemeris.epoch_time_array`. 
     Determine all the times that the satellite is above the 
-    horizon, and returns the pair of indices of :samp:`t_arr` 
-    at which the satellite rose and set.
+    horizon, at a given gps :samp:`location` and returns the 
+    pair of indices of :samp:`t_arr` at which the satellite rose 
+    and set. 
+    
+    .. code-block:: python
+        
+        from embers.sat_utils.sat_ephemeris import load_tle, epoch_ranges, epoch_time_array, sat_pass
+        sats, epochs = load_tle('~/embers-data/TLE/21576.txt')
+        epoch_range = epoch_ranges(epochs)
+        index_epoch = 0     # select first time interval from epoch_range
+        cadence = 10        # evaluate satellite position every 10 seconds
+        t_arr, index_epoch = epoch_time_array(epoch_range, index_epoch, cadence)
+        MWA = (-26.703319, 116.670815, 337.83)   # gps coordinates of MWA Telescope
+
+        passes, alt, az = sat_pass(sats, t_arr, index_epoch, location=MWA)
     
     :param sats: list of :class:`~skyfield.sgp4lib.EarthSatellite` objects
     :param t_arr: skyfield :class:`~skyfield.timelib.Timescale` object with array of times
     :param index_epoch: Index of :samp:`epoch_range` :class:`~int`
+    :param location: The :samp:`gps` coordinates of the :samp:`location` at which satellite passes are to be computed. :samp:`location` is a :class:`~tuple` in the format (:samp:`latitude`, :samp:`longitude`, :samp:`elevation`), with :samp:`elevation` given in :samp:`meters` 
     
     :returns:
         A :class:`~tuple` of (passes, alt, az)
@@ -180,13 +191,18 @@ def sat_pass(sats, t_arr, index_epoch):
 
     """
 
-    # Define Satellite to be the first one in sats list
-    # Find position of sat at each timestep of time array
+    # Position where sat passes are to be determined in Lat/Lon/Elevation
+    position = Topos(
+            latitude=location[0],
+            longitude=location[1],
+            elevation_m=location[2])
 
     if len(t_arr) > 0:
 
+        # Select satellite from sats with index_epoch
+        # Find position of sat at each timestep of t_arr
         satellite = sats[index_epoch]
-        orbit = (satellite - MWA).at(t_arr)
+        orbit = (satellite - position).at(t_arr)
         alt, az, _ = orbit.altaz()
 
         # Check if sat is above the horizon (above -1 degrees), return boolean array
@@ -328,6 +344,9 @@ if __name__ == "__main__":
 
     tle_path = f"{tle_dir}/{sat_name}.txt"
 
+    # Position of MWA site in Lat/Lon/Elevation
+    MWA = Topos(latitude=-26.703319, longitude=116.670815, elevation_m=337.83)
+    
     os.makedirs(os.path.dirname(out_dir), exist_ok=True)
 
     sat_ephem = {}
