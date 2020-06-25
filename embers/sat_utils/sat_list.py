@@ -1,18 +1,16 @@
 """
-=============
 Satellite IDs
-=============
+-------------
 
 Dictionary of satellite names and their NORAD Catalogue IDs.
 These satellites are active in the 137 to 139 MHz frequency 
 window. Include ORBCOMM Communication satellites and 
 NOAA & METEOR Weather satellites.
 
-Included is a method to download TLE orbital parameters for 
-these satellites using Space-Track.org.
+Includes a method to download TLE orbital parameters from `Space-Track.org <https://www.space-track.org/>`_
 
 .. warning::
-    To download orbital parameters (TLEs) from Space-Track.org,
+    To download TLEs from `Space-Track.org <https://www.space-track.org/>`_,
     make an account and obtain login credentials.
 
 """
@@ -27,8 +25,6 @@ def norad_ids():
     """
     A dictionary of NORAD Satellite Catalogue IDs.
 
-    Returns
-    -------
     :returns:
         - norad_ids - satellite name : NORAD CATID
 
@@ -124,8 +120,6 @@ def download_tle(
     Download satellite TLEs within a date interval
     for all sats in :func:`~embers.sat_utils.sat_list.norad_ids`.
 
-    Parameters
-    ----------
     :param str start_date: start date in YYYY-MM-DD format
     :param str stop_date: stop date in YYYY-MM-DD format
     :param dict norad_ids: sat_name: NORAD_ID dict
@@ -133,8 +127,6 @@ def download_tle(
     :param str st_pass: space-track.org login password
     :param str out_dir: output dir to save TLE files
 
-    Returns
-    -------
     :return:
         - tle file - saved to output directory
 

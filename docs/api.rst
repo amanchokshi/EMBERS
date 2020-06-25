@@ -30,6 +30,13 @@ Contains :mod:`~embers.rf_tools.rf_data`, :mod:`~embers.rf_tools.align_data`, :m
 Sat Utils
 =========
 
+.. currentmodule:: embers.sat_utils
+
+.. autosummary::
+
+    sat_list.norad_ids
+    sat_list.download_tle
+
 
 MWA Meta
 ========
