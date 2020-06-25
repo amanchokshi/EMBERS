@@ -109,8 +109,8 @@ h1, h2, h3 {
     text-align: center;
 }
 .motto em {
-    padding-bottom: 0.75em;
-    border-bottom: 1px solid #969A9C;
+    padding-bottom: 0.21em;
+    border-bottom: 1px solid #969A9C77;
 }
 code, pre, tt, dt {
     font-family: "Fira Code", monospace, serif;
