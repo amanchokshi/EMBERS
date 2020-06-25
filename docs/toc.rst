@@ -5,7 +5,6 @@
 ===================
 
 Welcome to the documentation for EMBERS.
-Callibrate radio telescopes with satellites!
 
 .. toctree::
    :maxdepth: 2
