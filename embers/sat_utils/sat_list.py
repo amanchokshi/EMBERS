@@ -25,10 +25,18 @@ def norad_ids():
     """
     A dictionary of NORAD Satellite Catalogue IDs.
 
-    :returns:
-        - norad_ids - satellite name : NORAD CATID
+    .. code-block:: python
+        
+        from embers.sat_utils.sat_list import norad_ids
+        sat_dict = norad_ids()
 
-    :rtype: dict{str, int}
+    .. code-block:: python
+
+        print(sat_dict)
+        >>> {'ORBCOMM-X': 21576, 'ORBCOMM FM 1': 23545, ...}
+
+    :returns:
+        - norad_ids - satellite name : NORAD CATID :class:`~dict`
 
     """
 
@@ -114,18 +122,17 @@ def norad_ids():
 def download_tle(
     start_date, stop_date, norad_ids, st_ident=None, st_pass=None, out_dir=None
 ):
-    """
-    Download TLEs from space-track.org.
+    """Download TLEs from space-track.org.
 
     Download satellite TLEs within a date interval
-    for all sats in :func:`~embers.sat_utils.sat_list.norad_ids`.
+    for all sats in :func:`~embers.sat_utils.sat_list.norad_ids`
 
-    :param str start_date: start date in YYYY-MM-DD format
-    :param str stop_date: stop date in YYYY-MM-DD format
-    :param dict norad_ids: sat_name: NORAD_ID dict
-    :param str st_ident: space-track.org login identity
-    :param str st_pass: space-track.org login password
-    :param str out_dir: output dir to save TLE files
+    :param start_date: in :samp:`YYYY-MM-DD` format :class:`~str`
+    :param stop_date: in :samp:`YYYY-MM-DD` format :class:`~str`
+    :param norad_ids: sat_name: NORAD_ID :class:`~dict`
+    :param st_ident: space-track.org login identity :class:`~str`
+    :param st_pass: space-track.org login password :class:`~str`
+    :param out_dir: output dir to save TLE files :class:`~str`
 
     :return:
         - tle file - saved to output directory
