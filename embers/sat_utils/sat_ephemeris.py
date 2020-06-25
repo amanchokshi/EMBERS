@@ -1,7 +1,6 @@
 """
-===================
 Satellite Ephemeris
-===================
+-------------------
 
 A set of tools to calculate satellite ephemeris 
 from TLE files. 
@@ -21,36 +20,17 @@ def load_tle(tle_file):
     """
     Extract orbital parameters from a TLE file.
     
-    For pair of TLE lines in the TLE file, exctract
-    orbital parameters with the :obj:`~skyfield.sgp4lib.EarthSatellite`.
-    Create a list of EarthSatellite objects for each pair of TLE lines
-    and corresponding epochs where the set of TLE lines in most 
-    accurate.
+    Instantiate an :class:`~skyfield.sgp4lib.EarthSatellite` for each pair of TLE lines in the TLE file, 
+    Also return the 'epoch' of each :class:`~skyfield.sgp4lib.EarthSatellite` object, which is the date and time for which the set of TLE lines is most accurate.
 
-    Parameters
-    ----------
-    :param str tle_file: path to TLE file
+    :param tle_file: path to TLE file :class:`~str`
 
-    Returns
-    -------
     :returns:
-        - sats - list of EarthSatellite objects, one for each pair of TLE lines
-        - epochs - 
+        A :class:`~tuple` (sats, epochs)
+        
+        - sats - list of :class:`~skyfield.sgp4lib.EarthSatellite` objects, one for each pair of TLE lines
+        - epochs - Julian date at which each set of TLE lines is most accurate
 
-
-    
-
-
-    Opens TLE file and uses skyfield to load each pair of TLE lines
-    into an EarthSatellite object. Determines epoch for each. 
-
-
-    Agrs:
-        the_path: Path to tle file
-
-    Returns:
-        sats: List of skyfield earth satellite objects
-        epochs: Time at which each set of TLE lines is most accurate
     """
 
     # open a Two Line Element (TLE) file
