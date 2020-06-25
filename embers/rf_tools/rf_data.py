@@ -20,7 +20,9 @@ _spec, _ = spectral()
 
 
 def read_data(rf_file=None):
-    """Convert rf binary data into :class:`~numpy.ndarray` of power and time::
+    """Convert rf binary data into :class:`~numpy.ndarray` of power and time
+
+    .. code-block:: python
         
         from embers.rf_tools.rf_data import read_data
         power, times = read_data(rf_file='~/embers-data/rf.txt')

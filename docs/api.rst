@@ -40,6 +40,8 @@ Sat Utils
     sat_ephemeris.epoch_ranges
     sat_ephemeris.epoch_time_array
     sat_ephemeris.sat_pass
+    sat_ephemeris.ephem_data
+    sat_ephemeris.sat_plot
 
 
 MWA Meta

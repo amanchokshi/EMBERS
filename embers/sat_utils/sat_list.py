@@ -1,6 +1,6 @@
 """
-Satellite IDs
--------------
+Satellite List
+--------------
 
 Dictionary of satellite names and their NORAD Catalogue IDs.
 These satellites are active in the 137 to 139 MHz frequency 

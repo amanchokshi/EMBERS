@@ -14,3 +14,5 @@
 .. autofunction:: embers.sat_utils.sat_ephemeris.epoch_ranges
 .. autofunction:: embers.sat_utils.sat_ephemeris.epoch_time_array
 .. autofunction:: embers.sat_utils.sat_ephemeris.sat_pass
+.. autofunction:: embers.sat_utils.sat_ephemeris.ephem_data
+.. autofunction:: embers.sat_utils.sat_ephemeris.sat_plot

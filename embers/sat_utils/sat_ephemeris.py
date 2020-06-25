@@ -10,6 +10,7 @@ from TLE files.
 import numpy as np
 import skyfield as sf
 from astropy.time import Time
+import matplotlib.pyplot as plt
 from skyfield.api import Topos, Loader
 
 
@@ -153,7 +154,7 @@ def epoch_time_array(epoch_range, index_epoch, cadence):
 
 
 def sat_pass(sats, t_arr, index_epoch, location=None):
-    """Find when a satellite passes above the horizon. 
+    """Find when a satellite passes above the horizon at a gps location.
     
     Calculate the :samp:`Altitude` & :samp:`Azimuth` of a 
     :class:`~skyfield.sgp4lib.EarthSatellite` object from 
@@ -185,17 +186,16 @@ def sat_pass(sats, t_arr, index_epoch, location=None):
     :returns:
         A :class:`~tuple` of (passes, alt, az)
         
-        - passes: 2D array with pairs of indicies of :samp:`t_arr` corresponding to rise/set of satellite
-        - alt: Array of :samp:`Altitudes` of sat at :samp:`t_arr` times
-        - az: Array of :samp:`Azimuths` of sat at :samp:`t_arr` times
+        - passes: 2D array with pairs of indicies of :samp:`t_arr` corresponding to rise/set of satellite :class:`~numpy.ndarray`
+        - alt: Array of :samp:`Altitudes` of sat at :samp:`t_arr` times :class:`~numpy.ndarray`
+        - az: Array of :samp:`Azimuths` of sat at :samp:`t_arr` times :class:`~numpy.ndarray`
 
     """
 
     # Position where sat passes are to be determined in Lat/Lon/Elevation
     position = Topos(
-            latitude=location[0],
-            longitude=location[1],
-            elevation_m=location[2])
+        latitude=location[0], longitude=location[1], elevation_m=location[2]
+    )
 
     if len(t_arr) > 0:
 
@@ -233,21 +233,32 @@ def sat_pass(sats, t_arr, index_epoch, location=None):
 
 
 def ephem_data(t_arr, pass_index, alt, az):
-    """Satellite Ephemeris Data.
+    """Satellite Ephemeris data (time, alt, az arrays ) for a single satellite pass.
     
-    creates rise time, set times and alt, az arrays.
-    
-    Args:
-        t_arr: Skyfield time array object
-        pass_index: One pair of sat indicies from passed 2D array
-        alt: Array of altitudes of sat at t_arr times
-        az: Array of azimuths of sat at t_arr times
+    .. code-block:: python
+        
+        from embers.sat_utils.sat_ephemeris import load_tle, epoch_ranges, epoch_time_array, sat_pass, ephem_data
+        sats, epochs = load_tle('~/embers-data/TLE/21576.txt')
+        epoch_range = epoch_ranges(epochs)
+        index_epoch = 0     # select first time interval from epoch_range
+        cadence = 10        # evaluate satellite position every 10 seconds
+        t_arr, index_epoch = epoch_time_array(epoch_range, index_epoch, cadence)
+        MWA = (-26.703319, 116.670815, 337.83)   # gps coordinates of MWA Telescope
+        passes, alt, az = sat_pass(sats, t_arr, index_epoch, location=MWA)
 
-    Returns:
-        t_rise: Rise time of sat in gps seconds (Astropy)
-        t_set: Set time of sat in gps seconds (Astropy)
-        sat_alt: Altitude of satellite while it is above the horizon. Array.
-        sat_az: Azimuth of satellite while it is above the horizon. Array.
+        time_array, sat_alt, sat_az = ephem_data(t_arr, passes[0], alt, az)
+    
+    :param t_arr: skyfield :class:`~skyfield.timelib.Timescale` object with array of times
+    :param pass_index: One pair of sat indicies from :samp:`passes`
+    :param alt: Array of altitudes of sat at :samp:`t_arr` times
+    :param az: Array of azimuths of sat at :samp:`t_arr` times
+
+    :returns:
+        A :class:`~tuple` (time_array, sat_alt, sat_az)
+        
+        - time_array: times at which sat position is calculated :class:`~numpy.ndarray`
+        - sat_alt: :samp:`Altitude` of satellite while it is above the horizon :class:`~numpy.ndarray`
+        - sat_az: :samp:`Azimuth` of satellite while it is above the horizon :class:`~numpy.ndarray`
     """
 
     i, j = pass_index
@@ -265,37 +276,34 @@ def ephem_data(t_arr, pass_index, alt, az):
     return (time_array, sat_alt, sat_az)
 
 
-def sat_plot(sat_id, alt, az, num_passes, alpha=0.3):
+def sat_plot(sat_id, alt, az, num_passes, alpha=0.5):
     """Plots satellite passes
     
-    Args:
-        alt: list of altitude values
-        az: list of azimuth values
-        num_passes: Number of satellite passes
+    :param sat_id: Norad catalogue ID :class:`~str`
+    :param alt: :samp:`Altitude` :class:`~list`
+    :param az: :samp:`Azimuth` :class:`~list`
+    :param alpha: transparency of individual passes, default=0.5
+
+    :return:
+        - plt - :func:`~matplotlib.pyplot.plot` object
+    
     """
 
-    import matplotlib
-
-    # Force matplotlib to not use X-Server backend
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-
-    # Set up the polar plot.
-    plt.style.use("dark_background")
+    plt.style.use("seaborn")
     figure = plt.figure(figsize=(6, 6))
     ax = figure.add_subplot(111, polar=True)
     ax.set_ylim(90, 0)
     ax.set_rgrids([0, 30, 60, 90], angle=22)
     ax.set_theta_zero_location("N")
     ax.set_theta_direction(-1)
-    ax.set_title(f"Satellite {sat_id} Sky Coverage: {num_passes} Passes", y=1.08)
     ax.grid(color="#8bbabb", linewidth=1.6, alpha=0.6)
-    plt.tight_layout()
 
     for i in range(len(alt)):
         plt.plot(az[i], alt[i], "-", linewidth=1.6, alpha=alpha, color="#1f4e5f")
 
-    # Return plot for saving, showing, etc
+    ax.set_title(f"Satellite {sat_id} Sky Coverage: {len(alt)} Passes", y=1.08)
+    plt.tight_layout()
+
     return plt
 
 
@@ -346,7 +354,7 @@ if __name__ == "__main__":
 
     # Position of MWA site in Lat/Lon/Elevation
     MWA = Topos(latitude=-26.703319, longitude=116.670815, elevation_m=337.83)
-    
+
     os.makedirs(os.path.dirname(out_dir), exist_ok=True)
 
     sat_ephem = {}
