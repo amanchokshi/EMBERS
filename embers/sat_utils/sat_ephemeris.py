@@ -10,7 +10,7 @@ from TLE files.
 import numpy as np
 import skyfield as sf
 from astropy.time import Time
-from skyfield.api import Topos, load
+from skyfield.api import Topos, Loader
 
 # Position of MWA site in Lat/Lon/Elevation
 MWA = Topos(latitude=-26.703319, longitude=116.670815, elevation_m=337.83)
@@ -22,6 +22,11 @@ def load_tle(tle_file):
     
     Instantiate an :class:`~skyfield.sgp4lib.EarthSatellite` for each pair of TLE lines in the TLE file, 
     Also return the 'epoch' of each :class:`~skyfield.sgp4lib.EarthSatellite` object, which is the date and time for which the set of TLE lines is most accurate.
+
+    .. code-block:: python
+        
+        from embers.sat_utils.sat_ephemeris import load_tle
+        sats, epochs = load_tle('~/embers-data/TLE/21576.txt')
 
     :param tle_file: path to TLE file :class:`~str`
 
@@ -55,18 +60,24 @@ def load_tle(tle_file):
 
 
 def epoch_ranges(epochs):
-    """Creates a time array
+    """Optimise time intervals to make the most of different epochs of TLE pairs
     
-    Time array with intervals corresponding to epochs of 
-    best accuracy from the TLE pair of lines in TLE file.
-    This is done to ensure that the most relevanrt TLE is
-    used in the analysis.
+    Creates a list with of times [epoch_range], pairs of successive elements
+    of which correspond to time intervals at which a particular epoch has best 
+    accuracy, before the next epoch becomes more accurate. This is done to 
+    ensure that the most relevanrt TLE is used in the analysis.
+    
+    .. code-block:: python
+        
+        from embers.sat_utils.sat_ephemeris import load_tle, epoch_ranges
+        sats, epochs = load_tle('~/embers-data/TLE/21576.txt')
+        epoch_range = epoch_ranges(epochs)
      
-     Args:
-        epochs: List of epochs derived from TLE file
+    :param epochs: List of epochs from :func:`~embers.sat_utils.sat_ephemeris.load_tle`
 
-     Returns:
-        epoch_range: List of times, between which TLE is most accurate
+    :return:
+        epoch_range: List of times, between which each pair of TLEs is most accurate
+
     """
 
     # Midpoints between epochs of successive TLEs
@@ -77,26 +88,55 @@ def epoch_ranges(epochs):
 
 
 def epoch_time_array(epoch_range, index_epoch, cadence):
-    """Create a time array.
+    """Create a Skyfield :class:`~skyfield.timelib.Timescale` object at which to evaluate satellite positions.
     
-    Skyfield time object [time vector] at which
-    the sat position will be determined.
+    Begins by downloading up-to-date time files, using the skyfield :class:`~skyfield.iokit.Loader` class, 
+    needed to accurate converted between various time formats. See `Dates and Time 
+    <https://rhodesmill.org/skyfield/time.html>`_  for more info. The files are saved to 
+    :samp:`./embers_out/sat_utils/skyfield-data`. 
 
-    Args:
-        index_epoch: Index of epoch range to be converted to time array
-        t_step: Cadence of time array
-        epoch_range: List of times, between which TLE is most accurate
+    For a particular time inverval in :samp:`epoch_range`, chosen by :samp:`index_epoch`, a 
+    Skyfield :class:`~skyfield.timelib.Timescale` array object is generated, at a given time 
+    :samp:`cadence`. This time array will be used by :func:`~embers.sat_utils.sat_ephemeris.sat_pass` 
+    to compute the position of satellites at each time.  
+    
+    .. code-block:: python
+        
+        from embers.sat_utils.sat_ephemeris import load_tle, epoch_ranges, epoch_time_array
+        sats, epochs = load_tle('~/embers-data/TLE/21576.txt')
+        epoch_range = epoch_ranges(epochs)
+        index_epoch = 0     # select first time interval from epoch_range
+        cadence = 10        # evaluate satellite position every 10 seconds
+        
+        t_arr, index_epoch = epoch_time_array(epoch_range, index_epoch, cadence)
 
-    Returns:
-        t_arr: Skyfield time object
-        index_epoch: Same as above
+    .. code-block:: console
+
+        >>> skyfield time files downloaded to ./embers_out/sat_utils/skyfield-data
+        >>> [#################################] 100% deltat.data
+        >>> [#################################] 100% deltat.preds
+        >>> [#################################] 100% Leap_Second.dat
+
+    :param index_epoch: Index of :samp:`epoch_range` to be converted to time array
+    :param epoch_range: List of times intervals where an epoch is most accurate, from :func:`embers.sat_utils.sat_ephemeris.epoch_ranges` 
+    :param cadence: time cadence at which to evaluate sat position, in seconds
+
+    :returns:
+        A :class:`~tuple` of (t_arr, index_epoch)
+
+        - t_arr: Skyfield :class:`~skyfield.timelib.Timescale` object with array of times at given :samp:`cadence`
+        - index_epoch: Index of :samp:`epoch_range` to be converted to time array
+
     """
 
     # Skyfield Timescale
+    load = Loader("./embers_out/sat_utils/skyfield-data")
+
     try:
         ts = load.timescale()
-    except:
-        ts = load.timescale(builtin=True)
+    except Exception as e:
+        if e != None:
+            ts = load.timescale(builtin=True)
 
     # find time between epochs/ midpoints in seconds, using Astropy Time
     t1 = Time(epoch_range[index_epoch], scale="tt", format="jd").gps
@@ -135,7 +175,7 @@ def sat_pass(sats, t_arr, index_epoch):
     """
 
     # Define Satellite to be the first one in sats list
-    # Find possition of sat at each timestep of time array
+    # Find position of sat at each timestep of time array
 
     if len(t_arr) > 0:
 

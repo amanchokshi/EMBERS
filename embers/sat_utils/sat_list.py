@@ -127,6 +127,24 @@ def download_tle(
     Download satellite TLEs within a date interval
     for all sats in :func:`~embers.sat_utils.sat_list.norad_ids`
 
+    .. code-block:: python
+
+        from embers.sat_utils.sat_list import norad_ids, download_tle
+        n_ids = norad_ids()
+        download_tle(
+            "2020-01-01", "2020-02-01", n_ids, 
+            st_ident="test.user@embers.com", 
+            st_pass="*******", 
+            out_dir="~/embers-data/TLE")
+    
+    .. code-block:: console
+
+        >>> Starting TLE download
+        >>> Grab a coffee, this may take a while
+        >>> downloading tle for ORBCOMM-X satellite [21576] from space-tracks.org
+        >>> ...
+
+
     :param start_date: in :samp:`YYYY-MM-DD` format :class:`~str`
     :param stop_date: in :samp:`YYYY-MM-DD` format :class:`~str`
     :param norad_ids: sat_name: NORAD_ID :class:`~dict`
