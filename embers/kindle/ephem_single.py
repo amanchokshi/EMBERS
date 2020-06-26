@@ -72,11 +72,5 @@ if _tle_dir == "":
 def main():
     """Execute save ephem from terminal."""
 
-    save_ephem(
-        _sat_name,
-        _tle_dir,
-        _cadence,
-        _location,
-        _alpha,
-        _out_dir,
-    )
+    stdout = save_ephem(_sat_name, _tle_dir, _cadence, _location, _alpha, _out_dir,)
+    print(stdout)

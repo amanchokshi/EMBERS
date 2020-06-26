@@ -91,7 +91,7 @@ def ephem_batch(tle_dir, cadence, location, alpha, out_dir):
             repeat(cadence),
             repeat(location),
             repeat(alpha),
-            repeat(out_dir)
+            repeat(out_dir),
         )
 
     for result in results:
@@ -101,8 +101,7 @@ def ephem_batch(tle_dir, cadence, location, alpha, out_dir):
 def main():
     """Execute batch save_ephem from terminal."""
 
-    print(f"Saving logs to {out_dir}ephem_data")
-    print(f"Saving sky coverage plots to {out_dir}ephem_plots")
-    print(f"Saving ephemeris of satellites to {out_dir}ephem_data")
+    print(f"Saving logs to {_out_dir}ephem_data")
+    print(f"Saving sky coverage plots to {_out_dir}ephem_plots")
+    print(f"Saving ephemeris of satellites to {_out_dir}ephem_data")
     ephem_batch(_tle_dir, _cadence, _location, _alpha, _out_dir)
-
