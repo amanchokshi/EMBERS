@@ -117,7 +117,7 @@ def epoch_time_array(epoch_range, index_epoch=None, cadence=None):
         >>> [#################################] 100% Leap_Second.dat
 
     :param index_epoch: Index of :samp:`epoch_range` to be converted to time array :class:`~int`
-    :param epoch_range: List of times intervals where an epoch is most accurate, from :func:`embers.sat_utils.sat_ephemeris.epoch_ranges` 
+    :param epoch_range: List of time intervals where an epoch is most accurate, from :func:`embers.sat_utils.sat_ephemeris.epoch_ranges` 
     :param cadence: time cadence at which to evaluate sat position, in seconds :class:`~int`
 
     :returns:
@@ -312,44 +312,90 @@ def sat_plot(sat_id, alt, az, alpha=0.5):
 def save_ephem(sat, tle_dir=None, cadence=None, location=None, alpha=0.5, out_dir=None):
     """Save ephemeris of all satellite passes and plot sky coverage.
 
-    """
+    This function brings everything in :mod:`~embers.sat_utils.sat_ephemeris` home.
+    It converts a downloaded :samp:`TLE` file into arrays of :samp:`times`, 
+    :samp:`Altitudes` & :samp:`Azimuths` of when the satellite was above the 
+    horizon at a particular geographic :samp:`location`. These arrays are saved
+    to the :samp:`out_dir` as an :class:`~numpy.savez_compressed` file. A plot
+    of all satellite passes detected within the :samp:`TLE` file is also saved
+    to the :samp:`out_dir`.
 
-    Path(f"{out_dir}/ephem_data").mkdir(parents=True, exist_ok=True)
-    Path(f"{out_dir}/ephem_plots").mkdir(parents=True, exist_ok=True)
-    tle_path = f"{tle_dir}/{sat}.txt"
+    .. code-block:: python
+
+        from embers.sat_utils.sat_ephemeris import save_ephem
+        sat="21576"
+        cadence = 4
+        tle_dir="~/embers-data/TLE"
+        out_dir = "./embers_out/sat_utils"
+        MWA = (-26.703319, 116.670815, 337.83)
+
+        sat_ephem(sat, tle_dir=tle_dir, cadence=cadence, location=MWA, out_dir=out_dir)
     
+    .. code-block:: python
+        
+        Saved sky-coverage plot of sat [21576] to ./embers_out/sat_utils/ephem_plots
+        Saved ephemeris of sat [21576] to ./embers_out/sat_utils/ephem_data
+
+    :param sat: NORAD Catalogue ID of satellite :class:`~str`
+    :param tle_dir: path to directory where :samp:`TLE` files are saved :class:`~str`
+    :param cadence: time cadence at which to evaluate sat position, in seconds :class:`~int`
+    :param location: The :samp:`gps` coordinates of the :samp:`location` at which satellite passes are to be computed. :samp:`location` is a :class:`~tuple` in the format (:samp:`latitude`, :samp:`longitude`, :samp:`elevation`), with :samp:`elevation` given in :samp:`meters` 
+    :param alpha: transparency of individual passes in :func:`~embers.sat_utils.sat_ephemeris.sat_plot` default=0.5
+    :param out_dir: path to output directory :class:`~str`
+
+    :returns:
+        - satellite ephemeris at :samp:`location` and sky coverage ephemeris plot, saved to :samp:`out_dir`
+
+    :raises FileNotFoundError: an input :samp:`TLE` file does not exist
+
+    """
+    
+    # instantiate an empty dict
     sat_ephem = {}
     sat_ephem["sat_id"] = sat
     sat_ephem["time_array"] = []
     sat_ephem["sat_alt"] = []
     sat_ephem["sat_az"] = []
     
-    sats, epochs = load_tle(tle_path)
+    # Make output directory tree
+    Path(f"{out_dir}/ephem_data").mkdir(parents=True, exist_ok=True)
+    Path(f"{out_dir}/ephem_plots").mkdir(parents=True, exist_ok=True)
+
+    tle_path = Path(f"{tle_dir}/{sat}.txt")
     
-    if len(epochs) > 0:
-    
+    try:
+        tle_path.is_file()
+        sats, epochs = load_tle(tle_path)
         epoch_range = epoch_ranges(epochs)
         
         for i in range(len(epoch_range) - 1):
             t_arr, index_epoch = epoch_time_array(epoch_range, index_epoch=i, cadence=cadence)
-            s_pass = sat_pass(sats, t_arr, index_epoch, location=location)
-
-            if s_pass is not None:
-
-                passes, alt, az = s_pass
             
+            try:
+                passes, alt, az = sat_pass(sats, t_arr, index_epoch, location=location)
+
                 for pass_index in passes:
                     time_array, sat_alt, sat_az = ephem_data(t_arr, pass_index, alt, az)
         
                     sat_ephem["time_array"].append(time_array)
                     sat_ephem["sat_alt"].append(sat_alt)
                     sat_ephem["sat_az"].append(sat_az)
+            
+            # Catch exceptions in sat_pass
+            # sometimes sat_object is empty and can't be iterated over
+            except Exception:
+                pass
         
         plt= sat_plot(sat, sat_ephem["sat_alt"], sat_ephem["sat_az"], alpha=alpha)
         plt.savefig(f"{out_dir}/ephem_plots/{sat}.png")
+        print(f'Saved sky coverage plot of satellite [{sat}] to {out_dir}ephem_plots')
         
         np.savez_compressed(f'{out_dir}/ephem_data/{sat}.npz', **sat_ephem)
-    
-    else:
-        print(f"No Data in {sat}.txt TLE file")
+        print(f'Saved ephemeris of satellite [{sat}] to {out_dir}ephem_data')
 
+    except FileNotFoundError as e:
+        print(e)
+    except Exception as e:
+        print(e)
+    
+    
