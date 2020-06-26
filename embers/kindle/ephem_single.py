@@ -42,7 +42,6 @@ tle_dir = args.tle_dir
 cadence = args.cadence
 out_dir = args.out_dir
 
-
 # Position of MWA site in Lat/Lon/Elevation
 MWA = (-26.703319, 116.670815, 337.83)
 
