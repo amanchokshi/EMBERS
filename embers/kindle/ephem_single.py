@@ -18,10 +18,7 @@ _parser.add_argument(
     "--sat", metavar="\b", help="The Norad cat ID of satellite. Example: 21576"
 )
 _parser.add_argument(
-    "--tle_dir",
-    metavar="\b",
-    default="",
-    help="Path to directory with TLE files"
+    "--tle_dir", metavar="\b", default="", help="Path to directory with TLE files"
 )
 _parser.add_argument(
     "--cadence",

@@ -207,7 +207,7 @@ def sat_pass(sats, t_arr, index_epoch, location=None):
     alt, az, _ = orbit.altaz()
 
     if alt.degrees.shape[0] > 0:
-        
+
         # Check if sat is above the horizon (above -1 degrees), return boolean array
         above_horizon = alt.degrees >= -1
 
@@ -233,7 +233,7 @@ def sat_pass(sats, t_arr, index_epoch, location=None):
         passes = boundaries.reshape(len(boundaries) // 2, 2)
 
         return (passes, alt, az)
-    
+
     else:
         return None
 
@@ -309,6 +309,7 @@ def sat_plot(sat_id, alt, az, alpha=0.5):
 
     return plt
 
+
 def save_ephem(sat, tle_dir=None, cadence=None, location=None, alpha=0.5, out_dir=None):
     """Save ephemeris of all satellite passes and plot sky coverage.
 
@@ -349,53 +350,53 @@ def save_ephem(sat, tle_dir=None, cadence=None, location=None, alpha=0.5, out_di
     :raises FileNotFoundError: an input :samp:`TLE` file does not exist
 
     """
-    
+
     # instantiate an empty dict
     sat_ephem = {}
     sat_ephem["sat_id"] = sat
     sat_ephem["time_array"] = []
     sat_ephem["sat_alt"] = []
     sat_ephem["sat_az"] = []
-    
+
     # Make output directory tree
     Path(f"{out_dir}/ephem_data").mkdir(parents=True, exist_ok=True)
     Path(f"{out_dir}/ephem_plots").mkdir(parents=True, exist_ok=True)
 
     tle_path = Path(f"{tle_dir}/{sat}.txt")
-    
+
     try:
         tle_path.is_file()
         sats, epochs = load_tle(tle_path)
         epoch_range = epoch_ranges(epochs)
-        
+
         for i in range(len(epoch_range) - 1):
-            t_arr, index_epoch = epoch_time_array(epoch_range, index_epoch=i, cadence=cadence)
-            
+            t_arr, index_epoch = epoch_time_array(
+                epoch_range, index_epoch=i, cadence=cadence
+            )
+
             try:
                 passes, alt, az = sat_pass(sats, t_arr, index_epoch, location=location)
 
                 for pass_index in passes:
                     time_array, sat_alt, sat_az = ephem_data(t_arr, pass_index, alt, az)
-        
+
                     sat_ephem["time_array"].append(time_array)
                     sat_ephem["sat_alt"].append(sat_alt)
                     sat_ephem["sat_az"].append(sat_az)
-            
+
             # Catch exceptions in sat_pass
             # sometimes sat_object is empty and can't be iterated over
             except Exception:
                 pass
-        
-        plt= sat_plot(sat, sat_ephem["sat_alt"], sat_ephem["sat_az"], alpha=alpha)
+
+        plt = sat_plot(sat, sat_ephem["sat_alt"], sat_ephem["sat_az"], alpha=alpha)
         plt.savefig(f"{out_dir}/ephem_plots/{sat}.png")
-        print(f'Saved sky coverage plot of satellite [{sat}] to {out_dir}ephem_plots')
-        
-        np.savez_compressed(f'{out_dir}/ephem_data/{sat}.npz', **sat_ephem)
-        print(f'Saved ephemeris of satellite [{sat}] to {out_dir}ephem_data')
+        print(f"Saved sky coverage plot of satellite [{sat}] to {out_dir}ephem_plots")
+
+        np.savez_compressed(f"{out_dir}/ephem_data/{sat}.npz", **sat_ephem)
+        print(f"Saved ephemeris of satellite [{sat}] to {out_dir}ephem_data")
 
     except FileNotFoundError as e:
         print(e)
     except Exception as e:
         print(e)
-    
-    
