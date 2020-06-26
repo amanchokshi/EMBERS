@@ -25,23 +25,23 @@ Using a virtual environment is suggested as it prevents errors from conflicting 
 
 Conda virtual environment
 --------------------------
-EMBERS supports Python 3.6: 3.9. Using a conda environment is the easiest way to make sure that the correct version of Python is used. Begin by installing either `Anaconda <https://docs.anaconda.com/anaconda/install/>`_ or `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_. A conda environment called *embers* can be created as follows
+EMBERS supports Python 3.6: 3.9. Using a conda environment is the easiest way to make sure that the correct version of Python is used. Begin by installing either `Anaconda <https://docs.anaconda.com/anaconda/install/>`_ or `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_. A conda environment called *embers-env* can be created as follows
 
 .. code-block:: console
 
-    conda create --name embers python=3.7
-    conda activate embers
+    conda create --name embers-env python=3.7
+    conda activate embers-env
     pip install embers
 
 
 Python virtual environment
 --------------------------
-Alternately, if you already have a correct version of Python installed, you can create a `venv <https://docs.python.org/3/library/venv.html/>`_ called *embers* using the following code, within which EMBERS and it's dependancies are cleanly installed
+Alternately, if you already have a correct version of Python installed, you can create a `venv <https://docs.python.org/3/library/venv.html/>`_ called *embers-env* using the following code, within which EMBERS and it's dependancies are cleanly installed
 
 .. code-block:: console
 
-    python -m venv embers
-    source embers/bin/activate
+    python -m venv embers-env
+    source embers-env/bin/activate
     pip install embers
 
 
