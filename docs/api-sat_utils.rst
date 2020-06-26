@@ -16,3 +16,4 @@
 .. autofunction:: embers.sat_utils.sat_ephemeris.sat_pass
 .. autofunction:: embers.sat_utils.sat_ephemeris.ephem_data
 .. autofunction:: embers.sat_utils.sat_ephemeris.sat_plot
+.. autofunction:: embers.sat_utils.sat_ephemeris.save_ephem

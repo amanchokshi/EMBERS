@@ -42,6 +42,7 @@ Sat Utils
     sat_ephemeris.sat_pass
     sat_ephemeris.ephem_data
     sat_ephemeris.sat_plot
+    sat_ephemeris.save_ephem
 
 
 MWA Meta
