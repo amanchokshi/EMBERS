@@ -310,7 +310,7 @@ def sat_plot(sat_id, alt, az, alpha=0.5):
     return plt
 
 
-def save_ephem(sat, tle_dir=None, cadence=None, location=None, alpha=0.5, out_dir=None):
+def save_ephem(sat, tle_dir, cadence, location, alpha, out_dir):
     """Save ephemeris of all satellite passes and plot sky coverage.
 
     This function brings everything in :mod:`~embers.sat_utils.sat_ephemeris` home.
@@ -328,9 +328,9 @@ def save_ephem(sat, tle_dir=None, cadence=None, location=None, alpha=0.5, out_di
         cadence = 4
         tle_dir="~/embers-data/TLE"
         out_dir = "./embers_out/sat_utils"
-        MWA = (-26.703319, 116.670815, 337.83)
+        location = (-26.703319, 116.670815, 337.83) # MWA Telescope
 
-        sat_ephem(sat, tle_dir=tle_dir, cadence=cadence, location=MWA, out_dir=out_dir)
+        sat_ephem(sat, tle_dir, cadence=cadence, location, out_dir)
     
     .. code-block:: python
         
