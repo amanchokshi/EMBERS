@@ -35,6 +35,13 @@ _parser.add_argument(
     help="Geographic location where satellite ephemeris is to be determined. Default=MWA:(-26.703319, 116.670815, 337.83)",
 )
 _parser.add_argument(
+    "--alpha",
+    metavar="\b",
+    type=int,
+    default=0.5,
+    help="Alpha value for sky coverage plot. Defaut: 0.5. If too many satellite, reduce value",
+)
+_parser.add_argument(
     "--out_dir",
     metavar="\b",
     default="./embers_out/sat_utils/",
@@ -46,6 +53,7 @@ _sat_name = _args.sat
 _tle_dir = _args.tle_dir
 _cadence = _args.cadence
 _location = _args.location
+_alpha = _args.alpha
 _out_dir = _args.out_dir
 
 # if no input file provided, use sample package data
@@ -66,8 +74,9 @@ def main():
 
     save_ephem(
         _sat_name,
-        tle_dir=_tle_dir,
-        cadence=_cadence,
-        location=_location,
-        out_dir=_out_dir,
+        _tle_dir,
+        _cadence,
+        _location,
+        _alpha,
+        _out_dir,
     )
