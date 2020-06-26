@@ -5,6 +5,8 @@ import numpy as np
 import pkg_resources
 from pathlib import Path
 import concurrent.futures
+from itertools import repeat
+from embers.sat_utils.sat_list import norad_ids
 from embers.sat_utils.sat_ephemeris import save_ephem
 
 _parser = argparse.ArgumentParser(
@@ -34,6 +36,13 @@ _parser.add_argument(
     help="Geographic location where satellite ephemeris is to be determined. Default=MWA:(-26.703319, 116.670815, 337.83)",
 )
 _parser.add_argument(
+    "--alpha",
+    metavar="\b",
+    type=int,
+    default=0.5,
+    help="Alpha value for sky coverage plot. Defaut: 0.5. If too many satellite, reduce value",
+)
+_parser.add_argument(
     "--out_dir",
     metavar="\b",
     default="./embers_out/sat_utils/",
@@ -44,6 +53,7 @@ _args = _parser.parse_args()
 _tle_dir = _args.tle_dir
 _cadence = _args.cadence
 _location = _args.location
+_alpha = _args.alpha
 _out_dir = _args.out_dir
 
 # if no input file provided, use sample package data
@@ -67,59 +77,32 @@ logging.basicConfig(
 )
 
 
-def ephem_batch(sat_name, tle_dir, cadence, location, out_dir):
+def ephem_batch(tle_dir, cadence, location, alpha, out_dir):
     """
-    Save a series of waterfall plots in parallel.
+    Process ephemeris for multiple satellites in parallel.
 
-    Parameters
-    ----------
-    :param start_date: date in style YYYY-MM-DD
-    :type start_date: str
-    :param stop_date: date in style YYYY-MM-DD
-    :type stop_date: str
-    :param data_dir: path to root of rf data dir
-    :type data_dir: str
-    :param out_dir: path to output dir
-    :type out_dir: str
-    
     """
+    sat_names = list(norad_ids().values())
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(
+            save_ephem,
+            sat_names,
+            repeat(tle_dir),
+            repeat(cadence),
+            repeat(location),
+            repeat(alpha),
+            repeat(out_dir)
+        )
 
-    dates, time_stamps = time_tree(start_date, stop_date)
-
-    for tile in tile_names():
-        for day in range(len(dates)):
-
-            with concurrent.futures.ProcessPoolExecutor() as executor:
-                results = executor.map(
-                    batch_waterfall,
-                    repeat(tile),
-                    time_stamps[day],
-                    repeat(data_dir),
-                    repeat(out_dir),
-                )
-
-            for result in results:
-                logging.info(result)
+    for result in results:
+        logging.info(result)
 
 
 def main():
-    """Execute waterfall from terminal."""
+    """Execute batch save_ephem from terminal."""
 
-    print(f"Processing rf data files between {_start_date} and {_stop_date}")
-    print(f"Saving waterfall plots to: ./{_log_dir}")
-    waterfall_batch(_start_date, _stop_date, _data_dir, _out_dir)
+    print(f"Saving logs to {out_dir}ephem_data")
+    print(f"Saving sky coverage plots to {out_dir}ephem_plots")
+    print(f"Saving ephemeris of satellites to {out_dir}ephem_data")
+    ephem_batch(_tle_dir, _cadence, _location, _alpha, _out_dir)
 
-
-
-
-
-def main():
-    """Execute save ephem from terminal."""
-
-    save_ephem(
-        _sat_name,
-        tle_dir=_tle_dir,
-        cadence=_cadence,
-        location=_location,
-        out_dir=_out_dir,
-    )
