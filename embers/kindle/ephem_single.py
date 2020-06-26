@@ -20,22 +20,22 @@ _parser.add_argument(
 _parser.add_argument(
     "--tle_dir",
     metavar="\b",
-    type=json.loads,
-    default=(-26.703319, 116.670815, 337.83),
-    help="Geographic location where satellite ephemeris is to be determined. Default=MWA:(-26.703319, 116.670815, 337.83)",
+    default="",
+    help="Path to directory with TLE files"
 )
 _parser.add_argument(
     "--cadence",
     metavar="\b",
     type=int,
     default=4,
-    help="rate at which sat alt/az is computed. default=4s",
+    help="Rate at which sat alt/az is computed. default=4s",
 )
 _parser.add_argument(
     "--location",
     metavar="\b",
-    default=4,
-    help="rate at which sat alt/az is computed. default=4s",
+    type=json.loads,
+    default=(-26.703319, 116.670815, 337.83),
+    help="Geographic location where satellite ephemeris is to be determined. Default=MWA:(-26.703319, 116.670815, 337.83)",
 )
 _parser.add_argument(
     "--out_dir",

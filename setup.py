@@ -65,6 +65,7 @@ setup(
             "align_single=embers.kindle.align_single:main",
             "align_batch=embers.kindle.align_batch:main",
             "download_tle=embers.kindle.download_tle:main",
+            "ephem_single=embers.kindle.ephem_single:main",
         ],
     },
     keywords=("embers radio astronomy satellites beam measurement"),
