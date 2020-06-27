@@ -1,6 +1,6 @@
 """
 Waterfall Single
-================
+----------------
 
 Saves a single waterfall plot to ``./embers_out/rf_tools``
 
@@ -44,8 +44,7 @@ if _rf_file == "":
 
 
 def main():
-    """Execute waterfall from terminal."""
+    """Executable: save singel waterfall plot"""
 
-    _rf_name = Path(_rf_file).stem
-    print(f"Waterfall plot saved to ./{_out_dir}/{_rf_name}.png")
+    print(f"Waterfall plot saved to ./{_out_dir}/{Path(_rf_file).stem}.png")
     single_waterfall(_rf_file, _out_dir)
