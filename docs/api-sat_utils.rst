@@ -17,3 +17,7 @@
 .. autofunction:: embers.sat_utils.sat_ephemeris.ephem_data
 .. autofunction:: embers.sat_utils.sat_ephemeris.sat_plot
 .. autofunction:: embers.sat_utils.sat_ephemeris.save_ephem
+
+.. automodule:: embers.sat_utils.chrono_ephem
+.. autofunction:: embers.sat_utils.chrono_ephem.obs_times
+.. autofunction:: embers.sat_utils.chrono_ephem.interp_ephem
