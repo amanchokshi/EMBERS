@@ -129,19 +129,20 @@ def time_filter(s_rise, s_set, times):
     return intvl
 
 
-def plt_waterfall_pass(
-    power, sat_id, start, stop, date, cmap, chs=None, good_ch=None, out_dir=None
-):
-    """Plot waterfall with sat window and occupied channels
+def plt_window_chans(power, sat_id, start, stop, cmap, chs=None, good_ch=None):
+    """Waterfall plot with sat window and occupied channels highlighted.
     
-    Args:
-        power:          RF power array
-        sat_id:         Norad cat ID
-        start:          Start of epehm for sat_id
-        stop:           Stop of ephem of sat_id
-        chs:            Occupied channels [list]
-        good_ch:        Most probable channel
-        date:           Date of observation
+    :param power: Rf power array :class:`~numpy.ndarry`
+    :param sat_id: Norad catalogue ID :class:`~str`
+    :param start: Index of power array when :samp:`sat_id` is above the horizon :class:`~int`
+    :param stop: Index of power array when :samp:`sat_id` is above the horizon :class:`~int`
+    :param cmap: Colormap for plotting waterfall :class:`~matplotlib.colors.ListedColormap`
+    :param chs: Occupied channels :class:`~list` of :class:`~int`
+    :param good_ch: Most probable channel :class:`~int`
+    
+    :returns:
+        - plt - :func:`~matplotlib.pyplot.plot` object
+
     """
 
     plt.style.use("dark_background")
@@ -156,11 +157,11 @@ def plt_waterfall_pass(
     ax.set_xlabel("Freq Channel")
     ax.set_ylabel("Time Step")
 
-    # horizontal highlight of ephem
+    # horizontal highlight of satellite time window
     ax.axhspan(start, stop, alpha=0.1, color="white")
 
     if chs != None:
-        # vertical highlight of channel
+        # vertical highlight of possible channels
         for ch in chs:
             ax.axvspan(ch - 1.0, ch + 0.6, alpha=0.2, color="white")
 
@@ -175,42 +176,24 @@ def plt_waterfall_pass(
             fill=False,
         )
 
-    # plt.show()
-    if chs != None:
-        plt.savefig(f"{out_dir}/{date}_{sat_id}_{chs}_waterfall.png")
-    else:
-        plt.savefig(f"{out_dir}/{date}_{sat_id}_waterfall.png")
-
-    plt.close()
-    plt.rcParams.update(plt.rcParamsDefault)
+    return plt
 
 
-def plt_channel_basic(
-    out_dir,
-    times,
-    channel_power,
-    chan_num,
-    min_s,
-    max_s,
-    noise_threshold,
-    arbitrary_threshold,
-    sat_id,
-    date,
-):
-
+def plt_channel(times, channel_power, pow_med, chan_num, y_range, noi_thresh, pow_thresh):
     """Plot power in channel, with various thresholds
     
-    Args:
-        times:          Time array
-        channel_power:  Power in channel
-        chan_num:       Channel Number
-        min_s:          Minimum signal in channel_power
-        max_s:          Maximum signal in channel_power
-        noise_threshold: Noise Threshold (n*MAD)
-        arbitrary_threshold: Arbitrary threshold used to only select bright passes
-        sat_id:         Norad Cat ID
-        date:           Date of observation
-        """
+    :param times: times 1D array :class:`~numpy.ndarry`
+    :param channel_power: Rf channel power 1D array :class:`~numpy.ndarry`
+    :param pow_med: Median of rf power array :class:`~float`
+    :param chan_num: Channel number :class:`~str`
+    :param y_range: Plot min, max yrange list :class:`~list`
+    :param noi_thresh: Noise floor in :samp:`dBm`. :class:`~float`
+    :param pow_thresh: Power threshold in :samp:`dB` above the power array median :class:`~float` 
+        
+    :returns:
+        - plt - :func:`~matplotlib.pyplot.plot` object
+
+    """
 
     plt.style.use("seaborn")
 
@@ -227,25 +210,23 @@ def plt_channel_basic(
     plt.fill_between(times, channel_power, color="#db3751", alpha=0.7)
 
     plt.axhline(
-        arbitrary_threshold,
+        pow_med+pow_thresh,
         alpha=1.0,
         linestyle="-",
         linewidth=2,
         color="#fba95f",
-        label=f"Arbitrary Cut: {arbitrary_threshold} dBm",
+        label=f"Power Cut: {pow_med+pow_thresh:.2f} dBm",
     )
-    plt.axhspan(-1, arbitrary_threshold, color="#fba95f", alpha=0.4)
 
     plt.axhline(
-        noise_threshold,
+        noi_thresh,
         linestyle="-",
         linewidth=2,
         color="#5cb7a9",
-        label=f"Noise Cut: {noise_threshold:.2f} dBm",
+        label=f"Noise Cut: {noi_thresh:.2f} dBm",
     )
-    plt.axhspan(-1, noise_threshold, color="#5cb7a9", alpha=0.4)
 
-    plt.ylim([min_s - 1, max_s + 1])
+    plt.ylim(y_range)
     plt.xlim([times[0], times[-1]])
     plt.ylabel("Power [dBm]")
     plt.xlabel("Time [s]")
@@ -256,30 +237,31 @@ def plt_channel_basic(
     leg.get_frame().set_alpha(0.2)
     for l in leg.legendHandles:
         l.set_alpha(1)
-    plt.savefig(f"{out_dir}/{date}_{sat_id}_{chan_num}_channel.png")
-    plt.close()
-    plt.rcParams.update(plt.rcParamsDefault)
-
-
-def sat_plot(out_dir, ids, norad_id, alt, az, num_passes, date, name):
-    """Plots satellite passes
     
-    Args:
-        alt: list of altitude values
-        az: list of azimuth values
-        num_passes: Number of satellite passes
+    return plt
+
+
+def plt_sats(ids, alt, az, timestamp):
+    """Polar plot of satellite passes in a 30 minute observation
+    
+    :param ids: :class:`~list` of Norad catalogue IDs
+    :param alt: :class:`~list` of :samp:`Altitudes` values
+    :param az: :class:`~list` of :samp:`~Azimuth` values
+    :param timestamp: Time at start of 30 minute observation in :samp:`YYYY-MM-DD-HH:MM` format :class:`~str`
+    
+    :returns:
+        - plt - :func:`~matplotlib.pyplot.plot` object
+
     """
 
-    # Set up the polar plot.
     plt.style.use("seaborn")
-    plt.style.use("dark_background")
     figure = plt.figure(figsize=(7, 6))
     ax = figure.add_subplot(111, polar=True)
     ax.set_ylim(90, 0)
     ax.set_rgrids([0, 30, 60, 90], angle=22)
     ax.set_theta_zero_location("N")
     ax.set_theta_direction(-1)
-    ax.set_title(f"{num_passes} satellite passes in {date} [{norad_id}] window", y=1.05)
+    ax.set_title(f"Satellite passes in {timestamp}", y=1.05)
     ax.grid(color="grey", linewidth=1.6, alpha=0.5)
 
     colors = pl.cm.Spectral(np.linspace(0.17, 0.9, len(alt)))
@@ -300,7 +282,7 @@ def sat_plot(out_dir, ids, norad_id, alt, az, num_passes, date, name):
         frameon=True,
         bbox_to_anchor=(0.28, 1.0, 1.0, -0.95),
         loc="center right",
-        title="Norad SatID",
+        title="NoradID",
     )
     leg.get_frame().set_facecolor("grey")
     leg.get_frame().set_alpha(0.4)
@@ -308,9 +290,8 @@ def sat_plot(out_dir, ids, norad_id, alt, az, num_passes, date, name):
         l.set_alpha(1)
 
     plt.tight_layout()
-    plt.savefig(f"{out_dir}/{date}_{norad_id}_{name}.png")
-    plt.close()
-    plt.rcParams.update(plt.rcParamsDefault)
+    
+    return plt
 
 
 def good_chans(

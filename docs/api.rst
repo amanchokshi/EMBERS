@@ -55,6 +55,9 @@ Sat Utils
     sat_channels.read_ref_aligned
     sat_channels.noise_floor
     sat_channels.time_filter
+    sat_channels.plt_window_chans
+    sat_channels.plt_channel
+    sat_channels.plt_sats
 
 
 MWA Meta
