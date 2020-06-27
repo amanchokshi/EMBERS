@@ -28,6 +28,9 @@ Contains :mod:`~embers.rf_tools.rf_data`, :mod:`~embers.rf_tools.align_data`, :m
     align_data.save_aligned
     colormaps.spectral
     colormaps.jade
+    colormaps.waves_2d
+    colormaps.plt_colormaps
+
 
 Sat Utils
 =========

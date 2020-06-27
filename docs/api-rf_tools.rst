@@ -22,4 +22,7 @@
 .. automodule:: embers.rf_tools.colormaps
 .. autofunction:: embers.rf_tools.colormaps.spectral
 .. autofunction:: embers.rf_tools.colormaps.jade
+.. autofunction:: embers.rf_tools.colormaps.waves_2d
+.. autofunction:: embers.rf_tools.colormaps.plt_colormaps
+
 
