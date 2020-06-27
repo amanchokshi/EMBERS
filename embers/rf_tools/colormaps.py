@@ -349,7 +349,7 @@ def plt_colormaps(spec, spec_r, jade, jade_r, out_dir):
     :param out_dir: path to output directory :class:`~str`
 
     :returns: 
-        waterfall plot saved by `matplotlib.pyplot.savefig` to :samp:`out_dir`
+        waterfall plot saved by :func:`~matplotlib.pyplot.savefig` to :samp:`out_dir`
 
     """
 
