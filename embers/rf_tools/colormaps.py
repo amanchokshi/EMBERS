@@ -6,10 +6,11 @@ A set of custom colormaps used by embers
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
 from matplotlib import cm
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap
+import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 
 
 def spectral():
@@ -326,3 +327,66 @@ def jade():
     jade_cmap_r = jade_cmap.reversed()
 
     return [jade_cmap, jade_cmap_r]
+
+
+def waves_2d():
+    """Create 2d sine wave.
+
+    :returns:
+        - sine2d- 2d sine wave :class:`~numpy.ndarray`
+
+    """
+
+    xx, yy = np.meshgrid(np.linspace(0, 3 * np.pi, 512), np.linspace(0, 3 * np.pi, 512))
+    sine2d = np.sin(xx) + np.sin(yy)
+    return sine2d
+
+
+def plt_colormaps(spec, spec_r, jade, jade_r, out_dir):
+    """Plot 2x2 grid of sample colormaps.
+    
+    :param ember_cmaps: custom ember colormaps :class:`~matplotlib.colors.ListedColormap`
+    :param out_dir: path to output directory :class:`~str`
+
+    :returns: 
+        waterfall plot saved by `matplotlib.pyplot.savefig` to :samp:`out_dir`
+
+    """
+
+    fig = plt.figure(figsize=(9, 8))
+
+    ax1 = fig.add_subplot(221)
+    ax1.set_title("Spectral colormap")
+    im1 = ax1.imshow(waves_2d(), origin="lower", interpolation="none", cmap=spec)
+    divider = make_axes_locatable(ax1)
+    cax = divider.append_axes("right", size="5%", pad=0.05)
+    fig.colorbar(im1, cax=cax, orientation="vertical")
+    ax1.set_xticklabels([])
+
+    ax2 = fig.add_subplot(222)
+    ax2.set_title("Jade colormap")
+    im2 = ax2.imshow(waves_2d(), origin="lower", interpolation="none", cmap=jade)
+    divider = make_axes_locatable(ax2)
+    cax = divider.append_axes("right", size="5%", pad=0.05)
+    fig.colorbar(im2, cax=cax, orientation="vertical")
+    ax2.set_xticklabels([])
+    ax2.set_yticklabels([])
+
+    ax3 = fig.add_subplot(223)
+    ax3.set_title("Spectral_r colormap")
+    im3 = ax3.imshow(waves_2d(), origin="lower", interpolation="none", cmap=spec_r)
+
+    divider = make_axes_locatable(ax3)
+    cax = divider.append_axes("right", size="5%", pad=0.05)
+    fig.colorbar(im3, cax=cax, orientation="vertical")
+
+    ax4 = fig.add_subplot(224)
+    ax4.set_title("Jade_r colormap")
+    im4 = ax4.imshow(waves_2d(), origin="lower", interpolation="none", cmap=jade_r)
+    divider = make_axes_locatable(ax4)
+    cax = divider.append_axes("right", size="5%", pad=0.05)
+    fig.colorbar(im4, cax=cax, orientation="vertical")
+    ax4.set_yticklabels([])
+
+    plt.tight_layout()
+    plt.savefig(f"{out_dir}/colormaps.png")
