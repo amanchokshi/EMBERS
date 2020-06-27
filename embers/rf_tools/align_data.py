@@ -12,6 +12,7 @@ import time
 import numpy as np
 from pathlib import Path
 from scipy import interpolate
+import matplotlib.pyplot as plt
 from scipy.signal import savgol_filter
 from embers.rf_tools.rf_data import read_data
 
@@ -26,12 +27,11 @@ def savgol_interp(
     interp_freq=None,
 ):
 
-    """
-    Interpolate a power array followed by savgol smoothing.
+    """Interpolate a power array followed by savgol smoothing.
 
-    Interpolate to a given frequency which 
-    makes the dimensions of the power arrays
-    from the reference and tile antennas equal,
+    Interpolate to a given frequency,
+    making the dimensions of the power arrays
+    from reference and tile antennas equal,
     enabling comparisons between corresponding
     data points. Two level of savgol filter applied, 
     first to capture deep nulls + small structure, 
@@ -102,6 +102,109 @@ def savgol_interp(
     tile_ali = savgol_filter(tile_ali, savgol_window_2, polyorder, axis=0)
 
     return (ref_ali, tile_ali, time_array, ref_power, tile_power, ref_time, tile_time)
+
+
+def plot_savgol_interp(
+    ref=None,
+    tile=None,
+    savgol_window_1=None,
+    savgol_window_2=None,
+    polyorder=None,
+    interp_type=None,
+    interp_freq=None,
+    channel=None,
+    out_dir=None,
+):
+    """Plot single channel of power arrays to visualise :func:`~embers.rf_tools.align_data.savgol_interp`
+
+    Create a plot of a single channel of raw :samp:`rf_data` from reference and tile power arrays, along
+    with the outputs of :func:`~embers.rf_tools.align_data.savgol_interp` to visualise the effects of 
+    interpolation and savgol smoothing.
+
+    :param ref: path to reference data file :class:`~str`
+    :param tile: path to tile data file :class:`~str`
+    :param savgol_window_1:  window size of savgol filer, must be odd :class:`~int`
+    :param savgol_window_2:  window size of savgol filer, must be odd :class:`~int`
+    :param polyorder: polynomial order to fit to savgol_window :class:`~int`
+    :param interp_type: type of interpolation. Ex: 'cubic', 'linear' :class:`~str`
+    :param interp_freq: freqency to which power array is interpolated in Hertz :class:`~int`
+    :param channel: index of single frequency channel :class:`~int`
+    :param out_dir: path to output directory :class:`~str`
+
+    :returns:
+        single freqency savgol_interp plot saved to :samp:`out_dir` 
+
+    """
+
+    (
+        ref_ali,
+        tile_ali,
+        time_array,
+        ref_power,
+        tile_power,
+        ref_time,
+        tile_time,
+    ) = savgol_interp(
+        ref=ref,
+        tile=tile,
+        savgol_window_1=savgol_window_1,
+        savgol_window_2=savgol_window_2,
+        polyorder=polyorder,
+        interp_type=interp_type,
+        interp_freq=interp_freq,
+    )
+
+    # Sample align plot
+    plt.style.use("seaborn")
+    plt.rcParams["figure.figsize"] = (9, 6)
+
+    # convert times to minuts from first datapoint
+    time_array = (time_array - time_array[0]) / 60
+    ref_time = (ref_time - ref_time[0]) / 60
+    tile_time = (tile_time - tile_time[0]) / 60
+
+    plt.plot(
+        time_array,
+        tile_ali[::, channel],
+        color="#e23a4e",
+        alpha=0.9,
+        label="tile savgol",
+    )
+    plt.scatter(
+        tile_time,
+        tile_power[::, channel],
+        color="#f78b51",
+        marker=".",
+        alpha=0.6,
+        label="tile raw",
+    )
+    plt.plot(
+        time_array,
+        ref_ali[::, channel],
+        color="#252b40",
+        alpha=0.9,
+        label="ref savgol",
+    )
+    plt.scatter(
+        ref_time,
+        ref_power[::, channel],
+        color="#6a82bb",
+        marker=".",
+        alpha=0.6,
+        label="ref raw",
+    )
+
+    leg = plt.legend(loc="upper left", frameon=True)
+    leg.get_frame().set_facecolor("white")
+    for l in leg.legendHandles:
+        l.set_alpha(1)
+
+    plt.ylim(-110, -20)
+    plt.ylabel("Raw Power [dBm]")
+    plt.xlabel("Time [min]")
+    plt.tight_layout()
+    Path(f"{out_dir}").mkdir(parents=True, exist_ok=True)
+    plt.savefig(f"{out_dir}/savgol_interp_sample.png")
 
 
 def save_aligned(
