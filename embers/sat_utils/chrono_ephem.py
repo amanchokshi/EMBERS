@@ -159,7 +159,9 @@ def write_json(data, filename=None, out_dir=None):
         json.dump(data, f, indent=4)
 
 
-def save_chrono_ephem(time_zone, start_date, stop_date, interp_type, interp_freq, ephem_dir, out_dir):
+def save_chrono_ephem(
+    time_zone, start_date, stop_date, interp_type, interp_freq, ephem_dir, out_dir
+):
     """Save 30 minute ephem from all satellites to file.
     
     Native skyfiled gps timestamps are converted to unix
@@ -202,10 +204,10 @@ def save_chrono_ephem(time_zone, start_date, stop_date, interp_type, interp_freq
         # here, we're looping over each satellite pass with a single sat ephem file
         # to check which observation window it falls in
         for pass_idx in range(len(t_array)):
-            
+
             # if sat ephem has more than 10 data points
-            if t_array[pass_idx].shape[0] >= 10:        
-    
+            if t_array[pass_idx].shape[0] >= 10:
+
                 time_interp, sat_alt, sat_az = interp_ephem(
                     t_array[pass_idx],
                     s_alt[pass_idx],
@@ -260,9 +262,7 @@ def save_chrono_ephem(time_zone, start_date, stop_date, interp_type, interp_freq
 
                         # find index of time_interp == obs_unix_end
                         stop_idx = (
-                            np.where(
-                                np.asarray(time_interp) == obs_unix_end[obs_int]
-                            )
+                            np.where(np.asarray(time_interp) == obs_unix_end[obs_int])
                         )[0][0]
 
                         # append the end of the pass which is within the obs
@@ -276,9 +276,7 @@ def save_chrono_ephem(time_zone, start_date, stop_date, interp_type, interp_freq
                         print(f"Satellite {s_id} in {obs_time[obs_int]}")
 
                         # open the relevant json file and loads contents to 'data_json'
-                        with open(
-                            f"{out_dir}/{obs_time[obs_int]}.json"
-                        ) as json_file:
+                        with open(f"{out_dir}/{obs_time[obs_int]}.json") as json_file:
                             data_json = json.load(json_file)
 
                             # append new satpass ephem data to data_json
@@ -295,17 +293,17 @@ def save_chrono_ephem(time_zone, start_date, stop_date, interp_type, interp_freq
                             data_json = []
 
 
-#if __name__ == "__main__":
+# if __name__ == "__main__":
 #    import argparse
 #
 #    parser = argparse.argumentparser(
 #        description="""
 #            collates satellite pass data from all ephem json files.
 #            the native skyfiled gps timestamps are converted to unix
-#            timestamps to match the output of the rf explorers. The 
-#            alt, az data is interpolated to match the cadence of 
-#            align_data.py. make a json file with all the passes 
-#            from each 30 min observation. This will help in the 
+#            timestamps to match the output of the rf explorers. The
+#            alt, az data is interpolated to match the cadence of
+#            align_data.py. make a json file with all the passes
+#            from each 30 min observation. This will help in the
 #            next stage, where we identify all sats in each obs.
 #            """
 #    )
