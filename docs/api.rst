@@ -54,6 +54,7 @@ Sat Utils
     chrono_ephem.save_chrono_ephem
     sat_channels.read_ref_aligned
     sat_channels.noise_floor
+    sat_channels.time_filter
 
 
 MWA Meta

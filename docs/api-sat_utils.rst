@@ -27,5 +27,6 @@
 .. automodule:: embers.sat_utils.sat_channels
 .. autofunction:: embers.sat_utils.sat_channels.read_ref_aligned
 .. autofunction:: embers.sat_utils.sat_channels.noise_floor
+.. autofunction:: embers.sat_utils.sat_channels.time_filter
 
 

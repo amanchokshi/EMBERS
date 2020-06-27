@@ -80,15 +80,22 @@ def noise_floor(sat_thresh, noi_thresh, power):
 
 
 def time_filter(s_rise, s_set, times):
-    """Slice obs window to size of ephem of norad sat
-    Args:
-        s_rise          : ephem rise time
-        s_set           : ephem set time
-        times           : time array of obs
+    """Determine indices of time array when a satellite is above the horizon.
 
-    Returns:
-        intvl           : index of rf time array where sat is up
-        """
+    Isolate the portion of a rf power array where a satellite is above the
+    horizon using the rise and set times of a satellite's ephemeris. This 
+    function returns a pair of indices which can be used to slice the rf 
+    power and times arrays to precisely only include the satellite.
+
+    :param s_rise: satellite rise time from ephemeris :class:`~float`
+    :param s_set: satellite set time from ephemeris :class:`~float`
+    :param times: time array corresponding to the rf power array :class:`~numpy.ndarry`
+
+    :returns:
+        intvl: :samp:`None` if satellite is not above the horizon within the :samp:`times` array
+        intvl: [i_0, i_1], pair of indices of :samp:`times` array, when satellite is above the horizon
+    
+    """
 
     # I. sat rises before times, sets within times window
     if s_rise < times[0] and s_set > times[0] and s_set <= times[-1]:
