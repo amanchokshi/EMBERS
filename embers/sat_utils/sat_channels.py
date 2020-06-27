@@ -1,3 +1,12 @@
+"""
+Satellite Channels
+------------------
+
+A set of tools to determine the transmission channel of various satellites in 30 minute
+observation by using rf data in conjunctin with chronological satellite ephemeris data.
+
+"""
+
 import sys
 import json
 import argparse
@@ -7,73 +16,67 @@ from pathlib import Path
 import concurrent.futures
 from itertools import repeat
 import matplotlib.pyplot as plt
-from datetime import datetime, timedelta
 from scipy.stats import median_absolute_deviation as mad
-from channels_plt import plt_waterfall_pass, plt_channel_basic, sat_plot
+#from channels_plt import plt_waterfall_pass, plt_channel_basic, sat_plot
+
+from embers.rf_tools.rf_data import time_tree
 
 
-def time_tree(start_date, stop_date):
-    """Split the time interval into 30 min obs"""
+def read_ref_aligned(ali_file=None):
+    """Read aligned reference data from :func:`~embers.rf_tools.align_data.save_aligned` :samp:`npz` file
+    
+    :param ali_file: path to a :func:`~embers.rf_tools.align_data.save_aligned` :samp:`npz` file :class:`~str`
 
-    t_start = datetime.strptime(start_date, "%Y-%m-%d")
-    t_stop = datetime.strptime(stop_date, "%Y-%m-%d")
-    n_days = (t_stop - t_start).days
+    :returns:
+        A :class:`~tuple` (power, times)
 
-    dates = []
-    date_time = []
+        - power: a smoothed reference power array :class:`~numpy.ndarry`
+        - times: a regular time array :class:`~numpy.ndarry`
 
-    # Every Day
-    for i in range(n_days + 1):
-        day = t_start + timedelta(days=i)
-        date = day.strftime("%Y-%m-%d")
-        dates.append(date)
-        d_t = []
+    """
 
-        # Every 30 min in the day
-        for j in range(48):
-            t_delta = datetime.strptime(date, "%Y-%m-%d") + timedelta(minutes=30 * j)
-            d_time = t_delta.strftime("%Y-%m-%d-%H:%M")
-            d_t.append(d_time)
-
-        date_time.append(d_t)
-
-    return (dates, date_time)
-
-
-def read_aligned(ali_file=None):
-    """Read aligned data npz file"""
     paired_data = np.load(ali_file, allow_pickle=True)
 
-    power = paired_data["ref_p_aligned"]
+    power = paired_data["ref_ali"]
     times = paired_data["time_array"]
 
-    return [power, times]
+    return (power, times)
 
 
-def noise_floor(sat_thresh, noi_thresh, data=None):
-    """Computes """
+def noise_floor(sat_thresh, noi_thresh, power):
+    """Computes the noise floor of a rf power array
+    
+    Exclude channels with signal above :samp:`sat_thresh` multiplied by :samp:`standard deviation` of power array.
+    The Median Absolute Deviation :samp:`MAD` is used to quantify the noise level of the remaining
+    channels. The noise floor :samp:`noi_thresh` is defined to be the :samp:`median` of noisy data + :samp:`noi_thresh` multiplied by the
+    :samp:`MAD` of noisy data.
+
+    :param sat_thresh: An integer multiple of standard deviation of rf power array, used to exclude channels with potential satellites. :class:`~int` 
+    :param noi_thresh: An integer multiple of the noisy data MAD, used to compute a noise floor. :class:`~int`
+    :param power: Rf power array :class:`~numpy.ndarry`
+
+    :returns:
+        noise_threshold: The power level of the noise floor in dBm :class:`~int`
+
+    """
 
     # compute the standard deviation of data, and use it to identify occupied channels
-    σ = np.std(data)
+    σ = np.std(power)
 
     # Any channel with a max power >= σ has a satellite
     sat_cut = sat_thresh * σ
-    chans_pow_max = np.amax(data, axis=0)
+    chans_pow_max = np.amax(power, axis=0)
 
     # Exclude the channels with sats, to only have noise data
     noise_chans = np.where(chans_pow_max < sat_cut)[0]
-    noise_data = data[:, noise_chans]
+    noise_data = power[:, noise_chans]
 
     # noise median, noise mad, noise threshold = μ + 3*σ
     μ_noise = np.median(noise_data)
     σ_noise = mad(noise_data, axis=None)
-    # because we rescale power to have zero median
-    noise_threshold = (μ_noise - μ_noise) + noi_thresh * σ_noise
+    noise_threshold = μ_noise + noi_thresh * σ_noise
 
-    # scale the data so that it has zero median
-    data = data - μ_noise
-
-    return (data, noise_threshold)
+    return noise_threshold
 
 
 def time_filter(s_rise, s_set, times):

@@ -24,3 +24,8 @@
 .. autofunction:: embers.sat_utils.chrono_ephem.write_json
 .. autofunction:: embers.sat_utils.chrono_ephem.save_chrono_ephem
 
+.. automodule:: embers.sat_utils.sat_channels
+.. autofunction:: embers.sat_utils.sat_channels.read_ref_aligned
+.. autofunction:: embers.sat_utils.sat_channels.noise_floor
+
+
