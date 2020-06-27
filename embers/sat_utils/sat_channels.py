@@ -7,18 +7,16 @@ observation by using rf data in conjunctin with chronological satellite ephemeri
 
 """
 
-import sys
 import json
 import argparse
 import numpy as np
-import healpy as hp
 from pathlib import Path
 import concurrent.futures
 from itertools import repeat
 import matplotlib.pyplot as plt
 from scipy.stats import median_absolute_deviation as mad
-#from channels_plt import plt_waterfall_pass, plt_channel_basic, sat_plot
 
+from embers.rf_tools.colormaps import spectral
 from embers.rf_tools.rf_data import time_tree
 
 
@@ -144,13 +142,7 @@ def good_chans(
 
     """Create power, alt, az arrays at constant cadence"""
 
-    # Custom spectral colormap
-    import sys
-
-    sys.path.append("../decode_rf_data")
-    from colormap import spectral
-
-    cmap = spectral()
+    spec, _ = spectral()
 
     power, times = read_aligned(ali_file=ref_file)
 
@@ -284,7 +276,7 @@ def good_chans(
                         w_start,
                         w_stop,
                         timestamp,
-                        cmap,
+                        spec,
                         chs=possible_chans,
                         good_ch=good_chan,
                         out_dir=f"{plt_dir}/{date}/{timestamp}",
@@ -300,7 +292,7 @@ def good_chans(
                         w_start,
                         w_stop,
                         timestamp,
-                        cmap,
+                        spec,
                         chs=None,
                         good_ch=None,
                         out_dir=f"{plt_dir}/{date}/{timestamp}",
@@ -483,7 +475,6 @@ if __name__ == "__main__":
 
     # Save logs
     Path(f"{out_dir}/window_maps").mkdir(parents=True, exist_ok=True)
-    sys.stdout = open(f"{out_dir}/logs_{start_date}_{stop_date}.txt", "a")
 
     # Help traverse all 30 min obs b/w start & stop
     dates, date_time = time_tree(start_date, stop_date)
