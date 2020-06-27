@@ -21,3 +21,6 @@
 .. automodule:: embers.sat_utils.chrono_ephem
 .. autofunction:: embers.sat_utils.chrono_ephem.obs_times
 .. autofunction:: embers.sat_utils.chrono_ephem.interp_ephem
+.. autofunction:: embers.sat_utils.chrono_ephem.write_json
+.. autofunction:: embers.sat_utils.chrono_ephem.save_chrono_ephem
+

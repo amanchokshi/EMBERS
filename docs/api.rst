@@ -50,6 +50,8 @@ Sat Utils
     sat_ephemeris.save_ephem
     chrono_ephem.obs_times
     chrono_ephem.interp_ephem
+    chrono_ephem.write_json
+    chrono_ephem.save_chrono_ephem
 
 
 MWA Meta

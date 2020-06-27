@@ -97,13 +97,6 @@ def obs_times(time_zone, start_date, stop_date):
     return (obs_time, obs_unix, obs_unix_end)
 
 
-def write_json(data, filename=None, out_dir=None):
-    """writes data to json file in output dir"""
-
-    with open(f"{out_dir}/{filename}", "w") as f:
-        json.dump(data, f, indent=4)
-
-
 def interp_ephem(t_array, s_alt, s_az, interp_type, interp_freq):
     """Interpolates satellite ephemeris from :mod:`~embers.sat_utils.sat_ephemeris`
     
@@ -153,80 +146,43 @@ def interp_ephem(t_array, s_alt, s_az, interp_type, interp_freq):
     return (time_interp, sat_alt, sat_az)
 
 
-if __name__ == "__main__":
-    import argparse
+def write_json(data, filename=None, out_dir=None):
+    """writes data to json file in output dir
+    
+    :param data: Data to be written to json file
+    :param filename: Json filename :class:`~str`
+    :param out_dir: Path to output directory :class:`~str`
 
-    parser = argparse.ArgumentParser(
-        description="""
-            Collates satellite pass data from all ephem json files.
-            The native skyfiled gps timestamps are converted to unix
-            timestamps to match the output of the rf explorers. The 
-            alt, az data is interpolated to match the cadence of 
-            align_data.py. Make a json file with all the passes 
-            from each 30 min observation. This will help in the 
-            next stage, where we identify all sats in each obs.
-            """
-    )
+    """
 
-    parser.add_argument(
-        "--json_dir",
-        metavar="\b",
-        default="./../../outputs/sat_ephemeris/ephem_json/",
-        help="Directory where ephem json files live. Default=./../../outputs/sat_ephemeris/ephem_json/",
-    )
-    parser.add_argument(
-        "--out_dir",
-        metavar="\b",
-        default="./../../outputs/sat_ephemeris/chrono_json/",
-        help="Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/",
-    )
-    parser.add_argument(
-        "--interp_type",
-        metavar="\b",
-        default="cubic",
-        help="Type of interpolation. Ex: Cubic,Linear. Default=cubic",
-    )
-    parser.add_argument(
-        "--interp_freq",
-        metavar="\b",
-        type=int,
-        default=1,
-        help="Frequency at which to interpolate, in Hertz. Must be the same as used in align_data.py. Default=1",
-    )
-    parser.add_argument(
-        "--start_date",
-        metavar="\b",
-        help="Date from which to determine sat ephemeris. Ex: 2019-10-10",
-    )
-    parser.add_argument(
-        "--stop_date",
-        metavar="\b",
-        help="Date until which to determine sat ephemeris. Ex: 2019-10-11",
-    )
-    parser.add_argument(
-        "--time_zone",
-        metavar="\b",
-        default="Australia/Perth",
-        help="Time zone where data was recorded. Default=Australia/Perth",
-    )
+    with open(f"{out_dir}/{filename}", "w") as f:
+        json.dump(data, f, indent=4)
 
-    args = parser.parse_args()
 
-    json_dir = args.json_dir
-    out_dir = args.out_dir
-    interp_type = args.interp_type
-    interp_freq = args.interp_freq
-    start_date = args.start_date
-    stop_date = args.stop_date
-    time_zone = args.time_zone
+def save_chrono_ephem(time_zone, start_date, stop_date, interp_type, interp_freq, ephem_dir, out_dir):
+    """Save 30 minute ephem from all satellites to file.
+    
+    Native skyfiled gps timestamps are converted to unix
+    timestamps to match the output of the rf explorers. The 
+    alt, az data is interpolated to match the cadence of 
+    :mod:`~embers.rf_tools.align_data`. Make a json file with all the passes 
+    from each 30 min observation. This will help in the 
+    next stage, where we identify all sats in each obs.
+    
+    :param time_zone: A :class:`~str` representing a :samp:`pytz` `timezones <https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568>`_.
+    :param start_date: in :samp:`YYYY-MM-DD` format :class:`~str`
+    :param stop_date: in :samp:`YYYY-MM-DD` format :class:`~str`
+    :param interp_type: Type of interpolation. Ex: :samp:`cubic`, :samp:`linear` :class:`str`
+    :param interp_freq: Frequency at which to interpolate, in Hertz. :class:`~int`
+    :param ephem_dir: Directory where :samp:`npz` ephemeris files from :func:`~embers.sat_utils.sat_ephemeris.save_ephem` are saved :class:`~str`
+    :param out_dir: Path to output directory where chronological ephemeris files will be saved :class:`~str`
+
+    """
+
+    obs_time, obs_unix, obs_unix_end = obs_times(time_zone, start_date, stop_date)
 
     # creates output dir, if it doesn't exist
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-
-    # Save log file
-    sys.stdout = open(f"{out_dir}/logs_{start_date}_{stop_date}.txt", "a")
-
-    obs_time, obs_unix, obs_unix_end = obs_times(time_zone, start_date, stop_date)
 
     # Lets make the a json file for each 30 min observation, with an empty list
     data = []
@@ -234,114 +190,300 @@ if __name__ == "__main__":
         write_json(data, filename=f"{obs_time[i]}.json", out_dir=out_dir)
 
     # Finds all sat ephem json files, and loops over them
-    for json_path in list(Path(json_dir).glob("*.json")):
+    for ephem_npz in list(Path(ephem_dir).glob("*.npz")):
 
-        with open(json_path) as ephem:
-            print(json_path)
-            sat_ephem = json.load(ephem)
+        # Extract data from npz ephem file
+        sat_ephem = np.load(ephem_npz, allow_pickle=True)
+        t_array = sat_ephem["time_array"]
+        s_alt = sat_ephem["sat_alt"]
+        s_az = sat_ephem["sat_az"]
+        s_id = str(sat_ephem["sat_id"])
 
-            # Extract data from json dictionary
-            t_array = sat_ephem["time_array"]
-            s_alt = sat_ephem["sat_alt"]
-            s_az = sat_ephem["sat_az"]
-            s_id = sat_ephem["sat_id"]
+        # here, we're looping over each satellite pass with a single sat ephem file
+        # to check which observation window it falls in
+        for pass_idx in range(len(t_array)):
+            
+            # if sat ephem has more than 10 data points
+            if t_array[pass_idx].shape[0] >= 10:        
+    
+                time_interp, sat_alt, sat_az = interp_ephem(
+                    t_array[pass_idx],
+                    s_alt[pass_idx],
+                    s_az[pass_idx],
+                    interp_type,
+                    interp_freq,
+                )
 
-            # here, we're looping over each satellite pass with a single sat ephem file
-            # to check which observation window it falls in
+                # Find which sat passes are within a 30 minute obs
+                for obs_int in range(len(obs_unix)):
 
-            for pass_idx in range(len(t_array)):
+                    sat_ephem = {}
+                    sat_ephem["sat_id"] = [s_id]
+                    sat_ephem["time_array"] = []
+                    sat_ephem["sat_alt"] = []
+                    sat_ephem["sat_az"] = []
 
-                # Don't consider passes with less than 4 samples (~ 1 min = 3*20s)
-                if len(t_array[pass_idx]) > 3:
-                    time_interp, sat_alt, sat_az = interp_ephem(
-                        t_array[pass_idx],
-                        s_alt[pass_idx],
-                        s_az[pass_idx],
-                        interp_type,
-                        interp_freq,
-                    )
+                    # Case I: Satpass occurs completely within the 30min observation
+                    if (
+                        obs_unix[obs_int] < time_interp[0]
+                        and obs_unix_end[obs_int] > time_interp[-1]
+                    ):
 
-                    # Loop over every sat pass, within the sat ephem file
-                    for obs_int in range(len(obs_unix)):
+                        # append the whole pass to the dict
+                        sat_ephem["time_array"].extend(time_interp)
+                        sat_ephem["sat_alt"].extend(sat_alt)
+                        sat_ephem["sat_az"].extend(sat_az)
 
-                        sat_ephem = {}
-                        sat_ephem["sat_id"] = [s_id[0]]
-                        sat_ephem["time_array"] = []
-                        sat_ephem["sat_alt"] = []
-                        sat_ephem["sat_az"] = []
+                    # Case II: Satpass begins before the obs, but ends within it
+                    elif (
+                        obs_unix[obs_int] > time_interp[0]
+                        and obs_unix[obs_int] < time_interp[-1]
+                        and obs_unix_end[obs_int] > time_interp[-1]
+                    ):
 
-                        # Case I: Satpass occurs completely within the 30min observation
-                        if (
-                            obs_unix[obs_int] < time_interp[0]
-                            and obs_unix_end[obs_int] > time_interp[-1]
-                        ):
+                        # find index of time_interp == obs_unix
+                        start_idx = (
+                            np.where(np.asarray(time_interp) == obs_unix[obs_int])
+                        )[0][0]
 
-                            # append the whole pass to the dict
-                            sat_ephem["time_array"].extend(time_interp)
-                            sat_ephem["sat_alt"].extend(sat_alt)
-                            sat_ephem["sat_az"].extend(sat_az)
-                            # print(f'{pass_idx}: I.   {obs_time[obs_int]}')
+                        # append the end of the pass which is within the obs
+                        sat_ephem["time_array"].extend(time_interp[start_idx:])
+                        sat_ephem["sat_alt"].extend(sat_alt[start_idx:])
+                        sat_ephem["sat_az"].extend(sat_az[start_idx:])
 
-                        # Case II: Satpass begins before the obs, but ends within it
-                        elif (
-                            obs_unix[obs_int] > time_interp[0]
-                            and obs_unix[obs_int] < time_interp[-1]
-                            and obs_unix_end[obs_int] > time_interp[-1]
-                        ):
+                    # Case III: Satpass begins within the obs, but ends after it
+                    elif (
+                        obs_unix_end[obs_int] > time_interp[0]
+                        and obs_unix_end[obs_int] < time_interp[-1]
+                        and obs_unix[obs_int] < time_interp[0]
+                    ):
 
-                            # find index of time_interp == obs_unix
-                            start_idx = (
-                                np.where(np.asarray(time_interp) == obs_unix[obs_int])
-                            )[0][0]
+                        # find index of time_interp == obs_unix_end
+                        stop_idx = (
+                            np.where(
+                                np.asarray(time_interp) == obs_unix_end[obs_int]
+                            )
+                        )[0][0]
 
-                            # append the end of the pass which is within the obs
-                            sat_ephem["time_array"].extend(time_interp[start_idx:])
-                            sat_ephem["sat_alt"].extend(sat_alt[start_idx:])
-                            sat_ephem["sat_az"].extend(sat_az[start_idx:])
+                        # append the end of the pass which is within the obs
+                        sat_ephem["time_array"].extend(time_interp[: stop_idx + 1])
+                        sat_ephem["sat_alt"].extend(sat_alt[: stop_idx + 1])
+                        sat_ephem["sat_az"].extend(sat_az[: stop_idx + 1])
 
-                            # print(f'{pass_idx}: II.  {obs_time[obs_int]}')
+                    # doesn't create json if there are no satellite passes within it
+                    if sat_ephem["time_array"] != []:
 
-                        # Case III: Satpass begins within the obs, but ends after it
-                        elif (
-                            obs_unix_end[obs_int] > time_interp[0]
-                            and obs_unix_end[obs_int] < time_interp[-1]
-                            and obs_unix[obs_int] < time_interp[0]
-                        ):
+                        print(f"Satellite {s_id} in {obs_time[obs_int]}")
 
-                            # find index of time_interp == obs_unix_end
-                            stop_idx = (
-                                np.where(
-                                    np.asarray(time_interp) == obs_unix_end[obs_int]
-                                )
-                            )[0][0]
+                        # open the relevant json file and loads contents to 'data_json'
+                        with open(
+                            f"{out_dir}/{obs_time[obs_int]}.json"
+                        ) as json_file:
+                            data_json = json.load(json_file)
 
-                            # append the end of the pass which is within the obs
-                            sat_ephem["time_array"].extend(time_interp[: stop_idx + 1])
-                            sat_ephem["sat_alt"].extend(sat_alt[: stop_idx + 1])
-                            sat_ephem["sat_az"].extend(sat_az[: stop_idx + 1])
+                            # append new satpass ephem data to data_json
+                            data_json.append(sat_ephem)
 
-                            # print(f'{pass_idx}: III. {obs_time[obs_int]}')
+                            # write the combined data back to the original file
+                            write_json(
+                                data_json,
+                                filename=f"{obs_time[obs_int]}.json",
+                                out_dir=out_dir,
+                            )
 
-                        # doesn't create json if there are no satellite passes within it
-                        if sat_ephem["time_array"] != []:
+                            # clear data_json
+                            data_json = []
 
-                            print(f"Satellite {s_id[0]} in {obs_time[obs_int]}")
 
-                            # open the relevant json file and loads contents to 'data_json'
-                            with open(
-                                f"{out_dir}/{obs_time[obs_int]}.json"
-                            ) as json_file:
-                                data_json = json.load(json_file)
-
-                                # append new satpass ephem data to data_json
-                                data_json.append(sat_ephem)
-
-                                # write the combined data back to the original file
-                                write_json(
-                                    data_json,
-                                    filename=f"{obs_time[obs_int]}.json",
-                                    out_dir=out_dir,
-                                )
-
-                                # clear data_json
-                                data_json = []
+#if __name__ == "__main__":
+#    import argparse
+#
+#    parser = argparse.argumentparser(
+#        description="""
+#            collates satellite pass data from all ephem json files.
+#            the native skyfiled gps timestamps are converted to unix
+#            timestamps to match the output of the rf explorers. The 
+#            alt, az data is interpolated to match the cadence of 
+#            align_data.py. make a json file with all the passes 
+#            from each 30 min observation. This will help in the 
+#            next stage, where we identify all sats in each obs.
+#            """
+#    )
+#
+#    parser.add_argument(
+#        "--json_dir",
+#        metavar="\b",
+#        default="./../../outputs/sat_ephemeris/ephem_json/",
+#        help="directory where ephem json files live. Default=./../../outputs/sat_ephemeris/ephem_json/",
+#    )
+#    parser.add_argument(
+#        "--out_dir",
+#        metavar="\b",
+#        default="./../../outputs/sat_ephemeris/chrono_json/",
+#        help="output directory. default=./../../outputs/sat_ephemeris/chrono_json/",
+#    )
+#    parser.add_argument(
+#        "--interp_type",
+#        metavar="\b",
+#        default="cubic",
+#        help="type of interpolation. Ex: Cubic,Linear. Default=cubic",
+#    )
+#    parser.add_argument(
+#        "--interp_freq",
+#        metavar="\b",
+#        type=int,
+#        default=1,
+#        help="frequency at which to interpolate, in Hertz. Must be the same as used in align_data.py. Default=1",
+#    )
+#    parser.add_argument(
+#        "--start_date",
+#        metavar="\b",
+#        help="date from which to determine sat ephemeris. Ex: 2019-10-10",
+#    )
+#    parser.add_argument(
+#        "--stop_date",
+#        metavar="\b",
+#        help="date until which to determine sat ephemeris. Ex: 2019-10-11",
+#    )
+#    parser.add_argument(
+#        "--time_zone",
+#        metavar="\b",
+#        default="australia/perth",
+#        help="time zone where data was recorded. Default=Australia/Perth",
+#    )
+#
+#    args = parser.parse_args()
+#
+#    json_dir = args.json_dir
+#    out_dir = args.out_dir
+#    interp_type = args.interp_type
+#    interp_freq = args.interp_freq
+#    start_date = args.start_date
+#    stop_date = args.stop_date
+#    time_zone = args.time_zone
+#
+#    # creates output dir, if it doesn't exist
+#    path(out_dir).mkdir(parents=true, exist_ok=True)
+#
+#    # save log file
+#    sys.stdout = open(f"{out_dir}/logs_{start_date}_{stop_date}.txt", "a")
+#
+#    obs_time, obs_unix, obs_unix_end = obs_times(time_zone, start_date, stop_date)
+#
+#    # lets make the a json file for each 30 min observation, with an empty list
+#    data = []
+#    for i in range(len(obs_time)):
+#        write_json(data, filename=f"{obs_time[i]}.json", out_dir=out_dir)
+#
+#    # finds all sat ephem json files, and loops over them
+#    for json_path in list(path(json_dir).glob("*.json")):
+#
+#        with open(json_path) as ephem:
+#            print(json_path)
+#            sat_ephem = json.load(ephem)
+#
+#            # extract data from json dictionary
+#            t_array = sat_ephem["time_array"]
+#            s_alt = sat_ephem["sat_alt"]
+#            s_az = sat_ephem["sat_az"]
+#            s_id = sat_ephem["sat_id"]
+#
+#            # here, we're looping over each satellite pass with a single sat ephem file
+#            # to check which observation window it falls in
+#
+#            for pass_idx in range(len(t_array)):
+#
+#                # don't consider passes with less than 4 samples (~ 1 min = 3*20s)
+#                if len(t_array[pass_idx]) > 3:
+#                    time_interp, sat_alt, sat_az = interp_ephem(
+#                        t_array[pass_idx],
+#                        s_alt[pass_idx],
+#                        s_az[pass_idx],
+#                        interp_type,
+#                        interp_freq,
+#                    )
+#
+#                    # loop over every sat pass, within the sat ephem file
+#                    for obs_int in range(len(obs_unix)):
+#
+#                        sat_ephem = {}
+#                        sat_ephem["sat_id"] = [s_id[0]]
+#                        sat_ephem["time_array"] = []
+#                        sat_ephem["sat_alt"] = []
+#                        sat_ephem["sat_az"] = []
+#
+#                        # case i: Satpass occurs completely within the 30min observation
+#                        if (
+#                            obs_unix[obs_int] < time_interp[0]
+#                            and obs_unix_end[obs_int] > time_interp[-1]
+#                        ):
+#
+#                            # append the whole pass to the dict
+#                            sat_ephem["time_array"].extend(time_interp)
+#                            sat_ephem["sat_alt"].extend(sat_alt)
+#                            sat_ephem["sat_az"].extend(sat_az)
+#                            # print(f'{pass_idx}: I.   {obs_time[obs_int]}')
+#
+#                        # case ii: Satpass begins before the obs, but ends within it
+#                        elif (
+#                            obs_unix[obs_int] > time_interp[0]
+#                            and obs_unix[obs_int] < time_interp[-1]
+#                            and obs_unix_end[obs_int] > time_interp[-1]
+#                        ):
+#
+#                            # find index of time_interp == obs_unix
+#                            start_idx = (
+#                                np.where(np.asarray(time_interp) == obs_unix[obs_int])
+#                            )[0][0]
+#
+#                            # append the end of the pass which is within the obs
+#                            sat_ephem["time_array"].extend(time_interp[start_idx:])
+#                            sat_ephem["sat_alt"].extend(sat_alt[start_idx:])
+#                            sat_ephem["sat_az"].extend(sat_az[start_idx:])
+#
+#                            # print(f'{pass_idx}: II.  {obs_time[obs_int]}')
+#
+#                        # case iiI: Satpass begins within the obs, but ends after it
+#                        elif (
+#                            obs_unix_end[obs_int] > time_interp[0]
+#                            and obs_unix_end[obs_int] < time_interp[-1]
+#                            and obs_unix[obs_int] < time_interp[0]
+#                        ):
+#
+#                            # find index of time_interp == obs_unix_end
+#                            stop_idx = (
+#                                np.where(
+#                                    np.asarray(time_interp) == obs_unix_end[obs_int]
+#                                )
+#                            )[0][0]
+#
+#                            # append the end of the pass which is within the obs
+#                            sat_ephem["time_array"].extend(time_interp[: stop_idx + 1])
+#                            sat_ephem["sat_alt"].extend(sat_alt[: stop_idx + 1])
+#                            sat_ephem["sat_az"].extend(sat_az[: stop_idx + 1])
+#
+#                            # print(f'{pass_idx}: III. {obs_time[obs_int]}')
+#
+#                        # doesn't create json if there are no satellite passes within it
+#                        if sat_ephem["time_array"] != []:
+#
+#                            print(f"Satellite {s_id[0]} in {obs_time[obs_int]}")
+#
+#                            # open the relevant json file and loads contents to 'data_json'
+#                            with open(
+#                                f"{out_dir}/{obs_time[obs_int]}.json"
+#                            ) as json_file:
+#                                data_json = json.load(json_file)
+#
+#                                # append new satpass ephem data to data_json
+#                                data_json.append(sat_ephem)
+#
+#                                # write the combined data back to the original file
+#                                write_json(
+#                                    data_json,
+#                                    filename=f"{obs_time[obs_int]}.json",
+#                                    out_dir=out_dir,
+#                                )
+#
+#                                # clear data_json
+#                                data_json = []
