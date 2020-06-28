@@ -290,8 +290,8 @@ def plt_sats(ids, chrono_file, timestamp):
             az,
             alt,
             "-",
-            linewidth=2.4,
-            alpha=0.8,
+            linewidth=4.2,
+            alpha=0.9,
             color=colors[i],
             label=f"{id}",
         )
