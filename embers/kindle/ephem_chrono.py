@@ -76,14 +76,14 @@ if _start_date == "":
 
 def main():
     """Execute chrono_ephem from terminal."""
-    
+
     print(f"Saving chronological Ephem files to: {_out_dir}")
     print(f"Grab a coffee, this may take a couple of minutes!")
-    
+
     # save log file
     Path(_out_dir).mkdir(parents=True, exist_ok=True)
     sys.stdout = open(f"{_out_dir}/chrono_ephem.log", "a")
-    
+
     save_chrono_ephem(
         _time_zone,
         _start_date,

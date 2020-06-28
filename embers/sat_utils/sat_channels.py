@@ -7,6 +7,7 @@ observation by using rf data in conjunctin with chronological satellite ephemeri
 
 """
 
+import re
 import json
 import argparse
 import numpy as np
@@ -145,6 +146,7 @@ def plt_window_chans(power, sat_id, start, stop, cmap, chs=None, good_ch=None):
 
     """
 
+    plt.rcParams.update(plt.rcParamsDefault)
     plt.style.use("dark_background")
     fig = plt.figure(figsize=(7, 10))
     ax = fig.add_axes([0.12, 0.1, 0.72, 0.85])
@@ -163,13 +165,13 @@ def plt_window_chans(power, sat_id, start, stop, cmap, chs=None, good_ch=None):
     if chs != None:
         # vertical highlight of possible channels
         for ch in chs:
-            ax.axvspan(ch - 1.0, ch + 0.6, alpha=0.2, color="white")
+            ax.axvspan(ch - 0.5, ch + 0.4, alpha=0.2, color="white")
 
     if good_ch != None:
         # highlight good channel
         ax.axvspan(
-            good_ch - 1.0,
-            good_ch + 0.6,
+            good_ch - 0.5,
+            good_ch + 0.4,
             alpha=0.6,
             edgecolor="#a7ff83",
             facecolor=None,
@@ -179,7 +181,9 @@ def plt_window_chans(power, sat_id, start, stop, cmap, chs=None, good_ch=None):
     return plt
 
 
-def plt_channel(times, channel_power, pow_med, chan_num, y_range, noi_thresh, pow_thresh):
+def plt_channel(
+    times, channel_power, pow_med, chan_num, y_range, noi_thresh, pow_thresh
+):
     """Plot power in channel, with various thresholds
     
     :param times: times 1D array :class:`~numpy.ndarry`
@@ -188,13 +192,13 @@ def plt_channel(times, channel_power, pow_med, chan_num, y_range, noi_thresh, po
     :param chan_num: Channel number :class:`~str`
     :param y_range: Plot min, max yrange list :class:`~list`
     :param noi_thresh: Noise floor in :samp:`dBm`. :class:`~float`
-    :param pow_thresh: Power threshold in :samp:`dB` above the power array median :class:`~float` 
+    :param pow_thresh: Power threshold in :samp:`dBm` :class:`~float` 
         
     :returns:
         - plt - :func:`~matplotlib.pyplot.plot` object
 
     """
-
+    plt.rcParams.update(plt.rcParamsDefault)
     plt.style.use("seaborn")
 
     # plt channel power
@@ -207,15 +211,21 @@ def plt_channel(times, channel_power, pow_med, chan_num, y_range, noi_thresh, po
         color="#db3751",
         label="Data",
     )
-    plt.fill_between(times, channel_power, color="#db3751", alpha=0.7)
+    plt.fill_between(
+        times,
+        np.repeat(y_range[0], len(channel_power)),
+        channel_power,
+        color="#db3751",
+        alpha=0.7,
+    )
 
     plt.axhline(
-        pow_med+pow_thresh,
+        pow_thresh,
         alpha=1.0,
         linestyle="-",
         linewidth=2,
         color="#fba95f",
-        label=f"Power Cut: {pow_med+pow_thresh:.2f} dBm",
+        label=f"Power Cut: {pow_thresh:.2f} dBm",
     )
 
     plt.axhline(
@@ -237,7 +247,7 @@ def plt_channel(times, channel_power, pow_med, chan_num, y_range, noi_thresh, po
     leg.get_frame().set_alpha(0.2)
     for l in leg.legendHandles:
         l.set_alpha(1)
-    
+
     return plt
 
 
@@ -254,6 +264,7 @@ def plt_sats(ids, alt, az, timestamp):
 
     """
 
+    plt.rcParams.update(plt.rcParamsDefault)
     plt.style.use("seaborn")
     figure = plt.figure(figsize=(7, 6))
     ax = figure.add_subplot(111, polar=True)
@@ -290,57 +301,117 @@ def plt_sats(ids, alt, az, timestamp):
         l.set_alpha(1)
 
     plt.tight_layout()
-    
+
     return plt
 
 
 def good_chans(
-    ref_file,
+    ali_file,
     chrono_file,
     sat_id,
     sat_thresh,
     noi_thresh,
     pow_thresh,
     occ_thresh,
-    date,
     timestamp,
-    plots,
+    out_dir,
+    plots=None,
 ):
+    """Determine the channels a satellite could occupy, in a 30 minute observation
+    
+    Ephemeris from :samp:`chrono_file` is used to select a temoral :samp:`window`
+    of the rf power array, within which the satellite is above the horizon. Looping
+    through the frequency channels, a :samp:`noi_thresh`, :samp:`pow_thresh`, :samp:`occ_thresh`
+    are used to identify possible channels occupied by the :samp:`sat_id`. If more than one
+    channel passes the three thresholds, the channel with the highest window occupancy is 
+    selected.
 
-    """Create power, alt, az arrays at constant cadence"""
+    .. code-block:: python
+        
+        from embers.sat_utils.sat_channels import good_chans
+        
+        ali_file = "~/embers_out/rf0XX_S06XX_2019-10-10-02:30_aligned.npz"
+        chrono_file = "~/embers_out/2019-10-10-02:30.json"
+        sat_id = "44387"
+        sat_thresh = 1
+        noi_thresh = 3
+        pow_thresh = 20
+        occ_thresh = 0.80
+        timestamp = "2019-10-10-02:30"
+        out_dir = "./embers_out"
+        plots = True
+
+        good_chan = good_chans(
+                        ali_file,
+                        chrono_file,
+                        sat_id,
+                        sat_thresh,
+                        noi_thresh,
+                        pow_thresh,
+                        occ_thresh,
+                        timestamp,
+                        out_dir,
+                        plots=plots)
+
+        print(good_chan)
+        >>> 59
+
+    :param ali_file: Path to a :samp:`npz` aligned file from :func:`~embers.rf_data.align_data.save_aligned` :class:`~str`
+    :param chrono_file: Path to chrono ephem json file from :func:`~embers.sat_utils.chrono_ephem.save_chrono_ephem` :class:`~str`
+    :param sat_id: Norad catalogue ID :class:`~str`
+    :param sat_thresh: Satellite threshold from :func:`~embers.sat_utils.sat_channels.noise_threshold` :class:`~int`
+    :param noi_thresh: Noise threshold from :func:`~embers.sat_utils.sat_channels.noise_threshold` :class:`~int`
+    :param occ_thresh: Window occupation threshold. Minimum fractional signal above the noise floor in window :class:`~float`
+    :param timestamp: Time at start of observation in format :samp:`YYYY-MM-DD-HH:MM` :class:`~str`
+    :param out_dir: Path to output directory to save plots :class:`~str`
+    :param plots: If :samp:`True`, disagnostic plots are generated and saved to :samp:`out_dir`
+
+    :returns:
+        - good_chan: The channel number of most probable channel for :samp:`sat_id`
+        - good_chan may be :samp:`None`, if no possible channels were identified
+
+    """
 
     spec, _ = spectral()
 
-    power, times = read_aligned(ali_file=ref_file)
+    power, times = read_ref_aligned(ali_file=ali_file)
+    p_med = np.median(power)
 
-    # Scale noise floor to zero and determine noise threshold
-    power, noise_threshold = noise_floor(sat_thresh, noi_thresh, power)
+    # Determine noise threshold
+    noise_threshold = noise_floor(sat_thresh, noi_thresh, power)
 
     with open(chrono_file) as chrono:
         chrono_ephem = json.load(chrono)
 
+        # All satellites in chrono ephem json file
         norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))]
 
+        # Index of sat_id in chrono ephem json file
         norad_index = norad_list.index(sat_id)
 
+        # Extract ephemeris for sat_id
         norad_ephem = chrono_ephem[norad_index]
 
         rise_ephem = norad_ephem["time_array"][0]
         set_ephem = norad_ephem["time_array"][-1]
 
+        # indices of times, when sat rose and set
         intvl = time_filter(rise_ephem, set_ephem, np.asarray(times))
 
+        # If sat was in the sky in the 30 min obs
         if intvl != None:
 
+            # Window start, stop
             w_start, w_stop = intvl
-
             window_len = w_stop - w_start + 1
 
-            # Slice [crop] the power/times arrays to the times of sat pass
+            # Slice the power/times arrays to the times of sat pass
             power_c = power[w_start : w_stop + 1, :]
             times_c = times[w_start : w_stop + 1]
 
+            # possible identified channels
             possible_chans = []
+            # window occupancy of possible channels
             occu_list = []
 
             # Loop over every channel
@@ -352,122 +423,144 @@ def good_chans(
                 window_occupancy = (np.where(channel_power >= noise_threshold))[
                     0
                 ].size / window_len
-                min_s = np.amin(channel_power)
 
                 # Power threshold below which satellites aren't counted
                 # Only continue if there is signal for more than 80% of satellite pass
                 if (
-                    max(channel_power) >= pow_thresh
+                    max(channel_power) >= p_med + pow_thresh
                     and occ_thresh <= window_occupancy < 1.00
                 ):
 
+                    # If satellite window begins from the start of the observation
                     if times[0] == times_c[0]:
+                        # last 10 data points (10 seconds) are below the noise threshold
                         if (
                             all(p < noise_threshold for p in channel_power[-11:-1])
                         ) is True:
                             occu_list.append(window_occupancy)
                             possible_chans.append(s_chan)
-                            # print(f'{sat_id}: {s_chan} {window_occupancy}')
 
-                            if plots == "True":
-                                plt_channel_basic(
-                                    f"{plt_dir}/{date}/{timestamp}",
+                            if plots is True:
+                                plt = plt_channel(
                                     times_c,
                                     channel_power,
+                                    p_med,
                                     s_chan,
-                                    min_s,
-                                    32,
+                                    [
+                                        np.amin(channel_power) - 1,
+                                        np.amax(channel_power) + 1,
+                                    ],
                                     noise_threshold,
-                                    pow_thresh,
-                                    sat_id,
-                                    timestamp,
+                                    pow_thresh + p_med,
                                 )
+                                date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
+                                plt_dir = Path(f"{out_dir}/plots/{date}/{timestamp}")
+                                plt_dir.mkdir(parents=True, exist_ok=True)
+                                plt.savefig(
+                                    f"{plt_dir}/{sat_id}_channel_{s_chan}_{window_occupancy}.png"
+                                )
+                                plt.close()
 
+                    # if the satellite window ends and the end of the observation
                     elif times[-1] == times_c[-1]:
+
+                        # first 10 data points (10 seconds) are below the noise threshold
                         if (
                             all(p < noise_threshold for p in channel_power[:10])
                         ) is True:
                             occu_list.append(window_occupancy)
                             possible_chans.append(s_chan)
-                            # print(f'{sat_id}: {s_chan} {window_occupancy}')
 
-                            if plots == "True":
-                                plt_channel_basic(
-                                    f"{plt_dir}/{date}/{timestamp}",
+                            if plots is True:
+                                plt = plt_channel(
                                     times_c,
                                     channel_power,
+                                    p_med,
                                     s_chan,
-                                    min_s,
-                                    32,
+                                    [
+                                        np.amin(channel_power) - 1,
+                                        np.amax(channel_power) + 1,
+                                    ],
                                     noise_threshold,
-                                    pow_thresh,
-                                    sat_id,
-                                    timestamp,
+                                    pow_thresh + p_med,
                                 )
+                                date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
+                                plt_dir = Path(f"{out_dir}/plots/{date}/{timestamp}")
+                                plt_dir.mkdir(parents=True, exist_ok=True)
+                                plt.savefig(
+                                    f"{plt_dir}/{sat_id}_channel_{s_chan}_{window_occupancy}.png"
+                                )
+                                plt.close()
 
+                    # satellite window completely within the observation
                     else:
+                        # first and last 10 data points (10 seconds) are below the noise threshold
                         if (
                             all(p < noise_threshold for p in channel_power[:10])
                             and all(p < noise_threshold for p in channel_power[-11:-1])
                         ) is True:
                             occu_list.append(window_occupancy)
                             possible_chans.append(s_chan)
-                            # print(f'{sat_id}: {s_chan} {window_occupancy}')
 
-                            if plots == "True":
-                                plt_channel_basic(
-                                    f"{plt_dir}/{date}/{timestamp}",
+                            if plots is True:
+                                plt = plt_channel(
                                     times_c,
                                     channel_power,
+                                    p_med,
                                     s_chan,
-                                    min_s,
-                                    32,
+                                    [
+                                        np.amin(channel_power) - 1,
+                                        np.amax(channel_power) + 1,
+                                    ],
                                     noise_threshold,
-                                    pow_thresh,
-                                    sat_id,
-                                    timestamp,
+                                    pow_thresh + p_med,
                                 )
+                                date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
+                                plt_dir = Path(f"{out_dir}/plots/{date}/{timestamp}")
+                                plt_dir.mkdir(parents=True, exist_ok=True)
+                                plt.savefig(
+                                    f"{plt_dir}/{sat_id}_channel_{s_chan}_{window_occupancy}.png"
+                                )
+                                plt.close()
 
             # If channels are identified in the 30 min obs
             n_chans = len(possible_chans)
-
             if n_chans > 0:
 
-                # The most lightly channel is one with the highest occupation
+                # The most probable channel is one with the highest occupation
                 good_chan = possible_chans[occu_list.index(max(occu_list))]
 
-                if plots == "True":
-                    plt_waterfall_pass(
+                if plots is True:
+                    plt = plt_window_chans(
                         power,
                         sat_id,
                         w_start,
                         w_stop,
-                        timestamp,
                         spec,
                         chs=possible_chans,
                         good_ch=good_chan,
-                        out_dir=f"{plt_dir}/{date}/{timestamp}",
                     )
+                    date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
+                    plt_dir = Path(f"{out_dir}/plots/{date}/{timestamp}")
+                    plt_dir.mkdir(parents=True, exist_ok=True)
+                    plt.savefig(f"{plt_dir}/{sat_id}_waterfall_{good_chan}.png")
+                    plt.close()
 
                 return good_chan
 
             else:
                 if plots == "True":
-                    plt_waterfall_pass(
-                        power,
-                        sat_id,
-                        w_start,
-                        w_stop,
-                        timestamp,
-                        spec,
-                        chs=None,
-                        good_ch=None,
-                        out_dir=f"{plt_dir}/{date}/{timestamp}",
-                    )
-                return 0
+                    plt = plt_window_chans(power, sat_id, w_start, w_stop, spec)
+                    date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
+                    plt_dir = Path(f"{out_dir}/plots/{date}/{timestamp}")
+                    plt_dir.mkdir(parents=True, exist_ok=True)
+                    plt.savefig(f"{plt_dir}/{sat_id}_waterfall_window.png")
+                    plt.close()
+
+                return None
 
         else:
-            return 0
+            return None
 
 
 def window_chan_map(
