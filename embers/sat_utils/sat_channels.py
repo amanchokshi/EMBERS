@@ -356,11 +356,11 @@ def good_chans(
         print(good_chan)
         >>> 59
 
-    :param ali_file: Path to a :samp:`npz` aligned file from :func:`~embers.rf_data.align_data.save_aligned` :class:`~str`
+    :param ali_file: Path to a :samp:`npz` aligned file from :func:`~embers.rf_tools.align_data.save_aligned` :class:`~str`
     :param chrono_file: Path to chrono ephem json file from :func:`~embers.sat_utils.chrono_ephem.save_chrono_ephem` :class:`~str`
     :param sat_id: Norad catalogue ID :class:`~str`
-    :param sat_thresh: Satellite threshold from :func:`~embers.sat_utils.sat_channels.noise_threshold` :class:`~int`
-    :param noi_thresh: Noise threshold from :func:`~embers.sat_utils.sat_channels.noise_threshold` :class:`~int`
+    :param sat_thresh: Satellite threshold from :func:`~embers.sat_utils.sat_channels.noise_floor` :class:`~int`
+    :param noi_thresh: Noise threshold from :func:`~embers.sat_utils.sat_channels.noise_floor` :class:`~int`
     :param occ_thresh: Window occupation threshold. Minimum fractional signal above the noise floor in window :class:`~float`
     :param timestamp: Time at start of observation in format :samp:`YYYY-MM-DD-HH:MM` :class:`~str`
     :param out_dir: Path to output directory to save plots :class:`~str`
@@ -605,10 +605,10 @@ def window_chan_map(
            out_dir,
            plots)
      
-    :param ali_dir: Path to directory containing :samp:`npz` aligned file from :func:`~embers.rf_data.align_data.save_aligned` :class:`~str`
+    :param ali_dir: Path to directory containing :samp:`npz` aligned file from :func:`~embers.rf_tools.align_data.save_aligned` :class:`~str`
     :param chrono_dir: Path to directory containg chrono ephem json file from :func:`~embers.sat_utils.chrono_ephem.save_chrono_ephem` :class:`~str`
-    :param sat_thresh: Satellite threshold from :func:`~embers.sat_utils.sat_channels.noise_threshold` :class:`~int`
-    :param noi_thresh: Noise threshold from :func:`~embers.sat_utils.sat_channels.noise_threshold` :class:`~int`
+    :param sat_thresh: Satellite threshold from :func:`~embers.sat_utils.sat_channels.noise_floor` :class:`~int`
+    :param noi_thresh: Noise threshold from :func:`~embers.sat_utils.sat_channels.noise_floor` :class:`~int`
     :param occ_thresh: Window occupation threshold. Minimum fractional signal above the noise floor in window :class:`~float`
     :param timestamp: Time at start of observation in format :samp:`YYYY-MM-DD-HH:MM` :class:`~str`
     :param out_dir: Path to output directory to save plots :class:`~str`
