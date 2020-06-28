@@ -9,7 +9,6 @@ observation by using rf data in conjunctin with chronological satellite ephemeri
 
 import re
 import json
-import argparse
 import numpy as np
 import seaborn as sns
 from pathlib import Path
@@ -454,10 +453,12 @@ def good_chans(
                                     pow_thresh + p_med,
                                 )
                                 date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
-                                plt_dir = Path(f"{out_dir}/window_plots/{date}/{timestamp}")
+                                plt_dir = Path(
+                                    f"{out_dir}/window_plots/{date}/{timestamp}"
+                                )
                                 plt_dir.mkdir(parents=True, exist_ok=True)
                                 plt.savefig(
-                                        f"{plt_dir}/{sat_id}_channel_{s_chan}_{window_occupancy:.2f}.png"
+                                    f"{plt_dir}/{sat_id}_channel_{s_chan}_{window_occupancy:.2f}.png"
                                 )
                                 plt.close()
 
@@ -485,10 +486,12 @@ def good_chans(
                                     pow_thresh + p_med,
                                 )
                                 date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
-                                plt_dir = Path(f"{out_dir}/window_plots/{date}/{timestamp}")
+                                plt_dir = Path(
+                                    f"{out_dir}/window_plots/{date}/{timestamp}"
+                                )
                                 plt_dir.mkdir(parents=True, exist_ok=True)
                                 plt.savefig(
-                                        f"{plt_dir}/{sat_id}_channel_{s_chan}_{window_occupancy:.2f}.png"
+                                    f"{plt_dir}/{sat_id}_channel_{s_chan}_{window_occupancy:.2f}.png"
                                 )
                                 plt.close()
 
@@ -516,7 +519,9 @@ def good_chans(
                                     pow_thresh + p_med,
                                 )
                                 date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
-                                plt_dir = Path(f"{out_dir}/window_plots/{date}/{timestamp}")
+                                plt_dir = Path(
+                                    f"{out_dir}/window_plots/{date}/{timestamp}"
+                                )
                                 plt_dir.mkdir(parents=True, exist_ok=True)
                                 plt.savefig(
                                     f"{plt_dir}/{sat_id}_channel_{s_chan}_{window_occupancy:.2f}.png"
@@ -662,7 +667,7 @@ def window_chan_map(
                             occ_thresh,
                             timestamp,
                             out_dir,
-                            plots=plots
+                            plots=plots,
                         )
 
                         if sat_chan is not None:
@@ -671,10 +676,14 @@ def window_chan_map(
     except Exception as e:
         print(e)
 
-    # Save channel map
-    Path(f"{out_dir}/window_maps").mkdir(parents=True, exist_ok=True)
-    with open(f"{out_dir}/window_maps/{timestamp}.json", "w") as f:
-        json.dump(channel_map, f, indent=4)
+    if channel_map != {}:
+        # Save channel map
+        Path(f"{out_dir}/window_maps").mkdir(parents=True, exist_ok=True)
+        with open(f"{out_dir}/window_maps/{timestamp}.json", "w") as f:
+            json.dump(channel_map, f, indent=4)
+        print(
+            f"Saved window channel map of satellites in {timestamp} to {out_dir}/window_maps/{timestamp}"
+        )
 
 
 def batch_window_map(
@@ -687,7 +696,7 @@ def batch_window_map(
     pow_thresh,
     occ_thresh,
     out_dir,
-    plots=None
+    plots=None,
 ):
     """Find satellite channels for all rfobservations in a date interval
     
@@ -737,13 +746,13 @@ def batch_window_map(
         - Diagonistic plots created and saved to :samp:`out_dir/window_plots` if :samp:`plots` is :samp:`True`
 
     """
-    
+
     _, time_stamps = time_tree(start_date, stop_date)
     timestamps = [timestamp for t_list in time_stamps for timestamp in t_list]
-    
+
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(
+        executor.map(
             window_chan_map,
             repeat(ali_dir),
             repeat(chrono_dir),
@@ -753,126 +762,5 @@ def batch_window_map(
             repeat(occ_thresh),
             timestamps,
             repeat(out_dir),
-            repeat(plots)
-        )
-
-
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser(
-        description="""
-        Project a sat pass onto a healpix map using ephemeris data
-        """
-    )
-
-    parser.add_argument(
-        "--start_date",
-        metavar="\b",
-        help="Date from which to start aligning data. Ex: 2019-10-10",
-    )
-    parser.add_argument(
-        "--stop_date",
-        metavar="\b",
-        help="Date until which to align data. Ex: 2019-10-11",
-    )
-    parser.add_argument(
-        "--out_dir",
-        metavar="\b",
-        default="./../../outputs/sat_channels/",
-        help="Output directory. Default=./../../outputs/sat_channels/",
-    )
-    parser.add_argument(
-        "--plt_dir",
-        metavar="\b",
-        default="./../../outputs/sat_channels/window_plots",
-        help="Output directory. Default=./../../outputs/sat_channels/window_plots/",
-    )
-    parser.add_argument(
-        "--ali_dir",
-        metavar="\b",
-        default="./../../outputs/align_data/",
-        help="Output directory. Default=./../../outputs/align_data/",
-    )
-    parser.add_argument(
-        "--chrono_dir",
-        metavar="\b",
-        default="./../../outputs/sat_ephemeris/chrono_json",
-        help="Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/",
-    )
-    parser.add_argument(
-        "--noi_thresh",
-        metavar="\b",
-        type=int,
-        default=3,
-        help="Noise Threshold: Multiples of MAD. Default=3.",
-    )
-    parser.add_argument(
-        "--sat_thresh",
-        metavar="\b",
-        type=int,
-        default=1,
-        help="1 σ threshold to detect sats Default=1.",
-    )
-    parser.add_argument(
-        "--pow_thresh",
-        metavar="\b",
-        type=int,
-        default=15,
-        help="Power Threshold to detect sats. Default=15 dB.",
-    )
-    parser.add_argument(
-        "--occ_thresh",
-        metavar="\b",
-        type=int,
-        default=0.80,
-        help="Occupation Threshold of sat in window. Default=0.80",
-    )
-    parser.add_argument(
-        "--plots",
-        metavar="\b",
-        default=False,
-        help="If True, create a gazzillion plots for each sat pass. Default = False",
-    )
-
-    args = parser.parse_args()
-
-    chrono_dir = args.chrono_dir
-    start_date = args.start_date
-    stop_date = args.stop_date
-    out_dir = args.out_dir
-    plt_dir = args.plt_dir
-    ali_dir = args.ali_dir
-    noi_thresh = args.noi_thresh
-    sat_thresh = args.sat_thresh
-    pow_thresh = args.pow_thresh
-    occ_thresh = args.occ_thresh
-    plots = args.plots
-
-    ref_names = ["rf0XX", "rf0YY", "rf1XX", "rf1YY"]
-
-    # Save logs
-    Path(f"{out_dir}/window_maps").mkdir(parents=True, exist_ok=True)
-
-    # Help traverse all 30 min obs b/w start & stop
-    dates, date_time = time_tree(start_date, stop_date)
-    obs_list = [
-        [dates[d], date_time[d][dt]]
-        for d in range(len(dates))
-        for dt in range(len(date_time[d]))
-    ]
-
-    # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(
-            window_chan_map,
-            repeat(ali_dir),
-            repeat(chrono_dir),
-            repeat(sat_thresh),
-            repeat(noi_thresh),
-            repeat(pow_thresh),
-            repeat(occ_thresh),
-            repeat(out_dir),
             repeat(plots),
-            repeat(plt_dir),
-            obs_list,
         )
