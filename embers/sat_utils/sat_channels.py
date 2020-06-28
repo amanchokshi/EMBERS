@@ -250,12 +250,11 @@ def plt_channel(
     return plt
 
 
-def plt_sats(ids, alt, az, timestamp):
+def plt_sats(ids, chrono_file, timestamp):
     """Polar plot of satellite passes in a 30 minute observation
     
     :param ids: :class:`~list` of Norad catalogue IDs
-    :param alt: :class:`~list` of :samp:`Altitudes` values
-    :param az: :class:`~list` of :samp:`~Azimuth` values
+    :param chrono_file: path to chrono ephemeris json file :class:`~str`
     :param timestamp: Time at start of 30 minute observation in :samp:`YYYY-MM-DD-HH:MM` format :class:`~str`
     
     :returns:
@@ -274,17 +273,27 @@ def plt_sats(ids, alt, az, timestamp):
     ax.set_title(f"Satellite passes in {timestamp}", y=1.05)
     ax.grid(color="grey", linewidth=1.6, alpha=0.5)
 
-    colors = pl.cm.Spectral(np.linspace(0.17, 0.9, len(alt)))
+    colors = pl.cm.Spectral(np.linspace(0.17, 0.9, len(ids)))
+        
+    with open(chrono_file) as chrono:
+        chrono_ephem = json.load(chrono)
+    
+    norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))]
 
-    for i in range(len(alt)):
+    for i, id in enumerate(ids):
+        id_index = norad_list.index(id)
+        id_ephem = chrono_ephem[id_index]
+        alt = id_ephem["sat_alt"]
+        az = id_ephem["sat_az"]
+
         plt.plot(
-            az[i],
-            alt[i],
+            az,
+            alt,
             "-",
             linewidth=2.4,
             alpha=0.8,
             color=colors[i],
-            label=f"{ids[i]}",
+            label=f"{id}",
         )
         plt.legend()
 
@@ -677,6 +686,15 @@ def window_chan_map(
         print(e)
 
     if channel_map != {}:
+
+        if plots is True:
+            plt = plt_sats(list(channel_map.keys()), chrono_file, timestamp)
+            date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
+            plt_dir = Path(f"{out_dir}/window_plots/{date}/{timestamp}")
+            plt_dir.mkdir(parents=True, exist_ok=True)
+            plt.savefig(f"{plt_dir}/{timestamp}_ephemeris.png")
+            plt.close()
+
         # Save channel map
         Path(f"{out_dir}/window_maps").mkdir(parents=True, exist_ok=True)
         with open(f"{out_dir}/window_maps/{timestamp}.json", "w") as f:
