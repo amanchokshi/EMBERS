@@ -570,34 +570,74 @@ def window_chan_map(
     noi_thresh,
     pow_thresh,
     occ_thresh,
+    timestamp,
     out_dir,
     plots,
-    plt_dir,
-    obs_stamp,
 ):
+    """Find all satellite channels in a 30 minute rf observation
 
-    date, timestamp = obs_stamp
+    Loops over all :samp:`sat_ids` in a :samp:`chrono_file` and uses
+    :func:`~embers.sat_utils.sat_channels.good_chans` to find occupied channels.
+    All occupied channels are saved to :samp:`out_dir/window_maps/{timestamp}.json`
+    
+    .. code-block:: python
+        
+        from embers.sat_utils.sat_channels import good_chans
+        
+        ali_dir = "~/embers_out/rf_tools/align_data"
+        chrono_dir = "~/embers_out/sat_utils/ephem_chrono"
+        sat_thresh = 1
+        noi_thresh = 3
+        pow_thresh = 20
+        occ_thresh = 0.80
+        timestamp = "2019-10-10-02:30"
+        out_dir = "./embers_out"
+        plots = True
 
-    if plots == "True":
-        Path(f"{plt_dir}/{date}/{timestamp}").mkdir(parents=True, exist_ok=True)
+        window_chan_map(
+           ali_dir,
+           chrono_dir,
+           sat_thresh,
+           noi_thresh,
+           pow_thresh,
+           occ_thresh,
+           timestamp,
+           out_dir,
+           plots)
+     
+    :param ali_dir: Path to directory containing :samp:`npz` aligned file from :func:`~embers.rf_data.align_data.save_aligned` :class:`~str`
+    :param chrono_dir: Path to directory containg chrono ephem json file from :func:`~embers.sat_utils.chrono_ephem.save_chrono_ephem` :class:`~str`
+    :param sat_thresh: Satellite threshold from :func:`~embers.sat_utils.sat_channels.noise_threshold` :class:`~int`
+    :param noi_thresh: Noise threshold from :func:`~embers.sat_utils.sat_channels.noise_threshold` :class:`~int`
+    :param occ_thresh: Window occupation threshold. Minimum fractional signal above the noise floor in window :class:`~float`
+    :param timestamp: Time at start of observation in format :samp:`YYYY-MM-DD-HH:MM` :class:`~str`
+    :param out_dir: Path to output directory to save plots :class:`~str`
+    :param plots: If :samp:`True`, disagnostic plots are generated and saved to :samp:`out_dir`
+
+    :returns:
+        - :samp:`window_chan_map` json file saved to :samp:`out_dir/window_maps/{timestamp}.json`
+        - Diagonistic plots created and saved to :samp:`out_dir/plots` if :samp:`plots` is :samp:`True`
+
+    """
 
     channel_map = {}
+    date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
 
-    ref_file = f"{ali_dir}/{date}/{timestamp}/rf0XX_S07XX_{timestamp}_aligned.npz"
-
-    if Path(ref_file).is_file():
-        ref_file = f"{ali_dir}/{date}/{timestamp}/rf0XX_S07XX_{timestamp}_aligned.npz"
-    elif Path(
-        ref_file=f"{ali_dir}/{date}/{timestamp}/rf0XX_S36XX_{timestamp}_aligned.npz"
+    if Path(
+        f"{ali_dir}/{date}/{timestamp}/rf0XX_S07XX_{timestamp}_aligned.npz"
     ).is_file():
-        ref_file = f"{ali_dir}/{date}/{timestamp}/rf0XX_S36XX_{timestamp}_aligned.npz"
+        ali_file = f"{ali_dir}/{date}/{timestamp}/rf0XX_S07XX_{timestamp}_aligned.npz"
+    elif Path(
+        f"{ali_dir}/{date}/{timestamp}/rf0XX_S36XX_{timestamp}_aligned.npz"
+    ).is_file():
+        ali_file = f"{ali_dir}/{date}/{timestamp}/rf0XX_S36XX_{timestamp}_aligned.npz"
     else:
-        ref_file = f"{ali_dir}/{date}/{timestamp}/rf0XX_S06XX_{timestamp}_aligned.npz"
+        ali_file = f"{ali_dir}/{date}/{timestamp}/rf0XX_S06XX_{timestamp}_aligned.npz"
 
     chrono_file = f"{chrono_dir}/{timestamp}.json"
 
     try:
-        Path(ref_file).is_file()
+        Path(ali_file).is_file()
 
         with open(chrono_file) as chrono:
             chrono_ephem = json.load(chrono)
@@ -610,29 +650,26 @@ def window_chan_map(
 
                 if norad_list != []:
 
-                    for sat in norad_list:
+                    for sat_id in norad_list:
 
-                        sat_data = good_chans(
-                            ref_file,
+                        sat_chan = good_chans(
+                            ali_file,
                             chrono_file,
-                            sat,
+                            sat_id,
                             sat_thresh,
                             noi_thresh,
                             pow_thresh,
                             occ_thresh,
-                            date,
                             timestamp,
-                            plots,
+                            out_dir,
+                            plots=None,
                         )
 
-                        if sat_data != 0:
-                            sat_chan = sat_data
-
-                            channel_map[f"{sat}"] = sat_chan
+                        if sat_chan is not None:
+                            channel_map[f"{sat_id}"] = sat_chan
 
     except Exception as e:
         print(e)
-        # Exception message is forwarded from ../decode_rf_data/rf_data.py
 
     # Save channel map
     Path(f"{out_dir}/window_maps").mkdir(parents=True, exist_ok=True)
