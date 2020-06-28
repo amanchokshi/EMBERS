@@ -60,6 +60,7 @@ Sat Utils
     sat_channels.plt_sats
     sat_channels.good_chans
     sat_channels.window_chan_map
+    sat_channels.batch_window_map
 
 
 MWA Meta

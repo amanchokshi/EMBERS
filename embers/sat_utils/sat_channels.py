@@ -454,10 +454,10 @@ def good_chans(
                                     pow_thresh + p_med,
                                 )
                                 date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
-                                plt_dir = Path(f"{out_dir}/plots/{date}/{timestamp}")
+                                plt_dir = Path(f"{out_dir}/window_plots/{date}/{timestamp}")
                                 plt_dir.mkdir(parents=True, exist_ok=True)
                                 plt.savefig(
-                                    f"{plt_dir}/{sat_id}_channel_{s_chan}_{window_occupancy}.png"
+                                        f"{plt_dir}/{sat_id}_channel_{s_chan}_{window_occupancy:.2f}.png"
                                 )
                                 plt.close()
 
@@ -485,10 +485,10 @@ def good_chans(
                                     pow_thresh + p_med,
                                 )
                                 date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
-                                plt_dir = Path(f"{out_dir}/plots/{date}/{timestamp}")
+                                plt_dir = Path(f"{out_dir}/window_plots/{date}/{timestamp}")
                                 plt_dir.mkdir(parents=True, exist_ok=True)
                                 plt.savefig(
-                                    f"{plt_dir}/{sat_id}_channel_{s_chan}_{window_occupancy}.png"
+                                        f"{plt_dir}/{sat_id}_channel_{s_chan}_{window_occupancy:.2f}.png"
                                 )
                                 plt.close()
 
@@ -516,10 +516,10 @@ def good_chans(
                                     pow_thresh + p_med,
                                 )
                                 date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
-                                plt_dir = Path(f"{out_dir}/plots/{date}/{timestamp}")
+                                plt_dir = Path(f"{out_dir}/window_plots/{date}/{timestamp}")
                                 plt_dir.mkdir(parents=True, exist_ok=True)
                                 plt.savefig(
-                                    f"{plt_dir}/{sat_id}_channel_{s_chan}_{window_occupancy}.png"
+                                    f"{plt_dir}/{sat_id}_channel_{s_chan}_{window_occupancy:.2f}.png"
                                 )
                                 plt.close()
 
@@ -541,7 +541,7 @@ def good_chans(
                         good_ch=good_chan,
                     )
                     date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
-                    plt_dir = Path(f"{out_dir}/plots/{date}/{timestamp}")
+                    plt_dir = Path(f"{out_dir}/window_plots/{date}/{timestamp}")
                     plt_dir.mkdir(parents=True, exist_ok=True)
                     plt.savefig(f"{plt_dir}/{sat_id}_waterfall_{good_chan}.png")
                     plt.close()
@@ -552,7 +552,7 @@ def good_chans(
                 if plots == "True":
                     plt = plt_window_chans(power, sat_id, w_start, w_stop, spec)
                     date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
-                    plt_dir = Path(f"{out_dir}/plots/{date}/{timestamp}")
+                    plt_dir = Path(f"{out_dir}/window_plots/{date}/{timestamp}")
                     plt_dir.mkdir(parents=True, exist_ok=True)
                     plt.savefig(f"{plt_dir}/{sat_id}_waterfall_window.png")
                     plt.close()
@@ -582,7 +582,7 @@ def window_chan_map(
     
     .. code-block:: python
         
-        from embers.sat_utils.sat_channels import good_chans
+        from embers.sat_utils.sat_channels import window_chan_map
         
         ali_dir = "~/embers_out/rf_tools/align_data"
         chrono_dir = "~/embers_out/sat_utils/ephem_chrono"
@@ -616,7 +616,7 @@ def window_chan_map(
 
     :returns:
         - :samp:`window_chan_map` json file saved to :samp:`out_dir/window_maps/{timestamp}.json`
-        - Diagonistic plots created and saved to :samp:`out_dir/plots` if :samp:`plots` is :samp:`True`
+        - Diagonistic plots created and saved to :samp:`out_dir/window_plots` if :samp:`plots` is :samp:`True`
 
     """
 
@@ -662,7 +662,7 @@ def window_chan_map(
                             occ_thresh,
                             timestamp,
                             out_dir,
-                            plots=None,
+                            plots=plots
                         )
 
                         if sat_chan is not None:
@@ -675,6 +675,86 @@ def window_chan_map(
     Path(f"{out_dir}/window_maps").mkdir(parents=True, exist_ok=True)
     with open(f"{out_dir}/window_maps/{timestamp}.json", "w") as f:
         json.dump(channel_map, f, indent=4)
+
+
+def batch_window_map(
+    start_date,
+    stop_date,
+    ali_dir,
+    chrono_dir,
+    sat_thresh,
+    noi_thresh,
+    pow_thresh,
+    occ_thresh,
+    out_dir,
+    plots=None
+):
+    """Find satellite channels for all rfobservations in a date interval
+    
+    Use :func:`~embers.rf_tools.rf_data.time_tree` to create a list os 30 minute
+    timestamps between :samp:`start_date` and :samp:`stop_date`. :func:`~embers.sat_utils.sat_channels.window_chan_map`
+    is used to find all satellites in each 30 minute observation.
+    
+    .. code-block:: python
+        
+        from embers.sat_utils.sat_channels import batch_window_map
+       
+        start_date = "2019-10-01"
+        stop_date = "2019-10-10"
+        ali_dir = "~/embers_out/rf_tools/align_data"
+        chrono_dir = "~/embers_out/sat_utils/ephem_chrono"
+        sat_thresh = 1
+        noi_thresh = 3
+        pow_thresh = 20
+        occ_thresh = 0.80
+        out_dir = "./embers_out"
+        plots = True
+
+        batch_window_map(
+            start_date,
+            stop_date,
+            ali_dir,
+            chrono_dir,
+            sat_thresh,
+            noi_thresh,
+            pow_thresh,
+            occ_thresh,
+            out_dir,
+            plots)
+     
+    :param start_date: In format :samp:`YYYY-MM-DD` :class:`~str`
+    :param stop_date: In format :samp:`YYYY-MM-DD` :class:`~str`
+    :param ali_dir: Path to directory containing :samp:`npz` aligned file from :func:`~embers.rf_tools.align_data.save_aligned` :class:`~str`
+    :param chrono_dir: Path to directory containg chrono ephem json file from :func:`~embers.sat_utils.chrono_ephem.save_chrono_ephem` :class:`~str`
+    :param sat_thresh: Satellite threshold from :func:`~embers.sat_utils.sat_channels.noise_floor` :class:`~int`
+    :param noi_thresh: Noise threshold from :func:`~embers.sat_utils.sat_channels.noise_floor` :class:`~int`
+    :param occ_thresh: Window occupation threshold. Minimum fractional signal above the noise floor in window :class:`~float`
+    :param out_dir: Path to output directory to save plots :class:`~str`
+    :param plots: If :samp:`True`, disagnostic plots are generated and saved to :samp:`out_dir`
+
+    :returns:
+        - :samp:`window_chan_map` json file saved to :samp:`out_dir/window_maps/.json`
+        - Diagonistic plots created and saved to :samp:`out_dir/window_plots` if :samp:`plots` is :samp:`True`
+
+    """
+    
+    _, time_stamps = time_tree(start_date, stop_date)
+    timestamps = [timestamp for t_list in time_stamps for timestamp in t_list]
+    
+    # Parallization magic happens here
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(
+            window_chan_map,
+            repeat(ali_dir),
+            repeat(chrono_dir),
+            repeat(sat_thresh),
+            repeat(noi_thresh),
+            repeat(pow_thresh),
+            repeat(occ_thresh),
+            timestamps,
+            repeat(out_dir),
+            repeat(plots)
+        )
 
 
 if __name__ == "__main__":

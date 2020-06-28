@@ -33,5 +33,6 @@
 .. autofunction:: embers.sat_utils.sat_channels.plt_sats
 .. autofunction:: embers.sat_utils.sat_channels.good_chans
 .. autofunction:: embers.sat_utils.sat_channels.window_chan_map
+.. autofunction:: embers.sat_utils.sat_channels.batch_window_map
 
 
