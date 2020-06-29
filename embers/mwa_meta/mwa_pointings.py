@@ -31,13 +31,17 @@ def download_meta(start, stop, num_pages, out_dir):
     h, m = divmod(m, 60)
     print(f"ETA: Approximately {h:d}H:{m:02d}M")
 
+    # convert isot time to gps
     start_gps = int(Time(start, format="isot").gps)
     stop_gps = int(Time(stop, format="isot").gps)
+    
+    mwa_meta_dir = Path(out_dir/mwa_pointings)
+    mwa_meta_dir.mkdir(parents=True, exist_okay=True)
     for npg in range(num_pages):
         time.sleep(wait)
         cerberus_url = f"http://ws.mwatelescope.org/metadata/find?mintime={start_gps}&maxtime={stop_gps}&extended=1&page={npg+1}&pretty=1"
         print(f"\nDownloading page {npg+1} of metadata")
-        wget.download(cerberus_url, f"{out_dir}/mwa_pointings/page_{npg+1:03d}.json")
+        wget.download(cerberus_url, f"{mwa_meta_dir}/page_{npg+1:03d}.json")
 
 
 def clean_meta_json(meta_dir):
@@ -152,7 +156,8 @@ def combine_pointings(start_gps, stop_gps, obs_length, pointings, out_dir):
     pointing_list["start_gps"] = start_gps
     pointing_list["stop_gps"] = stop_gps
     pointing_list["obs_length"] = obs_length
-
+    
+    Path(out_dir).mkdir(parents=True, exist_ok=True)
     with open(f"{out_dir}/mwa_pointing.json", "w") as outfile:
         json.dump(pointing_list, outfile, indent=4)
 
