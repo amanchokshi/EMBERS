@@ -37,15 +37,15 @@ def download_meta(start, stop, num_pages, out_dir):
         time.sleep(wait)
         cerberus_url = f"http://ws.mwatelescope.org/metadata/find?mintime={start_gps}&maxtime={stop_gps}&extended=1&page={npg+1}&pretty=1"
         print(f"\nDownloading page {npg+1} of metadata")
-        wget.download(cerberus_url, f"{out_dir}/pointing_{npg+1:03d}.json")
+        wget.download(cerberus_url, f"{out_dir}/mwa_pointings/page_{npg+1:03d}.json")
 
 
-def org_pointing_json(meta_dir):
+def clean_meta_json(meta_dir):
     """Organize json files. Clean up quirks in metadata 
 
     Clear up confusion in Andrew Williams' custom pointing names
     
-    :param meta_dir: Path to directory with json metadata files :class:`~str`
+    :param meta_dir: Path to root of directory with json metadata files :class:`~str`
 
     :returns:
         A :class:`~tuple` (start_gps, stop_gps, obs_length, pointings)
@@ -66,7 +66,7 @@ def org_pointing_json(meta_dir):
     point_2 = ["EOR_Point_2", "EOR_Point_2_Delays0,1,2,3,0,1,2,3,0,1,2,3,0,1,2,3_Ch100"]
     point_4 = ["EOR_Point_4", "EOR_Point_4_Delays3,2,1,0,3,2,1,0,3,2,1,0,3,2,1,0_Ch100"]
 
-    files = meta_dir.glob("pointings*.json")
+    files = Path(f"{meta_dir}/mwa_pointings").glob("page*.json")
 
     for f in files:
         with open(f) as table:
@@ -111,11 +111,28 @@ def org_pointing_json(meta_dir):
     return (start_gps, stop_gps, obs_length, pointings)
 
 
-def combine_obs(start_gps, stop_gps, obs_length, pointings, out_dir):
+def combine_pointings(start_gps, stop_gps, obs_length, pointings, out_dir):
+    """
+    Combine successive observations with same pointing and save to file.
+        
+    :param start_gps: :class:`~list` of observation start times in :samp:`gps` format
+    :param stop_gps: :class:`~list` of observation start times in :samp:`gps` format
+    :param obs_length: :class:`~list` of observation durations in :samp:`seconds`
+    :param pointings: :class:`~list` of observation :samp:`pointings`
+    :param out_dir: Path to output directory where cleaned data will be saved :class:`~str`
+
+    :returns:
+        :samp:`mwa_pointing.json` saved to :samp:`out_dir`
+        
+    """
 
     # if consecutive obs have same pointing, combine them.
     for i in range(len(start_gps)):
+
+        # Not last observation
         if i != len(start_gps) - 1:
+
+            # If consecutive obs have same pointing
             if (stop_gps[i] == start_gps[i + 1]) and (pointings[i] == pointings[i + 1]):
                 start_gps[i + 1] = start_gps[i]
                 obs_length[i + 1] += obs_length[i]
@@ -136,7 +153,7 @@ def combine_obs(start_gps, stop_gps, obs_length, pointings, out_dir):
     pointing_list["stop_gps"] = stop_gps
     pointing_list["obs_length"] = obs_length
 
-    with open(f"{out_dir}/ultimate_pointing_times.json", "w") as outfile:
+    with open(f"{out_dir}/mwa_pointing.json", "w") as outfile:
         json.dump(pointing_list, outfile, indent=4)
 
 

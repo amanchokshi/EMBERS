@@ -71,6 +71,8 @@ MWA Meta
 .. autosummary::
 
     mwa_pointings.download_meta
+    mwa_pointings.clean_meta_json
+    mwa_pointings.combine_pointings
 
 
 Tile Maps
