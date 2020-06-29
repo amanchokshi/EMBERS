@@ -73,6 +73,8 @@ MWA Meta
     mwa_pointings.download_meta
     mwa_pointings.clean_meta_json
     mwa_pointings.combine_pointings
+    mwa_pointings.point_integration
+    mwa_pointings.pointing_hist
 
 
 Tile Maps

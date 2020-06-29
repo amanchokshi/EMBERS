@@ -36,9 +36,9 @@ def download_meta(start, stop, num_pages, out_dir):
     # convert isot time to gps
     start_gps = int(Time(start, format="isot").gps)
     stop_gps = int(Time(stop, format="isot").gps)
-    
-    mwa_meta_dir = Path(out_dir/mwa_pointings)
-    mwa_meta_dir.mkdir(parents=True, exist_okay=True)
+
+    mwa_meta_dir = Path(f"{out_dir}/mwa_pointings")
+    mwa_meta_dir.mkdir(parents=True, exist_ok=True)
     for npg in range(num_pages):
         time.sleep(wait)
         cerberus_url = f"http://ws.mwatelescope.org/metadata/find?mintime={start_gps}&maxtime={stop_gps}&extended=1&page={npg+1}&pretty=1"
@@ -158,16 +158,26 @@ def combine_pointings(start_gps, stop_gps, obs_length, pointings, out_dir):
     pointing_list["start_gps"] = start_gps
     pointing_list["stop_gps"] = stop_gps
     pointing_list["obs_length"] = obs_length
-    
+
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-    with open(f"{out_dir}/mwa_pointing.json", "w") as outfile:
+    with open(f"{out_dir}/mwa_pointings.json", "w") as outfile:
         json.dump(pointing_list, outfile, indent=4)
 
 
-def point_integration(f_name, out_dir, int_thresh):
-    """Bin data to calculate integration at each pointing"""
+def point_integration(out_dir):
+    """Calculate total integration at each pointing
 
-    with open(f"{out_dir}/{f_name}", "r") as data:
+    :param out_dir: Path to directory where :samp:`mwa_pointings.json` is saved
+
+    :returns:
+        A :class:`~tuple`
+
+        - pointings : :class:`~list` of MWA pointings
+        - int_hours: :class:`~list` of total integration, at each pointing, in hours 
+
+    """
+
+    with open(f"{out_dir}/mwa_pointings.json") as data:
         pointings = json.load(data)
         grid_pt = pointings["grid_pt"]
         obs_length = pointings["obs_length"]
@@ -183,34 +193,45 @@ def point_integration(f_name, out_dir, int_thresh):
         pointings.append(i)
         time = 0
         for j in range(len(grid_pt)):
-            if i == grid_pt[j]:
-                time = time + obs_length[j]
+            if grid_pt[j] == i:
+                time += obs_length[j]
         integrations.append(time)
 
     int_hours = np.asarray(integrations) / (60 * 60)
 
+    return (pointings, int_hours)
+
+
+def pointing_hist(pointings, int_hours, time_thresh, out_dir):
+    """
+    Plot a histogram of pointing integration
+
+    Many pointings can have very low total integration, use the :samp:`time_thresh` argument to exclude low integration pointings.
+        
+    :param pointings: :class:`~list` of MWA pointings
+    :param int_hours: :class:`~list` of total integration, at each pointing, in hours 
+    :param time_thresh: minimum integration time to be included in histogram, in hours :class:`~int`
+    :param out_dir: Path to directory where :samp:`mwa_pointings.json` is saved
+
+    :returns:
+        Pointing histogram plot saved to :samp:`out_dir`
+
+    """
+
+    # Filter out pointings below time_thresh
     time_point = []
     point = []
 
-    # time threshold at pointing in hours
-    point_threshold = int_thresh
-
     for i in range(len(int_hours)):
-        if int_hours[i] >= point_threshold:
+        if int_hours[i] >= time_thresh:
             point.append(pointings[i])
             time_point.append(int_hours[i])
-
-    return (time_point, point)
-
-
-def pointing_hist(time_point, point, out_dir):
-    """Pointing histogram"""
 
     x = range(len(time_point))
     leg = [int(i) for i in time_point]
 
     plt.style.use("seaborn")
-    fig, ax = plt.subplots(figsize=(8, 6))
+    _, ax = plt.subplots(figsize=(8, 6))
     pal = sns.cubehelix_palette(
         len(time_point), start=0.4, rot=-0.5, dark=0.4, reverse=True
     )
@@ -237,7 +258,6 @@ def pointing_hist(time_point, point, out_dir):
     plt.title("Integration at MWA Grid Pointings")
     plt.tight_layout()
     plt.savefig(f"{out_dir}/pointing_integration.png")
-
 
 
 if __name__ == "__main__":
