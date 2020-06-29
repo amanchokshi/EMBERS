@@ -4,10 +4,18 @@ from astropy.time import Time
 
 
 def wget_meta(start, stop, num_pages, out_dir):
+    
+    print("Due to download limits, this will take a while")
+    wait = 29 # seconds between downloads
+    t = wait*num_pages
+    m, _ = divmod(t, 60)
+    h, m = divmod(m, 60)
+    print(f"ETA: Approximately {h:d}H:{m:02d}M")
+
     start_gps = int(Time(start, format="isot").gps)
     stop_gps = int(Time(stop, format="isot").gps)
     for npg in range(num_pages):
-        time.sleep(28)
+        time.sleep(wait)
         cerberus_url = f"http://ws.mwatelescope.org/metadata/find?mintime={start_gps}&maxtime={stop_gps}&extended=1&page={npg+1}&pretty=1"
         print(f"\nDownloading page {npg+1} of metadata")
         wget.download(cerberus_url, f"{out_dir}/pointing_{npg+1:03d}.json")
