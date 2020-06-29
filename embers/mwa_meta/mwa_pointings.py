@@ -6,9 +6,11 @@ Tools to download metadata of the MWA telescope and extract its observational sc
 """
 
 import numpy as np
+import seaborn as sns
 import json, wget, time
 from pathlib import Path
 from astropy.time import Time
+import matplotlib.pyplot as plt
 
 
 def download_meta(start, stop, num_pages, out_dir):
@@ -160,6 +162,82 @@ def combine_pointings(start_gps, stop_gps, obs_length, pointings, out_dir):
     Path(out_dir).mkdir(parents=True, exist_ok=True)
     with open(f"{out_dir}/mwa_pointing.json", "w") as outfile:
         json.dump(pointing_list, outfile, indent=4)
+
+
+def point_integration(f_name, out_dir, int_thresh):
+    """Bin data to calculate integration at each pointing"""
+
+    with open(f"{out_dir}/{f_name}", "r") as data:
+        pointings = json.load(data)
+        grid_pt = pointings["grid_pt"]
+        obs_length = pointings["obs_length"]
+
+    # find unique pointings.
+    unique_pointings = list(set(grid_pt))
+    unique_pointings = sorted(unique_pointings)
+
+    pointings = []
+    integrations = []
+
+    for i in unique_pointings:
+        pointings.append(i)
+        time = 0
+        for j in range(len(grid_pt)):
+            if i == grid_pt[j]:
+                time = time + obs_length[j]
+        integrations.append(time)
+
+    int_hours = np.asarray(integrations) / (60 * 60)
+
+    time_point = []
+    point = []
+
+    # time threshold at pointing in hours
+    point_threshold = int_thresh
+
+    for i in range(len(int_hours)):
+        if int_hours[i] >= point_threshold:
+            point.append(pointings[i])
+            time_point.append(int_hours[i])
+
+    return (time_point, point)
+
+
+def pointing_hist(time_point, point, out_dir):
+    """Pointing histogram"""
+
+    x = range(len(time_point))
+    leg = [int(i) for i in time_point]
+
+    plt.style.use("seaborn")
+    fig, ax = plt.subplots(figsize=(8, 6))
+    pal = sns.cubehelix_palette(
+        len(time_point), start=0.4, rot=-0.5, dark=0.4, reverse=True
+    )
+    barplot = plt.bar(x, time_point, color=sns.color_palette(pal))
+
+    def autolabel(rects):
+        for idx, rect in enumerate(barplot):
+            height = rect.get_height()
+            ax.text(
+                rect.get_x() + rect.get_width() / 2.0,
+                height,
+                leg[idx],
+                ha="center",
+                va="bottom",
+                rotation=0,
+            )
+
+    autolabel(barplot)
+
+    plt.xticks(x, point)
+    plt.ylabel("Hours")
+    plt.xlim(-0.7, len(time_point) - 0.3)
+    plt.xlabel("MWA Grid Pointing Number")
+    plt.title("Integration at MWA Grid Pointings")
+    plt.tight_layout()
+    plt.savefig(f"{out_dir}/pointing_integration.png")
+
 
 
 if __name__ == "__main__":
