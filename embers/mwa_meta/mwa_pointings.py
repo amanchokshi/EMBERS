@@ -23,10 +23,10 @@ def download_meta(start, stop, num_pages, out_dir):
         MWA metadata json files saved to :samp:`out_dir`
 
     """
-    
+
     print("Due to download limits, this will take a while")
-    wait = 29 # seconds between downloads
-    t = wait*num_pages
+    wait = 29  # seconds between downloads
+    t = wait * num_pages
     m, _ = divmod(t, 60)
     h, m = divmod(m, 60)
     print(f"ETA: Approximately {h:d}H:{m:02d}M")
@@ -41,8 +41,21 @@ def download_meta(start, stop, num_pages, out_dir):
 
 
 def org_pointing_json(meta_dir):
-    """Organize json files. Clean up quirks in data such 
-    and Andrew's custom pointing names"""
+    """Organize json files. Clean up quirks in metadata 
+
+    Clear up confusion in Andrew Williams' custom pointing names
+    
+    :param meta_dir: Path to directory with json metadata files :class:`~str`
+
+    :returns:
+        A :class:`~tuple` (start_gps, stop_gps, obs_length, pointings)
+        
+        - start_gps: :class:`~list` of observation start times in :samp:`gps` format
+        - stop_gps: :class:`~list` of observation start times in :samp:`gps` format
+        - obs_length: :class:`~list` of observation durations in :samp:`seconds`
+        - pointings: :class:`~list` of observation :samp:`pointings`
+
+    """
 
     start_gps = []
     stop_gps = []
@@ -78,6 +91,7 @@ def org_pointing_json(meta_dir):
                 # if pointing in [0, 2, 4]:
                 if pointing in list(range(197)):
 
+                    # not last obs
                     if i != (len(data) - 1):
                         # Telescope pointing remains constant till it is changed
                         # So, stop time is the start of next observation
@@ -87,17 +101,18 @@ def org_pointing_json(meta_dir):
 
                     length = stop - start
 
-                    if length >= 120:
+                    # if length >= 120:
 
-                        start_gps.append(start)
-                        stop_gps.append(stop)
-                        obs_length.append(length)
-                        pointings.append(pointing)
+                    start_gps.append(start)
+                    stop_gps.append(stop)
+                    obs_length.append(length)
+                    pointings.append(pointing)
 
     return (start_gps, stop_gps, obs_length, pointings)
 
 
 def combine_obs(start_gps, stop_gps, obs_length, pointings, out_dir):
+
     # if consecutive obs have same pointing, combine them.
     for i in range(len(start_gps)):
         if i != len(start_gps) - 1:
@@ -123,6 +138,7 @@ def combine_obs(start_gps, stop_gps, obs_length, pointings, out_dir):
 
     with open(f"{out_dir}/ultimate_pointing_times.json", "w") as outfile:
         json.dump(pointing_list, outfile, indent=4)
+
 
 if __name__ == "__main__":
 
