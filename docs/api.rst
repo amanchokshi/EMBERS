@@ -66,6 +66,12 @@ Sat Utils
 MWA Meta
 ========
 
+.. currentmodule:: embers.mwa_meta
+
+.. autosummary::
+
+    mwa_pointings.download_meta
+
 
 Tile Maps
 =========
