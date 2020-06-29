@@ -5,12 +5,14 @@ Tools to download metadata of the MWA telescope and extract its observational sc
 
 """
 
+import math, pytz
 import numpy as np
 import seaborn as sns
 import json, wget, time
 from pathlib import Path
 from astropy.time import Time
 import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
 
 
 def download_meta(start, stop, num_pages, out_dir):
@@ -259,6 +261,164 @@ def pointing_hist(pointings, int_hours, time_thresh, out_dir):
     plt.tight_layout()
     plt.savefig(f"{out_dir}/pointing_integration.png")
 
+
+def rf_obs_times(start_date, stop_date, time_zone):
+    """Generate start & end times of 30 minuts rf observations in local, unix, gps formats
+    
+    :param start_date: in :samp:`YYYY-MM-DD` format :class:`~str`
+    :param stop_date: in :samp:`YYYY-MM-DD` format :class:`~str`
+    :param time_zone: A :class:`~str` representing a :samp:`pytz` `timezones <https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568>`_.
+    
+    :returns:
+        A :class:`~tuple` (obs_time, obs_unix, obs_unix_end, obs_gps, obs_gps_end)
+
+        - obs_time: :class:`~list` of start times of 30 min obs in :samp:`YYYY-MM-DD-HH:MM` format
+        - obs_gps: :class:`~list` of start times of 30 min obs in :samp:`gps` format
+        - obs_gps_end: :class:`~list` of end times of 30 min obs in :samp:`gps` format
+
+    """
+
+    # The time input is in local time. As in Austraila/Perth
+    local = pytz.timezone(time_zone)
+
+    t_start = datetime.strptime(start_date, "%Y-%m-%d")
+    t_stop = datetime.strptime(stop_date, "%Y-%m-%d")
+
+    # Number of days that the date range spans
+    n_days = (t_stop - t_start).days
+
+    # YYYY-MM-DD-HH:MM format
+    obs_time = []
+
+    # Start of half hour obs in unix time
+    obs_unix = []
+
+    # End of half hour obs in unix time
+    obs_unix_end = []
+
+    # The +1 makes the date ranges inclusive
+    for i in range(n_days + 1):
+        day = t_start + timedelta(days=i)
+        date = day.strftime("%Y-%m-%d")
+
+        # loop over 48x30 minute obs in a day
+        for j in range(48):
+            t_delta = datetime.strptime(date, "%Y-%m-%d") + timedelta(minutes=30 * j)
+            # convert t_delta to a readable string YYYY-MM-DD-HH:MM
+            d_time = t_delta.strftime("%Y-%m-%d-%H:%M")
+
+            # Convert from naive local time to utc aware time
+            utc_delta = local.localize(t_delta, is_dst=None).astimezone(pytz.utc)
+
+            # convert to a unix timestamp, used within rf explorer data files
+            utc_unix = utc_delta.timestamp()
+            # time at end of half hour window
+            utc_unix_end = utc_unix + (30 * 60)
+
+            obs_time.append(d_time)
+            obs_unix.append(utc_unix)
+            obs_unix_end.append(utc_unix_end)
+
+    # Start and end of 30 min obs in gps time
+    # Round to nearest int
+    obs_gps = np.rint(Time(obs_unix, format="unix").gps)
+    obs_gps_end = np.rint(Time(obs_unix_end, format="unix").gps)
+
+    return (obs_time, obs_gps, obs_gps_end)
+
+
+def obs_pointings(
+    start_date,
+    stop_date,
+    time_zone,
+    out_dir,
+):
+    """
+    Classify the pointing of each :samp:`rf_obs`
+
+    Loop over all rf observations within a date interval and determine whether 
+    the 30 minute period had more that a 60% majority at a single pointing. If 
+    it does, the rf observation is saved to an appropriate list. Save the pointing
+    data to :samp:`obs_pointings.json` in the :samp:`out_dir`.
+    
+    :param start_date: in :samp:`YYYY-MM-DD` format :class:`~str`
+    :param stop_date: in :samp:`YYYY-MM-DD` format :class:`~str`
+    :param time_zone: A :class:`~str` representing a :samp:`pytz` `timezones <https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568>`_.
+    :param out_dir: Path to directory where :samp:`mwa_pointings.json` is saved
+    
+    :returns:
+        :samp:`obs_pointings.json` saved to :samp:`out_dir`
+
+    """
+    
+    point_0 = []
+    point_2 = []
+    point_4 = []
+    point_41 = []
+
+    obs_time, obs_gps, obs_gps_end = rf_obs_times(start_date, stop_date, time_zone)
+
+    with open(f"{out_dir}/mwa_pointings.json") as table:
+        data = json.load(table)
+        pointings = data["grid_pt"]
+        start_gps = data["start_gps"]
+        stop_gps = data["stop_gps"]
+
+    # loop over each 30 min rf_obs
+    for i in range(len(obs_time)):
+
+        # loop over mwa pointing observations from
+        # ultimate_pointing_times.json
+        for j in range(len(start_gps)):
+
+            # start and stop gps times of MWA pointing observations
+            meta_start = start_gps[j]
+            meta_stop = stop_gps[j]
+
+            # I. MWA obs starts before rf_obs, stops within rf_obs
+            if meta_start < obs_gps[i] and meta_stop > obs_gps[i] and meta_stop <= obs_gps_end[i]:
+                occu = (meta_stop - obs_gps[i]) / 1800
+
+            # II. MWA obs completely within rf_obs
+            elif meta_start >= obs_gps[i] and meta_stop <= obs_gps_end[i]:
+                occu = (meta_stop - meta_start) / 1800
+
+            # III. MWA obs starts within rf obs and ends after
+            elif meta_start >= obs_gps[i] and meta_start < obs_gps_end[i] and meta_stop > obs_gps_end[i]:
+                occu = (obs_gps_end[i] - meta_start) / 1800
+
+            # IV. MWA obs starts before and ends after rf obs
+            elif meta_start < obs_gps[i] and meta_stop > obs_gps_end[i]:
+                occu = (obs_gps_end[i] - obs_gps[i]) / 1800
+
+            # V. No common time between MWA obs and rf obs
+            else:
+                occu = 0
+
+            if occu != 0 and occu >= 0.6:
+                if pointings[j] == 0:
+                    point_0.append(obs_time[i])
+                elif pointings[j] == 2:
+                    point_2.append(obs_time[i])
+                elif pointings[j] == 4:
+                    point_4.append(obs_time[i])
+                elif pointings[j] == 41:
+                    point_41.append(obs_time[i])
+                else:
+                    pass
+
+    # Create dictionary to be saved to json
+    obs_pointings = {}
+
+    obs_pointings["start_date"] = start_date
+    obs_pointings["stop_date"] = stop_date
+    obs_pointings["point_0"] = point_0
+    obs_pointings["point_2"] = point_2
+    obs_pointings["point_4"] = point_4
+    obs_pointings["point_41"] = point_41
+
+    with open(f"{out_dir}/obs_pointings.json", "w") as outfile:
+        json.dump(obs_pointings, outfile, indent=4)
 
 if __name__ == "__main__":
 

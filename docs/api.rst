@@ -75,6 +75,8 @@ MWA Meta
     mwa_pointings.combine_pointings
     mwa_pointings.point_integration
     mwa_pointings.pointing_hist
+    mwa_pointings.rf_obs_times
+    mwa_pointings.obs_pointings
 
 
 Tile Maps
