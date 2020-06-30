@@ -30,6 +30,7 @@ def download_meta(start, stop, num_pages, out_dir):
 
     """
 
+    print("Downloading MWA metadata")
     print("Due to download limits, this will take a while")
     wait = 29  # seconds between downloads
     t = wait * num_pages
