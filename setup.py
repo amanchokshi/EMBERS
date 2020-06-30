@@ -69,6 +69,7 @@ setup(
             "ephem_batch=embers.kindle.ephem_batch:main",
             "ephem_chrono=embers.kindle.ephem_chrono:main",
             "sat_channels=embers.kindle.sat_channels:main",
+            "mwa_pointings=embers.kindle.mwa_pointings:main",
         ],
     },
     keywords=("embers radio astronomy satellites beam measurement"),
