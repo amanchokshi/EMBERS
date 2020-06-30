@@ -46,7 +46,7 @@ _parser.add_argument(
 _parser.add_argument(
     "--out_dir",
     metavar="\b",
-    default="./embers_out/rf_tools/align_data",
+    default="./embers_out/mwa_meta",
     help="Dir where MWA metadata will be saved. Default=./embers_out/mwa_meta",
 )
 
