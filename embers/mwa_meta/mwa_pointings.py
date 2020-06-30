@@ -330,12 +330,7 @@ def rf_obs_times(start_date, stop_date, time_zone):
     return (obs_time, obs_gps, obs_gps_end)
 
 
-def obs_pointings(
-    start,
-    stop,
-    time_zone,
-    out_dir
-):
+def obs_pointings(start, stop, time_zone, out_dir):
     """
     Classify the pointing of each :samp:`rf_obs`
 
@@ -353,7 +348,7 @@ def obs_pointings(
         :samp:`obs_pointings.json` saved to :samp:`out_dir`
 
     """
-    
+
     point_0 = []
     point_2 = []
     point_4 = []
@@ -379,7 +374,11 @@ def obs_pointings(
             meta_stop = stop_gps[j]
 
             # I. MWA obs starts before rf_obs, stops within rf_obs
-            if meta_start < obs_gps[i] and meta_stop > obs_gps[i] and meta_stop <= obs_gps_end[i]:
+            if (
+                meta_start < obs_gps[i]
+                and meta_stop > obs_gps[i]
+                and meta_stop <= obs_gps_end[i]
+            ):
                 occu = (meta_stop - obs_gps[i]) / 1800
 
             # II. MWA obs completely within rf_obs
@@ -387,7 +386,11 @@ def obs_pointings(
                 occu = (meta_stop - meta_start) / 1800
 
             # III. MWA obs starts within rf obs and ends after
-            elif meta_start >= obs_gps[i] and meta_start < obs_gps_end[i] and meta_stop > obs_gps_end[i]:
+            elif (
+                meta_start >= obs_gps[i]
+                and meta_start < obs_gps_end[i]
+                and meta_stop > obs_gps_end[i]
+            ):
                 occu = (obs_gps_end[i] - meta_start) / 1800
 
             # IV. MWA obs starts before and ends after rf obs
@@ -434,7 +437,7 @@ def tile_integration(out_dir, rf_dir):
         A :class:`~dict` with keys being :samp:`tile_names` and values being :class:`~list` of integration hours at pointings 0, 2, 4 & 41
 
     """
-    
+
     # Tile names
     tiles = tile_names()
 
@@ -491,28 +494,27 @@ def plt_hist_array(tile_ints, out_dir):
         :samp:`tiles_pointing_integration.png` saved to :samp:`out_dir`
 
     """
-    
+
     plt.style.use("seaborn")
     fig = plt.figure(figsize=(14, 10))
-    
+
     # Tile names
     tiles = tile_names()
 
-
     def tile_pointing_hist(a, b, c, fig, int_dict=None, tile=None):
-    
+
         ax = fig.add_subplot(a, b, c)
-    
+
         y_max = max(i for v in int_dict.values() for i in v)
         int_list = int_dict[tile]
         x = range(len(int_list))
         leg = int_list
-    
+
         pal = sns.cubehelix_palette(
             len(int_list), start=0.7, rot=-0.7, dark=0.4, reverse=True
         )
         barplot = plt.bar(x, int_list, color=sns.color_palette(pal), edgecolor="black")
-    
+
         def autolabel(rects):
             for idx, rect in enumerate(barplot):
                 height = rect.get_height()
@@ -524,12 +526,12 @@ def plt_hist_array(tile_ints, out_dir):
                     va="bottom",
                     rotation=0,
                 )
-    
+
         autolabel(barplot)
-    
+
         # these are matplotlib.patch.Patch properties
         props = dict(boxstyle="round", facecolor="wheat", alpha=0.5)
-    
+
         # place a text box in upper left in axes coords
         ax.text(
             0.65,
@@ -540,10 +542,10 @@ def plt_hist_array(tile_ints, out_dir):
             verticalalignment="top",
             bbox=props,
         )
-    
+
         plt.xlim(-0.5, len(int_list) - 0.5)
         ax.set_yticklabels([])
-    
+
         ax.set_xticklabels([])
         ax.set_ylim(0, 1.1 * y_max)
 
@@ -615,7 +617,9 @@ def mwa_point_meta(start, stop, num_pages, time_thresh, time_zone, rf_dir, out_d
     pointing_hist(pointings, int_hours, time_thresh, out_dir)
 
     # Determine pointing of each 30 minute observation
-    obs_pointings(start, stop, time_zone, out_dir,)
+    obs_pointings(
+        start, stop, time_zone, out_dir,
+    )
 
     # Pointing integration for each tile
     tile_ints = tile_integration(out_dir, rf_dir)
