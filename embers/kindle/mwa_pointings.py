@@ -29,20 +29,18 @@ _parser.add_argument(
     help="Number of pages of metadata to download. Visit ws.mwatelescope.org/metadata/find to find this",
 )
 _parser.add_argument(
-    "--time_thresh",
-    metavar="\b",
-    help="Minimum integration in hours, at a pointing",
+    "--time_thresh", metavar="\b", help="Minimum integration in hours, at a pointing",
 )
 _parser.add_argument(
     "--time_zone",
     metavar="\b",
-    default="Australia/Perth"
+    default="Australia/Perth",
     help="pytz time zone where experiment was conducted",
 )
 _parser.add_argument(
     "--rf_dir",
     metavar="\b",
-    default=""
+    default="",
     help="Path to rood of directory with raw rf data",
 )
 _parser.add_argument(
@@ -72,6 +70,7 @@ if _rf_dir == "":
 
 def main():
     """Execute mwa_pointings from terminal."""
-    
-    mwa_point_meta(start, stop, num_pages, time_thresh, time_zone, rf_dir, out_dir):
 
+    mwa_point_meta(
+        _start_date, _stop_date, _num_pages, _time_thresh, _time_zone, _rf_dir, _out_dir
+    )
