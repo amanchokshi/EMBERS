@@ -607,7 +607,7 @@ def mwa_point_meta(start, stop, num_pages, time_thresh, time_zone, rf_dir, out_d
 
     # Download pointing metadata
     download_meta(start, stop, num_pages, out_dir)
-    print("Metadata download complete")
+    print("\nMetadata download complete")
 
     # Organize and combine metadata
     start_gps, stop_gps, obs_length, pointings = clean_meta_json(out_dir)
