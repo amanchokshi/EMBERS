@@ -13,4 +13,6 @@
 .. autofunction:: embers.mwa_meta.mwa_pointings.pointing_hist
 .. autofunction:: embers.mwa_meta.mwa_pointings.rf_obs_times
 .. autofunction:: embers.mwa_meta.mwa_pointings.obs_pointings
+.. autofunction:: embers.mwa_meta.mwa_pointings.tile_integration
+.. autofunction:: embers.mwa_meta.mwa_pointings.plt_hist_array
 
