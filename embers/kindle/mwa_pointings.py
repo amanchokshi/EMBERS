@@ -29,7 +29,7 @@ _parser.add_argument(
     help="Number of pages of metadata to download. Visit ws.mwatelescope.org/metadata/find to find this",
 )
 _parser.add_argument(
-    "--time_thresh", metavar="\b", help="Minimum integration in hours, at a pointing",
+    "--time_thresh", metavar="\b", type=int, help="Minimum integration in hours, at a pointing",
 )
 _parser.add_argument(
     "--time_zone",
