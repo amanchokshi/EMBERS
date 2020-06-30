@@ -47,7 +47,7 @@ def download_meta(start, stop, num_pages, out_dir):
     for npg in range(num_pages):
         time.sleep(wait)
         cerberus_url = f"http://ws.mwatelescope.org/metadata/find?mintime={start_gps}&maxtime={stop_gps}&extended=1&page={npg+1}&pretty=1"
-        print(f"\nDownloading page {npg+1} of metadata")
+        print(f"\nDownloading page {npg+1}/{num_pages} of metadata")
         wget.download(cerberus_url, f"{mwa_meta_dir}/page_{npg+1:03d}.json")
 
 
