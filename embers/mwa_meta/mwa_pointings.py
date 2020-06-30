@@ -50,12 +50,12 @@ def download_meta(start, stop, num_pages, out_dir):
         wget.download(cerberus_url, f"{mwa_meta_dir}/page_{npg+1:03d}.json")
 
 
-def clean_meta_json(meta_dir):
+def clean_meta_json(out_dir):
     """Organize json files. Clean up quirks in metadata 
 
     Clear up confusion in Andrew Williams' custom pointing names
     
-    :param meta_dir: Path to root of directory with json metadata files :class:`~str`
+    :param out_dir: Path to root of directory with json metadata files :class:`~str`
 
     :returns:
         A :class:`~tuple` (start_gps, stop_gps, obs_length, pointings)
@@ -76,7 +76,7 @@ def clean_meta_json(meta_dir):
     point_2 = ["EOR_Point_2", "EOR_Point_2_Delays0,1,2,3,0,1,2,3,0,1,2,3,0,1,2,3_Ch100"]
     point_4 = ["EOR_Point_4", "EOR_Point_4_Delays3,2,1,0,3,2,1,0,3,2,1,0,3,2,1,0_Ch100"]
 
-    files = Path(f"{meta_dir}/mwa_pointings").glob("page*.json")
+    files = Path(f"{out_dir}/mwa_pointings").glob("page*.json")
 
     for f in files:
         with open(f) as table:
@@ -262,6 +262,7 @@ def pointing_hist(pointings, int_hours, time_thresh, out_dir):
     plt.title("Integration at MWA Grid Pointings")
     plt.tight_layout()
     plt.savefig(f"{out_dir}/pointing_integration.png")
+    print(f"Pointing integration plot saved to {out_dir}")
 
 
 def rf_obs_times(start_date, stop_date, time_zone):
@@ -330,10 +331,10 @@ def rf_obs_times(start_date, stop_date, time_zone):
 
 
 def obs_pointings(
-    start_date,
-    stop_date,
+    start,
+    stop,
     time_zone,
-    out_dir,
+    out_dir
 ):
     """
     Classify the pointing of each :samp:`rf_obs`
@@ -343,14 +344,13 @@ def obs_pointings(
     it does, the rf observation is saved to an appropriate list. Save the pointing
     data to :samp:`obs_pointings.json` in the :samp:`out_dir`.
     
-    :param start_date: in :samp:`YYYY-MM-DD` format :class:`~str`
-    :param stop_date: in :samp:`YYYY-MM-DD` format :class:`~str`
+    :param start: in :samp:`YYYY-MM-DD` format :class:`~str`
+    :param stop: in :samp:`YYYY-MM-DD` format :class:`~str`
     :param time_zone: A :class:`~str` representing a :samp:`pytz` `timezones <https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568>`_.
     :param out_dir: Path to directory where :samp:`mwa_pointings.json` is saved
     
     :returns:
         :samp:`obs_pointings.json` saved to :samp:`out_dir`
-        A :class:`~tuple` (point_0, point_2, point_4, point_41) each a list of rf_obs ids at the pointings 0, 2, 4, 41
 
     """
     
@@ -359,7 +359,7 @@ def obs_pointings(
     point_4 = []
     point_41 = []
 
-    obs_time, obs_gps, obs_gps_end = rf_obs_times(start_date, stop_date, time_zone)
+    obs_time, obs_gps, obs_gps_end = rf_obs_times(start, stop, time_zone)
 
     with open(f"{out_dir}/mwa_pointings.json") as table:
         data = json.load(table)
@@ -413,8 +413,8 @@ def obs_pointings(
     # Create dictionary to be saved to json
     obs_pointings = {}
 
-    obs_pointings["start_date"] = start_date
-    obs_pointings["stop_date"] = stop_date
+    obs_pointings["start_date"] = start
+    obs_pointings["stop_date"] = stop
     obs_pointings["point_0"] = point_0
     obs_pointings["point_2"] = point_2
     obs_pointings["point_4"] = point_4
@@ -423,13 +423,11 @@ def obs_pointings(
     with open(f"{out_dir}/obs_pointings.json", "w") as outfile:
         json.dump(obs_pointings, outfile, indent=4)
 
-    return (point_0, point_2, point_4, point_41)
 
-
-def tile_integration(meta_dir, rf_dir):
+def tile_integration(out_dir, rf_dir):
     """Calculate total integration at multiple pointings for all tiles 
     
-    :param meta_dir: Path to root of directory where mwa metadata is saved :class:`~str`
+    :param out_dir: Path to root of directory where mwa metadata is saved :class:`~str`
     :param rf_dir: Path to root of directory with rf data files :class:`~str`
 
     :returns:
@@ -441,7 +439,7 @@ def tile_integration(meta_dir, rf_dir):
     tiles = tile_names()
 
     # lists of obs at each pointings
-    with open(f"{meta_dir}/obs_pointings.json") as table:
+    with open(f"{out_dir}/obs_pointings.json") as table:
         data = json.load(table)
         start_date = data["start_date"]
         stop_date = data["stop_date"]
@@ -584,3 +582,41 @@ def plt_hist_array(tile_ints, out_dir):
 
     plt.tight_layout()
     fig.savefig(f"{out_dir}/tiles_pointing_integration.png")
+    print(f"Tile integration plot saved to {out_dir}")
+
+
+def mwa_point_meta(start, stop, num_pages, time_thresh, time_zone, rf_dir, out_dir):
+    """
+    Download mwa pointing metadata, sort and parse it, and create diagonistic plots,
+
+    :param start: start date in :samp:`isot` format :samp:`YYYY-MM-DDTHH:MM:SS` :class:`~str` 
+    :param stop: stop date in :samp:`isot` format :samp:`YYYY-MM-DDTHH:MM:SS` :class:`~str`
+    :param num_pages: Each page contains 200 observation. Visit `ws.mwatelescope.org/metadata/find <http://ws.mwatelescope.org/metadata/find>`_ to find the total number of pages :class:`~int`
+    :param time_thresh: minimum integration time to be included in histogram, in hours :class:`~int`
+    :param time_zone: A :class:`~str` representing a :samp:`pytz` `timezones <https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568>`_.
+    :param rf_dir: Path to root of directory with rf data files :class:`~str`
+    :param out_dir: Path to output directory where metadata will be saved :class:`~str`
+
+    :returns:
+        Data products saved to :samp:`out_dir`
+       
+    """
+
+    # Download pointing metadata
+    download_meta(start, stop, num_pages, out_dir)
+    print("Metadata download complete")
+
+    # Organize and combine metadata
+    start_gps, stop_gps, obs_length, pointings = clean_meta_json(out_dir)
+    combine_pointings(start_gps, stop_gps, obs_length, pointings, out_dir)
+
+    # Compute pointing integration and plot histogram
+    pointings, int_hours = point_integration(out_dir)
+    pointing_hist(pointings, int_hours, time_thresh, out_dir)
+
+    # Determine pointing of each 30 minute observation
+    obs_pointings(start, stop, time_zone, out_dir,)
+
+    # Pointing integration for each tile
+    tile_ints = tile_integration(out_dir, rf_dir)
+    plt_hist_array(tile_ints, out_dir)

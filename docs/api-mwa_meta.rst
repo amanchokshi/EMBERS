@@ -15,4 +15,5 @@
 .. autofunction:: embers.mwa_meta.mwa_pointings.obs_pointings
 .. autofunction:: embers.mwa_meta.mwa_pointings.tile_integration
 .. autofunction:: embers.mwa_meta.mwa_pointings.plt_hist_array
+.. autofunction:: embers.mwa_meta.mwa_pointings.mwa_point_meta
 
