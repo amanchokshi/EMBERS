@@ -593,7 +593,7 @@ def mwa_point_meta(start, stop, num_pages, time_thresh, time_zone, rf_dir, out_d
     :param stop: stop date in :samp:`isot` format :samp:`YYYY-MM-DDTHH:MM:SS` :class:`~str`
     :param num_pages: Each page contains 200 observation. Visit `ws.mwatelescope.org/metadata/find <http://ws.mwatelescope.org/metadata/find>`_ to find the total number of pages :class:`~int`
     :param time_thresh: minimum integration time to be included in histogram, in hours :class:`~int`
-    :param time_zone: A :class:`~str` representing a :samp:`pytz` `timezones <https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568>`_.
+    :param time_zone: A :class:`~str` representing :samp:`pytz` `timezones <https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568>`_.
     :param rf_dir: Path to root of directory with rf data files :class:`~str`
     :param out_dir: Path to output directory where metadata will be saved :class:`~str`
 
