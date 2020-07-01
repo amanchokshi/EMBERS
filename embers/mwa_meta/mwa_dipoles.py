@@ -171,3 +171,22 @@ def find_flags(out_dir):
     plt.tight_layout()
     plt.savefig(f"{out_dir}/flagged_dipoles.png")
     print(f"Dipole flagging plot saved to {out_dir}")
+
+
+def mwa_flagged_dipoles(num_files, out_dir):
+    """Download metafits and find flagged dipoles
+
+    :param num_files: The number of metafits files to download. Usually, 20 is sufficent :class:`~int`
+    :param out_dir: Path to output directory where the metafits files will be saved :class:`~str`
+
+    :returns:
+        Metafits files and dipole flagging plot saved to :samp:`out_dir`
+
+    """
+
+    download_metafits(num_files, out_dir)
+    find_flags(out_dir)
+
+
+
+
