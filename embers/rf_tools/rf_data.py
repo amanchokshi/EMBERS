@@ -337,19 +337,18 @@ def batch_waterfall(tile, time_stamp, data_dir, out_dir):
 
     try:
         open(rf_path, "r")
-    except FileNotFoundError as e:
-        return e
+        power, times = read_data(rf_path)
+        plt = plt_waterfall(power, times, rf_name)
+
+        # Make out_dir if it doesn't exist
+        save_dir = Path(f"{out_dir}/waterfalls/{date}/{time_stamp}")
+        save_dir.mkdir(parents=True, exist_ok=True)
+
+        plt.savefig(f"{save_dir}/{rf_name}.png")
+        plt.close()
+
+        return f"Waterfall plot saved to {save_dir}/{rf_name}.png"
+    
     except Exception as e:
         return e
 
-    power, times = read_data(rf_path)
-    plt = plt_waterfall(power, times, rf_name)
-
-    # Make out_dir if it doesn't exist
-    save_dir = Path(f"{out_dir}/waterfalls/{date}/{time_stamp}")
-    save_dir.mkdir(parents=True, exist_ok=True)
-
-    plt.savefig(f"{save_dir}/{rf_name}.png")
-    plt.close()
-
-    return f"Waterfall plot saved to {save_dir}/{rf_name}.png"
