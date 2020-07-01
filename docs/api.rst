@@ -82,6 +82,7 @@ MWA Meta
     mwa_pointings.mwa_point_meta
     mwa_dipoles.download_metafits
     mwa_dipoles.find_flags
+    mwa_dipoles.mwa_flagged_dipoles
 
 
 Tile Maps

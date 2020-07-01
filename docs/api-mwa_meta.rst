@@ -20,4 +20,5 @@
 .. automodule:: embers.mwa_meta.mwa_dipoles
 .. autofunction:: embers.mwa_meta.mwa_dipoles.download_metafits
 .. autofunction:: embers.mwa_meta.mwa_dipoles.find_flags
+.. autofunction:: embers.mwa_meta.mwa_dipoles.mwa_flagged_dipoles
 
