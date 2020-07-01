@@ -17,3 +17,7 @@
 .. autofunction:: embers.mwa_meta.mwa_pointings.plt_hist_array
 .. autofunction:: embers.mwa_meta.mwa_pointings.mwa_point_meta
 
+.. automodule:: embers.mwa_meta.mwa_dipoles
+.. autofunction:: embers.mwa_meta.mwa_dipoles.download_metafits
+.. autofunction:: embers.mwa_meta.mwa_dipoles.find_flags
+

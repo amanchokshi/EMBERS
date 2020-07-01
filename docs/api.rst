@@ -80,6 +80,8 @@ MWA Meta
     mwa_pointings.tile_integration
     mwa_pointings.plt_hist_array
     mwa_pointings.mwa_point_meta
+    mwa_dipoles.download_metafits
+    mwa_dipoles.find_flags
 
 
 Tile Maps

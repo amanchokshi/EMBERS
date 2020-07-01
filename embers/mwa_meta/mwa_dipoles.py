@@ -13,6 +13,20 @@ import matplotlib.pylab as pl
 import matplotlib.pyplot as plt
 
 def download_metafits(num_files, out_dir):
+    """
+    Download metafits files from `mwatelescope.org <http://mwatelescope.org/>`_
+
+    This function requires a list of obsids which it reads from :samp:`out_dir`.
+    Before running functions in this module, run :mod:`~embers.mwa_meta.mwa_pointings` to 
+    created the required obsid files.
+
+    :param num_files: The number of metafits files to download. Usually, 20 is sufficent :class:`~int`
+    :param out_dir: Path to output directory where the metafits files will be saved :class:`~str`
+
+    :returns:
+        Metafits files are saved to the :samp:`out_dir`
+
+    """
     
     print("Downloading MWA metafits files")
     print("Due to download limits, this will take a while")
@@ -44,6 +58,15 @@ def download_metafits(num_files, out_dir):
 
 
 def find_flags(out_dir):
+    """
+    Read metafits files and determine which dipoles are flagged
+
+    :param out_dir: Path to root of output directory where the metafits files are saved :class:`~str`
+
+    :returns:
+        A plot of flagged dipoles in each tile
+
+    """
 
     # list of all tiles used in this experiment
     # Naming convetion used in metafit files
