@@ -12,7 +12,7 @@ from astropy.io import fits
 import matplotlib.pylab as pl
 import matplotlib.pyplot as plt
 
-def download_metafit(num_files, out_dir):
+def download_metafits(num_files, out_dir):
     
     print("Downloading MWA metafits files")
     print("Due to download limits, this will take a while")
@@ -21,6 +21,8 @@ def download_metafit(num_files, out_dir):
     m, _ = divmod(t, 60)
     h, m = divmod(m, 60)
     print(f"ETA: Approximately {h:d}H:{m:02d}M")
+    metafits_dir = Path(f"{out_dir}/mwa_metafits")
+    metafits_dir.mkdir(parents=True, exist_ok=True)
     
     cerberus_url = "http://ws.mwatelescope.org/metadata/fits?obs_id="
     with open(f"{out_dir}/mwa_pointings.json") as gps:
@@ -33,10 +35,12 @@ def download_metafit(num_files, out_dir):
         obs_ids = gps_times[idx]
     
         for obs_id in obs_ids:
-    
+            
             time.sleep(wait)
-            print(f"Downloading {obs_id} metafits")
-            wget.download(f"{cerberus_url}{obs_id}", f"{out_dir}/mwa_metafits/{obs_id}.metafits")
+            print(f"\nDownloading {obs_id} metafits")
+            wget.download(f"{cerberus_url}{obs_id}", f"{metafits_dir}/{obs_id}.metafits")
+
+        print("\nMetafits download complete")
 
 
 def find_flags(out_dir):
@@ -101,14 +105,7 @@ def find_flags(out_dir):
                         flags[f"{t_name}{t_pol}"].append(0)
 
         hdu.close()
-
-    # Save flagging info to json file
-    with open(f"{out_dir}/mwa_dipoles.json", "w") as outfile:
-        json.dump(flags, outfile, indent=4)
-    return flags
-
-
-
+    
     keys = list(flags.keys())
 
     n = len(keys) - 1
@@ -116,7 +113,7 @@ def find_flags(out_dir):
 
     plt.style.use("seaborn")
 
-    fig, axs = plt.subplots(4, 7, figsize=(18, 9), sharex=True, sharey=True,)
+    _, axs = plt.subplots(4, 7, figsize=(18, 9), sharex=True, sharey=True,)
     axs = axs.ravel()
 
     for i in range(n):
@@ -125,8 +122,10 @@ def find_flags(out_dir):
             flags[keys[i + 1]],
             color=colors[i],
             linewidths=0.1,
-            s=28,
+            s=49,
             alpha=0.88,
+            edgecolors='black',
+            linewidth=0.6,
             label=keys[i + 1],
         )
         axs[i].set_ylim(-1, 17)
@@ -147,4 +146,5 @@ def find_flags(out_dir):
         )
 
     plt.tight_layout()
-    plt.savefig(f"{out_dir}/dead_dipoles.png")
+    plt.savefig(f"{out_dir}/flagged_dipoles.png")
+    print(f"Dipole flagging plot saved to {out_dir}")
