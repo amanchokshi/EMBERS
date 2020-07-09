@@ -23,9 +23,31 @@ Embers can also be installed manually from it's github repository
 These methods should install embers and the small collection of Python libraries that embers depends on.
 Using a virtual environment is suggested as it prevents errors from conflicting dependancies
 
+Pyenv virtual environment
+-------------------------
+Ember supports Python 3.6-3.9. Using a :samp:`pyenv` environment is the cleanest route to the correct pthon version. Install pyenv with the instructions at `<https://realpython.com/intro-to-pyenv/>`_. Now, to install the correct version of python and make a virtual environment
+
+.. code-block:: console
+    
+    # Install python version 3.8.3
+    pyenv install 3.8.3
+
+    # Create a virtual environment called embers
+    # env located at ~/.pyenv/versions/embers
+    pyenv virtualenv 3.8.3 embers
+
+    # virtual env automatically activated when in EMBERS
+    # Link the EMBERS dir with the virtual env
+    # creates a .python-version file
+    python local embers
+
+    # Install the embers package & dependancies
+    pip install embers
+
+
 Conda virtual environment
 --------------------------
-EMBERS supports Python 3.6: 3.9. Using a conda environment is the easiest way to make sure that the correct version of Python is used. Begin by installing either `Anaconda <https://docs.anaconda.com/anaconda/install/>`_ or `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_. A conda environment called *embers-env* can be created as follows
+EMBERS supports Python 3.6-3.9. Using a :samp:`conda` environment is the easiest way to make sure that the correct version of Python is used. Begin by installing either `Anaconda <https://docs.anaconda.com/anaconda/install/>`_ or `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_. A conda environment called *embers-env* can be created as follows
 
 .. code-block:: console
 
