@@ -2,28 +2,31 @@
 Satellite Ephemeris
 -------------------
 
-A set of tools to calculate satellite ephemeris 
-from TLE files. 
+A set of tools to calculate satellite ephemeris
+from TLE files.
 
 """
 
+from pathlib import Path
+
 import numpy as np
 import skyfield as sf
-from pathlib import Path
 from astropy.time import Time
-import matplotlib.pyplot as plt
-from skyfield.api import Topos, Loader
+from matplotlib import pyplot as plt
+from skyfield.api import Loader, Topos
 
 
 def load_tle(tle_file):
     """
     Extract orbital parameters from a TLE file.
-    
-    Instantiate an :class:`~skyfield.sgp4lib.EarthSatellite` for each pair of TLE lines in the TLE file, 
-    Also return the 'epoch' of each :class:`~skyfield.sgp4lib.EarthSatellite` object, which is the date and time for which the set of TLE lines is most accurate.
+
+    Instantiate an :class:`~skyfield.sgp4lib.EarthSatellite` for each pair of
+    TLE lines in the TLE file, Also return the 'epoch' of each
+    :class:`~skyfield.sgp4lib.EarthSatellite` object, which is the date and
+    time for which the set of TLE lines is most accurate.
 
     .. code-block:: python
-        
+
         from embers.sat_utils.sat_ephemeris import load_tle
         sats, epochs = load_tle('~/embers-data/TLE/21576.txt')
 
@@ -31,7 +34,7 @@ def load_tle(tle_file):
 
     :returns:
         A :class:`~tuple` (sats, epochs)
-        
+
         - sats - list of :class:`~skyfield.sgp4lib.EarthSatellite` objects, one for each pair of TLE lines
         - epochs - Julian date at which each set of TLE lines is most accurate
 
@@ -60,18 +63,18 @@ def load_tle(tle_file):
 
 def epoch_ranges(epochs):
     """Optimise time intervals to make the most of different epochs of TLE pairs
-    
+
     Creates a list with of times [epoch_range], pairs of successive elements
-    of which correspond to time intervals at which a particular epoch has best 
-    accuracy, before the next epoch becomes more accurate. This is done to 
+    of which correspond to time intervals at which a particular epoch has best
+    accuracy, before the next epoch becomes more accurate. This is done to
     ensure that the most relevanrt TLE is used in the analysis.
-    
+
     .. code-block:: python
-        
+
         from embers.sat_utils.sat_ephemeris import load_tle, epoch_ranges
         sats, epochs = load_tle('~/embers-data/TLE/21576.txt')
         epoch_range = epoch_ranges(epochs)
-     
+
     :param epochs: List of epochs from :func:`~embers.sat_utils.sat_ephemeris.load_tle`
 
     :return:
@@ -88,25 +91,25 @@ def epoch_ranges(epochs):
 
 def epoch_time_array(epoch_range, index_epoch=None, cadence=None):
     """Create a Skyfield :class:`~skyfield.timelib.Timescale` object at which to evaluate satellite positions.
-    
-    Begins by downloading up-to-date time files, using the skyfield :class:`~skyfield.iokit.Loader` class, 
-    needed to accurate converted between various time formats. See `Dates and Time 
-    <https://rhodesmill.org/skyfield/time.html>`_  for more info. The files are saved to 
-    :samp:`./embers_out/sat_utils/skyfield-data`. 
 
-    For a particular time inverval in :samp:`epoch_range`, chosen by :samp:`index_epoch`, a 
-    Skyfield :class:`~skyfield.timelib.Timescale` array object is generated, at a given time 
-    :samp:`cadence`. This time array will be used by :func:`~embers.sat_utils.sat_ephemeris.sat_pass` 
-    to compute the position of satellites at each time.  
-    
+    Begins by downloading up-to-date time files, using the skyfield :class:`~skyfield.iokit.Loader` class,
+    needed to accurate converted between various time formats. See `Dates and Time
+    <https://rhodesmill.org/skyfield/time.html>`_  for more info. The files are saved to
+    :samp:`./embers_out/sat_utils/skyfield-data`.
+
+    For a particular time inverval in :samp:`epoch_range`, chosen by :samp:`index_epoch`, a
+    Skyfield :class:`~skyfield.timelib.Timescale` array object is generated, at a given time
+    :samp:`cadence`. This time array will be used by :func:`~embers.sat_utils.sat_ephemeris.sat_pass`
+    to compute the position of satellites at each time.
+
     .. code-block:: python
-        
+
         from embers.sat_utils.sat_ephemeris import load_tle, epoch_ranges, epoch_time_array
         sats, epochs = load_tle('~/embers-data/TLE/21576.txt')
         epoch_range = epoch_ranges(epochs)
         index_epoch = 0     # select first time interval from epoch_range
         cadence = 10        # evaluate satellite position every 10 seconds
-        
+
         t_arr, index_epoch = epoch_time_array(epoch_range, index_epoch, cadence)
 
     .. code-block:: console
@@ -116,9 +119,12 @@ def epoch_time_array(epoch_range, index_epoch=None, cadence=None):
         >>> [#################################] 100% deltat.preds
         >>> [#################################] 100% Leap_Second.dat
 
-    :param index_epoch: Index of :samp:`epoch_range` to be converted to time array :class:`~int`
-    :param epoch_range: List of time intervals where an epoch is most accurate, from :func:`embers.sat_utils.sat_ephemeris.epoch_ranges` 
-    :param cadence: time cadence at which to evaluate sat position, in seconds :class:`~int`
+    :param index_epoch: Index of :samp:`epoch_range` to be converted to time
+    array :class:`~int`
+    :param epoch_range: List of time intervals where an epoch is most accurate,
+    from :func:`embers.sat_utils.sat_ephemeris.epoch_ranges`
+    :param cadence: time cadence at which to evaluate sat position, in seconds
+    :class:`~int`
 
     :returns:
         A :class:`~tuple` of (t_arr, index_epoch)
@@ -158,19 +164,19 @@ def epoch_time_array(epoch_range, index_epoch=None, cadence=None):
 
 def sat_pass(sats, t_arr, index_epoch, location=None):
     """Find when a satellite passes above the horizon at a gps location.
-    
-    Calculate the :samp:`Altitude` & :samp:`Azimuth` of a 
-    :class:`~skyfield.sgp4lib.EarthSatellite` object from 
-    :func:`~embers.sat_utils.sat_ephemeris.load_tle` at 
-    every instant of time in :samp:`t_arr` from  
-    :func:`~embers.sat_utils.sat_ephemeris.epoch_time_array`. 
-    Determine all the times that the satellite is above the 
-    horizon, at a given gps :samp:`location` and returns the 
-    pair of indices of :samp:`t_arr` at which the satellite rose 
-    and set. 
-    
+
+    Calculate the :samp:`Altitude` & :samp:`Azimuth` of a
+    :class:`~skyfield.sgp4lib.EarthSatellite` object from
+    :func:`~embers.sat_utils.sat_ephemeris.load_tle` at
+    every instant of time in :samp:`t_arr` from
+    :func:`~embers.sat_utils.sat_ephemeris.epoch_time_array`.
+    Determine all the times that the satellite is above the
+    horizon, at a given gps :samp:`location` and returns the
+    pair of indices of :samp:`t_arr` at which the satellite rose
+    and set.
+
     .. code-block:: python
-        
+
         from embers.sat_utils.sat_ephemeris import load_tle, epoch_ranges, epoch_time_array, sat_pass
         sats, epochs = load_tle('~/embers-data/TLE/21576.txt')
         epoch_range = epoch_ranges(epochs)
@@ -180,15 +186,15 @@ def sat_pass(sats, t_arr, index_epoch, location=None):
         MWA = (-26.703319, 116.670815, 337.83)   # gps coordinates of MWA Telescope
 
         passes, alt, az = sat_pass(sats, t_arr, index_epoch, location=MWA)
-    
+
     :param sats: list of :class:`~skyfield.sgp4lib.EarthSatellite` objects
     :param t_arr: skyfield :class:`~skyfield.timelib.Timescale` object with array of times
     :param index_epoch: Index of :samp:`epoch_range` :class:`~int`
     :param location: The :samp:`gps` coordinates of the :samp:`location` at which satellite passes are to be computed. :samp:`location` is a :class:`~tuple` in the format (:samp:`latitude`, :samp:`longitude`, :samp:`elevation`), with :samp:`elevation` given in :samp:`meters` 
-    
+
     :returns:
         A :class:`~tuple` of (passes, alt, az)
-        
+
         - passes: 2D array with pairs of indicies of :samp:`t_arr` corresponding to rise/set of satellite :class:`~numpy.ndarray`
         - alt: Array of :samp:`Altitudes` of sat at :samp:`t_arr` times :class:`~numpy.ndarray`
         - az: Array of :samp:`Azimuths` of sat at :samp:`t_arr` times :class:`~numpy.ndarray`
@@ -217,15 +223,15 @@ def sat_pass(sats, t_arr, index_epoch, location=None):
         # Boundary times at which the sat either rises or sets
         (boundaries,) = np.diff(above_horizon).nonzero()
 
-        if above_horizon[0] == True:
+        if above_horizon[0] is True:
             boundaries = [indicies[0]] + list(boundaries)
             boundaries = np.asarray(boundaries)
 
-        if above_horizon[-1] == True:
+        if above_horizon[-1] is True:
             boundaries = list(boundaries) + [indicies[-1]]
             boundaries = np.asarray(boundaries)
 
-        if above_horizon[-1] == True and above_horizon[0] == True:
+        if above_horizon[-1] is True and above_horizon[0] is True:
             boundaries = [indicies[0]] + list(boundaries) + [indicies[-1]]
             boundaries = np.asarray(boundaries)
 
@@ -240,9 +246,9 @@ def sat_pass(sats, t_arr, index_epoch, location=None):
 
 def ephem_data(t_arr, pass_index, alt, az):
     """Satellite Ephemeris data (time, alt, az arrays ) for a single satellite pass.
-    
+
     .. code-block:: python
-        
+
         from embers.sat_utils.sat_ephemeris import load_tle, epoch_ranges, epoch_time_array, sat_pass, ephem_data
         sats, epochs = load_tle('~/embers-data/TLE/21576.txt')
         epoch_range = epoch_ranges(epochs)
@@ -253,7 +259,7 @@ def ephem_data(t_arr, pass_index, alt, az):
         passes, alt, az = sat_pass(sats, t_arr, index_epoch, location=MWA)
 
         time_array, sat_alt, sat_az = ephem_data(t_arr, passes[0], alt, az)
-    
+
     :param t_arr: skyfield :class:`~skyfield.timelib.Timescale` object with array of times
     :param pass_index: One pair of sat indicies from :samp:`passes`
     :param alt: Array of altitudes of sat at :samp:`t_arr` times
@@ -261,7 +267,7 @@ def ephem_data(t_arr, pass_index, alt, az):
 
     :returns:
         A :class:`~tuple` (time_array, sat_alt, sat_az)
-        
+
         - time_array: times at which sat position is calculated :class:`~numpy.ndarray`
         - sat_alt: :samp:`Altitude` of satellite while it is above the horizon :class:`~numpy.ndarray`
         - sat_az: :samp:`Azimuth` of satellite while it is above the horizon :class:`~numpy.ndarray`
@@ -281,7 +287,7 @@ def ephem_data(t_arr, pass_index, alt, az):
 
 def sat_plot(sat_id, alt, az, alpha=0.5):
     """Plots satellite passes
-    
+
     :param sat_id: Norad catalogue ID :class:`~str`
     :param alt: :samp:`Altitude` :class:`~list`
     :param az: :samp:`Azimuth` :class:`~list`
@@ -289,7 +295,7 @@ def sat_plot(sat_id, alt, az, alpha=0.5):
 
     :return:
         - :func:`~matplotlib.pyplot.plot` object
-    
+
     """
 
     plt.style.use("seaborn")
@@ -314,8 +320,8 @@ def save_ephem(sat, tle_dir, cadence, location, alpha, out_dir):
     """Save ephemeris of all satellite passes and plot sky coverage.
 
     This function brings everything in :mod:`~embers.sat_utils.sat_ephemeris` home.
-    It converts a downloaded :samp:`TLE` file into arrays of :samp:`times`, 
-    :samp:`Altitudes` & :samp:`Azimuths` of when the satellite was above the 
+    It converts a downloaded :samp:`TLE` file into arrays of :samp:`times`,
+    :samp:`Altitudes` & :samp:`Azimuths` of when the satellite was above the
     horizon at a particular geographic :samp:`location`. These arrays are saved
     to the :samp:`out_dir` as an :class:`~numpy.savez_compressed` file. A plot
     of all satellite passes detected within the :samp:`TLE` file is also saved
@@ -331,16 +337,19 @@ def save_ephem(sat, tle_dir, cadence, location, alpha, out_dir):
         location = (-26.703319, 116.670815, 337.83) # MWA Telescope
 
         sat_ephem(sat, tle_dir, cadence=cadence, location, out_dir)
-    
+
     .. code-block:: python
-        
+
         Saved sky-coverage plot of sat [21576] to ./embers_out/sat_utils/ephem_plots
         Saved ephemeris of sat [21576] to ./embers_out/sat_utils/ephem_data
 
     :param sat: NORAD Catalogue ID of satellite :class:`~str`
     :param tle_dir: path to directory where :samp:`TLE` files are saved :class:`~str`
     :param cadence: time cadence at which to evaluate sat position, in seconds :class:`~int`
-    :param location: The :samp:`gps` coordinates of the :samp:`location` at which satellite passes are to be computed. :samp:`location` is a :class:`~tuple` in the format (:samp:`latitude`, :samp:`longitude`, :samp:`elevation`), with :samp:`elevation` given in :samp:`meters` 
+    :param location: The :samp:`gps` coordinates of the :samp:`location` at
+    which satellite passes are to be computed. :samp:`location` is a
+    :class:`~tuple` in the format (:samp:`latitude`, :samp:`longitude`,
+    :samp:`elevation`), with :samp:`elevation` given in :samp:`meters`
     :param alpha: transparency of individual passes in :func:`~embers.sat_utils.sat_ephemeris.sat_plot` default=0.5
     :param out_dir: path to output directory :class:`~str`
 

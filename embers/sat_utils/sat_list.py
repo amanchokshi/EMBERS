@@ -3,8 +3,8 @@ Satellite List
 --------------
 
 Dictionary of satellite names and their NORAD Catalogue IDs.
-These satellites are active in the 137 to 139 MHz frequency 
-window. Include ORBCOMM Communication satellites and 
+These satellites are active in the 137 to 139 MHz frequency
+window. Include ORBCOMM Communication satellites and
 NOAA & METEOR Weather satellites.
 
 Includes a method to download TLE orbital parameters from `Space-Track.org <https://www.space-track.org/>`_
@@ -17,7 +17,7 @@ Includes a method to download TLE orbital parameters from `Space-Track.org <http
 
 import time
 from pathlib import Path
-import spacetrack.operators as op
+
 from spacetrack import SpaceTrackClient
 
 
@@ -26,7 +26,7 @@ def norad_ids():
     Dictionary of NORAD Satellite Catalogue IDs.
 
     .. code-block:: python
-        
+
         from embers.sat_utils.sat_list import norad_ids
         sat_dict = norad_ids()
 
@@ -132,11 +132,11 @@ def download_tle(
         from embers.sat_utils.sat_list import norad_ids, download_tle
         n_ids = norad_ids()
         download_tle(
-            "2020-01-01", "2020-02-01", n_ids, 
-            st_ident="test.user@embers.com", 
-            st_pass="*******", 
+            "2020-01-01", "2020-02-01", n_ids,
+            st_ident="test.user@embers.com",
+            st_pass="*******",
             out_dir="~/embers-data/TLE")
-    
+
     .. code-block:: console
 
         >>> Starting TLE download
@@ -157,7 +157,7 @@ def download_tle(
 
     """
 
-    if st_ident != None and st_pass != None:
+    if st_ident is not None and st_pass is not None:
 
         st = SpaceTrackClient(identity=st_ident, password=st_pass)
 
