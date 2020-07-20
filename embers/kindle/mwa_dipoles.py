@@ -7,7 +7,7 @@ Download MWA metafits files and determine flagged dipoles in the tiles
 """
 
 import argparse
-from pathlib import Path
+
 from embers.mwa_meta.mwa_dipoles import mwa_flagged_dipoles
 
 _parser = argparse.ArgumentParser(
@@ -33,6 +33,7 @@ _parser.add_argument(
 _args = _parser.parse_args()
 _num_files = _args.num_files
 _out_dir = _args.out_dir
+
 
 def main():
     """Execute mwa_dipoles from terminal."""

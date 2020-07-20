@@ -3,15 +3,15 @@ Colormaps
 =========
 
 Visualise custom colormaps used by embers.
-Creates sample plot of ember colormaps 
+Creates sample plot of ember colormaps
 saved to :samp:`./embers_out/rf_tools/colormaps.png`
 
 """
 
 import argparse
-import numpy as np
 from pathlib import Path
-from embers.rf_tools.colormaps import spectral, jade, plt_colormaps
+
+from embers.rf_tools.colormaps import jade, plt_colormaps, spectral
 
 _spec, _spec_r = spectral()
 _jade, _jade_r = jade()

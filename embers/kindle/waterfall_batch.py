@@ -7,14 +7,14 @@ Output files are saved to ``./embers_out/rf_tools/waterfalls``
 
 """
 
-import logging
 import argparse
-import pkg_resources
-from pathlib import Path
 import concurrent.futures
+import logging
 from itertools import repeat
-from embers.rf_tools.rf_data import tile_names, time_tree, batch_waterfall
+from pathlib import Path
 
+import pkg_resources
+from embers.rf_tools.rf_data import batch_waterfall, tile_names, time_tree
 
 _parser = argparse.ArgumentParser(
     description="""
@@ -89,7 +89,7 @@ def waterfall_batch(start_date, stop_date, data_dir, out_dir):
     :type data_dir: str
     :param out_dir: path to output dir
     :type out_dir: str
-    
+
     """
 
     dates, time_stamps = time_tree(start_date, stop_date)

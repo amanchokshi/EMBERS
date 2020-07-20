@@ -1,15 +1,15 @@
-import json
 import argparse
-import numpy as np
-import pkg_resources
+import json
 from pathlib import Path
+
+import pkg_resources
 from embers.sat_utils.sat_ephemeris import save_ephem
 
 _parser = argparse.ArgumentParser(
     description="""
         Code which converts the TLE files downloaded with download_TLE.py
         into satellite ephemeris data: rise time, set time, alt/az arrays
-        at a given time cadence. This is saved to a json file which will 
+        at a given time cadence. This is saved to a json file which will
         be used to plot the satellite passes.
         """
 )

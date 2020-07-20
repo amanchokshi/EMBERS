@@ -8,9 +8,8 @@ interpolation and Savitzky–Golay smoothing. Save plot to :samp:`./embers_out/r
 """
 
 import argparse
+
 import pkg_resources
-from pathlib import Path
-import matplotlib.pyplot as plt
 from embers.rf_tools.align_data import plot_savgol_interp
 
 _parser = argparse.ArgumentParser(

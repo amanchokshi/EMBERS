@@ -3,18 +3,18 @@ Align Batch
 ===========
 
 Interpolate and Savitzky–Golay smooth a pair of raw rf data files
-before temorally aligning the. Save aligned data as npz files to 
+before temorally aligning the. Save aligned data as npz files to
 ``./embers_out/rf_tools/align_data``
 
 """
 
-import logging
 import argparse
-import pkg_resources
-from pathlib import Path
 import concurrent.futures
+import logging
 from itertools import repeat
-import matplotlib.pyplot as plt
+from pathlib import Path
+
+import pkg_resources
 from embers.rf_tools.align_data import save_aligned
 from embers.rf_tools.rf_data import tile_names, tile_pairs, time_tree
 

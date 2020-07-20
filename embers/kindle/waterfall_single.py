@@ -7,10 +7,10 @@ Saves a single waterfall plot to ``./embers_out/rf_tools``
 """
 
 import argparse
-import pkg_resources
 from pathlib import Path
-from embers.rf_tools.rf_data import single_waterfall
 
+import pkg_resources
+from embers.rf_tools.rf_data import single_waterfall
 
 _parser = argparse.ArgumentParser(
     description="""

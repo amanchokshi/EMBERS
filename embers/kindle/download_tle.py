@@ -8,9 +8,10 @@ within a date interval using Space-Track.org. TLE files are saved to
 
 """
 
-import os
 import argparse
-from embers.sat_utils.sat_list import norad_ids, download_tle
+import os
+
+from embers.sat_utils.sat_list import download_tle, norad_ids
 
 _parser = argparse.ArgumentParser(
     description="""

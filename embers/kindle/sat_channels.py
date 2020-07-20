@@ -2,7 +2,7 @@
 Satellite Channels
 ------------------
 
-Create satellite channel maps which identify the transmission 
+Create satellite channel maps which identify the transmission
 channel [frequency] of every satellite in a set of 30 minute observations.
 
 """
