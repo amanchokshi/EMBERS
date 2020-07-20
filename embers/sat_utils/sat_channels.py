@@ -7,24 +7,23 @@ observation by using rf data in conjunctin with chronological satellite ephemeri
 
 """
 
-import re
-import json
-import numpy as np
-import seaborn as sns
-from pathlib import Path
 import concurrent.futures
+import json
+import re
 from itertools import repeat
-import matplotlib.pylab as pl
-import matplotlib.pyplot as plt
-from scipy.stats import median_absolute_deviation as mad
+from pathlib import Path
 
+import numpy as np
 from embers.rf_tools.colormaps import spectral
 from embers.rf_tools.rf_data import time_tree
+from matplotlib import pylab as pl
+from matplotlib import pyplot as plt
+from scipy.stats import median_absolute_deviation as mad
 
 
 def read_ref_aligned(ali_file=None):
     """Read aligned reference data from :func:`~embers.rf_tools.align_data.save_aligned` :samp:`npz` file
-    
+
     :param ali_file: path to a :func:`~embers.rf_tools.align_data.save_aligned` :samp:`npz` file :class:`~str`
 
     :returns:
@@ -45,13 +44,13 @@ def read_ref_aligned(ali_file=None):
 
 def noise_floor(sat_thresh, noi_thresh, power):
     """Computes the noise floor of a rf power array
-    
+
     Exclude channels with signal above :samp:`sat_thresh` multiplied by :samp:`standard deviation` of power array.
     The Median Absolute Deviation :samp:`MAD` is used to quantify the noise level of the remaining
     channels. The noise floor :samp:`noi_thresh` is defined to be the :samp:`median` of noisy data + :samp:`noi_thresh` multiplied by the
     :samp:`MAD` of noisy data.
 
-    :param sat_thresh: An integer multiple of standard deviation of rf power array, used to exclude channels with potential satellites. :class:`~int` 
+    :param sat_thresh: An integer multiple of standard deviation of rf power array, used to exclude channels with potential satellites. :class:`~int`
     :param noi_thresh: An integer multiple of the noisy data MAD, used to compute a noise floor. :class:`~int`
     :param power: Rf power array :class:`~numpy.ndarry`
 
@@ -83,8 +82,8 @@ def time_filter(s_rise, s_set, times):
     """Determine indices of time array when a satellite is above the horizon.
 
     Isolate the portion of a rf power array where a satellite is above the
-    horizon using the rise and set times of a satellite's ephemeris. This 
-    function returns a pair of indices which can be used to slice the rf 
+    horizon using the rise and set times of a satellite's ephemeris. This
+    function returns a pair of indices which can be used to slice the rf
     power and times arrays to precisely only include the satellite.
 
     :param s_rise: satellite rise time from ephemeris :class:`~float`
@@ -94,7 +93,7 @@ def time_filter(s_rise, s_set, times):
     :returns:
         intvl: :samp:`None` if satellite is not above the horizon within the :samp:`times` array
         intvl: [i_0, i_1], pair of indices of :samp:`times` array, when satellite is above the horizon
-    
+
     """
 
     # I. sat rises before times, sets within times window
@@ -131,7 +130,7 @@ def time_filter(s_rise, s_set, times):
 
 def plt_window_chans(power, sat_id, start, stop, cmap, chs=None, good_ch=None):
     """Waterfall plot with sat window and occupied channels highlighted.
-    
+
     :param power: Rf power array :class:`~numpy.ndarry`
     :param sat_id: Norad catalogue ID :class:`~str`
     :param start: Index of power array when :samp:`sat_id` is above the horizon :class:`~int`
@@ -139,7 +138,7 @@ def plt_window_chans(power, sat_id, start, stop, cmap, chs=None, good_ch=None):
     :param cmap: Colormap for plotting waterfall :class:`~matplotlib.colors.ListedColormap`
     :param chs: Occupied channels :class:`~list` of :class:`~int`
     :param good_ch: Most probable channel :class:`~int`
-    
+
     :returns:
         - plt - :func:`~matplotlib.pyplot.plot` object
 
@@ -161,12 +160,12 @@ def plt_window_chans(power, sat_id, start, stop, cmap, chs=None, good_ch=None):
     # horizontal highlight of satellite time window
     ax.axhspan(start, stop, alpha=0.1, color="white")
 
-    if chs != None:
+    if chs is not None:
         # vertical highlight of possible channels
         for ch in chs:
             ax.axvspan(ch - 0.5, ch + 0.4, alpha=0.2, color="white")
 
-    if good_ch != None:
+    if good_ch is not None:
         # highlight good channel
         ax.axvspan(
             good_ch - 0.5,
@@ -184,7 +183,7 @@ def plt_channel(
     times, channel_power, pow_med, chan_num, y_range, noi_thresh, pow_thresh
 ):
     """Plot power in channel, with various thresholds
-    
+
     :param times: times 1D array :class:`~numpy.ndarry`
     :param channel_power: Rf channel power 1D array :class:`~numpy.ndarry`
     :param pow_med: Median of rf power array :class:`~float`
@@ -192,7 +191,7 @@ def plt_channel(
     :param y_range: Plot min, max yrange list :class:`~list`
     :param noi_thresh: Noise floor in :samp:`dBm`. :class:`~float`
     :param pow_thresh: Power threshold in :samp:`dBm` :class:`~float` 
-        
+
     :returns:
         - plt - :func:`~matplotlib.pyplot.plot` object
 
@@ -244,19 +243,19 @@ def plt_channel(
     leg = plt.legend(frameon=True)
     leg.get_frame().set_facecolor("grey")
     leg.get_frame().set_alpha(0.2)
-    for l in leg.legendHandles:
-        l.set_alpha(1)
+    for leg in leg.legendHandles:
+        leg.set_alpha(1)
 
     return plt
 
 
 def plt_sats(ids, chrono_file, timestamp):
     """Polar plot of satellite passes in a 30 minute observation
-    
+
     :param ids: :class:`~list` of Norad catalogue IDs
     :param chrono_file: path to chrono ephemeris json file :class:`~str`
     :param timestamp: Time at start of 30 minute observation in :samp:`YYYY-MM-DD-HH:MM` format :class:`~str`
-    
+
     :returns:
         - plt - :func:`~matplotlib.pyplot.plot` object
 
@@ -274,10 +273,10 @@ def plt_sats(ids, chrono_file, timestamp):
     ax.grid(color="grey", linewidth=1.6, alpha=0.5)
 
     colors = pl.cm.Spectral(np.linspace(0.17, 0.9, len(ids)))
-        
+
     with open(chrono_file) as chrono:
         chrono_ephem = json.load(chrono)
-    
+
     norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))]
 
     for i, id in enumerate(ids):
@@ -287,13 +286,7 @@ def plt_sats(ids, chrono_file, timestamp):
         az = id_ephem["sat_az"]
 
         plt.plot(
-            az,
-            alt,
-            "-",
-            linewidth=4.2,
-            alpha=0.9,
-            color=colors[i],
-            label=f"{id}",
+            az, alt, "-", linewidth=4.2, alpha=0.9, color=colors[i], label=f"{id}",
         )
         plt.legend()
 
@@ -305,8 +298,8 @@ def plt_sats(ids, chrono_file, timestamp):
     )
     leg.get_frame().set_facecolor("grey")
     leg.get_frame().set_alpha(0.4)
-    for l in leg.legendHandles:
-        l.set_alpha(1)
+    for leg in leg.legendHandles:
+        leg.set_alpha(1)
 
     plt.tight_layout()
 
@@ -326,7 +319,7 @@ def good_chans(
     plots=None,
 ):
     """Determine the channels a satellite could occupy, in a 30 minute observation
-    
+
     Ephemeris from :samp:`chrono_file` is used to select a temoral :samp:`window`
     of the rf power array, within which the satellite is above the horizon. Looping
     through the frequency channels, a :samp:`noi_thresh`, :samp:`pow_thresh`, :samp:`occ_thresh`
@@ -335,9 +328,9 @@ def good_chans(
     selected.
 
     .. code-block:: python
-        
+
         from embers.sat_utils.sat_channels import good_chans
-        
+
         ali_file = "~/embers_out/rf0XX_S06XX_2019-10-10-02:30_aligned.npz"
         chrono_file = "~/embers_out/2019-10-10-02:30.json"
         sat_id = "44387"
@@ -407,7 +400,7 @@ def good_chans(
         intvl = time_filter(rise_ephem, set_ephem, np.asarray(times))
 
         # If sat was in the sky in the 30 min obs
-        if intvl != None:
+        if intvl is not None:
 
             # Window start, stop
             w_start, w_stop = intvl
@@ -593,11 +586,11 @@ def window_chan_map(
     Loops over all :samp:`sat_ids` in a :samp:`chrono_file` and uses
     :func:`~embers.sat_utils.sat_channels.good_chans` to find occupied channels.
     All occupied channels are saved to :samp:`out_dir/window_maps/{timestamp}.json`
-    
+
     .. code-block:: python
-        
+
         from embers.sat_utils.sat_channels import window_chan_map
-        
+
         ali_dir = "~/embers_out/rf_tools/align_data"
         chrono_dir = "~/embers_out/sat_utils/ephem_chrono"
         sat_thresh = 1
@@ -618,7 +611,7 @@ def window_chan_map(
            timestamp,
            out_dir,
            plots)
-     
+
     :param ali_dir: Path to directory containing :samp:`npz` aligned file from :func:`~embers.rf_tools.align_data.save_aligned` :class:`~str`
     :param chrono_dir: Path to directory containg chrono ephem json file from :func:`~embers.sat_utils.chrono_ephem.save_chrono_ephem` :class:`~str`
     :param sat_thresh: Satellite threshold from :func:`~embers.sat_utils.sat_channels.noise_floor` :class:`~int`
@@ -717,15 +710,15 @@ def batch_window_map(
     plots=None,
 ):
     """Find satellite channels for all rfobservations in a date interval
-    
+
     Use :func:`~embers.rf_tools.rf_data.time_tree` to create a list os 30 minute
     timestamps between :samp:`start_date` and :samp:`stop_date`. :func:`~embers.sat_utils.sat_channels.window_chan_map`
     is used to find all satellites in each 30 minute observation.
-    
+
     .. code-block:: python
-        
+
         from embers.sat_utils.sat_channels import batch_window_map
-       
+
         start_date = "2019-10-01"
         stop_date = "2019-10-10"
         ali_dir = "~/embers_out/rf_tools/align_data"
@@ -748,7 +741,7 @@ def batch_window_map(
             occ_thresh,
             out_dir,
             plots)
-     
+
     :param start_date: In format :samp:`YYYY-MM-DD` :class:`~str`
     :param stop_date: In format :samp:`YYYY-MM-DD` :class:`~str`
     :param ali_dir: Path to directory containing :samp:`npz` aligned file from :func:`~embers.rf_tools.align_data.save_aligned` :class:`~str`
