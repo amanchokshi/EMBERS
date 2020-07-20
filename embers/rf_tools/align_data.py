@@ -6,15 +6,15 @@ enabling comparisons between data sets
 
 """
 
-import re
 import math
-import time
-import numpy as np
+import re
 from pathlib import Path
-from scipy import interpolate
-import matplotlib.pyplot as plt
-from scipy.signal import savgol_filter
+
+import numpy as np
 from embers.rf_tools.rf_data import read_data
+from matplotlib import pyplot as plt
+from scipy import interpolate
+from scipy.signal import savgol_filter
 
 
 def savgol_interp(
@@ -33,26 +33,26 @@ def savgol_interp(
     making the dimensions of the power arrays
     from reference and tile antennas equal,
     enabling comparisons between corresponding
-    data points. Two level of savgol filter applied, 
-    first to capture deep nulls + small structure, 
+    data points. Two level of savgol filter applied,
+    first to capture deep nulls + small structure,
     and second level to smooth over noise.
 
     .. code-block:: python
-        
+
         from embers.rf_tools.align_data import savgol_interp
 
          sg_interp_tuple = savgol_interp(
                             "~/embers-data/rf0XX.txt",
-                            "~/embers-data/S06XX", 
-                            savgol_window_1=11, 
-                            savgol_window_2=15, 
-                            polyorder=2, 
-                            interp_type="cubic", 
+                            "~/embers-data/S06XX",
+                            savgol_window_1=11,
+                            savgol_window_2=15,
+                            polyorder=2,
+                            interp_type="cubic",
                             interp_freq=1)
 
         (ref_ali, tile_ali, time_array,
             ref_power, tile_power, ref_time, tile_time) = sg_interp_tuple
-    
+
     :param ref: path to reference data file :class:`~str`
     :param tile: path to tile data file :class:`~str`
     :param savgol_window_1:  window size of savgol filer, must be odd :class:`~int`
@@ -115,7 +115,7 @@ def plot_savgol_interp(
     channel=None,
     out_dir=None,
 ):
-    """Plot single channel of power arrays to visualise :func:`~embers.rf_tools.align_data.savgol_interp`
+    """Plot single channel of power arrays to visualise :func:`~embers.rf_tools.align_data.savgol_interp`.
 
     Create a plot of a single channel of raw :samp:`rf_data` from reference and tile power arrays, along
     with the outputs of :func:`~embers.rf_tools.align_data.savgol_interp` to visualise the effects of 
@@ -132,7 +132,7 @@ def plot_savgol_interp(
     :param out_dir: path to output directory :class:`~str`
 
     :returns:
-        single freqency savgol_interp plot saved to :samp:`out_dir` 
+        single freqency savgol_interp plot saved to :samp:`out_dir`
 
     """
 
@@ -196,8 +196,8 @@ def plot_savgol_interp(
 
     leg = plt.legend(loc="upper left", frameon=True)
     leg.get_frame().set_facecolor("white")
-    for l in leg.legendHandles:
-        l.set_alpha(1)
+    for leg in leg.legendHandles:
+        leg.set_alpha(1)
 
     plt.ylim(-110, -20)
     plt.ylabel("Raw Power [dBm]")
@@ -218,24 +218,24 @@ def save_aligned(
     data_dir,
     out_dir,
 ):
-    """Save an aligned set of rf data with :func:`~numpy.savez_compressed` to an :samp:`npz` file. 
+    """Save an aligned set of rf data with :func:`~numpy.savez_compressed` to an :samp:`npz` file.
 
     A pair of rf data files are smoothed, interpolated and aligned
     with the :func:`~embers.rf_tools.align_data.savgol_interp`.
-    with the output written to a :samp:`npz` file and saved to an output 
+    with the output written to a :samp:`npz` file and saved to an output
     directory tree.
 
     .. code-block:: python
-        
+
         from embers.rf_tools.align_data import save_aligned
-        
+
         savgol_interp(
                     ["rf0XX", "S06XX"],
                     "2020-01-01-00:00"
-                    savgol_window_1=11, 
-                    savgol_window_2=15, 
-                    polyorder=2, 
-                    interp_type="cubic", 
+                    savgol_window_1=11,
+                    savgol_window_2=15,
+                    polyorder=2,
+                    interp_type="cubic",
                     interp_freq=1,
                     "~/embers-data/",
                     "~/embers-outputs")
@@ -253,7 +253,7 @@ def save_aligned(
 
     :return:
         - aligned rf data saved to :samp:`npz` file by :func:`~numpy.savez_compressed`
-    
+
     :raises FileNotFoundError: an input file does not exist
 
     """

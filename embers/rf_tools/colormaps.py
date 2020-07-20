@@ -6,11 +6,10 @@ A set of custom colormaps used by embers
 """
 
 import numpy as np
-from matplotlib import cm
-import matplotlib.pyplot as plt
-from scipy.interpolate import interp1d
+from matplotlib import pyplot as plt
+from matplotlib.colors import ListedColormap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap
+from scipy.interpolate import interp1d
 
 
 def spectral():
@@ -20,7 +19,7 @@ def spectral():
     only used to easily preview raw data with high contrast
 
     :returns:
-        - spectral, spectral_r - ember colormap :class:`~matplotlib.colors.ListedColormap`
+        - spectral, spectral_r - ember colormap :class:`~matplotlib.colors.ListedColormap`.
 
 
     """
@@ -57,7 +56,7 @@ def spectral():
 
 
 def jade():
-    """Beautiful perceptually uniform jade green colormap
+    """Beautiful perceptually uniform jade green colormap.
 
     :returns:
         - jade, jade_r - ember colormap :class:`~matplotlib.colors.ListedColormap`
@@ -344,11 +343,11 @@ def waves_2d():
 
 def plt_colormaps(spec, spec_r, jade, jade_r, out_dir):
     """Plot 2x2 grid of sample colormaps.
-    
+
     :param ember_cmaps: custom ember colormaps :class:`~matplotlib.colors.ListedColormap`
     :param out_dir: path to output directory :class:`~str`
 
-    :returns: 
+    :returns:
         waterfall plot saved by :func:`~matplotlib.pyplot.savefig` to :samp:`out_dir`
 
     """

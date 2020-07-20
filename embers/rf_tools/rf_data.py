@@ -9,28 +9,29 @@ RF Explorers and visualise waterfall plots
 
 import re
 import time
-import numpy as np
-from pathlib import Path
-from itertools import product
-import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
+from itertools import product
+from pathlib import Path
+
+import numpy as np
 from embers.rf_tools.colormaps import spectral
+from matplotlib import pyplot as plt
 
 _spec, _ = spectral()
 
 
 def read_data(rf_file=None):
-    """Convert rf binary data into :class:`~numpy.ndarray` of power and time
+    """Convert rf binary data into :class:`~numpy.ndarray` of power and time.
 
     .. code-block:: python
-        
+
         from embers.rf_tools.rf_data import read_data
         power, times = read_data(rf_file='~/embers-data/rf.txt')
-    
+
     :param rf_file: path to rf binary data file :class:`str`
 
     :returns:
-        - power - power in dBm :class:`~numpy.ndarray` 
+        - power - power in dBm :class:`~numpy.ndarray`
         - times - times in UNIX :class:`~numpy.ndarray`
 
     """
@@ -61,18 +62,17 @@ def tile_names():
     """List of MWA and reference antenna names
 
     .. code-block:: python
-        
+
         from embers.rf_tools.rf_data import tile_names
         tiles = tile_names()
-       
+
     .. code-block:: python
 
         print(tiles)
         >>> ["rf0XX", "rf0YY", "rf1XX", "rf1YY", "S06XX", ....]
-    
-    :returns: 
+
+    :returns:
         - tiles - antenna names :class:`~list`
-    
     """
 
     tiles = [
@@ -114,25 +114,24 @@ def tile_names():
 
 
 def tile_pairs(tiles):
-    """
-    Create a list of all possible AUT ref antenna pairs from :func:`~embers.rf_tools.rf_data.tile_names`
+    """Create a list of all possible AUT ref antenna pairs from :func:`~embers.rf_tools.rf_data.tile_names`.
 
     Reference and MWA antennas can only pair with antennas of the same polarizarion
-    
+
     .. code-block:: python
-        
+
         from embers.rf_tools.rf_data import tile_names, tile_pairs
         tiles = tile_names()
         tile_pairs = tile_names(tiles)
-       
+
     .. code-block:: python
 
         print(tile_pairs)
         >>> [["rf0XX", "S06XX"], ["rf0YY", "S06YY"], ....]
-    
+
     :returns:
         - pairs - all possible antenna pairs of same polarization :class:`~list`
-        
+
     """
 
     tiles = tile_names()
@@ -168,26 +167,26 @@ def time_tree(start_date, stop_date):
     recorded every 30 minutes
 
     .. code-block:: text
-    
+
         data_root
         ├── tile1
         │   └── YYYY-MM-DD
         │       └── tile1_YYYY-MM-DD-HH:MM.txt
-        └── tile2 
+        └── tile2
             └── YYYY-MM-DD
                 └── tile2_YYYY-MM-DD-HH:MM.txt
 
     .. code-block:: python
-        
+
         from embers.rf_tools.rf_data import time_tree
         dates, time_stamps = time_tree("2020-01-01", "2020-01-02")
 
     .. code-block:: python
-        
+
         print(dates)
         >>> ["2020-01-01", "2020-01-02"]
         print(time_stamps)
-        >>> [["2020-01-01-00:00, 2020-01-01-00:30", ...], 
+        >>> [["2020-01-01-00:00, 2020-01-01-00:30", ...],
                 ["2020-01-02-00:00", "2020-01-02-00:30"]]
 
     :param start_date: in :samp:`YYYY-MM-DD` format :class:`~str`
@@ -228,10 +227,10 @@ def time_tree(start_date, stop_date):
 
 def plt_waterfall(power, times, name):
     """
-    Create waterfall :func:`~matplotlib.pyplot.plot` object from rf data
+    Create waterfall :func:`~matplotlib.pyplot.plot` object from rf data.
 
     waterfall created using parameters :samp:`power`, :samp:`times`
-    from :func:`read_data`. 
+    from :func:`read_data`.
     Default unix times are converted to a human readable
     :samp:`HH:MM` format.
 
@@ -296,11 +295,11 @@ def plt_waterfall(power, times, name):
 
 def single_waterfall(rf_file, out_dir):
     """Save a waterfall plot from rf data file.
-    
+
     :param rf_file: path to a rf data file :class:`~str`
     :param out_dir: path to output directory :class:`~str`
 
-    :returns: 
+    :returns:
         waterfall plot saved by :func:`~matplotlib.pyplot.savefig`
 
     """
@@ -324,9 +323,9 @@ def batch_waterfall(tile, time_stamp, data_dir, out_dir):
     :param data_dir: path to root of data directory :class:`~str`
     :param out_dir: path to output directory :class:`~str`
 
-    :return: 
+    :return:
         waterfall plot saved by :func:`~matplotlib.pyplot.savefig`
-    
+
     :raises FileNotFoundError: input file does not exist
 
     """
@@ -348,7 +347,6 @@ def batch_waterfall(tile, time_stamp, data_dir, out_dir):
         plt.close()
 
         return f"Waterfall plot saved to {save_dir}/{rf_name}.png"
-    
+
     except Exception as e:
         return e
-
