@@ -5,22 +5,24 @@ Tools to download metadata of the MWA telescope and extract its observational sc
 
 """
 
-import math, pytz
-import numpy as np
-import seaborn as sns
-import json, wget, time
-from pathlib import Path
-from astropy.time import Time
-import matplotlib.pyplot as plt
+import json
+import time
 from datetime import datetime, timedelta
+from pathlib import Path
 
-from embers.rf_tools.rf_data import time_tree, tile_names
+import numpy as np
+import pytz
+import seaborn as sns
+import wget
+from astropy.time import Time
+from embers.rf_tools.rf_data import tile_names, time_tree
+from matplotlib import pyplot as plt
 
 
 def download_meta(start, stop, num_pages, out_dir):
     """Download MWA metadata from `mwatelescope.org <http://mwatelescope.org/>`_
 
-    :param start: start date in :samp:`isot` format :samp:`YYYY-MM-DDTHH:MM:SS` :class:`~str` 
+    :param start: start date in :samp:`isot` format :samp:`YYYY-MM-DDTHH:MM:SS` :class:`~str`
     :param stop: stop date in :samp:`isot` format :samp:`YYYY-MM-DDTHH:MM:SS` :class:`~str`
     :param num_pages: Each page contains 200 observation. Visit `ws.mwatelescope.org/metadata/find <http://ws.mwatelescope.org/metadata/find>`_ to find the total number of pages :class:`~int`
     :param out_dir: Path to output directory where metadata will be saved :class:`~str`
@@ -52,15 +54,15 @@ def download_meta(start, stop, num_pages, out_dir):
 
 
 def clean_meta_json(out_dir):
-    """Organize json files. Clean up quirks in metadata 
+    """Organize json files. Clean up quirks in metadata
 
     Clear up confusion in Andrew Williams' custom pointing names
-    
+
     :param out_dir: Path to root of directory with json metadata files :class:`~str`
 
     :returns:
         A :class:`~tuple` (start_gps, stop_gps, obs_length, pointings)
-        
+
         - start_gps: :class:`~list` of observation start times in :samp:`gps` format
         - stop_gps: :class:`~list` of observation start times in :samp:`gps` format
         - obs_length: :class:`~list` of observation durations in :samp:`seconds`
@@ -98,7 +100,7 @@ def clean_meta_json(out_dir):
                 else:
                     pass
 
-                ## Filter obs by passes
+                # Filter obs by passes
                 # if pointing in [0, 2, 4]:
                 if pointing in list(range(197)):
 
@@ -125,7 +127,7 @@ def clean_meta_json(out_dir):
 def combine_pointings(start_gps, stop_gps, obs_length, pointings, out_dir):
     """
     Combine successive observations with same pointing and save to file.
-        
+
     :param start_gps: :class:`~list` of observation start times in :samp:`gps` format
     :param stop_gps: :class:`~list` of observation start times in :samp:`gps` format
     :param obs_length: :class:`~list` of observation durations in :samp:`seconds`
@@ -134,7 +136,7 @@ def combine_pointings(start_gps, stop_gps, obs_length, pointings, out_dir):
 
     :returns:
         :samp:`mwa_pointing.json` saved to :samp:`out_dir`
-        
+
     """
 
     # if consecutive obs have same pointing, combine them.
@@ -151,7 +153,7 @@ def combine_pointings(start_gps, stop_gps, obs_length, pointings, out_dir):
                 pointings[i] = None
 
     # Apply mask, couldn't think of a better way to implement this
-    good_idx = np.where(np.asarray(pointings) != None)[0]
+    good_idx = np.where(np.asarray(pointings) is not None)[0]
     start_gps = np.asarray(start_gps)[good_idx].tolist()
     stop_gps = np.asarray(stop_gps)[good_idx].tolist()
     obs_length = np.asarray(obs_length)[good_idx].tolist()
@@ -178,7 +180,7 @@ def point_integration(out_dir):
         A :class:`~tuple`
 
         - pointings : :class:`~list` of MWA pointings
-        - int_hours: :class:`~list` of total integration, at each pointing, in hours 
+        - int_hours: :class:`~list` of total integration, at each pointing, in hours
 
     """
 
@@ -212,9 +214,9 @@ def pointing_hist(pointings, int_hours, time_thresh, out_dir):
     Plot a histogram of pointing integration
 
     Many pointings can have very low total integration, use the :samp:`time_thresh` argument to exclude low integration pointings.
-        
+
     :param pointings: :class:`~list` of MWA pointings
-    :param int_hours: :class:`~list` of total integration, at each pointing, in hours 
+    :param int_hours: :class:`~list` of total integration, at each pointing, in hours
     :param time_thresh: minimum integration time to be included in histogram, in hours :class:`~int`
     :param out_dir: Path to directory where :samp:`mwa_pointings.json` is saved
 
@@ -268,11 +270,11 @@ def pointing_hist(pointings, int_hours, time_thresh, out_dir):
 
 def rf_obs_times(start_date, stop_date, time_zone):
     """Generate start & end times of 30 minuts rf observations in local, unix, gps formats
-    
+
     :param start_date: in :samp:`YYYY-MM-DD` format :class:`~str`
     :param stop_date: in :samp:`YYYY-MM-DD` format :class:`~str`
     :param time_zone: A :class:`~str` representing a :samp:`pytz` `timezones <https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568>`_.
-    
+
     :returns:
         A :class:`~tuple` (obs_time, obs_unix, obs_unix_end, obs_gps, obs_gps_end)
 
@@ -335,16 +337,16 @@ def obs_pointings(start, stop, time_zone, out_dir):
     """
     Classify the pointing of each :samp:`rf_obs`
 
-    Loop over all rf observations within a date interval and determine whether 
-    the 30 minute period had more that a 60% majority at a single pointing. If 
+    Loop over all rf observations within a date interval and determine whether
+    the 30 minute period had more that a 60% majority at a single pointing. If
     it does, the rf observation is saved to an appropriate list. Save the pointing
     data to :samp:`obs_pointings.json` in the :samp:`out_dir`.
-    
+
     :param start: in :samp:`YYYY-MM-DD` format :class:`~str`
     :param stop: in :samp:`YYYY-MM-DD` format :class:`~str`
     :param time_zone: A :class:`~str` representing a :samp:`pytz` `timezones <https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568>`_.
     :param out_dir: Path to directory where :samp:`mwa_pointings.json` is saved
-    
+
     :returns:
         :samp:`obs_pointings.json` saved to :samp:`out_dir`
 
@@ -429,8 +431,8 @@ def obs_pointings(start, stop, time_zone, out_dir):
 
 
 def tile_integration(out_dir, rf_dir):
-    """Calculate total integration at multiple pointings for all tiles 
-    
+    """Calculate total integration at multiple pointings for all tiles
+
     :param out_dir: Path to root of directory where mwa metadata is saved :class:`~str`
     :param rf_dir: Path to root of directory with rf data files :class:`~str`
 
@@ -487,7 +489,7 @@ def tile_integration(out_dir, rf_dir):
 
 def plt_hist_array(tile_ints, out_dir):
     """A massive grid of histograms with a subplot for pointing integration of each tile.
-    
+
     :param tile_ints: :class:`~dict` from :func:`~embers.mwa_meta.mwa_pointings.tile_integration`
     :param out_dir: Path to output directory :class:`~str`
 
@@ -592,7 +594,7 @@ def mwa_point_meta(start, stop, num_pages, time_thresh, time_zone, rf_dir, out_d
     """
     Download mwa pointing metadata, sort and parse it, and create diagonistic plots,
 
-    :param start: start date in :samp:`isot` format :samp:`YYYY-MM-DDTHH:MM:SS` :class:`~str` 
+    :param start: start date in :samp:`isot` format :samp:`YYYY-MM-DDTHH:MM:SS` :class:`~str`
     :param stop: stop date in :samp:`isot` format :samp:`YYYY-MM-DDTHH:MM:SS` :class:`~str`
     :param num_pages: Each page contains 200 observation. Visit `ws.mwatelescope.org/metadata/find <http://ws.mwatelescope.org/metadata/find>`_ to find the total number of pages :class:`~int`
     :param time_thresh: minimum integration time to be included in histogram, in hours :class:`~int`
@@ -602,7 +604,7 @@ def mwa_point_meta(start, stop, num_pages, time_thresh, time_zone, rf_dir, out_d
 
     :returns:
         Data products saved to :samp:`out_dir`
-       
+
     """
 
     # Download pointing metadata

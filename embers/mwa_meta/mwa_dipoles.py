@@ -5,19 +5,23 @@ Tools to download MWA metafits files and finding dead dipoles
 
 """
 
-import numpy as np
-import json, wget, time
+import json
+import time
 from pathlib import Path
+
+import numpy as np
+import wget
 from astropy.io import fits
-import matplotlib.pylab as pl
-import matplotlib.pyplot as plt
+from matplotlib import pylab as pl
+from matplotlib import pyplot as plt
+
 
 def download_metafits(num_files, out_dir):
     """
     Download metafits files from `mwatelescope.org <http://mwatelescope.org/>`_
 
     This function requires a list of obsids which it reads from :samp:`out_dir`.
-    Before running functions in this module, run :mod:`~embers.mwa_meta.mwa_pointings` to 
+    Before running functions in this module, run :mod:`~embers.mwa_meta.mwa_pointings` to
     created the required obsid files.
 
     :param num_files: The number of metafits files to download. Usually, 20 is sufficent :class:`~int`
@@ -27,7 +31,7 @@ def download_metafits(num_files, out_dir):
         Metafits files are saved to the :samp:`out_dir`
 
     """
-    
+
     print("Downloading MWA metafits files")
     print("Due to download limits, this will take a while")
     wait = 29  # seconds between downloads
@@ -37,7 +41,7 @@ def download_metafits(num_files, out_dir):
     print(f"ETA: Approximately {h:d}H:{m:02d}M")
     metafits_dir = Path(f"{out_dir}/mwa_metafits")
     metafits_dir.mkdir(parents=True, exist_ok=True)
-    
+
     cerberus_url = "http://ws.mwatelescope.org/metadata/fits?obs_id="
     with open(f"{out_dir}/mwa_pointings.json") as gps:
 
@@ -47,12 +51,14 @@ def download_metafits(num_files, out_dir):
         # select 20 equally spaced ids
         idx = np.round(np.linspace(0, len(gps_times) - 1, num_files)).astype(int)
         obs_ids = gps_times[idx]
-    
+
         for obs_id in obs_ids:
-            
+
             time.sleep(wait)
             print(f"\nDownloading {obs_id} metafits")
-            wget.download(f"{cerberus_url}{obs_id}", f"{metafits_dir}/{obs_id}.metafits")
+            wget.download(
+                f"{cerberus_url}{obs_id}", f"{metafits_dir}/{obs_id}.metafits"
+            )
 
         print("\nMetafits download complete")
 
@@ -128,7 +134,7 @@ def find_flags(out_dir):
                         flags[f"{t_name}{t_pol}"].append(0)
 
         hdu.close()
-    
+
     keys = list(flags.keys())
 
     n = len(keys) - 1
@@ -147,7 +153,7 @@ def find_flags(out_dir):
             linewidths=0.1,
             s=49,
             alpha=0.88,
-            edgecolors='black',
+            edgecolors="black",
             linewidth=0.6,
             label=keys[i + 1],
         )
@@ -186,7 +192,3 @@ def mwa_flagged_dipoles(num_files, out_dir):
 
     download_metafits(num_files, out_dir)
     find_flags(out_dir)
-
-
-
-
