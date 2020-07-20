@@ -1,7 +1,13 @@
-# Package imports
-from setuptools import setup, find_packages
+"""Setup script for EMBERS package."""
+
 from pathlib import Path
-import re
+
+from setuptools import find_packages, setup
+
+from embers import __author__, __version__
+
+version = __version__
+author = __author__
 
 # Get long description from README
 with open("README.rst", "r", encoding="utf-8") as fh:
@@ -11,23 +17,15 @@ with open("README.rst", "r", encoding="utf-8") as fh:
 with open("requirements.txt", "r") as f:
     requirements = f.read().splitlines()
 
-# Recursive data files in embers.kindle
-def data_files(data_dir, data_types):
-    """Returns a list of data files"""
 
+def data_files(data_dir, data_types):
+    """Recursively return a list of data files."""
     data_dir = Path(data_dir)
     data_files = []
     for d in data_types:
-        files = [p.relative_to(Path(f"embers")) for p in data_dir.rglob(d)]
+        files = [p.relative_to(Path("embers")) for p in data_dir.rglob(d)]
         data_files.extend(files)
     return [p.as_posix() for p in data_files]
-
-
-# Obtain name, version, author from __init__.py file
-from embers import __version__, __author__
-
-version = __version__
-author = __author__
 
 
 setup(
