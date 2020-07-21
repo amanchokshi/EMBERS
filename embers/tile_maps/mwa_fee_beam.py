@@ -1,31 +1,25 @@
 import os
-import wget
-import numpy as np
-import healpy as hp
+import shutil
+import subprocess
 from pathlib import Path
-import matplotlib.pyplot as plt
-from astropy.stats import median_absolute_deviation
-from itertools import cycle
 
-from matplotlib import rcParams
-from os import environ
-import scipy.optimize as opt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-
+import healpy as hp
 import mwa_pb
+import numpy as np
+import wget
+from git import Repo
+from matplotlib import pyplot as plt
 
-fee_dir = Path(f"{os.path.dirname(mwa_pb.__file__)}/data")
-if Path(f"{fee_dir}/mwa_full_embedded_element_pattern.h5").is_file() is not True:
-    print("Downloading MWA FEE model from Cerberus")
-    url = "http://cerberus.mwa128t.org/mwa_full_embedded_element_pattern.h5"
-    wget.download(url, f"{fee_dir}")
-
-MWAPY_H5PATH = f"{fee_dir}/mwa_full_embedded_element_pattern.h5"
-from mwa_pb import primary_beam
-from mwa_pb import beam_full_EE
-from mwa_pb import mwa_tile
-from mwa_pb.mwa_sweet_spots import all_grid_points
 from plot_tile_maps import plot_healpix
+
+
+def import_mwa_pb():
+    Repo.clone_from("https://github.com/MWATelescope/mwa_pb", "mwa_pb")
+
+    os.chdir("mwa_pb")
+    subprocess.run(["python", "setup.py", "install"])
+    os.chdir("../")
+    shutil.rmtree("./mwa_pb")
 
 
 def local_beam(
@@ -45,6 +39,16 @@ def local_beam(
           second 16 for the YY pol. values match what you find in the metafits file
         - amps are the amplitudes of each individual dipole, again in a 2x16,
             with XX first then YY"""
+
+    from mwa_pb import beam_full_EE, mwa_tile, primary_beam
+    from mwa_pb.mwa_sweet_spots import all_grid_points
+
+    fee_dir = Path(f"{os.path.dirname(mwa_pb.__file__)}/data")
+    MWAPY_H5PATH = f"{fee_dir}/mwa_full_embedded_element_pattern.h5"
+    if Path(f"{fee_dir}/mwa_full_embedded_element_pattern.h5").is_file() is not True:
+        print("Downloading MWA FEE model from Cerberus")
+        url = "http://cerberus.mwa128t.org/mwa_full_embedded_element_pattern.h5"
+        wget.download(url, f"{fee_dir}")
 
     tile = beam_full_EE.ApertureArray(MWAPY_H5PATH, freq)
     mybeam = beam_full_EE.Beam(tile, delays, amps)
@@ -77,13 +81,13 @@ def local_beam(
 
 if __name__ == "__main__":
 
-    import sys
     import argparse
+    import sys
     from pathlib import Path
 
     sys.path.append("../decode_rf_data")
     from colormap import jade
-    import matplotlib.pyplot as plt
+    from matplotlib import pyplot as plt
 
     # Custom spectral colormap
     jade, _ = jade()
