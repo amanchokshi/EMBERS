@@ -1,25 +1,13 @@
 import os
-import shutil
-import subprocess
 from pathlib import Path
 
 import healpy as hp
 import mwa_pb
 import numpy as np
 import wget
-from git import Repo
 from matplotlib import pyplot as plt
 
 from plot_tile_maps import plot_healpix
-
-
-def import_mwa_pb():
-    Repo.clone_from("https://github.com/MWATelescope/mwa_pb", "mwa_pb")
-
-    os.chdir("mwa_pb")
-    subprocess.run(["python", "setup.py", "install"])
-    os.chdir("../")
-    shutil.rmtree("./mwa_pb")
 
 
 def local_beam(
