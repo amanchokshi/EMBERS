@@ -190,7 +190,7 @@ def plt_channel(
     :param chan_num: Channel number :class:`~str`
     :param y_range: Plot min, max yrange list :class:`~list`
     :param noi_thresh: Noise floor in :samp:`dBm`. :class:`~float`
-    :param pow_thresh: Power threshold in :samp:`dBm` :class:`~float` 
+    :param pow_thresh: Power threshold in :samp:`dBm` :class:`~float`
 
     :returns:
         - plt - :func:`~matplotlib.pyplot.plot` object
@@ -324,7 +324,7 @@ def good_chans(
     of the rf power array, within which the satellite is above the horizon. Looping
     through the frequency channels, a :samp:`noi_thresh`, :samp:`pow_thresh`, :samp:`occ_thresh`
     are used to identify possible channels occupied by the :samp:`sat_id`. If more than one
-    channel passes the three thresholds, the channel with the highest window occupancy is 
+    channel passes the three thresholds, the channel with the highest window occupancy is
     selected.
 
     .. code-block:: python
@@ -407,8 +407,8 @@ def good_chans(
             window_len = w_stop - w_start + 1
 
             # Slice the power/times arrays to the times of sat pass
-            power_c = power[w_start : w_stop + 1, :]
-            times_c = times[w_start : w_stop + 1]
+            power_c = power[w_start: w_stop + 1, :]
+            times_c = times[w_start: w_stop + 1]
 
             # possible identified channels
             possible_chans = []
