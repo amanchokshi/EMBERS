@@ -140,7 +140,7 @@ def epoch_time_array(epoch_range, index_epoch=None, cadence=None):
     try:
         ts = load.timescale()
     except Exception as e:
-        if e != None:
+        if e is not None:
             print("Unable to download skyfield time files")
             print("Falling back to built in time files")
             ts = load.timescale(builtin=True)
@@ -277,10 +277,10 @@ def ephem_data(t_arr, pass_index, alt, az):
 
     # A list of times at which alt/az were calculated
     # Convert to unix time to match the rf explorer timestamps
-    time_array = Time(t_arr.tt[i : j + 1], scale="tt", format="jd").unix
+    time_array = Time(t_arr.tt[i: j + 1], scale="tt", format="jd").unix
 
-    sat_az = az.radians[i : j + 1]
-    sat_alt = alt.degrees[i : j + 1]
+    sat_az = az.radians[i: j + 1]
+    sat_alt = alt.degrees[i: j + 1]
 
     return (time_array, sat_alt, sat_az)
 
