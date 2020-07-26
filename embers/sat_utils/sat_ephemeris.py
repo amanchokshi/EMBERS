@@ -9,12 +9,13 @@ from TLE files.
 
 from pathlib import Path
 
+import matplotlib as mpl
 import numpy as np
 import skyfield as sf
 from astropy.time import Time
-import matplotlib as mpl
-mpl.use('Agg')
-import matplotlib.pyplot as plt
+
+mpl.use("Agg")
+from matplotlib import pyplot as plt
 from skyfield.api import Loader, Topos
 
 
@@ -44,7 +45,7 @@ def load_tle(tle_file):
 
     # open a Two Line Element (TLE) file
     with open(tle_file, "r") as f:
-        tle_list = [line.strip() for line in f.read().split("\n") if line is not ""]
+        tle_list = [line.strip() for line in f.read().split("\n") if line != ""]
 
     # List of satellite ephemeris from each set of TLE in the opened file
     # Epoch: Time at which TLE is most accurate (in JD - Julian Date)
@@ -279,10 +280,10 @@ def ephem_data(t_arr, pass_index, alt, az):
 
     # A list of times at which alt/az were calculated
     # Convert to unix time to match the rf explorer timestamps
-    time_array = Time(t_arr.tt[i: j + 1], scale="tt", format="jd").unix
+    time_array = Time(t_arr.tt[i : j + 1], scale="tt", format="jd").unix
 
-    sat_az = az.radians[i: j + 1]
-    sat_alt = alt.degrees[i: j + 1]
+    sat_az = az.radians[i : j + 1]
+    sat_alt = alt.degrees[i : j + 1]
 
     return (time_array, sat_alt, sat_az)
 

@@ -6,7 +6,6 @@ from itertools import repeat
 from pathlib import Path
 
 from embers.sat_utils.sat_ephemeris import save_ephem
-from embers.sat_utils.sat_list import norad_ids
 
 _parser = argparse.ArgumentParser(
     description="""
@@ -71,7 +70,7 @@ def ephem_batch(tle_dir, cadence, location, alpha, out_dir):
     Process ephemeris for multiple satellites in parallel.
 
     """
-    #  sat_names = list(norad_ids().values())
+
     sat_names = [tle.stem for tle in Path(_tle_dir).glob('*.txt')]
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
