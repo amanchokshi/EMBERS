@@ -73,6 +73,7 @@ def ephem_batch(tle_dir, cadence, location, alpha, out_dir):
     """
     #  sat_names = list(norad_ids().values())
     sat_names = [tle.stem for tle in Path(_tle_dir).glob('*.txt')]
+
     with concurrent.futures.ProcessPoolExecutor() as executor:
         results = executor.map(
             save_ephem,
@@ -81,7 +82,7 @@ def ephem_batch(tle_dir, cadence, location, alpha, out_dir):
             repeat(cadence),
             repeat(location),
             repeat(alpha),
-            repeat(out_dir),
+            repeat(out_dir)
         )
 
     for result in results:
