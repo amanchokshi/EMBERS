@@ -19,7 +19,7 @@ _parser = argparse.ArgumentParser(
 )
 
 _parser.add_argument(
-    "--tle_dir", metavar="\b", default="", help="Path to directory with TLE files"
+    "--tle_dir", metavar="\b", help="Path to directory with TLE files"
 )
 _parser.add_argument(
     "--cadence",
@@ -56,16 +56,6 @@ _location = _args.location
 _alpha = _args.alpha
 _out_dir = _args.out_dir
 
-# if no input file provided, use sample package data
-if _tle_dir == "":
-    print("----------------------------------------------------")
-    print("No tle_dir path provided, using packaged sample data")
-    print(">>> ephem_batch --help, for more options")
-    print("----------------------------------------------------")
-    _tle_file = Path(
-        pkg_resources.resource_filename("embers.kindle", "data/TLE/25984.txt")
-    )
-    _tle_dir = _tle_file.parents[0]
 
 # Logging config
 _log_dir = Path(f"{_out_dir}/ephem_data")
