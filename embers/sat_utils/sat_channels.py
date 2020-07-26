@@ -13,6 +13,8 @@ import re
 from itertools import repeat
 from pathlib import Path
 
+import matplotlib as mpl
+mpl.use("Agg")
 import numpy as np
 from embers.rf_tools.colormaps import spectral
 from embers.rf_tools.rf_data import time_tree
