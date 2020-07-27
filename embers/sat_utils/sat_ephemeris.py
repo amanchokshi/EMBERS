@@ -13,10 +13,10 @@ import matplotlib as mpl
 import numpy as np
 import skyfield as sf
 from astropy.time import Time
-
-mpl.use("Agg")
 from matplotlib import pyplot as plt
 from skyfield.api import Loader, Topos
+
+mpl.use("Agg")
 
 
 def load_tle(tle_file):

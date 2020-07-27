@@ -14,13 +14,14 @@ from itertools import repeat
 from pathlib import Path
 
 import matplotlib as mpl
-mpl.use("Agg")
 import numpy as np
 from embers.rf_tools.colormaps import spectral
 from embers.rf_tools.rf_data import time_tree
 from matplotlib import pylab as pl
 from matplotlib import pyplot as plt
 from scipy.stats import median_absolute_deviation as mad
+
+mpl.use("Agg")
 
 
 def read_ref_aligned(ali_file=None):
@@ -409,8 +410,8 @@ def good_chans(
             window_len = w_stop - w_start + 1
 
             # Slice the power/times arrays to the times of sat pass
-            power_c = power[w_start: w_stop + 1, :]
-            times_c = times[w_start: w_stop + 1]
+            power_c = power[w_start : w_stop + 1, :]
+            times_c = times[w_start : w_stop + 1]
 
             # possible identified channels
             possible_chans = []
