@@ -11,7 +11,8 @@ from embers.tile_maps.beam_utils import plot_healpix
 from matplotlib import pyplot as plt
 from mwa_pb import beam_full_EE, mwa_tile
 from mwa_pb.mwa_sweet_spots import all_grid_points
-
+from embers.rf_tools.colormaps import jade
+import mwa_pb
 # def install_mwa_pb():
 #
 #    Repo.clone_from("https://github.com/MWATelescope/mwa_pb", "mwa_pb")
@@ -67,10 +68,10 @@ def local_beam(
 
     fee_dir = Path(f"{os.path.dirname(mwa_pb.__file__)}/data")
     MWAPY_H5PATH = f"{fee_dir}/mwa_full_embedded_element_pattern.h5"
-    if Path(f"{fee_dir}/mwa_full_embedded_element_pattern.h5").is_file() is not True:
-        print("Downloading MWA FEE model from Cerberus")
-        url = "http://cerberus.mwa128t.org/mwa_full_embedded_element_pattern.h5"
-        wget.download(url, f"{fee_dir}")
+    #if Path(f"{fee_dir}/mwa_full_embedded_element_pattern.h5").is_file() is not True:
+    #    print("Downloading MWA FEE model from Cerberus")
+    #    url = "http://cerberus.mwa128t.org/mwa_full_embedded_element_pattern.h5"
+    #    wget.download(url, f"{fee_dir}")
 
     tile = beam_full_EE.ApertureArray(MWAPY_H5PATH, freq)
     mybeam = beam_full_EE.Beam(tile, delays, amps)
@@ -104,9 +105,6 @@ def local_beam(
 if __name__ == "__main__":
 
     import argparse
-
-    sys.path.append("../decode_rf_data")
-    from colormap import jade
 
     # Custom spectral colormap
     jade, _ = jade()
