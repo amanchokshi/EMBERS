@@ -20,6 +20,9 @@ def install_mwa_pb():
     subprocess.run(["python", "setup.py", "install"])
     os.chdir("../")
     shutil.rmtree("./mwa_pb")
+
+    import mwa_pb
+
     fee_dir = Path(f"{os.path.dirname(mwa_pb.__file__)}/data")
     if Path(f"{fee_dir}/mwa_full_embedded_element_pattern.h5").is_file() is not True:
         print("Downloading MWA FEE model from Cerberus")
