@@ -4,14 +4,12 @@ MWA Pointings
 Tools to download metadata of the MWA telescope and extract its observational schedule
 
 """
-
 import json
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-import matplotlib as mpl
-mpl.use("Agg")
 
+import matplotlib as mpl
 import numpy as np
 import pytz
 import seaborn as sns
@@ -19,6 +17,8 @@ import wget
 from astropy.time import Time
 from embers.rf_tools.rf_data import tile_names, time_tree
 from matplotlib import pyplot as plt
+
+mpl.use("Agg")
 
 
 def download_meta(start, stop, num_pages, out_dir):

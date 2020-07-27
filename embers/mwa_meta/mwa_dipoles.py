@@ -8,14 +8,15 @@ Tools to download MWA metafits files and finding dead dipoles
 import json
 import time
 from pathlib import Path
-import matplotlib as mpl
-mpl.use("Agg")
 
+import matplotlib as mpl
 import numpy as np
 import wget
 from astropy.io import fits
 from matplotlib import pylab as pl
 from matplotlib import pyplot as plt
+
+mpl.use("Agg")
 
 
 def download_metafits(num_files, out_dir):
