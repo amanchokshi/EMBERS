@@ -9,6 +9,8 @@ import json
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
+import matplotlib as mpl
+mpl.use("Agg")
 
 import numpy as np
 import pytz
@@ -153,7 +155,7 @@ def combine_pointings(start_gps, stop_gps, obs_length, pointings, out_dir):
                 pointings[i] = None
 
     # Apply mask, couldn't think of a better way to implement this
-    good_idx = np.where(np.asarray(pointings) is not None)[0]
+    good_idx = np.where(np.asarray(pointings) != None)[0]
     start_gps = np.asarray(start_gps)[good_idx].tolist()
     stop_gps = np.asarray(stop_gps)[good_idx].tolist()
     obs_length = np.asarray(obs_length)[good_idx].tolist()
@@ -608,8 +610,8 @@ def mwa_point_meta(start, stop, num_pages, time_thresh, time_zone, rf_dir, out_d
     """
 
     # Download pointing metadata
-    #  download_meta(start, stop, num_pages, out_dir)
-    #  print("\nMetadata download complete")
+    download_meta(start, stop, num_pages, out_dir)
+    print("\nMetadata download complete")
 
     # Organize and combine metadata
     start_gps, stop_gps, obs_length, pointings = clean_meta_json(out_dir)
