@@ -40,12 +40,12 @@ def local_beam(
     amps=None,
 ):
     """Code pulled from mwapy that generates the MWA beam response - removes unecessary extra code from mwapy/pb
-        - delays is a 2x16 array, with the first 16 delays for the XX, 
+        - delays is a 2x16 array, with the first 16 delays for the XX,
           second 16 for the YY pol. values match what you find in the metafits file
         - amps are the amplitudes of each individual dipole, again in a 2x16,
             with XX first then YY"""
 
-    from mwa_pb import beam_full_EE, mwa_tile, primary_beam
+    from mwa_pb import beam_full_EE, mwa_tile
     from mwa_pb.mwa_sweet_spots import all_grid_points
 
     fee_dir = Path(f"{os.path.dirname(mwa_pb.__file__)}/data")
