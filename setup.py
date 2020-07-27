@@ -83,6 +83,9 @@ setup(
         "Topic :: Scientific/Engineering :: Astronomy",
         "Topic :: Scientific/Engineering :: Physics",
     ],
+    cmdclass={
+        'install': MWA_PB_INSTALL,
+    },
     entry_points={
         "console_scripts": [
             "colormaps=embers.kindle.colormaps:main",
