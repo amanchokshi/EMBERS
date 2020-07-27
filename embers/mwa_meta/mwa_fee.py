@@ -1,13 +1,30 @@
 import os
+import shutil
+import subprocess
+import sys
 from pathlib import Path
 
 import healpy as hp
 import mwa_pb
 import numpy as np
 import wget
+from git import Repo
 from matplotlib import pyplot as plt
-
 from plot_tile_maps import plot_healpix
+
+
+def install_mwa_pb():
+    Repo.clone_from("https://github.com/MWATelescope/mwa_pb", "mwa_pb")
+
+    os.chdir("mwa_pb")
+    subprocess.run(["python", "setup.py", "install"])
+    os.chdir("../")
+    shutil.rmtree("./mwa_pb")
+    fee_dir = Path(f"{os.path.dirname(mwa_pb.__file__)}/data")
+    if Path(f"{fee_dir}/mwa_full_embedded_element_pattern.h5").is_file() is not True:
+        print("Downloading MWA FEE model from Cerberus")
+        url = "http://cerberus.mwa128t.org/mwa_full_embedded_element_pattern.h5"
+        wget.download(url, f"{fee_dir}")
 
 
 def local_beam(
@@ -70,12 +87,9 @@ def local_beam(
 if __name__ == "__main__":
 
     import argparse
-    import sys
-    from pathlib import Path
 
     sys.path.append("../decode_rf_data")
     from colormap import jade
-    from matplotlib import pyplot as plt
 
     # Custom spectral colormap
     jade, _ = jade()
