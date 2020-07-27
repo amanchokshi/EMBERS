@@ -1,51 +1,14 @@
 import os
-#  import shutil
-import sys
 from pathlib import Path
 
 import healpy as hp
+import mwa_pb
 import numpy as np
-import wget
+from embers.rf_tools.colormaps import jade
 from embers.tile_maps.beam_utils import plot_healpix
-#  from git import Repo
 from matplotlib import pyplot as plt
 from mwa_pb import beam_full_EE, mwa_tile
 from mwa_pb.mwa_sweet_spots import all_grid_points
-from embers.rf_tools.colormaps import jade
-import mwa_pb
-# def install_mwa_pb():
-#
-#    Repo.clone_from("https://github.com/MWATelescope/mwa_pb", "mwa_pb")
-#
-#    os.chdir("mwa_pb")
-#    #  subprocess.run(["python", "setup.py", "install"])
-#    from pip._internal import main as pip
-#    pip(['install', '.'])
-#    os.chdir("../")
-#    shutil.rmtree("./mwa_pb")
-#
-#
-# def download_fee_model():
-#    try:
-#        import mwa_pb
-#
-#        fee_dir = Path(f"{os.path.dirname(mwa_pb.__file__)}/data")
-#        print(fee_dir)
-#        if Path(f"{fee_dir}/mwa_full_embedded_element_pattern.h5").is_file() is not True:
-#            print("Downloading MWA FEE model from Cerberus")
-#            url = "http://cerberus.mwa128t.org/mwa_full_embedded_element_pattern.h5"
-#            wget.download(url, f"{fee_dir}")
-#
-#    except ImportError:
-#        install_mwa_pb()
-#        import mwa_pb
-#
-#        fee_dir = Path(f"{os.path.dirname(mwa_pb.__file__)}/data")
-#        print(fee_dir)
-#        if Path(f"{fee_dir}/mwa_full_embedded_element_pattern.h5").is_file() is not True:
-#            print("Downloading MWA FEE model from Cerberus")
-#            url = "http://cerberus.mwa128t.org/mwa_full_embedded_element_pattern.h5"
-#            wget.download(url, f"{fee_dir}")
 
 
 def local_beam(
@@ -68,7 +31,7 @@ def local_beam(
 
     fee_dir = Path(f"{os.path.dirname(mwa_pb.__file__)}/data")
     MWAPY_H5PATH = f"{fee_dir}/mwa_full_embedded_element_pattern.h5"
-    #if Path(f"{fee_dir}/mwa_full_embedded_element_pattern.h5").is_file() is not True:
+    # if Path(f"{fee_dir}/mwa_full_embedded_element_pattern.h5").is_file() is not True:
     #    print("Downloading MWA FEE model from Cerberus")
     #    url = "http://cerberus.mwa128t.org/mwa_full_embedded_element_pattern.h5"
     #    wget.download(url, f"{fee_dir}")
@@ -79,7 +42,7 @@ def local_beam(
         j = mybeam.get_interp_response(az, za, pixels_per_deg)
     else:
         j = mybeam.get_response(az, za)
-    if zenithnorm == True:
+    if zenithnorm is True:
         j = tile.apply_zenith_norm_Jones(j)  # Normalise
 
     # Use swapaxis to place jones matrices in last 2 dimensions
