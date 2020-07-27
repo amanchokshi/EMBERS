@@ -1,33 +1,50 @@
 import os
-import shutil
-import subprocess
+#  import shutil
 import sys
 from pathlib import Path
 
 import healpy as hp
-import mwa_pb
 import numpy as np
 import wget
-from git import Repo
+from embers.tile_maps.beam_utils import plot_healpix
+#  from git import Repo
 from matplotlib import pyplot as plt
-from plot_tile_maps import plot_healpix
+from mwa_pb import beam_full_EE, mwa_tile
+from mwa_pb.mwa_sweet_spots import all_grid_points
 
-
-def install_mwa_pb():
-    Repo.clone_from("https://github.com/MWATelescope/mwa_pb", "mwa_pb")
-
-    os.chdir("mwa_pb")
-    subprocess.run(["python", "setup.py", "install"])
-    os.chdir("../")
-    shutil.rmtree("./mwa_pb")
-
-    import mwa_pb
-
-    fee_dir = Path(f"{os.path.dirname(mwa_pb.__file__)}/data")
-    if Path(f"{fee_dir}/mwa_full_embedded_element_pattern.h5").is_file() is not True:
-        print("Downloading MWA FEE model from Cerberus")
-        url = "http://cerberus.mwa128t.org/mwa_full_embedded_element_pattern.h5"
-        wget.download(url, f"{fee_dir}")
+# def install_mwa_pb():
+#
+#    Repo.clone_from("https://github.com/MWATelescope/mwa_pb", "mwa_pb")
+#
+#    os.chdir("mwa_pb")
+#    #  subprocess.run(["python", "setup.py", "install"])
+#    from pip._internal import main as pip
+#    pip(['install', '.'])
+#    os.chdir("../")
+#    shutil.rmtree("./mwa_pb")
+#
+#
+# def download_fee_model():
+#    try:
+#        import mwa_pb
+#
+#        fee_dir = Path(f"{os.path.dirname(mwa_pb.__file__)}/data")
+#        print(fee_dir)
+#        if Path(f"{fee_dir}/mwa_full_embedded_element_pattern.h5").is_file() is not True:
+#            print("Downloading MWA FEE model from Cerberus")
+#            url = "http://cerberus.mwa128t.org/mwa_full_embedded_element_pattern.h5"
+#            wget.download(url, f"{fee_dir}")
+#
+#    except ImportError:
+#        install_mwa_pb()
+#        import mwa_pb
+#
+#        fee_dir = Path(f"{os.path.dirname(mwa_pb.__file__)}/data")
+#        print(fee_dir)
+#        if Path(f"{fee_dir}/mwa_full_embedded_element_pattern.h5").is_file() is not True:
+#            print("Downloading MWA FEE model from Cerberus")
+#            url = "http://cerberus.mwa128t.org/mwa_full_embedded_element_pattern.h5"
+#            wget.download(url, f"{fee_dir}")
 
 
 def local_beam(
@@ -47,9 +64,6 @@ def local_beam(
           second 16 for the YY pol. values match what you find in the metafits file
         - amps are the amplitudes of each individual dipole, again in a 2x16,
             with XX first then YY"""
-
-    from mwa_pb import beam_full_EE, mwa_tile
-    from mwa_pb.mwa_sweet_spots import all_grid_points
 
     fee_dir = Path(f"{os.path.dirname(mwa_pb.__file__)}/data")
     MWAPY_H5PATH = f"{fee_dir}/mwa_full_embedded_element_pattern.h5"
