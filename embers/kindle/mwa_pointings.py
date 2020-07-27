@@ -32,19 +32,20 @@ _parser.add_argument(
     "--time_thresh",
     metavar="\b",
     type=int,
+    default=100,
     help="Minimum integration in hours, at a pointing",
 )
 _parser.add_argument(
     "--time_zone",
     metavar="\b",
     default="Australia/Perth",
-    help="pytz time zone where experiment was conducted",
+    help="pytz time zone where experiment was conducted. Default=Australia/Perth",
 )
 _parser.add_argument(
     "--rf_dir",
     metavar="\b",
     default="",
-    help="Path to rood of directory with raw rf data",
+    help="Path to root of directory with raw rf data",
 )
 _parser.add_argument(
     "--out_dir",
