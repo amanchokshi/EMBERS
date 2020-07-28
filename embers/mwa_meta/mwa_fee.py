@@ -30,7 +30,14 @@ def local_beam(
     pixels_per_deg=5,
     amps=None,
 ):
-    """Code pulled from mwapy that generates the MWA beam response - removes unecessary extra code from mwapy/pb
+    """
+    Code pulled from mwapy that generates the MWA beam response.
+
+    :param za: Zenith angle :class:`~list` of :class:`~numpy.ndarray`
+    :param az: Azimuth angle :class:`~list` of :class:`~numpy.ndarray`
+    :param freq: Frequency in :samp:`Hertz` at which to make the beam model
+
+
         - delays is a 2x16 array, with the first 16 delays for the XX,
           second 16 for the YY pol. values match what you find in the metafits file
         - amps are the amplitudes of each individual dipole, again in a 2x16,
