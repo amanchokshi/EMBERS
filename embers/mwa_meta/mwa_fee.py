@@ -81,44 +81,15 @@ def local_beam(
         return (vis[:, :, 0, 0].real, vis[:, :, 1, 1].real)
 
 
-if __name__ == "__main__":
+pointings = ["0", "2", "4", "41"]
 
-    import argparse
-
-    # Custom spectral colormap
-    jade, _ = jade()
-
-    parser = argparse.ArgumentParser(
-        description="""
-        Create Simulated MWA Beam response maps using mwapy
-        """
-    )
-
-    parser.add_argument(
-        "--out_dir",
-        metavar="\b",
-        default="./../../outputs/tile_maps/FEE_maps/",
-        help="Output directory. Default=./../../outputs/tile_maps/FEE_maps/",
-    )
-    parser.add_argument(
-        "--nside",
-        metavar="\b",
-        type=int,
-        default=32,
-        help="Healpix Nside. Default = 32",
-    )
-
-    args = parser.parse_args()
-
-    out_dir = Path(args.out_dir)
-    nside = args.nside
+def fee_beam_model(nside, pointings, out_dir):
 
     # make output directory if it doesn't exist
     Path(out_dir).mkdir(parents=True, exist_ok=True)
 
-    pointings = ["0", "2", "4", "41"]
-
     fee_beam = {}
+
     for p in pointings:
 
         # Empty array for model beam
@@ -131,19 +102,16 @@ if __name__ == "__main__":
         above_horizon = range(int(npix / 2))
         beam_zas, beam_azs = hp.pix2ang(nside, above_horizon)
 
-        delay_p = np.array([all_grid_points[int(p)][-1], all_grid_points[int(p)][-1]])
+        delay_point = np.array([all_grid_points[p][-1], all_grid_points[p][-1]])
 
-        # S21 had a missing dipole, so need a different amplitude array for the model
         amps = np.ones((2, 16))
-        # if AUT == 'S21XX':
-        #    amps[0,5] = 0
 
         # Make beam response
         response = local_beam(
             [list(beam_zas)],
             [list(beam_azs)],
             freq=137e6,
-            delays=delay_p,
+            delays=delay_point,
             zenithnorm=True,
             power=True,
             interp=False,
@@ -181,62 +149,164 @@ if __name__ == "__main__":
 
     np.savez_compressed(f"{out_dir}/mwa_fee_beam.npz", **fee_beam)
 
-    fee_beam_flagged = {}
-    for p in pointings:
 
-        # Empty array for model beam
-        npix = hp.nside2npix(nside)
-        beam_response_XX = np.zeros(npix)
-        beam_response_YY = np.zeros(npix)
-
-        # healpix indices above horizon
-        # convert to zenith angle and azimuth
-        above_horizon = range(int(npix / 2))
-        beam_zas, beam_azs = hp.pix2ang(nside, above_horizon)
-
-        delay_p = np.array([all_grid_points[int(p)][-1], all_grid_points[int(p)][-1]])
-
-        # S21 had a missing dipole, so need a different amplitude array for the model
-        amps = np.ones((2, 16))
-        amps[1, 8] = 0
-
-        # Make beam response
-        response = local_beam(
-            [list(beam_zas)],
-            [list(beam_azs)],
-            freq=137e6,
-            delays=delay_p,
-            zenithnorm=True,
-            power=True,
-            interp=False,
-            amps=amps,
-        )
-        response_XX = response[0][0]
-        response_YY = response[1][0]
-
-        # Stick in an array, convert to decibels, and noralise
-        beam_response_XX[above_horizon] = response_XX
-        decibel_beam_XX = 10 * np.log10(beam_response_XX)
-        normed_beam_XX = decibel_beam_XX - decibel_beam_XX.max()
-
-        beam_response_YY[above_horizon] = response_YY
-        decibel_beam_YY = 10 * np.log10(beam_response_YY)
-        normed_beam_YY = decibel_beam_YY - decibel_beam_YY.max()
-
-        fee_beam_flagged[p] = [normed_beam_XX, normed_beam_YY]
-
-        # fig = plt.figure(figsize=(9,10))
-        # fig.suptitle(f'MWA FEE MAP @ pointing [{p}] XX', fontsize=16, y=1.0)
-        # plot_healpix(data_map=normed_beam_XX, sub=(1,1,1), cmap=jade, vmin=-50, vmax=0)
-        # plt.savefig(f'{out_dir}/mwa_fee_beam_{p}_XX.png')
-        # plt.close()
-
-        fig = plt.figure(figsize=(9, 10))
-        fig.suptitle(f"MWA FEE MAP @ pointing [{p}] YY", fontsize=16, y=1.0)
-        plot_healpix(
-            data_map=normed_beam_YY, sub=(1, 1, 1), cmap=jade, vmin=-50, vmax=0
-        )
-        plt.savefig(f"{out_dir}/mwa_fee_beam_{p}_YY_9_flagged.png")
-        plt.close()
-
-    np.savez_compressed(f"{out_dir}/mwa_fee_beam_9_flagged.npz", **fee_beam_flagged)
+# if __name__ == "__main__":
+#
+#    import argparse
+#
+#    # Custom spectral colormap
+#    jade, _ = jade()
+#
+#    parser = argparse.ArgumentParser(
+#        description="""
+#        Create Simulated MWA Beam response maps using mwapy
+#        """
+#    )
+#
+#    parser.add_argument(
+#        "--out_dir",
+#        metavar="\b",
+#        default="./../../outputs/tile_maps/FEE_maps/",
+#        help="Output directory. Default=./../../outputs/tile_maps/FEE_maps/",
+#    )
+#    parser.add_argument(
+#        "--nside",
+#        metavar="\b",
+#        type=int,
+#        default=32,
+#        help="Healpix Nside. Default = 32",
+#    )
+#
+#    args = parser.parse_args()
+#
+#    out_dir = Path(args.out_dir)
+#    nside = args.nside
+#
+#    # make output directory if it doesn't exist
+#    Path(out_dir).mkdir(parents=True, exist_ok=True)
+#
+#    pointings = ["0", "2", "4", "41"]
+#
+#    fee_beam = {}
+#    for p in pointings:
+#
+#        # Empty array for model beam
+#        npix = hp.nside2npix(nside)
+#        beam_response_XX = np.zeros(npix)
+#        beam_response_YY = np.zeros(npix)
+#
+#        # healpix indices above horizon
+#        # convert to zenith angle and azimuth
+#        above_horizon = range(int(npix / 2))
+#        beam_zas, beam_azs = hp.pix2ang(nside, above_horizon)
+#
+#        delay_p = np.array([all_grid_points[int(p)][-1], all_grid_points[int(p)][-1]])
+#
+#        # S21 had a missing dipole, so need a different amplitude array for the model
+#        amps = np.ones((2, 16))
+#        # if AUT == 'S21XX':
+#        #    amps[0,5] = 0
+#
+#        # Make beam response
+#        response = local_beam(
+#            [list(beam_zas)],
+#            [list(beam_azs)],
+#            freq=137e6,
+#            delays=delay_p,
+#            zenithnorm=True,
+#            power=True,
+#            interp=False,
+#            amps=amps,
+#        )
+#        response_XX = response[0][0]
+#        response_YY = response[1][0]
+#
+#        # Stick in an array, convert to decibels, and noralise
+#        beam_response_XX[above_horizon] = response_XX
+#        decibel_beam_XX = 10 * np.log10(beam_response_XX)
+#        normed_beam_XX = decibel_beam_XX - decibel_beam_XX.max()
+#
+#        beam_response_YY[above_horizon] = response_YY
+#        decibel_beam_YY = 10 * np.log10(beam_response_YY)
+#        normed_beam_YY = decibel_beam_YY - decibel_beam_YY.max()
+#
+#        fee_beam[p] = [normed_beam_XX, normed_beam_YY]
+#
+#        fig = plt.figure(figsize=(9, 10))
+#        fig.suptitle(f"MWA FEE MAP @ pointing [{p}] XX", fontsize=16, y=1.0)
+#        plot_healpix(
+#            data_map=normed_beam_XX, sub=(1, 1, 1), cmap=jade, vmin=-50, vmax=0
+#        )
+#        plt.savefig(f"{out_dir}/mwa_fee_beam_{p}_XX.png")
+#        plt.close()
+#
+#        fig = plt.figure(figsize=(9, 10))
+#        fig.suptitle(f"MWA FEE MAP @ pointing [{p}] YY", fontsize=16, y=1.0)
+#        plot_healpix(
+#            data_map=normed_beam_YY, sub=(1, 1, 1), cmap=jade, vmin=-50, vmax=0
+#        )
+#        plt.savefig(f"{out_dir}/mwa_fee_beam_{p}_YY.png")
+#        plt.close()
+#
+#    np.savez_compressed(f"{out_dir}/mwa_fee_beam.npz", **fee_beam)
+#
+#    #####################
+#    fee_beam_flagged = {}
+#    for p in pointings:
+#
+#        # Empty array for model beam
+#        npix = hp.nside2npix(nside)
+#        beam_response_XX = np.zeros(npix)
+#        beam_response_YY = np.zeros(npix)
+#
+#        # healpix indices above horizon
+#        # convert to zenith angle and azimuth
+#        above_horizon = range(int(npix / 2))
+#        beam_zas, beam_azs = hp.pix2ang(nside, above_horizon)
+#
+#        delay_p = np.array([all_grid_points[int(p)][-1], all_grid_points[int(p)][-1]])
+#
+#        # S21 had a missing dipole, so need a different amplitude array for the model
+#        amps = np.ones((2, 16))
+#        amps[1, 8] = 0
+#
+#        # Make beam response
+#        response = local_beam(
+#            [list(beam_zas)],
+#            [list(beam_azs)],
+#            freq=137e6,
+#            delays=delay_p,
+#            zenithnorm=True,
+#            power=True,
+#            interp=False,
+#            amps=amps,
+#        )
+#        response_XX = response[0][0]
+#        response_YY = response[1][0]
+#
+#        # Stick in an array, convert to decibels, and noralise
+#        beam_response_XX[above_horizon] = response_XX
+#        decibel_beam_XX = 10 * np.log10(beam_response_XX)
+#        normed_beam_XX = decibel_beam_XX - decibel_beam_XX.max()
+#
+#        beam_response_YY[above_horizon] = response_YY
+#        decibel_beam_YY = 10 * np.log10(beam_response_YY)
+#        normed_beam_YY = decibel_beam_YY - decibel_beam_YY.max()
+#
+#        fee_beam_flagged[p] = [normed_beam_XX, normed_beam_YY]
+#
+#        # fig = plt.figure(figsize=(9,10))
+#        # fig.suptitle(f'MWA FEE MAP @ pointing [{p}] XX', fontsize=16, y=1.0)
+#        # plot_healpix(data_map=normed_beam_XX, sub=(1,1,1), cmap=jade, vmin=-50, vmax=0)
+#        # plt.savefig(f'{out_dir}/mwa_fee_beam_{p}_XX.png')
+#        # plt.close()
+#
+#        fig = plt.figure(figsize=(9, 10))
+#        fig.suptitle(f"MWA FEE MAP @ pointing [{p}] YY", fontsize=16, y=1.0)
+#        plot_healpix(
+#            data_map=normed_beam_YY, sub=(1, 1, 1), cmap=jade, vmin=-50, vmax=0
+#        )
+#        plt.savefig(f"{out_dir}/mwa_fee_beam_{p}_YY_9_flagged.png")
+#        plt.close()
+#
+#    np.savez_compressed(f"{out_dir}/mwa_fee_beam_9_flagged.npz", **fee_beam_flagged)
