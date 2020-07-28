@@ -101,8 +101,7 @@ def epoch_time_array(epoch_range, index_epoch=None, cadence=None):
     :samp:`./embers_out/sat_utils/skyfield-data`.
 
     For a particular time inverval in :samp:`epoch_range`, chosen by :samp:`index_epoch`, a
-    Skyfield :class:`~skyfield.timelib.Timescale` array object is generated, at a given time :samp:`cadence`. This time array will be used by \n
-    :func:`~embers.sat_utils.sat_ephemeris.sat_pass` to compute the position of satellites at each time.
+    Skyfield :class:`~skyfield.timelib.Timescale` array object is generated, at a given time :samp:`cadence`. This time array will be used by :func:`~embers.sat_utils.sat_ephemeris.sat_pass` to compute the position of satellites at each time.
 
     .. code-block:: python
 
@@ -189,8 +188,7 @@ def sat_pass(sats, t_arr, index_epoch, location=None):
     :param sats: list of :class:`~skyfield.sgp4lib.EarthSatellite` objects
     :param t_arr: skyfield :class:`~skyfield.timelib.Timescale` object with array of times
     :param index_epoch: Index of :samp:`epoch_range` :class:`~int`
-    :param location: The :samp:`gps` coordinates of the :samp:`location` at which satellite passes are to be computed. :samp:`location` is a :class:`~tuple` \n
-    in the format (:samp:`latitude`, :samp:`longitude`, :samp:`elevation`), with :samp:`elevation` given in :samp:`meters`
+    :param location: The :samp:`gps` coordinates of the :samp:`location` at which satellite passes are to be computed. :samp:`location` is a :class:`~tuple` in the format (:samp:`latitude`, :samp:`longitude`, :samp:`elevation`), with :samp:`elevation` given in :samp:`meters`
 
     :returns:
         A :class:`~tuple` of (passes, alt, az)
@@ -346,8 +344,7 @@ def save_ephem(sat, tle_dir, cadence, location, alpha, out_dir):
     :param sat: NORAD Catalogue ID of satellite :class:`~str`
     :param tle_dir: path to directory where :samp:`TLE` files are saved :class:`~str`
     :param cadence: time cadence at which to evaluate sat position, in seconds :class:`~int`
-    :param location: The :samp:`gps` coordinates of the :samp:`location` at which satellite passes are to be computed. :samp:`location` \n
-    is a :class:`~tuple` in the format (:samp:`latitude`, :samp:`longitude`, :samp:`elevation`), with :samp:`elevation` given in :samp:`meters`
+    :param location: The :samp:`gps` coordinates of the :samp:`location` at which satellite passes are to be computed. :samp:`location` is a :class:`~tuple` in the format (:samp:`latitude`, :samp:`longitude`, :samp:`elevation`), with :samp:`elevation` given in :samp:`meters`
     :param alpha: transparency of individual passes in :func:`~embers.sat_utils.sat_ephemeris.sat_plot` default=0.5
     :param out_dir: path to output directory :class:`~str`
 
