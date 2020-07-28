@@ -83,10 +83,32 @@ def local_beam(
 
 pointings = ["0", "2", "4", "41"]
 
-def fee_beam_model(nside, pointings, out_dir):
 
+def fee_beam_model(out_dir, nside, pointings=[], flags=[]):
+    """
+    Create MWA FEE beam models at multiple pointings, with dipoles flagged.
+
+    :param out_dir: Path to output directory where beam maps and sample plots  will be saved
+    :param nside: The :samp:`NSIDE` of healpix output map :class:`~int`
+    :param pointings: :class:`~list` of pointings at which to make beam maps
+    :param flags: :class:`~list` of dipoles which are to be flagged with values from 1 to 32. 1-16 are dipoles of XX pol while 17-32 are for YY. Ex: flags=[1,17] represents the first dipole of the XX & YY tiles as being flagged and having a amplitude of 0
+
+    """
     # make output directory if it doesn't exist
     Path(out_dir).mkdir(parents=True, exist_ok=True)
+
+    if len(pointings) == 0:
+        pointings = [0, 2, 4, 41]
+
+    # Default amplitudes of 1 for all dipoles
+    amps = np.ones((2, 16))
+
+    # Assign aplitudes of 0 to dipoles identified in flags
+    if len(flags) != 0:
+        xx_flags = [f - 1 for f in flags if f <= 16]
+        yy_flags = [f - 17 for f in flags if f > 16]
+        amps[0][xx_flags] = 0
+        amps[1][yy_flags] = 0
 
     fee_beam = {}
 
@@ -102,9 +124,8 @@ def fee_beam_model(nside, pointings, out_dir):
         above_horizon = range(int(npix / 2))
         beam_zas, beam_azs = hp.pix2ang(nside, above_horizon)
 
+        # Sweet-spot pointing delays from mwa_pb
         delay_point = np.array([all_grid_points[p][-1], all_grid_points[p][-1]])
-
-        amps = np.ones((2, 16))
 
         # Make beam response
         response = local_beam(
@@ -129,7 +150,7 @@ def fee_beam_model(nside, pointings, out_dir):
         decibel_beam_YY = 10 * np.log10(beam_response_YY)
         normed_beam_YY = decibel_beam_YY - decibel_beam_YY.max()
 
-        fee_beam[p] = [normed_beam_XX, normed_beam_YY]
+        fee_beam[str(p)] = [normed_beam_XX, normed_beam_YY]
 
         fig = plt.figure(figsize=(9, 10))
         fig.suptitle(f"MWA FEE MAP @ pointing [{p}] XX", fontsize=16, y=1.0)
@@ -149,6 +170,8 @@ def fee_beam_model(nside, pointings, out_dir):
 
     np.savez_compressed(f"{out_dir}/mwa_fee_beam.npz", **fee_beam)
 
+
+fee_beam_model("./test", 32, flags=[9])
 
 # if __name__ == "__main__":
 #
