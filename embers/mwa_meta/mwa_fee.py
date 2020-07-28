@@ -44,6 +44,9 @@ def local_beam(
     :param pixels_per_deg: Interpolate the beam to this scale, :class:`~int`
     :param amps: Amplitudes of individual dipoles, again in a 2x16, with XX first then YY
 
+    :return:
+        XX and YY beam models. By default Power beams are returned, but Jones matrices are also possible.
+
     """
 
     fee_dir = Path(f"{os.path.dirname(mwa_pb.__file__)}/data")
