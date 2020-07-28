@@ -36,19 +36,18 @@ def local_beam(
     :param za: Zenith angle :class:`~list` of :class:`~numpy.ndarray`
     :param az: Azimuth angle :class:`~list` of :class:`~numpy.ndarray`
     :param freq: Frequency in :samp:`Hertz` at which to make the beam model
+    :param delays: 2x16 array, with the first 16 for XX and second 16 for YY pol. Values match those found in metafits files (1-32) with 1 being normal and 32 being flagged / dead
+    :param zenithnorm: Normalise zenith power, :samp:`True` by default
+    :param power: If :samp:`True`, make power beam model
+    :param jones: If :samp:`True`, make jones beam model
+    :param interp: If :samp:`True`, interpolate beam to :samp:`pixels_per_deg`
+    :param pixels_per_deg: Interpolate the beam to this scale, :class:`~int`
+    :param amps: Amplitudes of individual dipoles, again in a 2x16, with XX first then YY
 
-
-        - delays is a 2x16 array, with the first 16 delays for the XX,
-          second 16 for the YY pol. values match what you find in the metafits file
-        - amps are the amplitudes of each individual dipole, again in a 2x16,
-            with XX first then YY"""
+    """
 
     fee_dir = Path(f"{os.path.dirname(mwa_pb.__file__)}/data")
     MWAPY_H5PATH = f"{fee_dir}/mwa_full_embedded_element_pattern.h5"
-    # if Path(f"{fee_dir}/mwa_full_embedded_element_pattern.h5").is_file() is not True:
-    #    print("Downloading MWA FEE model from Cerberus")
-    #    url = "http://cerberus.mwa128t.org/mwa_full_embedded_element_pattern.h5"
-    #    wget.download(url, f"{fee_dir}")
 
     tile = beam_full_EE.ApertureArray(MWAPY_H5PATH, freq)
     mybeam = beam_full_EE.Beam(tile, delays, amps)
