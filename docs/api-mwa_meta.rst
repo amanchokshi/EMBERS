@@ -22,3 +22,5 @@
 .. autofunction:: embers.mwa_meta.mwa_dipoles.find_flags
 .. autofunction:: embers.mwa_meta.mwa_dipoles.mwa_flagged_dipoles
 
+.. automodule:: embers.mwa_meta.mwa_fee
+.. autofunction:: embers.mwa_meta.mwa_fee.local_beam

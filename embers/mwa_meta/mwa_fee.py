@@ -1,3 +1,10 @@
+"""
+MWA FEE
+-------
+Tool to create XX & YY FEE (Fully Embedded Element) simulated beam maps.
+
+"""
+
 import os
 from pathlib import Path
 
