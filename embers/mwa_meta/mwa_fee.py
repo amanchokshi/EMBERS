@@ -84,7 +84,7 @@ def local_beam(
 pointings = ["0", "2", "4", "41"]
 
 
-def fee_beam_model(out_dir, nside, pointings=[], flags=[]):
+def mwa_fee_model(out_dir, nside, pointings=[], flags=[]):
     """
     Create MWA FEE beam models at multiple pointings, with dipoles flagged.
 
