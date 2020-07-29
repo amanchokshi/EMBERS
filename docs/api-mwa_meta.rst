@@ -24,4 +24,4 @@
 
 .. automodule:: embers.mwa_meta.mwa_fee
 .. autofunction:: embers.mwa_meta.mwa_fee.local_beam
-.. autofunction:: embers.mwa_meta.mwa_fee.fee_beam_model
+.. autofunction:: embers.mwa_meta.mwa_fee.mwa_fee_model

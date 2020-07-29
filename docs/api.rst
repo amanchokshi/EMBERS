@@ -84,7 +84,7 @@ MWA Meta
     mwa_dipoles.find_flags
     mwa_dipoles.mwa_flagged_dipoles
     mwa_fee.local_beam
-    mwa_fee.fee_beam_model
+    mwa_fee.mwa_fee_model
 
 
 Tile Maps
