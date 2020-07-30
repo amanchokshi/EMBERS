@@ -100,7 +100,11 @@ def mwa_fee_model(out_dir, nside, pointings=[], flags=[]):
 
     """
     # make output directory if it doesn't exist
-    Path(f"{out_dir}/mwa_fee").mkdir(parents=True, exist_ok=True)
+    out_dir = f"{out_dir}/mwa_fee"
+    Path(out_dir).mkdir(parents=True, exist_ok=True)
+
+    # Custom Jade colormap
+    jd, _ = jade()
 
     if len(pointings) == 0:
         pointings = [0, 2, 4, 41]
@@ -160,7 +164,7 @@ def mwa_fee_model(out_dir, nside, pointings=[], flags=[]):
         fig = plt.figure(figsize=(9, 10))
         fig.suptitle(f"MWA FEE MAP @ pointing [{p}] XX", fontsize=16, y=1.0)
         plot_healpix(
-            data_map=normed_beam_XX, sub=(1, 1, 1), cmap=jade, vmin=-50, vmax=0
+            data_map=normed_beam_XX, sub=(1, 1, 1), cmap=jd, vmin=-50, vmax=0
         )
         plt.savefig(f"{out_dir}/mwa_fee_beam_{p}_XX.png")
         plt.close()
@@ -168,7 +172,7 @@ def mwa_fee_model(out_dir, nside, pointings=[], flags=[]):
         fig = plt.figure(figsize=(9, 10))
         fig.suptitle(f"MWA FEE MAP @ pointing [{p}] YY", fontsize=16, y=1.0)
         plot_healpix(
-            data_map=normed_beam_YY, sub=(1, 1, 1), cmap=jade, vmin=-50, vmax=0
+            data_map=normed_beam_YY, sub=(1, 1, 1), cmap=jd, vmin=-50, vmax=0
         )
         plt.savefig(f"{out_dir}/mwa_fee_beam_{p}_YY.png")
         plt.close()
