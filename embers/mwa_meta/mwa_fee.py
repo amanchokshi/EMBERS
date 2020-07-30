@@ -161,20 +161,17 @@ def mwa_fee_model(out_dir, nside, pointings=[], flags=[]):
 
         fee_beam[str(p)] = [normed_beam_XX, normed_beam_YY]
 
-        fig = plt.figure(figsize=(9, 10))
-        fig.suptitle(f"MWA FEE MAP @ pointing [{p}] XX", fontsize=16, y=1.0)
-        plot_healpix(
-            data_map=normed_beam_XX, sub=(1, 1, 1), cmap=jd, vmin=-50, vmax=0
-        )
-        plt.savefig(f"{out_dir}/mwa_fee_beam_{p}_XX.png")
+        plt.style.use("seaborn")
+        fig = plt.figure(figsize=(6, 6))
+        fig.suptitle(f"MWA FEE MAP @ pointing [{p}] XX", fontsize=16, y=0.92)
+        plot_healpix(data_map=normed_beam_XX, sub=(1, 1, 1), cmap=jd, vmin=-50, vmax=0)
+        plt.savefig(f"{out_dir}/mwa_fee_beam_{p}_XX.png", bbox_inches="tight")
         plt.close()
 
-        fig = plt.figure(figsize=(9, 10))
-        fig.suptitle(f"MWA FEE MAP @ pointing [{p}] YY", fontsize=16, y=1.0)
-        plot_healpix(
-            data_map=normed_beam_YY, sub=(1, 1, 1), cmap=jd, vmin=-50, vmax=0
-        )
-        plt.savefig(f"{out_dir}/mwa_fee_beam_{p}_YY.png")
+        fig = plt.figure(figsize=(6, 6))
+        fig.suptitle(f"MWA FEE MAP @ pointing [{p}] YY", fontsize=16, y=0.92)
+        plot_healpix(data_map=normed_beam_YY, sub=(1, 1, 1), cmap=jd, vmin=-50, vmax=0)
+        plt.savefig(f"{out_dir}/mwa_fee_beam_{p}_YY.png", bbox_inches="tight")
         plt.close()
 
     np.savez_compressed(f"{out_dir}/mwa_fee_beam.npz", **fee_beam)
