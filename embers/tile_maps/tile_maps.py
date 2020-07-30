@@ -1,29 +1,33 @@
-import sys
-import json
 import argparse
+import json
+import sys
+
+import healpy as hp
 import matplotlib
 import numpy as np
-import healpy as hp
 
 matplotlib.use("Agg")
-from pathlib import Path
 import concurrent.futures
-import scipy.optimize as opt
-from null_test import rotate
-import matplotlib.pyplot as plt
+from pathlib import Path
+from matplotlib import pyplot as plt
+from scipy import optimize as opt
 from scipy.stats import chisquare
 from scipy.stats import median_absolute_deviation as mad
+
+from null_test import rotate
 
 sys.path.append("../sat_ephemeris")
 from sat_ids import norad_ids
 
 sys.path.append("../sat_channels")
-from sat_channels import time_tree, time_filter
+from sat_channels import time_filter, time_tree
 
 # Custom spectral colormap
 sys.path.append("../decode_rf_data")
-from rf_data import tile_names
 from colormap import spectral
+from rf_data import tile_names
+
+from embers.sat_utils.sat_channels import noise_floor
 
 cmap = spectral()
 
@@ -51,28 +55,6 @@ def read_aligned(ali_file=None):
     times = paired_data["time_array"]
 
     return [ref_p, tile_p, times]
-
-
-def noise_floor(sat_thresh, noi_thresh, data=None):
-    """Computes the noise floor of the data """
-
-    # compute the standard deviation of data, and use it to identify occupied channels
-    σ = np.std(data)
-
-    # Any channel with a max power >= σ has a satellite
-    sat_cut = sat_thresh * σ
-    chans_pow_max = np.amax(data, axis=0)
-
-    # Exclude the channels with sats, to only have noise data
-    noise_chans = np.where(chans_pow_max < sat_cut)[0]
-    noise_data = data[:, noise_chans]
-
-    # noise median, noise mad, noise threshold = μ + 3*σ
-    μ_noise = np.median(noise_data)
-    σ_noise = mad(noise_data, axis=None)
-    noise_threshold = μ_noise + noi_thresh * σ_noise
-
-    return (data, noise_threshold)
 
 
 # chisquared minimization to best fit map to data
