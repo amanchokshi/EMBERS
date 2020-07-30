@@ -66,7 +66,7 @@ Sat Utils
 MWA Meta
 ========
 
-.. currentmodule:: embers.mwa_meta
+.. currentmodule:: embers.mwa_utils
 
 .. autosummary::
 

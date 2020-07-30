@@ -13,7 +13,7 @@ Welcome to the documentation for EMBERS.
    api
    api-rf_tools
    api-sat_utils
-   api-mwa_meta
+   api-mwa_utils
    api-tile_maps
    api-kindle
    
