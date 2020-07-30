@@ -1,3 +1,11 @@
+"""
+Beam Utils
+----------
+
+A set of tools used to create and visualize tile maps
+
+"""
+
 import healpy as hp
 import numpy as np
 
