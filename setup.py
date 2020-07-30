@@ -69,6 +69,7 @@ setup(
             "sat_channels=embers.kindle.sat_channels:main",
             "mwa_pointings=embers.kindle.mwa_pointings:main",
             "mwa_dipoles=embers.kindle.mwa_dipoles:main",
+            "mwa_fee=embers.kindle.mwa_fee:main",
         ],
     },
     keywords=("embers radio astronomy satellites beam measurement"),
