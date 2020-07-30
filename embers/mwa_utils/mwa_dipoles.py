@@ -24,7 +24,7 @@ def download_metafits(num_files, out_dir):
     Download metafits files from `mwatelescope.org <http://mwatelescope.org/>`_
 
     This function requires a list of obsids which it reads from :samp:`out_dir`.
-    Before running functions in this module, run :mod:`~embers.mwa_meta.mwa_pointings` to
+    Before running functions in this module, run :mod:`~embers.mwa_utils.mwa_pointings` to
     created the required obsid files.
 
     :param num_files: The number of metafits files to download. Usually, 20 is sufficent :class:`~int`

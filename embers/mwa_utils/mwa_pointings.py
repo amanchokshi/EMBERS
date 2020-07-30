@@ -492,7 +492,7 @@ def tile_integration(out_dir, rf_dir):
 def plt_hist_array(tile_ints, out_dir):
     """A massive grid of histograms with a subplot for pointing integration of each tile.
 
-    :param tile_ints: :class:`~dict` from :func:`~embers.mwa_meta.mwa_pointings.tile_integration`
+    :param tile_ints: :class:`~dict` from :func:`~embers.mwa_utils.mwa_pointings.tile_integration`
     :param out_dir: Path to output directory :class:`~str`
 
     :returns:
