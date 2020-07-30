@@ -25,7 +25,7 @@ mpl.use("Agg")
 
 
 def read_aligned(ali_file=None):
-    """Read aligned reference data from :func:`~embers.rf_tools.align_data.save_aligned` :samp:`npz` file
+    """Read aligned data from :func:`~embers.rf_tools.align_data.save_aligned` :samp:`npz` file
 
     :param ali_file: path to a :func:`~embers.rf_tools.align_data.save_aligned` :samp:`npz` file :class:`~str`
 
