@@ -90,6 +90,12 @@ MWA Meta
 Tile Maps
 =========
 
+   .. currentmodule:: embers.tile_maps
+
+.. autosummary::
+
+    beam_utils.plot_healpix
+
 
 Kindle
 ======

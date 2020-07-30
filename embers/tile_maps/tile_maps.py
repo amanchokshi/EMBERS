@@ -89,7 +89,7 @@ def plt_channel(
 ):
 
     """Plot power in channel, with various thresholds
-    
+
     Args:
         times:          Time array
         channel_power:  Power in channel
@@ -136,8 +136,8 @@ def plt_channel(
     leg = ax1.legend(frameon=True)
     leg.get_frame().set_facecolor("grey")
     leg.get_frame().set_alpha(0.2)
-    for l in leg.legendHandles:
-        l.set_alpha(1)
+    for le in leg.legendHandles:
+        le.set_alpha(1)
 
     ax2 = fig.add_subplot(2, 1, 2)
     ax2.plot(
@@ -165,8 +165,8 @@ def plt_channel(
     leg = ax2.legend(frameon=True)
     leg.get_frame().set_facecolor("grey")
     leg.get_frame().set_alpha(0.2)
-    for l in leg.legendHandles:
-        l.set_alpha(1)
+    for le in leg.legendHandles:
+        le.set_alpha(1)
 
     plt.tight_layout()
     plt.subplots_adjust(top=0.94)
@@ -189,8 +189,6 @@ def plt_fee_fit(
         t, mwa_fee_pass, color="#c70039", alpha=0.6, marker=".", label="fee_slice"
     )
 
-    where_nan = np.isnan(mwa_pass_fit)
-
     ax1.scatter(
         t, mwa_pass_fit_raw, color="#7da87b", alpha=0.9, marker=".", label="RFE raw"
     )
@@ -204,8 +202,8 @@ def plt_fee_fit(
     leg = ax1.legend(frameon=True)
     leg.get_frame().set_facecolor("grey")
     leg.get_frame().set_alpha(0.2)
-    for l in leg.legendHandles:
-        l.set_alpha(1)
+    for le in leg.legendHandles:
+        le.set_alpha(1)
 
     plt.title(f"Goodness of Fit: {pval} ")
     plt.tight_layout()
@@ -240,7 +238,7 @@ def power_ephem(
 
         intvl = time_filter(rise_ephem, set_ephem, np.asarray(times))
 
-        if intvl != None:
+        if intvl is not None:
 
             w_start, w_stop = intvl
 
