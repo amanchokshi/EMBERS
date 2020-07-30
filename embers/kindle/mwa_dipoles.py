@@ -8,7 +8,7 @@ Download MWA metafits files and determine flagged dipoles in the tiles
 
 import argparse
 
-from embers.mwa_meta.mwa_dipoles import mwa_flagged_dipoles
+from embers.mwa_utils.mwa_dipoles import mwa_flagged_dipoles
 
 _parser = argparse.ArgumentParser(
     description="""
@@ -26,8 +26,8 @@ _parser.add_argument(
 _parser.add_argument(
     "--out_dir",
     metavar="\b",
-    default="./embers_out/mwa_meta",
-    help="Dir where MWA metadata will be saved. Default=./embers_out/mwa_meta",
+    default="./embers_out/mwa_utils",
+    help="Dir where MWA metadata will be saved. Default=./embers_out/mwa_utils",
 )
 
 _args = _parser.parse_args()

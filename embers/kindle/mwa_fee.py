@@ -7,7 +7,7 @@ Tool to create XX & YY FEE (Fully Embedded Element) simulated beam maps.
 
 import argparse
 
-from embers.mwa_meta.mwa_fee import mwa_fee_model
+from embers.mwa_utils.mwa_fee import mwa_fee_model
 
 _parser = argparse.ArgumentParser(
     description="""
@@ -42,8 +42,8 @@ _parser.add_argument(
 _parser.add_argument(
     "--out_dir",
     metavar="\b",
-    default="./embers_out/mwa_meta",
-    help="Dir where MWA FEE models will be saved. Default=./embers_out/mwa_meta",
+    default="./embers_out/mwa_utils",
+    help="Dir where MWA FEE models will be saved. Default=./embers_out/mwa_utils",
 )
 
 _args = _parser.parse_args()
