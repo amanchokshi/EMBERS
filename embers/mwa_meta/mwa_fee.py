@@ -100,7 +100,7 @@ def mwa_fee_model(out_dir, nside, pointings=[], flags=[]):
 
     """
     # make output directory if it doesn't exist
-    Path(out_dir).mkdir(parents=True, exist_ok=True)
+    Path(f"{out_dir}/mwa_fee").mkdir(parents=True, exist_ok=True)
 
     if len(pointings) == 0:
         pointings = [0, 2, 4, 41]
