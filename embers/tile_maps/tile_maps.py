@@ -1,35 +1,24 @@
 import argparse
+import concurrent.futures
 import json
 import sys
+from pathlib import Path
 
 import healpy as hp
 import matplotlib
 import numpy as np
-
-matplotlib.use("Agg")
-import concurrent.futures
-from pathlib import Path
+from embers.rf_tools.colormap import spectral
+from embers.sat_utils.sat_channels import (noise_floor, read_aligned,
+                                           time_filter, time_tree)
+from embers.sat_utils.sat_list import norad_ids
+from embers.tile_maps.null_test import rotate
+from ermbers.rf_tools.rf_data import tile_names
 from matplotlib import pyplot as plt
 from scipy import optimize as opt
 from scipy.stats import chisquare
-from scipy.stats import median_absolute_deviation as mad
 
-from null_test import rotate
-
-sys.path.append("../sat_ephemeris")
-from sat_ids import norad_ids
-
-sys.path.append("../sat_channels")
-from sat_channels import time_filter, time_tree
-
-# Custom spectral colormap
-sys.path.append("../decode_rf_data")
-from colormap import spectral
-from rf_data import tile_names
-
-from embers.sat_utils.sat_channels import noise_floor
-
-cmap = spectral()
+matplotlib.use("Agg")
+cmap, _ = spectral()
 
 
 def check_pointing(timestamp, point_0, point_2, point_4, point_41):
@@ -44,17 +33,6 @@ def check_pointing(timestamp, point_0, point_2, point_4, point_41):
         point = 41
 
     return point
-
-
-def read_aligned(ali_file=None):
-    """Read aligned data npz file"""
-    paired_data = np.load(ali_file, allow_pickle=True)
-
-    ref_p = paired_data["ref_p_aligned"]
-    tile_p = paired_data["tile_p_aligned"]
-    times = paired_data["time_array"]
-
-    return [ref_p, tile_p, times]
 
 
 # chisquared minimization to best fit map to data
