@@ -24,7 +24,7 @@ from scipy.stats import median_absolute_deviation as mad
 mpl.use("Agg")
 
 
-def read_ref_aligned(ali_file=None):
+def read_aligned(ali_file=None):
     """Read aligned reference data from :func:`~embers.rf_tools.align_data.save_aligned` :samp:`npz` file
 
     :param ali_file: path to a :func:`~embers.rf_tools.align_data.save_aligned` :samp:`npz` file :class:`~str`
@@ -32,17 +32,19 @@ def read_ref_aligned(ali_file=None):
     :returns:
         A :class:`~tuple` (power, times)
 
-        - power: a smoothed reference power array :class:`~numpy.ndarry`
+        - ref_pow: a smoothed reference power array :class:`~numpy.ndarry`
+        - tile_pow: a smoothed tile power array :class:`~numpy.ndarry`
         - times: a regular time array :class:`~numpy.ndarry`
 
     """
 
     paired_data = np.load(ali_file, allow_pickle=True)
 
-    power = paired_data["ref_ali"]
+    ref_pow = paired_data["ref_ali"]
+    tile_pow = paired_data["tile_ali"]
     times = paired_data["time_array"]
 
-    return (power, times)
+    return (ref_pow, tile_pow, times)
 
 
 def noise_floor(sat_thresh, noi_thresh, power):
@@ -378,7 +380,7 @@ def good_chans(
 
     spec, _ = spectral()
 
-    power, times = read_ref_aligned(ali_file=ali_file)
+    power, _, times = read_aligned(ali_file=ali_file)
     p_med = np.median(power)
 
     # Determine noise threshold
