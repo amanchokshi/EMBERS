@@ -23,6 +23,15 @@ cmap, _ = spectral()
 
 def check_pointing(timestamp, point_0, point_2, point_4, point_41):
     """Check if timestamp is at pointing 0, 2, 4, 41"""
+
+    # Read observation pointing list
+    with open(obs_point) as point:
+        obs_p = json.load(point)
+        point_0 = obs_p["point_0"]
+        point_2 = obs_p["point_2"]
+        point_4 = obs_p["point_4"]
+        point_41 = obs_p["point_41"]
+
     if timestamp in point_0:
         point = 0
     elif timestamp in point_2:
