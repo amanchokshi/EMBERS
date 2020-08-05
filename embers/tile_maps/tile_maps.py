@@ -54,18 +54,24 @@ def check_pointing(timestamp, obs_point_json):
     return point
 
 
-# chisquared minimization to best fit map to data
-def fit_gain(map_data=None, fee=None):
-    """Fit the beam model to the measured data using
-    chisquared minimization"""
+def chisq_fit_gain(data=None, model=None):
+    """Chisqaured fit the data and model.
 
-    bad_values = np.isnan(map_data)
-    map_data = map_data[~bad_values]
-    fee = fee[~bad_values]
+    :param data: A data array to be fit to a model. Typically this if rf map data being fit to the fee model
+    :param model: The model to which the data is being fit. Typically the fee beam model
+
+    :retuns:
+        - Single multiplicative gain value, which best fits data to model
+
+    """
+
+    bad_values = np.isnan(data)
+    data = data[~bad_values]
+    model = model[~bad_values]
 
     def chisqfunc(gain):
-        model = fee + gain
-        chisq = sum((map_data - model) ** 2)
+        mod = model + gain
+        chisq = sum((data - mod) ** 2)
         return chisq
 
     x0 = np.array([0])
