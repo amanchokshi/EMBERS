@@ -1,3 +1,11 @@
+"""
+Referece FEKO Model
+-------------------
+
+Convert FEKO models on the reference antennas into usable healpix maps
+
+"""
+
 # Code developed by Jack Line and adapted here
 # https://github.com/JLBLine/MWA_ORBCOMM
 
@@ -15,18 +23,32 @@ matplotlib.use("Agg")
 cmap, _ = spectral()
 
 
-def create_model(len_empty_healpix, epsilon, nside, file_name=None):
-    """Takes .ffe model, converts into healpix and smooths the response"""
+def create_model(nside, file_name=None):
+    """Takes feko .ffe reference model, converts into healpix and smooths the response
+
+    :param nside: Healpix nside
+    :param file_name: Path to :samp:`.ffe` feko model of reference tiles
+
+    :returns:
+        - :class:`tuple` of (beam_response, theta_mesh, phi_mesh, power, theta)
+
+    """
 
     # Make an empty array for healpix projection
+    len_empty_healpix = hp.nside2npix(nside)
     beam_response = np.zeros(len_empty_healpix) * np.nan
+
+    # Had problems with having coords = 0 when interpolating, so make a small number
+    # and call it epsilon for some reason
+    epsilon = 1.0e-12
 
     # Load ffe model data in, which is stored in real and imaginary components
     # of a phi/theta polaristaion representation of the beam
     # apparently this is normal to beam engineers
+
     data = np.loadtxt(file_name)
     theta = data[:, 0]
-    phi = data[:, 1]
+    #  phi = data[:, 1]
     re_theta = data[:, 2]
     im_theta = data[:, 3]
     re_phi = data[:, 4]
@@ -84,11 +106,6 @@ if __name__ == "__main__":
     nside = 32
     len_empty_healpix = hp.nside2npix(nside)  # 12288
 
-    # Had problems with having coords = 0 when interpolating, so make a small number
-    # and call it epsilon for some reason
-
-    epsilon = 1.0e-12
-
     # Reference FEE models in XX & YY pols
     refXX = "../../data/FEE_Reference_Models/MWA_reference_tile_FarField_XX.ffe"
     refYY = "../../data/FEE_Reference_Models/MWA_reference_tile_FarField_YY.ffe"
@@ -98,10 +115,10 @@ if __name__ == "__main__":
     Path(out_dir).mkdir(parents=True, exist_ok=True)
 
     healpix_XX, theta_mesh, phi_mesh, power_XX, theta = create_model(
-        len_empty_healpix, epsilon, nside, file_name=refXX
+        len_empty_healpix, nside, file_name=refXX
     )
     healpix_YY, theta_mesh, phi_mesh, power_YY, theta = create_model(
-        len_empty_healpix, epsilon, nside, file_name=refYY
+        len_empty_healpix, nside, file_name=refYY
     )
 
     # Plot the things to sanity check and save results

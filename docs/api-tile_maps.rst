@@ -8,6 +8,9 @@
 .. automodule:: embers.tile_maps.beam_utils
 .. autofunction:: embers.tile_maps.beam_utils.plot_healpix
 
+.. automodule:: embers.tile_maps.ref_fee_healpix
+.. autofunction:: embers.tile_maps.ref_fee_healpix.create_model
+
 .. automodule:: embers.tile_maps.tile_maps
 .. autofunction:: embers.tile_maps.tile_maps.check_pointing
 .. autofunction:: embers.tile_maps.tile_maps.chisq_fit_gain
