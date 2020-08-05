@@ -1,22 +1,17 @@
 # Code developed by Jack Line and adapted here
 # https://github.com/JLBLine/MWA_ORBCOMM
 
-import numpy as np
-import healpy as hp
 from pathlib import Path
+
+import healpy as hp
 import matplotlib
+import numpy as np
+from embers.rf_tools.colormaps import spectral
+from matplotlib import pyplot as plt
+from scipy.interpolate import RectSphereBivariateSpline
 
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-from scipy import interpolate
-from scipy.interpolate import RectSphereBivariateSpline, SmoothSphereBivariateSpline
-
-import sys
-
-sys.path.append("../decode_rf_data")
-from colormap import spectral
-
-cmap = spectral()
+cmap, _ = spectral()
 
 
 def create_model(len_empty_healpix, epsilon, nside, file_name=None):
