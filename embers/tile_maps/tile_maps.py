@@ -69,7 +69,7 @@ def chisq_fit_gain(data=None, model=None):
     :param data: A data array to be fit to a model. Typically this if rf map data being fit to the fee model
     :param model: The model to which the data is being fit. Typically the fee beam model
 
-    :retuns:
+    :returns:
         - Single multiplicative gain value, which best fits data to model
 
     """
@@ -114,7 +114,16 @@ def test_chisq_fit(data=None, model=None, offset=20):
 
 
 def plt_channel(
-    out_dir, times, ref, tile, ref_noise, tile_noise, chan_num, sat_id, pointing, date
+    out_dir,
+    times,
+    ref,
+    tile,
+    ref_noise,
+    tile_noise,
+    chan_num,
+    sat_id,
+    pointing,
+    timestamp,
 ):
 
     """Plot power in a frequency channel of raw rf data, with various thresholds
@@ -128,7 +137,7 @@ def plt_channel(
     :param chan_num: Channel Number
     :param sat_id: Norad Cat ID
     :param pointing: MWA sweet pointing of the observation
-    :param date: Date of observation
+    :param timestamp: Observation timestamp
 
     :returns:
         - A plot of channel power with multiple power thresholds is saved to :samp:`out_dir`
@@ -138,7 +147,9 @@ def plt_channel(
     plt.style.use("seaborn")
 
     fig = plt.figure(figsize=(8, 6))
-    fig.suptitle(f"Satellite [{sat_id}] Pass @ {date} in Channel: [{chan_num}]", y=0.98)
+    fig.suptitle(
+        f"Satellite [{sat_id}] Pass @ {timestamp} in Channel: [{chan_num}]", y=0.98
+    )
 
     ax1 = fig.add_subplot(2, 1, 1)
     ax1.plot(
@@ -194,7 +205,7 @@ def plt_channel(
 
     plt.tight_layout()
     plt.subplots_adjust(top=0.94)
-    plt.savefig(f"{out_dir}/{date}_{sat_id}_{chan_num}_channel.png")
+    plt.savefig(f"{out_dir}/{timestamp}_{sat_id}_{chan_num}_channel.png")
     plt.close()
 
 
@@ -297,16 +308,33 @@ def plt_fee_fit(
     plt.close()
 
 
-def power_ephem(
-    ref, tile, ali_file, chrono_file, sat_id, sat_chan, point, pow_thresh, timestamp
+def rf_apply_thresholds(
+    ali_file, chrono_file, sat_id, sat_chan, pow_thresh, point, plots
 ):
 
-    """Create power, alt, az arrays at constant cadence"""
+    """Apply power, noise thresholds to rf data arrays.
 
-    # Read .npz aligned file
+    For a particular NORAD sat ID, crop a pair of ref, tile data arrays to when the satellite is above the horizon
+    as indicated by it's ephemeris. Given the frequency channel in which the satellite transmits, extract the channel
+    power and return a coherent data set with ephemeris and tile power in a tuple
+
+    :param ali_file: :class:`~pathlib.PurePosixPath` to a aligned ref, tile data file, output from :func:`~embers.rf_tools.align_data.save_aligned`
+    :param chrono_file: :class:`~pathlib.PurePosixPath` to chrono ephemeris file, output from :func:`~embers.sat_utils.chrono_ephem.save_chrono_ephem`
+    :param sat_id: Norad catalogue ID
+    :param sat_chan: Transmission channel of given :samp:`sat_id`
+    :param pow_thresh: Peak power which must be exceeded for satellite pass to be considered
+    :param point: MWA sweet pointing of the observation
+    :param plots: if :samp:`True` create diagnostic plots
+
+    :returns:
+        - :class:`~tuple` of (ref_power, tile_power, alt, az, times) where all thresholds were met. If no data passes all thresholds 0 returned
+
+    """
+
+    ref, tile, timestamp, _ = ali_file.stem.split("_")
+
     ref_p, tile_p, times = read_aligned(ali_file=ali_file)
 
-    # Scale noise floor to zero and determine noise threshold
     ref_p, ref_noise = noise_floor(sat_thresh, noi_thresh, ref_p)
     tile_p, tile_noise = noise_floor(sat_thresh, noi_thresh, tile_p)
 
@@ -368,7 +396,6 @@ def power_ephem(
                             sat_id,
                             point,
                             timestamp,
-                            point,
                         )
 
                     return [good_ref, good_tile, good_alt, good_az, times_c]
@@ -381,6 +408,289 @@ def power_ephem(
 
         else:
             return 0
+
+
+def rfe_gain(tile_pair):
+
+    resi_gain = {}
+    resi_gain["pass_data"] = []
+    resi_gain["pass_resi"] = []
+
+    ref, tile = tile_pair
+
+    pointings = ["0", "2", "4", "41"]
+
+    # Initialize an empty dictionary for tile data
+    # The map is list of length 12288 of empty lists to append pixel values to
+    # keep track of which satellites contributed which data
+    tile_data = {
+        "mwa_maps": {
+            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
+        },
+        "ref_maps": {
+            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
+        },
+        "tile_maps": {
+            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
+        },
+        "sat_map": {
+            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
+        },
+        "times": {p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings},
+    }
+
+    # Load reference FEE model
+    # Rotate the fee models by -pi/2 to move model from spherical (E=0) to Alt/Az (N=0)
+    ref_fee_model = np.load(ref_model, allow_pickle=True)
+
+    fee_m = np.load(fee_map, allow_pickle=True)
+
+    if "XX" in tile:
+        ref_fee = ref_fee_model["XX"]
+        rotated_fee = rotate(nside, angle=-(1 * np.pi) / 2.0, healpix_array=ref_fee)
+    else:
+        ref_fee = ref_fee_model["YY"]
+        rotated_fee = rotate(nside, angle=-(1 * np.pi) / 2.0, healpix_array=ref_fee)
+
+    for day in range(len(dates)):
+
+        for window in range(len(date_time[day])):
+            timestamp = date_time[day][window]
+
+            # Check if at timestamp, reciever was pointed to 0,2,4 gridpointing
+            if (
+                (timestamp in point_0)
+                or (timestamp in point_2)
+                or (timestamp in point_4)
+                or (timestamp in point_41)
+            ):
+
+                # pointing at timestamp
+                point = check_pointing(timestamp, point_0, point_2, point_4, point_41)
+
+                if point is 0:
+
+                    if "XX" in tile:
+                        mwa_fee = fee_m[str(point)][0]
+                    else:
+                        mwa_fee = fee_m[str(point)][1]
+
+                    ali_file = Path(
+                        f"{align_dir}/{dates[day]}/{timestamp}/{ref}_{tile}_{timestamp}_aligned.npz"
+                    )
+
+                    # check if file exists
+                    if ali_file.is_file():
+
+                        # Chrono and map Ephemeris file
+                        chrono_file = Path(f"{chrono_dir}/{timestamp}.json")
+                        channel_map = f"{map_dir}/{timestamp}.json"
+
+                        with open(chrono_file) as chrono:
+                            chrono_ephem = json.load(chrono)
+
+                            if chrono_ephem != []:
+
+                                norad_list = [
+                                    chrono_ephem[s]["sat_id"][0]
+                                    for s in range(len(chrono_ephem))
+                                ]
+
+                                if norad_list != []:
+
+                                    with open(channel_map) as ch_map:
+                                        chan_map = json.load(ch_map)
+
+                                        chan_sat_ids = [
+                                            int(i) for i in list(chan_map.keys())
+                                        ]
+
+                                        for sat in chan_sat_ids:
+
+                                            chan = chan_map[f"{sat}"]
+
+                                            sat_data = power_ephem(
+                                                ref,
+                                                tile,
+                                                ali_file,
+                                                chrono_file,
+                                                sat,
+                                                chan,
+                                                point,
+                                                pow_thresh,
+                                                timestamp,
+                                            )
+
+                                            if sat_data != 0:
+
+                                                (
+                                                    ref_power,
+                                                    tile_power,
+                                                    alt,
+                                                    az,
+                                                    times,
+                                                ) = sat_data
+
+                                                # Altitude is in deg while az is in radians
+                                                # convert alt to radians
+                                                # za - zenith angle
+                                                alt = np.radians(alt)
+                                                za = np.pi / 2 - alt
+                                                az = np.asarray(az)
+
+                                                # Now convert to healpix coordinates
+                                                # healpix_index = hp.ang2pix(nside,θ, ɸ)
+                                                healpix_index = hp.ang2pix(
+                                                    nside, za, az
+                                                )
+
+                                                # multiple data points fall within a single healpix pixel
+                                                # find the unique pixels
+                                                u = np.unique(healpix_index)
+
+                                                ref_pass = np.array(
+                                                    [
+                                                        np.nanmean(
+                                                            ref_power[
+                                                                np.where(
+                                                                    healpix_index == i
+                                                                )[0]
+                                                            ]
+                                                        )
+                                                        for i in u
+                                                    ]
+                                                )
+                                                tile_pass = np.array(
+                                                    [
+                                                        np.nanmean(
+                                                            tile_power[
+                                                                np.where(
+                                                                    healpix_index == i
+                                                                )[0]
+                                                            ]
+                                                        )
+                                                        for i in u
+                                                    ]
+                                                )
+                                                times_pass = np.array(
+                                                    [
+                                                        np.mean(
+                                                            times[
+                                                                np.where(
+                                                                    healpix_index == i
+                                                                )
+                                                            ][0]
+                                                        )
+                                                        for i in u
+                                                    ]
+                                                )
+                                                ref_fee_pass = np.array(
+                                                    [rotated_fee[i] for i in u]
+                                                )
+                                                mwa_fee_pass = np.array(
+                                                    [mwa_fee[i] for i in u]
+                                                )
+
+                                                # This is the magic. Equation [1] of the paper
+                                                mwa_pass = (
+                                                    np.array(tile_pass)
+                                                    - np.array(ref_pass)
+                                                    + np.array(ref_fee_pass)
+                                                )
+
+                                                # RFE distortion is seen in tile_pass when raw power is above -40dBm
+                                                # fit the mwa_pass data to the tile_pass power level
+                                                # Mask everything below -50dBm to fit distorted MWA and tile pass
+                                                peak_filter = np.where(tile_pass >= -30)
+                                                offset = fit_gain(
+                                                    map_data=tile_pass[peak_filter],
+                                                    fee=mwa_pass[peak_filter],
+                                                )
+                                                # This is a slice of the MWA beam, scaled back to the power level of the raw, distorted tile data
+                                                mwa_pass = mwa_pass + offset[0]
+
+                                                # Single multiplicative gain factor to fit MWA FEE beam slice down to tile pass power level
+                                                # MWA pass Data above -50dBm masked out because it is distorted
+                                                # Data below -60dBm maked out because FEE nulls are much deeper than the dynamic range of satellite passes
+                                                dis_filter = np.where(mwa_pass <= -35)
+                                                mwa_pass_fil = mwa_pass[dis_filter]
+                                                mwa_fee_pass_fil = mwa_fee_pass[
+                                                    dis_filter
+                                                ]
+                                                null_filter = np.where(
+                                                    mwa_fee_pass_fil >= -55
+                                                )
+
+                                                offset = fit_gain(
+                                                    map_data=mwa_pass_fil[null_filter],
+                                                    fee=mwa_fee_pass_fil[null_filter],
+                                                )
+                                                mwa_fee_pass = mwa_fee_pass + offset
+                                                mwa_pass_fit = mwa_pass
+
+                                                # more than 30 non distorted samples
+                                                if (
+                                                    mwa_fee_pass[dis_filter][
+                                                        null_filter
+                                                    ].size
+                                                    >= 30
+                                                ):
+
+                                                    # determine how well the data fits the model with chi-square
+                                                    pval = fit_test(
+                                                        map_data=mwa_pass_fit[
+                                                            dis_filter
+                                                        ][null_filter],
+                                                        fee=mwa_fee_pass[dis_filter][
+                                                            null_filter
+                                                        ],
+                                                    )
+
+                                                    # a goodness of fit threshold
+                                                    if pval >= 0.8:
+
+                                                        # consider residuals of sats which pass within 10 deg of zenith
+                                                        # an hp index of 111 approx corresponds to a zenith angle of 10 degrees
+                                                        hp_10_deg = 111
+
+                                                        if np.amin(u) <= hp_10_deg:
+
+                                                            # only passes longer than 10 minutes
+                                                            if (
+                                                                np.amax(times_pass)
+                                                                - np.amin(times_pass)
+                                                            ) >= 600:
+
+                                                                # residuals between scaled FEE and mwa pass
+                                                                resi = (
+                                                                    mwa_fee_pass
+                                                                    - mwa_pass_fit
+                                                                )
+                                                                resi_gain[
+                                                                    "pass_data"
+                                                                ].extend(mwa_pass_fit)
+                                                                resi_gain[
+                                                                    "pass_resi"
+                                                                ].extend(resi)
+
+                                                                # Plot individual passes
+                                                                if plots == "True":
+                                                                    # if mwa_fee_pass.size !=0:
+                                                                    #    if np.amax(mwa_fee_pass) >= -30:
+                                                                    plt_fee_fit(
+                                                                        times_pass,
+                                                                        mwa_fee_pass,
+                                                                        mwa_pass_fit,
+                                                                        f"{out_dir}/fit_plots/",
+                                                                        point,
+                                                                        timestamp,
+                                                                        sat,
+                                                                        pval,
+                                                                    )
+
+    # Save gain residuals to json file
+    with open(f"{out_dir}/{tile}_{ref}_gain_fit.json", "w") as outfile:
+        json.dump(resi_gain, outfile, indent=4)
 
 
 def project_tile_healpix(tile_pair):
@@ -492,16 +802,14 @@ def project_tile_healpix(tile_pair):
 
                                         chan = chan_map[f"{sat}"]
 
-                                        sat_data = power_ephem(
-                                            ref,
-                                            tile,
+                                        sat_data = rf_apply_thresholds(
                                             ali_file,
                                             chrono_file,
                                             sat,
                                             chan,
-                                            point,
                                             pow_thresh,
-                                            timestamp,
+                                            point,
+                                            plots,
                                         )
 
                                         if sat_data != 0:
@@ -808,7 +1116,7 @@ if __name__ == "__main__":
         metavar="\b",
         type=int,
         default=5,
-        help="Power Threshold to detect sats. Default=10 dB.",
+        help="Power Threshold to detect sats. Default=5 dB.",
     )
     parser.add_argument(
         "--nside",
