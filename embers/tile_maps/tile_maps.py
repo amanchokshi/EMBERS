@@ -22,6 +22,7 @@ from embers.sat_utils.sat_channels import (noise_floor, read_aligned,
 from embers.sat_utils.sat_list import norad_ids
 from embers.tile_maps.null_test import rotate
 from matplotlib import pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy import optimize as opt
 from scipy.stats import chisquare
 
@@ -113,16 +114,7 @@ def test_chisq_fit(data=None, model=None, offset=20):
 
 
 def plt_channel(
-    out_dir,
-    times,
-    ref,
-    tile,
-    ref_noise,
-    tile_noise,
-    chan_num,
-    sat_id,
-    pointing,
-    date
+    out_dir, times, ref, tile, ref_noise, tile_noise, chan_num, sat_id, pointing, date
 ):
 
     """Plot power in a frequency channel of raw rf data, with various thresholds
@@ -150,13 +142,7 @@ def plt_channel(
 
     ax1 = fig.add_subplot(2, 1, 1)
     ax1.plot(
-        times,
-        ref,
-        linestyle="-",
-        linewidth=2,
-        alpha=1.0,
-        color="#729d39",
-        label="ref",
+        times, ref, linestyle="-", linewidth=2, alpha=1.0, color="#729d39", label="ref",
     )
     ax1.fill_between(times, y1=ref, y2=-120, color="#729d39", alpha=0.7)
     ax1.axhline(
@@ -213,10 +199,25 @@ def plt_channel(
 
 
 def plt_fee_fit(
-    t, mwa_fee_pass, mwa_pass_fit, mwa_pass_fit_raw, out_dir, point, timestamp, sat
+    times, mwa_fee_pass, mwa_pass_fit_raw, mwa_pass_fit, out_dir, point, timestamp, sat
 ):
+    """Plot data and model with goodness of fit p-value to visualize the degree of fit
 
-    pval = fit_test(map_data=mwa_pass_fit, fee=mwa_fee_pass)
+    :param times: Time array
+    :param mwa_fee_pass: MWA fee model slices according to satellite pass ephemeris
+    :param mwa_pass_fit_raw: Satellite rf data from MWA tiles
+    :param mwa_pass_fit: Satellite rf data from MWA tiles, fit to the fee model
+    :param out_dir: Output directory where plot will be saved
+    :param point: MWA sweet pointing of the observation
+    :param timestamp:  Observation timestamp
+    :param sat_id: Norad Cat ID
+
+    :returns:
+        - Plot comparing MWA fee model slice to satellite data, before and after gain power corrections
+
+    """
+
+    pval = test_chisq_fit(data=mwa_pass_fit, model=mwa_fee_pass)
 
     plt.style.use("seaborn")
 
@@ -224,24 +225,71 @@ def plt_fee_fit(
     ax1 = fig.add_subplot(1, 1, 1)
 
     ax1.scatter(
-        t, mwa_fee_pass, color="#c70039", alpha=0.6, marker=".", label="fee_slice"
+        times, mwa_fee_pass, color="#c70039", alpha=0.6, marker=".", label="FEE model"
     )
 
     ax1.scatter(
-        t, mwa_pass_fit_raw, color="#7da87b", alpha=0.9, marker=".", label="RFE raw"
+        times,
+        mwa_pass_fit_raw,
+        color="#7da87b",
+        alpha=0.9,
+        marker=".",
+        label="RF data raw",
     )
     ax1.set_ylim(-50, 2)
 
     ax1.scatter(
-        t, mwa_pass_fit, color="#4f8a8b", alpha=0.9, marker=".", label="RFE cali"
+        times,
+        mwa_pass_fit,
+        color="#4f8a8b",
+        alpha=0.9,
+        marker=".",
+        label="RF gain calibrated",
     )
     ax1.set_ylim(-50, 2)
+    ax1.set_ylabel("Power [dBm]")
+    ax1.set_xticklabels([])
 
     leg = ax1.legend(frameon=True)
     leg.get_frame().set_facecolor("grey")
     leg.get_frame().set_alpha(0.2)
     for le in leg.legendHandles:
         le.set_alpha(1)
+
+    delta_p_raw = np.array(mwa_fee_pass) - np.array(mwa_pass_fit_raw)
+    delta_p = np.array(mwa_fee_pass) - np.array(mwa_pass_fit)
+
+    divider = make_axes_locatable(ax1)
+    dax = divider.append_axes("bottom", size="40%", pad=0.10)
+
+    dax.scatter(
+        times,
+        delta_p_raw,
+        color="#7da87b",
+        alpha=0.9,
+        marker=".",
+        s=36,
+        label="Raw residuals",
+    )
+
+    dax.scatter(
+        times,
+        delta_p,
+        color="#4f8a8b",
+        alpha=0.9,
+        marker=".",
+        s=36,
+        label="Calibrated residuals",
+    )
+
+    leg = dax.legend(loc="lower left", frameon=True, markerscale=2, handlelength=1)
+    leg.get_frame().set_facecolor("grey")
+    leg.get_frame().set_alpha(0.4)
+    for le in leg.legendHandles:
+        le.set_alpha(1)
+    dax.set_xlabel("Times [min]")
+    dax.set_yticks([-20, 0, 20])
+    dax.set_ylabel(r"$\Delta$P [dBm]")
 
     plt.title(f"Goodness of Fit: {pval} ")
     plt.tight_layout()
@@ -394,7 +442,7 @@ def project_tile_healpix(tile_pair):
         for window in range(len(date_time[day])):
             timestamp = date_time[day][window]
 
-            # Check if at timestamp, reciever was pointed to 0,2,4 gridpointing
+            # Check if at timestamp, reciever was pointed to 0,2,4,41 gridpointing
             if (
                 (timestamp in point_0)
                 or (timestamp in point_2)
