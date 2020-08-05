@@ -7,6 +7,7 @@ import healpy as hp
 import matplotlib
 import numpy as np
 from embers.rf_tools.colormaps import spectral
+from embers.tile_maps.beam_utils import plot_healpix
 from matplotlib import pyplot as plt
 from scipy.interpolate import RectSphereBivariateSpline
 
@@ -75,88 +76,6 @@ def create_model(len_empty_healpix, epsilon, nside, file_name=None):
     beam_response = beam_response - np.nanmax(beam_response)
 
     return beam_response, theta_mesh, phi_mesh, power, theta
-
-
-def plot_healpix(
-    data_map=None,
-    fig=None,
-    sub=None,
-    title=None,
-    vmin=None,
-    vmax=None,
-    cmap=None,
-    cbar=True,
-):
-    """Yeesh do some healpix magic to plot the thing"""
-
-    # Disable cryptic healpy warnings. Can't figure out where they originate
-    import warnings
-
-    warnings.filterwarnings("ignore", category=RuntimeWarning)
-
-    hp.orthview(
-        map=data_map,
-        coord="E",
-        fig=fig,
-        half_sky=True,
-        rot=(0, 90, 180),
-        xsize=600,
-        title=title,
-        sub=sub,
-        min=vmin,
-        max=vmax,
-        cmap=cmap,
-        notext=True,
-        hold=True,
-        cbar=cbar,
-    )
-
-    hp.graticule(dpar=10, coord="E", color="k", alpha=0.3, dmer=45)
-
-    # Altitude grid
-    hp.projtext(
-        00.0 * (np.pi / 180.0), 225.0 * (np.pi / 180), "0", color="w", coord="E"
-    )
-    hp.projtext(
-        30.0 * (np.pi / 180.0), 225.0 * (np.pi / 180), "30", color="w", coord="E"
-    )
-    hp.projtext(
-        60.0 * (np.pi / 180.0), 225.0 * (np.pi / 180), "60", color="w", coord="E"
-    )
-
-    # NSEW
-    hp.projtext(
-        80.0 * (np.pi / 180.0),
-        000.0 * (np.pi / 180.0),
-        r"$N  $",
-        coord="E",
-        color="w",
-        verticalalignment="top",
-    )
-    hp.projtext(
-        80.0 * (np.pi / 180.0),
-        090.0 * (np.pi / 180.0),
-        r"$E  $",
-        coord="E",
-        color="w",
-        horizontalalignment="right",
-    )
-    hp.projtext(
-        80.0 * (np.pi / 180.0),
-        180.0 * (np.pi / 180.0),
-        r"$S  $",
-        coord="E",
-        color="w",
-        verticalalignment="bottom",
-    )
-    hp.projtext(
-        80.0 * (np.pi / 180.0),
-        270.0 * (np.pi / 180.0),
-        r"$W  $",
-        coord="E",
-        color="w",
-        horizontalalignment="left",
-    )
 
 
 if __name__ == "__main__":
