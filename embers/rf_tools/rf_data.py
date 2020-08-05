@@ -13,10 +13,12 @@ from datetime import datetime, timedelta
 from itertools import product
 from pathlib import Path
 
+import matplotlib
 import numpy as np
 from embers.rf_tools.colormaps import spectral
 from matplotlib import pyplot as plt
 
+matplotlib.use("Agg")
 _spec, _ = spectral()
 
 
