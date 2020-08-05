@@ -115,35 +115,35 @@ def test_chisq_fit(data=None, model=None, offset=20):
 def plt_channel(
     out_dir,
     times,
-    ref_c,
-    tile_c,
+    ref,
+    tile,
     ref_noise,
     tile_noise,
     chan_num,
     sat_id,
     pointing,
-    date,
-    point,
+    date
 ):
 
-    """Plot power in channel, with various thresholds
+    """Plot power in a frequency channel of raw rf data, with various thresholds
 
-    Args:
-        times:          Time array
-        channel_power:  Power in channel
-        chan_num:       Channel Number
-        min_s:          Minimum signal in channel_power
-        max_s:          Maximum signal in channel_power
-        noise_threshold: Noise Threshold (n*MAD)
-        sat_id:         Norad Cat ID
-        date:           Date of observation
-        """
+    :param out_dir: Output directory where plot will be saved
+    :param times: Time array
+    :param ref: Reference antenna rf power array
+    :param tile: MWA tile rf power array
+    :param ref_noise: Reference noise threshold
+    :param tile_noise: MWA tile noise threshold
+    :param chan_num: Channel Number
+    :param sat_id: Norad Cat ID
+    :param pointing: MWA sweet pointing of the observation
+    :param date: Date of observation
+
+    :returns:
+        - A plot of channel power with multiple power thresholds is saved to :samp:`out_dir`
+
+    """
 
     plt.style.use("seaborn")
-
-    ylims = [min(ref_c), max(ref_c), min(tile_c), max(tile_c)]
-    min_s = min(ylims)
-    max_s = max(ylims)
 
     fig = plt.figure(figsize=(8, 6))
     fig.suptitle(f"Satellite [{sat_id}] Pass @ {date} in Channel: [{chan_num}]", y=0.98)
@@ -151,14 +151,14 @@ def plt_channel(
     ax1 = fig.add_subplot(2, 1, 1)
     ax1.plot(
         times,
-        ref_c,
+        ref,
         linestyle="-",
         linewidth=2,
         alpha=1.0,
         color="#729d39",
         label="ref",
     )
-    ax1.fill_between(times, y1=ref_c, y2=-120, color="#729d39", alpha=0.7)
+    ax1.fill_between(times, y1=ref, y2=-120, color="#729d39", alpha=0.7)
     ax1.axhline(
         ref_noise,
         linestyle="-",
@@ -167,7 +167,7 @@ def plt_channel(
         label=f"Ref Cut: {ref_noise:.2f} dBm",
     )
     ax1.axhspan(-120, ref_noise, color="#36622b", alpha=0.7)
-    ax1.set_ylim([min(ref_c) - 1, max(ref_c) + 1])
+    ax1.set_ylim([min(ref) - 1, max(ref) + 1])
     ax1.set_ylabel("Power [dBm]")
     ax1.set_xticklabels([])
 
@@ -180,14 +180,14 @@ def plt_channel(
     ax2 = fig.add_subplot(2, 1, 2)
     ax2.plot(
         times,
-        tile_c,
+        tile,
         linestyle="-",
         linewidth=2,
         alpha=1.0,
         color="#ff5656",
         label="tile",
     )
-    ax2.fill_between(times, y1=tile_c, y2=-120, color="#ff5656", alpha=0.7)
+    ax2.fill_between(times, y1=tile, y2=-120, color="#ff5656", alpha=0.7)
     ax2.axhline(
         tile_noise,
         linestyle="-",
@@ -196,7 +196,7 @@ def plt_channel(
         label=f"Tile Cut: {tile_noise:.2f} dBm",
     )
     ax2.axhspan(-120, tile_noise, color="#970747", alpha=0.7)
-    ax2.set_ylim([min(tile_c) - 1, max(tile_c) + 1])
+    ax2.set_ylim([min(tile) - 1, max(tile) + 1])
     ax2.set_ylabel("Power [dBm]")
     ax2.set_xlabel("Time [s]")
 
