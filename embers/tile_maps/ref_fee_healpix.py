@@ -100,7 +100,7 @@ def create_model(nside, file_name=None):
     return beam_response, theta_mesh, phi_mesh, power, theta
 
 
-def ref_healpix(nside, out_dir):
+def ref_healpix_save(nside, out_dir):
     """Save and plot reference healix maps
 
     :param nside: Healpix nside

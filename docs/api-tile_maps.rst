@@ -10,7 +10,7 @@
 
 .. automodule:: embers.tile_maps.ref_fee_healpix
 .. autofunction:: embers.tile_maps.ref_fee_healpix.create_model
-.. autofunction:: embers.tile_maps.ref_fee_healpix.ref_healpix
+.. autofunction:: embers.tile_maps.ref_fee_healpix.ref_healpix_save
 
 .. automodule:: embers.tile_maps.tile_maps
 .. autofunction:: embers.tile_maps.tile_maps.check_pointing
