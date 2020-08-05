@@ -17,7 +17,10 @@ _parser = argparse.ArgumentParser(
 )
 
 _parser.add_argument(
-    "--tle_dir", metavar="\b", help="Path to directory with TLE files"
+    "--tle_dir",
+    metavar="\b",
+    default="./embers_out/sat_utils/TLE",
+    help="Path to directory with TLE files. Default=./embers_out/sat_utils/TL",
 )
 _parser.add_argument(
     "--cadence",
@@ -71,7 +74,7 @@ def ephem_batch(tle_dir, cadence, location, alpha, out_dir):
 
     """
 
-    sat_names = [tle.stem for tle in Path(_tle_dir).glob('*.txt')]
+    sat_names = [tle.stem for tle in Path(_tle_dir).glob("*.txt")]
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
         results = executor.map(
@@ -81,7 +84,7 @@ def ephem_batch(tle_dir, cadence, location, alpha, out_dir):
             repeat(cadence),
             repeat(location),
             repeat(alpha),
-            repeat(out_dir)
+            repeat(out_dir),
         )
 
     for result in results:
