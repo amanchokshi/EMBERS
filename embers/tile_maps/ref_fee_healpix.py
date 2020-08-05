@@ -14,6 +14,7 @@ from pathlib import Path
 import healpy as hp
 import matplotlib
 import numpy as np
+import pkg_resources
 from embers.rf_tools.colormaps import spectral
 from embers.tile_maps.beam_utils import plot_healpix
 from matplotlib import pyplot as plt
@@ -100,25 +101,24 @@ def create_model(nside, file_name=None):
     return beam_response, theta_mesh, phi_mesh, power, theta
 
 
-if __name__ == "__main__":
+def ref_healpix(nside, out_dir):
 
-    # Healpix constants
-    nside = 32
+    Path(out_dir).mkdir(parents=True, exist_ok=True)
     len_empty_healpix = hp.nside2npix(nside)  # 12288
 
     # Reference FEE models in XX & YY pols
-    refXX = "../../data/FEE_Reference_Models/MWA_reference_tile_FarField_XX.ffe"
-    refYY = "../../data/FEE_Reference_Models/MWA_reference_tile_FarField_YY.ffe"
-
-    # Output directory
-    out_dir = "../../outputs/reproject_ref"
-    Path(out_dir).mkdir(parents=True, exist_ok=True)
+    refXX = pkg_resources.resource_filename(
+        "embers.kindle", "data/ref_models/MWA_reference_tile_FarField_XX.ffe"
+    )
+    refYY = pkg_resources.resource_filename(
+        "embers.kindle", "data/ref_models/MWA_reference_tile_FarField_YY.ffe"
+    )
 
     healpix_XX, theta_mesh, phi_mesh, power_XX, theta = create_model(
-        len_empty_healpix, nside, file_name=refXX
+        nside, file_name=refXX
     )
     healpix_YY, theta_mesh, phi_mesh, power_YY, theta = create_model(
-        len_empty_healpix, nside, file_name=refYY
+        nside, file_name=refYY
     )
 
     # Plot the things to sanity check and save results
@@ -129,7 +129,7 @@ if __name__ == "__main__":
     ax2 = fig.add_subplot(222, projection="polar")
     ax2.set_rgrids([10, 30, 50, 70, 90], angle=22)
 
-    im1 = ax1.pcolormesh(
+    ax1.pcolormesh(
         phi_mesh * (np.pi / 180.0),
         theta_mesh,
         power_XX,
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     ax1.set_title("Ref XX", y=1.1)
     ax1.grid(color="k", alpha=0.3)
 
-    im2 = ax2.pcolormesh(
+    ax2.pcolormesh(
         phi_mesh * (np.pi / 180.0),
         theta_mesh,
         power_YY,
