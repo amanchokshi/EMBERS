@@ -21,11 +21,19 @@ matplotlib.use("Agg")
 cmap, _ = spectral()
 
 
-def check_pointing(timestamp, point_0, point_2, point_4, point_41):
-    """Check if timestamp is at pointing 0, 2, 4, 41"""
+def check_pointing(timestamp, obs_point_json):
+    """Check if timestamp is at MWA pointing 0, 2, 4, 41.
+
+    :param timestamp: time at which MWA pointing is to be checked
+    :param obs_point_json: Path to :samp:`obs_point.json` output from :func:`~embers.mwa_utils.mwa_pointings.obs_pointings`
+
+    :returns:
+        - Pointing of MWA at given :samp:`timestamp`
+
+    """
 
     # Read observation pointing list
-    with open(obs_point) as point:
+    with open(obs_point_json) as point:
         obs_p = json.load(point)
         point_0 = obs_p["point_0"]
         point_2 = obs_p["point_2"]
@@ -38,8 +46,10 @@ def check_pointing(timestamp, point_0, point_2, point_4, point_41):
         point = 2
     elif timestamp in point_4:
         point = 4
-    else:
+    elif timestamp in point_41:
         point = 41
+    else:
+        point = None
 
     return point
 
