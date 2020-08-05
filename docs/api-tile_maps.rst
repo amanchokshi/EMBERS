@@ -11,3 +11,4 @@
 .. automodule:: embers.tile_maps.tile_maps
 .. autofunction:: embers.tile_maps.tile_maps.check_pointing
 .. autofunction:: embers.tile_maps.tile_maps.chisq_fit_gain
+.. autofunction:: embers.tile_maps.tile_maps.test_chisq_fit

@@ -89,20 +89,25 @@ def chisq_fit_gain(data=None, model=None):
     return result.x
 
 
-def fit_test(map_data=None, fee=None):
-    """chi-squared test for fit between
-    model and data"""
+def test_chisq_fit(data=None, model=None, offset=20):
+    """chi-squared test for goodness of fit betweet model and data
 
-    bad_values = np.isnan(map_data)
-    map_data = map_data[~bad_values]
-    fee = fee[~bad_values]
+    :param data: A data array to be fit to a model. Typically this if rf map data being fit to the fee model
+    :param model: The model to which the data is being fit. Typically the fee beam model
+    :param offset: An integer offset by which data and model can be shifted away from their original 0 peak, which pvalues struggle with. Default=20
 
-    # map_data = np.asarray(map_data) + 120
-    # fee = np.asarray(fee) + 120
-    map_data = np.asarray(map_data) - np.nanmin(fee) + 20
-    fee = np.asarray(fee) - np.nanmin(fee) + 20
+    :returns:
+        - pvalue - an indicator for goodess of fit
+    """
 
-    _, pvalue = chisquare(map_data, f_exp=fee)
+    bad_values = np.isnan(data)
+    data = data[~bad_values]
+    model = model[~bad_values]
+
+    data = np.asarray(data) - np.nanmin(model) + offset
+    model = np.asarray(model) - np.nanmin(model) + offset
+
+    _, pvalue = chisquare(data, f_exp=model)
 
     return pvalue
 
