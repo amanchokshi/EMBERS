@@ -49,7 +49,6 @@ def create_model(nside, file_name=None):
 
     data = np.loadtxt(file_name)
     theta = data[:, 0]
-    #  phi = data[:, 1]
     re_theta = data[:, 2]
     im_theta = data[:, 3]
     re_phi = data[:, 4]
@@ -102,9 +101,17 @@ def create_model(nside, file_name=None):
 
 
 def ref_healpix(nside, out_dir):
+    """Save and plot reference healix maps
+
+    :param nside: Healpix nside
+    :param out_dir: Path to output directory
+
+    :returns:
+        - Reference beam models have to :samp:`.npz` file in :samp:`out_dir` and plot of reference beam patterns
+
+    """
 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-    len_empty_healpix = hp.nside2npix(nside)  # 12288
 
     # Reference FEE models in XX & YY pols
     refXX = pkg_resources.resource_filename(
@@ -122,49 +129,19 @@ def ref_healpix(nside, out_dir):
     )
 
     # Plot the things to sanity check and save results
-    fig = plt.figure(figsize=(10, 10))
+    plt.style.use("seaborn")
+    fig = plt.figure(figsize=(10, 14))
 
-    ax1 = fig.add_subplot(221, projection="polar")
-    ax1.set_rgrids([10, 30, 50, 70, 90], angle=22)
-    ax2 = fig.add_subplot(222, projection="polar")
-    ax2.set_rgrids([10, 30, 50, 70, 90], angle=22)
-
-    ax1.pcolormesh(
-        phi_mesh * (np.pi / 180.0),
-        theta_mesh,
-        power_XX,
-        label="XX",
-        vmin=-40,
-        vmax=-20,
-        cmap=cmap,
-    )
-
-    ax1.set_title("Ref XX", y=1.1)
-    ax1.grid(color="k", alpha=0.3)
-
-    ax2.pcolormesh(
-        phi_mesh * (np.pi / 180.0),
-        theta_mesh,
-        power_YY,
-        label="YY",
-        vmin=-40,
-        vmax=-20,
-        cmap=cmap,
-    )
-
-    ax2.set_title("Ref YY", y=1.1)
-    ax2.grid(color="k", alpha=0.3)
-
-    ax3 = fig.add_subplot(2, 2, 3)
+    ax3 = fig.add_subplot(2, 2, 1)
     plot_healpix(
-        data_map=healpix_XX, sub=(2, 2, 3), title=None, vmin=-20, vmax=0, cmap=cmap
+        data_map=healpix_XX, sub=(2, 2, 1), title="Reference XX", vmin=-20, vmax=0, cmap=cmap
     )
     ax3.axis("off")
     ax3.set_title("Healpix XX", x=0.4, y=-0.33)
 
-    ax4 = fig.add_subplot(2, 2, 4)
+    ax4 = fig.add_subplot(2, 2, 2)
     plot_healpix(
-        data_map=healpix_YY, sub=(2, 2, 4), title=None, vmin=-20, vmax=0, cmap=cmap
+        data_map=healpix_YY, sub=(2, 2, 2), title="Reference YY", vmin=-20, vmax=0, cmap=cmap
     )
     ax4.axis("off")
     ax4.set_title("Healpix YY", x=0.6, y=-0.33)
