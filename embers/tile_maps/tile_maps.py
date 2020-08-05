@@ -1,3 +1,11 @@
+"""
+Tile Maps
+----------
+
+A set of tools to project satellite passes onto a healpix map according to their ephemeris.
+
+"""
+
 import argparse
 import concurrent.futures
 import json
@@ -7,12 +15,12 @@ from pathlib import Path
 import healpy as hp
 import matplotlib
 import numpy as np
-from embers.rf_tools.colormap import spectral
+from embers.rf_tools.colormaps import spectral
+from embers.rf_tools.rf_data import tile_names
 from embers.sat_utils.sat_channels import (noise_floor, read_aligned,
                                            time_filter, time_tree)
 from embers.sat_utils.sat_list import norad_ids
 from embers.tile_maps.null_test import rotate
-from ermbers.rf_tools.rf_data import tile_names
 from matplotlib import pyplot as plt
 from scipy import optimize as opt
 from scipy.stats import chisquare
@@ -22,7 +30,7 @@ cmap, _ = spectral()
 
 
 def check_pointing(timestamp, obs_point_json):
-    """Check if timestamp is at MWA pointing 0, 2, 4, 41.
+    """Check if timestamp is at MWA sweet-pointing 0, 2, 4, 41.
 
     :param timestamp: time at which MWA pointing is to be checked
     :param obs_point_json: Path to :samp:`obs_point.json` output from :func:`~embers.mwa_utils.mwa_pointings.obs_pointings`
