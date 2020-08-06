@@ -10,6 +10,46 @@ import healpy as hp
 import numpy as np
 
 
+# rotate func written by Jack Line
+def rotate_map(nside, angle=None, healpix_array=None, savetag=None, flip=False):
+    """Rotates healpix array by the desired angle, and saves it.
+
+    Optionally flip the data, changes east-west into west-east because astronomy
+
+    :param nside: Healpix nside
+    :param angle: Angle by which to rotate the healpix map
+    :param healpix_array: Input healpix array to be rotated
+    :param savetag: If given, will save the rotated beam map to :samp:`.npz` file
+    :param flip: Do an astronomy coordinate flip, if True
+
+    :returns:
+        - Rotated healpix map
+
+    """
+
+    # theta phi values of each pixel
+    hp_indices = np.arange(hp.nside2npix(nside))
+    θ, ɸ = hp.pix2ang(nside, hp_indices)
+
+    new_hp_inds = hp.ang2pix(nside, θ, ɸ + angle)
+
+    # Flip the data to match astro conventions
+    if flip is True:
+        new_angles = []
+        for phi in ɸ:
+            if phi <= np.pi:
+                new_angles.append(np.pi - phi)
+            else:
+                new_angles.append(3 * np.pi - phi)
+        new_hp_inds = hp.ang2pix(nside, ɸ, np.asarray(new_angles))
+
+    # Save the array in the new order
+    if savetag:
+        np.savez_compressed(savetag, beammap=healpix_array[new_hp_inds])
+
+    return healpix_array[new_hp_inds]
+
+
 def plot_healpix(
     data_map=None,
     fig=None,
@@ -20,7 +60,21 @@ def plot_healpix(
     cmap=None,
     cbar=True,
 ):
-    """Yeesh do some healpix magic to plot the thing"""
+    """Yeesh do some healpix magic to plot the thing
+
+    :param data_map: Healpix input map to plot
+    :param fig: Figure number to use
+    :param sub: Matplotlib subplot syntax
+    :param title: Plot title
+    :param vmin: Colormap minimum
+    :param vmax: Colormap maximum
+    :param cmap: Matplotlib :class:`~matplotlib.colors.ListedColormap`
+    :param cbar: If True, plot a colorbar
+
+    :returns:
+        - Plot of healpix map
+
+    """
 
     # Disable cryptic healpy warnings. Can't figure out where they originate
     import warnings
