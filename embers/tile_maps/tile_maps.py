@@ -10,6 +10,7 @@ import argparse
 import concurrent.futures
 import json
 import sys
+from itertools import repeat
 from pathlib import Path
 
 import healpy as hp
@@ -144,6 +145,7 @@ def plt_channel(
 
     """
 
+    Path(out_dir).mkdir(parents=True, exist_ok=True)
     plt.style.use("seaborn")
 
     fig = plt.figure(figsize=(8, 6))
@@ -318,6 +320,7 @@ def rf_apply_thresholds(
     pow_thresh,
     point,
     plots,
+    out_dir,
 ):
 
     """Apply power, noise thresholds to rf data arrays.
@@ -335,6 +338,7 @@ def rf_apply_thresholds(
     :param pow_thresh: Peak power which must be exceeded for satellite pass to be considered
     :param point: MWA sweet pointing of the observation
     :param plots: if :samp:`True` create diagnostic plots
+    :param out_dir: Output directory where plot will be saved
 
     :returns:
         - :class:`~tuple` of (ref_power, tile_power, alt, az, times) where all thresholds were met. If no data passes all thresholds 0 returned
@@ -394,7 +398,7 @@ def rf_apply_thresholds(
                         np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]
                     ]
 
-                    if plots == "True":
+                    if plots is True:
                         plt_channel(
                             f"{out_dir}/pass_plots/{tile}_{ref}/{point}",
                             times_c,
@@ -435,7 +439,6 @@ def rfe_calibration(
     chrono_dir,
     chan_map_dir,
     out_dir,
-    plots,
 ):
 
     resi_gain = {}
@@ -445,25 +448,6 @@ def rfe_calibration(
     ref, tile = tile_pair
 
     dates, timestamps = time_tree(start_date, stop_date)
-
-    # Initialize an empty dictionary for tile data
-    # The map is list of length 12288 of empty lists to append pixel values to
-    # keep track of which satellites contributed which data
-    #    tile_data = {
-    #        "mwa_maps": {
-    #            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
-    #        },
-    #        "ref_maps": {
-    #            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
-    #        },
-    #        "tile_maps": {
-    #            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
-    #        },
-    #        "sat_map": {
-    #            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
-    #        },
-    #        "times": {p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings},
-    #    }
 
     # Load reference FEE model
     # Rotate the fee models by -pi/2 to move model from spherical (E=0) to Alt/Az (N=0)
@@ -538,7 +522,8 @@ def rfe_calibration(
                                                 noi_thresh,
                                                 pow_thresh,
                                                 point,
-                                                plots,
+                                                False,
+                                                out_dir,
                                             )
 
                                             if sat_data != 0:
@@ -701,6 +686,161 @@ def rfe_calibration(
     # Save gain residuals to json file
     with open(f"{out_dir}/{tile}_{ref}_gain_fit.json", "w") as outfile:
         json.dump(resi_gain, outfile, indent=4)
+
+
+# def rfe_collate_cali():
+#    # Combine data from all RF Explorers
+#    pass_data = []
+#    pass_resi = []
+#
+#    for n, f in enumerate(gain_files):
+#        with open(f, "r") as data:
+#            rfe = json.load(data)
+#            pass_data.extend(rfe["pass_data"])
+#            pass_resi.extend(rfe["pass_resi"])
+#
+#            # pass_data = rfe['pass_data']
+#            # pass_resi = rfe['pass_resi']
+#            #
+#            # plt.style.use('seaborn')
+#            # fig = plt.figure()
+#            # plt.scatter(pass_data, pass_resi, marker='.', alpha=0.7, color='seagreen')
+#            # plt.xlabel('Observed power [dBm]')
+#            # plt.ylabel('Residuals power [dB]')
+#            # plt.xlim([-80,-20])
+#            # plt.ylim([-20,20])
+#            # plt.tight_layout()
+#            # plt.savefig(f'../../outputs/paper_plots/{names[n]}.png', bbox_inches='tight')
+#            # plt.close()
+#
+#    fig = plt.figure()
+#
+#    plt.hexbin(pass_data, pass_resi, gridsize=121, cmap=cmap, alpha=0.99, zorder=0)
+#
+#    pass_data = np.array(pass_data)
+#    pass_resi = np.array(pass_resi)
+#
+#    # Clean up huge noisy outliers
+#    filtr = np.where(np.logical_and(pass_data <= -25, pass_data >= -65))
+#    pass_data = pass_data[filtr]
+#    pass_resi = pass_resi[filtr]
+#
+#    # Median of binned data
+#    bin_med, bin_edges, binnumber = binned_statistic(
+#        pass_data, pass_resi, statistic="median", bins=16
+#    )
+#    bin_width = bin_edges[1] - bin_edges[0]
+#    bin_centers = bin_edges[1:] - bin_width / 2
+#
+#    # Now look at data between -50, -30, where gains vary
+#    filtr = np.where(np.logical_and(pass_data >= start_gain, pass_data <= stop_gain))
+#    pass_data = pass_data[filtr]
+#    pass_resi = pass_resi[filtr]
+#
+#    # Linear fit to RFE data between -50, -30 dBm
+#    poly = np.polyfit(pass_data, pass_resi, 2)
+#    # Mathematical function of fit, which can be evaluated anywhere
+#    f = np.poly1d(poly)
+#    # save polyfit to file
+#    np.save(f"{rfe_dir}/rfe_gain_fit.npy", poly)
+#
+#    # x_f = [f.roots[0], -45, -40, -35, -30, -25, -20]
+#    x_f = np.linspace(max(f.roots), -25, num=10)
+#    y_f = f(x_f)
+#
+#    plt.plot(
+#        x_f,
+#        y_f,
+#        color="w",
+#        lw=2.1,
+#        marker="s",
+#        markeredgecolor="k",
+#        markeredgewidth=1.6,
+#        markersize=4.9,
+#        alpha=1,
+#        label="Gain fit",
+#        zorder=1,
+#    )
+#    plt.scatter(
+#        bin_centers,
+#        bin_med,
+#        marker="X",
+#        s=36,
+#        facecolors="#ee4540",
+#        lw=0.9,
+#        edgecolors="w",
+#        alpha=1,
+#        label="Median residuals",
+#        zorder=2,
+#    )
+#
+#    leg = plt.legend(loc="lower right", frameon=True, markerscale=0.9, handlelength=1.4)
+#    leg.get_frame().set_facecolor("#cccccc")
+#    for l in leg.legendHandles:
+#        l.set_alpha(0.77)
+#
+#    plt.xlabel("Observed power [dBm]")
+#    plt.ylabel("Residuals power [dB]")
+#    plt.xlim([-65, -25])
+#    plt.ylim([-10, 15])
+#    plt.tick_params(axis="both", length=0)
+#    plt.grid(color="#cccccc", alpha=0.36, lw=1.2)
+#    plt.box(None)
+#    plt.tight_layout()
+#    plt.savefig(f"{rfe_dir}/rfe_gain_fit.png", bbox_inches="tight")
+
+
+def rfe_batch_cali(
+    start_date,
+    stop_date,
+    sat_thresh,
+    noi_thresh,
+    pow_thresh,
+    ref_model,
+    fee_map,
+    nside,
+    obs_point_json,
+    align_dir,
+    chrono_dir,
+    chan_map_dir,
+    out_dir,
+):
+    # Tile names
+    refs = tile_names()[:4]
+    tiles = tile_names()[4:]
+
+    # All relevant tile pairs
+    tile_pairs = []
+    for ref in refs:
+        if "XX" in ref:
+            for tile in [t for t in tiles if "XX" in t]:
+                tile_pairs.append([ref, tile])
+        else:
+            for tile in [t for t in tiles if "YY" in t]:
+                tile_pairs.append([ref, tile])
+
+    # Save logs
+    Path(out_dir).mkdir(parents=True, exist_ok=True)
+
+    # Parallization magic happens here
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        executor.map(
+            rfe_calibration,
+            repeat(start_date),
+            repeat(stop_date),
+            tile_pairs,
+            repeat(sat_thresh),
+            repeat(noi_thresh),
+            repeat(pow_thresh),
+            repeat(ref_model),
+            repeat(fee_map),
+            repeat(nside),
+            repeat(obs_point_json),
+            repeat(align_dir),
+            repeat(chrono_dir),
+            repeat(chan_map_dir),
+            repeat(out_dir),
+        )
 
 
 def project_tile_healpix(tile_pair, start_date, stop_date):
