@@ -440,6 +440,31 @@ def rfe_calibration(
     chan_map_dir,
     out_dir,
 ):
+    """Calibrate the gain variations of a RF Explorers at high powers.
+
+    For a given pair of reference and MWA tile rf data files, within a time interval, critically characterize the gain variations
+    of the RF Explorers, at high power, where they enter a non-linear regime. This is done my comparing satellite passes with
+    corresponding slices of the MWA FEE beam model, and determining the power deficit.
+
+    :param start_date: Start date in :samp:`YYYY-MM-DD-HH:MM` format
+    :param stop_date: Stop date in :samp:`YYYY-MM-DD-HH:MM` format
+    :param tile_pair: A pair of reference and MWA tile names. Ex: ["rf0XX", "S06XX"]
+    :param sat_thresh: σ threshold to detect sats in the computation of rf data noise_floor. A good default is 1
+    :param noi_thresh: Noise Threshold: Multiples of MAD. 3 is a good default
+    :param pow_thresh: Peak power which must be exceeded for satellite pass to be considered
+    :param ref_model: Path to directory with reference feko model :samp:`.npz` file, output by :func:`~embers.tile_maps.ref_fee_healpix.ref_healpix_save`
+    :param fee_map: Path to directory with MWA fee model :samp:`.npz` file, output by :func:`~embers.mwa_utils.mwa_fee.mwa_fee_model`
+    :param nside: Healpix nside
+    :param obs_point_json: Path to :samp:`obs_pointings.json` created by :func:`~embers.mwa_utils.mwa_pointings.obs_pointings`
+    :param align_dir: Path to directory containing aligned rf data files, output from :func:`~embers.rf_tools.align_data.save_aligned`
+    :param chrono_dir: Path to directory containing chronological ephemeris data output from :func:`~embers.sat_utils.chrono_ephem.save_chrono_ephem`
+    :param chan_map_dir: Path to directory containing satellite frequency channel maps. Output from :func:`~embers.sat_utils.sat_channels.batch_window_map`
+    :param out_dir: Output directory where rfe calibration data will be saved as a :samp:`json` file
+
+    :returns:
+        - Json file saved to out_dir which contains RF explorer calibration data.
+
+    """"
 
     resi_gain = {}
     resi_gain["pass_data"] = []
@@ -689,6 +714,16 @@ def rfe_calibration(
 
 
 def rfe_collate_cali(start_gain, stop_gain, rfe_cali_dir):
+    """Collate RF Explorer gain calibration data from all MWA tile pairs, and plot a gain solution.
+
+    :param start_gain: Power at which RFE gain variations begin. Ex: -50dBm
+    :param stop_gain: Power at which RFE gain variations saturate. Ex: -30dBm
+    :param rfe_cali_dir: Path to directory which contains gain calibration data saved by :func:`~embers.tile_maps.tile_maps.rfe_calibration`
+
+    :returns:
+        - Plot of global gain calibration solution and polynomial fit saved to :samp:`.npz` in the out_dir
+
+    """
 
     # find all rfe_gain json files
     gain_files = [item for item in Path(rfe_cali_dir).glob("*.json")]
@@ -785,6 +820,8 @@ def rfe_collate_cali(start_gain, stop_gain, rfe_cali_dir):
 def rfe_batch_cali(
     start_date,
     stop_date,
+    start_gain,
+    stop_gain,
     sat_thresh,
     noi_thresh,
     pow_thresh,
@@ -797,6 +834,30 @@ def rfe_batch_cali(
     chan_map_dir,
     out_dir,
 ):
+
+    """Batch gain calibrate all pairs of RF explorers and compute a global solution.
+
+    :param start_date: Start date in :samp:`YYYY-MM-DD-HH:MM` format
+    :param stop_date: Stop date in :samp:`YYYY-MM-DD-HH:MM` format
+    :param start_gain: Power at which RFE gain variations begin. Ex: -50dBm
+    :param stop_gain: Power at which RFE gain variations saturate. Ex: -30dBm
+    :param sat_thresh: σ threshold to detect sats in the computation of rf data noise_floor. A good default is 1
+    :param noi_thresh: Noise Threshold: Multiples of MAD. 3 is a good default
+    :param pow_thresh: Peak power which must be exceeded for satellite pass to be considered
+    :param ref_model: Path to directory with reference feko model :samp:`.npz` file, output by :func:`~embers.tile_maps.ref_fee_healpix.ref_healpix_save`
+    :param fee_map: Path to directory with MWA fee model :samp:`.npz` file, output by :func:`~embers.mwa_utils.mwa_fee.mwa_fee_model`
+    :param nside: Healpix nside
+    :param obs_point_json: Path to :samp:`obs_pointings.json` created by :func:`~embers.mwa_utils.mwa_pointings.obs_pointings`
+    :param align_dir: Path to directory containing aligned rf data files, output from :func:`~embers.rf_tools.align_data.save_aligned`
+    :param chrono_dir: Path to directory containing chronological ephemeris data output from :func:`~embers.sat_utils.chrono_ephem.save_chrono_ephem`
+    :param chan_map_dir: Path to directory containing satellite frequency channel maps. Output from :func:`~embers.sat_utils.sat_channels.batch_window_map`
+    :param out_dir: Output directory where rfe calibration data will be saved as a :samp:`json` file
+
+    :returns:
+        - Json files saved to out_dir, contains RF explorer calibration data. Plot and data of global calibration solution saved too.
+
+    """
+
     # Tile names
     refs = tile_names()[:4]
     tiles = tile_names()[4:]
@@ -820,6 +881,8 @@ def rfe_batch_cali(
             rfe_calibration,
             repeat(start_date),
             repeat(stop_date),
+            repeat(start_gain),
+            repeat(stop_gain),
             tile_pairs,
             repeat(sat_thresh),
             repeat(noi_thresh),
@@ -834,7 +897,7 @@ def rfe_batch_cali(
             repeat(out_dir),
         )
 
-    rfe_collate_cali(-50, -30, out_dir)
+    rfe_collate_cali(start_gain, stop_gain, out_dir)
 
 
 def project_tile_healpix(tile_pair, start_date, stop_date):
