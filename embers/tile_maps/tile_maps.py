@@ -452,8 +452,8 @@ def rfe_calibration(
     :param sat_thresh: σ threshold to detect sats in the computation of rf data noise_floor. A good default is 1
     :param noi_thresh: Noise Threshold: Multiples of MAD. 3 is a good default
     :param pow_thresh: Peak power which must be exceeded for satellite pass to be considered
-    :param ref_model: Path to directory with reference feko model :samp:`.npz` file, output by :func:`~embers.tile_maps.ref_fee_healpix.ref_healpix_save`
-    :param fee_map: Path to directory with MWA fee model :samp:`.npz` file, output by :func:`~embers.mwa_utils.mwa_fee.mwa_fee_model`
+    :param ref_model: Path to reference feko model :samp:`.npz` file, output by :func:`~embers.tile_maps.ref_fee_healpix.ref_healpix_save`
+    :param fee_map: Path to with MWA fee model :samp:`.npz` file, output by :func:`~embers.mwa_utils.mwa_fee.mwa_fee_model`
     :param nside: Healpix nside
     :param obs_point_json: Path to :samp:`obs_pointings.json` created by :func:`~embers.mwa_utils.mwa_pointings.obs_pointings`
     :param align_dir: Path to directory containing aligned rf data files, output from :func:`~embers.rf_tools.align_data.save_aligned`
@@ -844,8 +844,8 @@ def rfe_batch_cali(
     :param sat_thresh: σ threshold to detect sats in the computation of rf data noise_floor. A good default is 1
     :param noi_thresh: Noise Threshold: Multiples of MAD. 3 is a good default
     :param pow_thresh: Peak power which must be exceeded for satellite pass to be considered
-    :param ref_model: Path to directory with reference feko model :samp:`.npz` file, output by :func:`~embers.tile_maps.ref_fee_healpix.ref_healpix_save`
-    :param fee_map: Path to directory with MWA fee model :samp:`.npz` file, output by :func:`~embers.mwa_utils.mwa_fee.mwa_fee_model`
+    :param ref_model: Path to reference feko model :samp:`.npz` file, output by :func:`~embers.tile_maps.ref_fee_healpix.ref_healpix_save`
+    :param fee_map: Path to MWA fee model :samp:`.npz` file, output by :func:`~embers.mwa_utils.mwa_fee.mwa_fee_model`
     :param nside: Healpix nside
     :param obs_point_json: Path to :samp:`obs_pointings.json` created by :func:`~embers.mwa_utils.mwa_pointings.obs_pointings`
     :param align_dir: Path to directory containing aligned rf data files, output from :func:`~embers.rf_tools.align_data.save_aligned`
