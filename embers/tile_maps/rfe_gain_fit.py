@@ -1,19 +1,20 @@
-import sys
-import json
 import argparse
+import json
+import sys
+
 import matplotlib
 import numpy as np
 
 matplotlib.use("Agg")
 from pathlib import Path
-import scipy.optimize as opt
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gs
-from scipy.stats import median_absolute_deviation as mad
+
+from matplotlib import gridspec as gs
+from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-import numpy.polynomial.polynomial as poly
+from numpy.polynomial import polynomial as poly
+from scipy import optimize as opt
 from scipy.stats import binned_statistic
-import scipy.optimize as opt
+from scipy.stats import median_absolute_deviation as mad
 
 sys.path.append("../decode_rf_data")
 from colormap import spectral
