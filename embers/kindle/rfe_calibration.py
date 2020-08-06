@@ -116,7 +116,7 @@ _parser.add_argument(
     "--out_dir",
     metavar="\b",
     default="./embers_out/tile_maps/rfe_calibration",
-    help="Dir where RF Explorer calibration data will be saved. Default=./embers_out/tile_maps/rfe_calibration",
+    help="Directory where RF Explorer calibration data will be saved. Default=./embers_out/tile_maps/rfe_calibration",
 )
 
 _args = _parser.parse_args()
