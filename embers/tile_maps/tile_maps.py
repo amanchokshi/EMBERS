@@ -309,7 +309,15 @@ def plt_fee_fit(
 
 
 def rf_apply_thresholds(
-    ali_file, chrono_file, sat_id, sat_chan, pow_thresh, point, plots
+    ali_file,
+    chrono_file,
+    sat_id,
+    sat_chan,
+    sat_thresh,
+    noi_thresh,
+    pow_thresh,
+    point,
+    plots,
 ):
 
     """Apply power, noise thresholds to rf data arrays.
@@ -322,6 +330,8 @@ def rf_apply_thresholds(
     :param chrono_file: :class:`~pathlib.PurePosixPath` to chrono ephemeris file, output from :func:`~embers.sat_utils.chrono_ephem.save_chrono_ephem`
     :param sat_id: Norad catalogue ID
     :param sat_chan: Transmission channel of given :samp:`sat_id`
+    :param sat_thresh: σ threshold to detect sats in the computation of rf data noise_floor. A good default is 1
+    :param noi_thresh: Noise Threshold: Multiples of MAD. 3 is a good default
     :param pow_thresh: Peak power which must be exceeded for satellite pass to be considered
     :param point: MWA sweet pointing of the observation
     :param plots: if :samp:`True` create diagnostic plots
@@ -335,15 +345,15 @@ def rf_apply_thresholds(
 
     ref_p, tile_p, times = read_aligned(ali_file=ali_file)
 
-    ref_p, ref_noise = noise_floor(sat_thresh, noi_thresh, ref_p)
-    tile_p, tile_noise = noise_floor(sat_thresh, noi_thresh, tile_p)
+    ref_noise = noise_floor(sat_thresh, noi_thresh, ref_p)
+    tile_noise = noise_floor(sat_thresh, noi_thresh, tile_p)
 
     with open(chrono_file) as chrono:
         chrono_ephem = json.load(chrono)
 
         norad_list = [chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))]
 
-        norad_index = norad_list.index(sat_id)
+        norad_index = norad_list.index(str(sat_id))
 
         norad_ephem = chrono_ephem[norad_index]
 
@@ -410,7 +420,23 @@ def rf_apply_thresholds(
             return 0
 
 
-def rfe_clibration(tile_pair, start_date, stop_date):
+def rfe_calibration(
+    start_date,
+    stop_date,
+    tile_pair,
+    sat_thresh,
+    noi_thresh,
+    pow_thresh,
+    ref_model,
+    fee_map,
+    nside,
+    obs_point_json,
+    align_dir,
+    chrono_dir,
+    chan_map_dir,
+    out_dir,
+    plots,
+):
 
     resi_gain = {}
     resi_gain["pass_data"] = []
@@ -418,28 +444,26 @@ def rfe_clibration(tile_pair, start_date, stop_date):
 
     ref, tile = tile_pair
 
-    pointings = ["0", "2", "4", "41"]
-
     dates, timestamps = time_tree(start_date, stop_date)
 
     # Initialize an empty dictionary for tile data
     # The map is list of length 12288 of empty lists to append pixel values to
     # keep track of which satellites contributed which data
-#    tile_data = {
-#        "mwa_maps": {
-#            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
-#        },
-#        "ref_maps": {
-#            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
-#        },
-#        "tile_maps": {
-#            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
-#        },
-#        "sat_map": {
-#            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
-#        },
-#        "times": {p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings},
-#    }
+    #    tile_data = {
+    #        "mwa_maps": {
+    #            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
+    #        },
+    #        "ref_maps": {
+    #            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
+    #        },
+    #        "tile_maps": {
+    #            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
+    #        },
+    #        "sat_map": {
+    #            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
+    #        },
+    #        "times": {p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings},
+    #    }
 
     # Load reference FEE model
     # Rotate the fee models by -pi/2 to move model from spherical (E=0) to Alt/Az (N=0)
@@ -456,49 +480,43 @@ def rfe_clibration(tile_pair, start_date, stop_date):
 
     for day in range(len(dates)):
 
-        for window in range(len(date_time[day])):
-            timestamp = date_time[day][window]
+        for window in range(len(timestamps[day])):
+            timestamp = timestamps[day][window]
 
-            # Check if at timestamp, reciever was pointed to 0,2,4 gridpointing
-            if (
-                (timestamp in point_0)
-                or (timestamp in point_2)
-                or (timestamp in point_4)
-                or (timestamp in point_41)
-            ):
+            # pointing at timestamp
+            point = check_pointing(timestamp, obs_point_json)
 
-                # pointing at timestamp
-                point = check_pointing(timestamp, point_0, point_2, point_4, point_41)
+            if point == 0:
 
-                if point is 0:
+                if "XX" in tile:
+                    mwa_fee = fee_m[str(point)][0]
+                else:
+                    mwa_fee = fee_m[str(point)][1]
 
-                    if "XX" in tile:
-                        mwa_fee = fee_m[str(point)][0]
-                    else:
-                        mwa_fee = fee_m[str(point)][1]
+                ali_file = Path(
+                    f"{align_dir}/{dates[day]}/{timestamp}/{ref}_{tile}_{timestamp}_aligned.npz"
+                )
 
-                    ali_file = Path(
-                        f"{align_dir}/{dates[day]}/{timestamp}/{ref}_{tile}_{timestamp}_aligned.npz"
-                    )
+                # check if file exists
+                if ali_file.is_file():
 
-                    # check if file exists
-                    if ali_file.is_file():
+                    # Chrono and map Ephemeris file
+                    chrono_file = Path(f"{chrono_dir}/{timestamp}.json")
+                    channel_map = Path(f"{chan_map_dir}/{timestamp}.json")
 
-                        # Chrono and map Ephemeris file
-                        chrono_file = Path(f"{chrono_dir}/{timestamp}.json")
-                        channel_map = f"{map_dir}/{timestamp}.json"
+                    with open(chrono_file) as chrono:
+                        chrono_ephem = json.load(chrono)
 
-                        with open(chrono_file) as chrono:
-                            chrono_ephem = json.load(chrono)
+                        if chrono_ephem != []:
 
-                            if chrono_ephem != []:
+                            norad_list = [
+                                chrono_ephem[s]["sat_id"][0]
+                                for s in range(len(chrono_ephem))
+                            ]
 
-                                norad_list = [
-                                    chrono_ephem[s]["sat_id"][0]
-                                    for s in range(len(chrono_ephem))
-                                ]
+                            if norad_list != []:
 
-                                if norad_list != []:
+                                if channel_map.is_file():
 
                                     with open(channel_map) as ch_map:
                                         chan_map = json.load(ch_map)
@@ -511,16 +529,16 @@ def rfe_clibration(tile_pair, start_date, stop_date):
 
                                             chan = chan_map[f"{sat}"]
 
-                                            sat_data = power_ephem(
-                                                ref,
-                                                tile,
+                                            sat_data = rf_apply_thresholds(
                                                 ali_file,
                                                 chrono_file,
                                                 sat,
                                                 chan,
-                                                point,
+                                                sat_thresh,
+                                                noi_thresh,
                                                 pow_thresh,
-                                                timestamp,
+                                                point,
+                                                plots,
                                             )
 
                                             if sat_data != 0:
@@ -562,6 +580,7 @@ def rfe_clibration(tile_pair, start_date, stop_date):
                                                         for i in u
                                                     ]
                                                 )
+
                                                 tile_pass = np.array(
                                                     [
                                                         np.nanmean(
@@ -574,6 +593,7 @@ def rfe_clibration(tile_pair, start_date, stop_date):
                                                         for i in u
                                                     ]
                                                 )
+
                                                 times_pass = np.array(
                                                     [
                                                         np.mean(
@@ -586,27 +606,30 @@ def rfe_clibration(tile_pair, start_date, stop_date):
                                                         for i in u
                                                     ]
                                                 )
+
                                                 ref_fee_pass = np.array(
                                                     [rotated_fee[i] for i in u]
                                                 )
+
                                                 mwa_fee_pass = np.array(
                                                     [mwa_fee[i] for i in u]
                                                 )
 
                                                 # This is the magic. Equation [1] of the paper
+                                                # A measured cross sectional slice of the MWA beam
                                                 mwa_pass = (
                                                     np.array(tile_pass)
                                                     - np.array(ref_pass)
                                                     + np.array(ref_fee_pass)
                                                 )
 
-                                                # RFE distortion is seen in tile_pass when raw power is above -40dBm
+                                                # RFE distortion is seen in tile_pass when raw power is above -30dBm
                                                 # fit the mwa_pass data to the tile_pass power level
-                                                # Mask everything below -50dBm to fit distorted MWA and tile pass
+                                                # Mask everything below -30dBm to fit distorted MWA and tile pass
                                                 peak_filter = np.where(tile_pass >= -30)
-                                                offset = fit_gain(
-                                                    map_data=tile_pass[peak_filter],
-                                                    fee=mwa_pass[peak_filter],
+                                                offset = chisq_fit_gain(
+                                                    data=tile_pass[peak_filter],
+                                                    model=mwa_pass[peak_filter],
                                                 )
                                                 # This is a slice of the MWA beam, scaled back to the power level of the raw, distorted tile data
                                                 mwa_pass = mwa_pass + offset[0]
@@ -623,9 +646,9 @@ def rfe_clibration(tile_pair, start_date, stop_date):
                                                     mwa_fee_pass_fil >= -55
                                                 )
 
-                                                offset = fit_gain(
-                                                    map_data=mwa_pass_fil[null_filter],
-                                                    fee=mwa_fee_pass_fil[null_filter],
+                                                offset = chisq_fit_gain(
+                                                    data=mwa_pass_fil[null_filter],
+                                                    model=mwa_fee_pass_fil[null_filter],
                                                 )
                                                 mwa_fee_pass = mwa_fee_pass + offset
                                                 mwa_pass_fit = mwa_pass
@@ -639,11 +662,11 @@ def rfe_clibration(tile_pair, start_date, stop_date):
                                                 ):
 
                                                     # determine how well the data fits the model with chi-square
-                                                    pval = fit_test(
-                                                        map_data=mwa_pass_fit[
-                                                            dis_filter
-                                                        ][null_filter],
-                                                        fee=mwa_fee_pass[dis_filter][
+                                                    pval = test_chisq_fit(
+                                                        data=mwa_pass_fit[dis_filter][
+                                                            null_filter
+                                                        ],
+                                                        model=mwa_fee_pass[dis_filter][
                                                             null_filter
                                                         ],
                                                     )
@@ -674,21 +697,6 @@ def rfe_clibration(tile_pair, start_date, stop_date):
                                                                 resi_gain[
                                                                     "pass_resi"
                                                                 ].extend(resi)
-
-                                                                # Plot individual passes
-                                                                if plots == "True":
-                                                                    # if mwa_fee_pass.size !=0:
-                                                                    #    if np.amax(mwa_fee_pass) >= -30:
-                                                                    plt_fee_fit(
-                                                                        times_pass,
-                                                                        mwa_fee_pass,
-                                                                        mwa_pass_fit,
-                                                                        f"{out_dir}/fit_plots/",
-                                                                        point,
-                                                                        timestamp,
-                                                                        sat,
-                                                                        pval,
-                                                                    )
 
     # Save gain residuals to json file
     with open(f"{out_dir}/{tile}_{ref}_gain_fit.json", "w") as outfile:
