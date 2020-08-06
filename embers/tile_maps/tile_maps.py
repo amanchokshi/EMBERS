@@ -898,7 +898,22 @@ def rfe_batch_cali(
     rfe_collate_cali(start_gain, stop_gain, out_dir)
 
 
-def project_tile_healpix(tile_pair, start_date, stop_date):
+def project_tile_healpix(
+    start_date,
+    stop_date,
+    tile_pair,
+    sat_thresh,
+    noi_thresh,
+    pow_thresh,
+    ref_model,
+    fee_map,
+    nside,
+    obs_point_json,
+    align_dir,
+    chrono_dir,
+    chan_map_dir,
+    out_dir,
+):
 
     ref, tile = tile_pair
 
@@ -1107,7 +1122,7 @@ def project_tile_healpix(tile_pair, start_date, stop_date):
                                             )
 
                                             # fit the power level of the pass to the mwa_fee model using a single gain value
-                                            offset = fit_gain(
+                                            offset = chisq_fit_gain(
                                                 map_data=mwa_pass, fee=mwa_fee_pass
                                             )
 
@@ -1116,7 +1131,7 @@ def project_tile_healpix(tile_pair, start_date, stop_date):
                                             if mwa_pass_fit.size != 0:
 
                                                 # determine how well the data fits the model with chi-square
-                                                pval = fit_test(
+                                                pval = test_chisq_fit(
                                                     map_data=mwa_pass_fit,
                                                     fee=mwa_fee_pass,
                                                 )
@@ -1127,7 +1142,7 @@ def project_tile_healpix(tile_pair, start_date, stop_date):
                                                         - np.array(ref_pass)
                                                         + np.array(ref_fee_pass)
                                                     )
-                                                    offset = fit_gain(
+                                                    offset = chisq_fit_gain(
                                                         map_data=mwa_pass_raw,
                                                         fee=mwa_fee_pass,
                                                     )
