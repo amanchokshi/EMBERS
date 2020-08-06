@@ -20,3 +20,6 @@
 .. autofunction:: embers.tile_maps.tile_maps.plt_channel
 .. autofunction:: embers.tile_maps.tile_maps.plt_fee_fit
 .. autofunction:: embers.tile_maps.tile_maps.rf_apply_thresholds
+.. autofunction:: embers.tile_maps.tile_maps.rfe_calibration
+.. autofunction:: embers.tile_maps.tile_maps.rfe_collate_cali
+.. autofunction:: embers.tile_maps.tile_maps.rfe_batch_cali

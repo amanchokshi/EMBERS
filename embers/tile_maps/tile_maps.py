@@ -464,7 +464,7 @@ def rfe_calibration(
     :returns:
         - Json file saved to out_dir which contains RF explorer calibration data.
 
-    """"
+    """
 
     resi_gain = {}
     resi_gain["pass_data"] = []
