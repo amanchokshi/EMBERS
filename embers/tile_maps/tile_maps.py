@@ -20,7 +20,7 @@ from embers.rf_tools.rf_data import tile_names
 from embers.sat_utils.sat_channels import (noise_floor, read_aligned,
                                            time_filter, time_tree)
 from embers.sat_utils.sat_list import norad_ids
-from embers.tile_maps.null_test import rotate
+from embers.tile_maps.beam_utils import rotate_map
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy import optimize as opt
@@ -410,7 +410,7 @@ def rf_apply_thresholds(
             return 0
 
 
-def rfe_gain(tile_pair):
+def rfe_clibration(tile_pair, start_date, stop_date):
 
     resi_gain = {}
     resi_gain["pass_data"] = []
@@ -420,24 +420,26 @@ def rfe_gain(tile_pair):
 
     pointings = ["0", "2", "4", "41"]
 
+    dates, timestamps = time_tree(start_date, stop_date)
+
     # Initialize an empty dictionary for tile data
     # The map is list of length 12288 of empty lists to append pixel values to
     # keep track of which satellites contributed which data
-    tile_data = {
-        "mwa_maps": {
-            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
-        },
-        "ref_maps": {
-            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
-        },
-        "tile_maps": {
-            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
-        },
-        "sat_map": {
-            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
-        },
-        "times": {p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings},
-    }
+#    tile_data = {
+#        "mwa_maps": {
+#            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
+#        },
+#        "ref_maps": {
+#            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
+#        },
+#        "tile_maps": {
+#            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
+#        },
+#        "sat_map": {
+#            p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings
+#        },
+#        "times": {p: [[] for pixel in range(hp.nside2npix(nside))] for p in pointings},
+#    }
 
     # Load reference FEE model
     # Rotate the fee models by -pi/2 to move model from spherical (E=0) to Alt/Az (N=0)
@@ -447,10 +449,10 @@ def rfe_gain(tile_pair):
 
     if "XX" in tile:
         ref_fee = ref_fee_model["XX"]
-        rotated_fee = rotate(nside, angle=-(1 * np.pi) / 2.0, healpix_array=ref_fee)
+        rotated_fee = rotate_map(nside, angle=-(1 * np.pi) / 2.0, healpix_array=ref_fee)
     else:
         ref_fee = ref_fee_model["YY"]
-        rotated_fee = rotate(nside, angle=-(1 * np.pi) / 2.0, healpix_array=ref_fee)
+        rotated_fee = rotate_map(nside, angle=-(1 * np.pi) / 2.0, healpix_array=ref_fee)
 
     for day in range(len(dates)):
 
@@ -693,11 +695,13 @@ def rfe_gain(tile_pair):
         json.dump(resi_gain, outfile, indent=4)
 
 
-def project_tile_healpix(tile_pair):
+def project_tile_healpix(tile_pair, start_date, stop_date):
 
     ref, tile = tile_pair
 
     pointings = ["0", "2", "4", "41"]
+
+    dates, timestamps = time_tree(start_date, stop_date)
 
     if plots == "True":
         Path(f"{out_dir}/pass_plots/{tile}_{ref}/0").mkdir(parents=True, exist_ok=True)
@@ -742,10 +746,10 @@ def project_tile_healpix(tile_pair):
 
     if "XX" in tile:
         ref_fee = ref_fee_model["XX"]
-        rotated_fee = rotate(nside, angle=-(1 * np.pi) / 2.0, healpix_array=ref_fee)
+        rotated_fee = rotate_map(nside, angle=-(1 * np.pi) / 2.0, healpix_array=ref_fee)
     else:
         ref_fee = ref_fee_model["YY"]
-        rotated_fee = rotate(nside, angle=-(1 * np.pi) / 2.0, healpix_array=ref_fee)
+        rotated_fee = rotate_map(nside, angle=-(1 * np.pi) / 2.0, healpix_array=ref_fee)
 
     for day in range(len(dates)):
 
