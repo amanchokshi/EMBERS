@@ -881,8 +881,6 @@ def rfe_batch_cali(
             rfe_calibration,
             repeat(start_date),
             repeat(stop_date),
-            repeat(start_gain),
-            repeat(stop_gain),
             tile_pairs,
             repeat(sat_thresh),
             repeat(noi_thresh),
