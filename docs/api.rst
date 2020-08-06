@@ -94,7 +94,19 @@ Tile Maps
 
 .. autosummary::
 
+    beam_utils.rotate_map
     beam_utils.plot_healpix
+    ref_fee_healpix.create_model
+    ref_fee_healpix.ref_healpix_save
+    tile_maps.check_pointing
+    tile_maps.chisq_fit_gain
+    tile_maps.test_chisq_fit
+    tile_maps.plt_channel
+    tile_maps.plt_fee_fit
+    tile_maps.rf_apply_thresholds
+    tile_maps.rfe_calibration
+    tile_maps.rfe_collate_cali
+    tile_maps.rfe_batch_cali
 
 
 Kindle
