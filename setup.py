@@ -71,6 +71,7 @@ setup(
             "mwa_dipoles=embers.kindle.mwa_dipoles:main",
             "mwa_fee=embers.kindle.mwa_fee:main",
             "ref_models=embers.kindle.ref_models:main",
+            "rfe_calibration=embers.kindle.rfe_calibration:main",
         ],
     },
     keywords=("embers radio astronomy satellites beam measurement"),
