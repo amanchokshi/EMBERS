@@ -970,7 +970,7 @@ def project_tile_healpix(
     :param plots: If True, create a zillion diagnostic plots
 
     :returns:
-        - Tile maps saved as :samp:`.noz` file to :samp:`out_dir`
+        - Tile maps saved as :samp:`.npz` file to :samp:`out_dir`
 
     """
 
