@@ -24,3 +24,4 @@
 .. autofunction:: embers.tile_maps.tile_maps.rfe_collate_cali
 .. autofunction:: embers.tile_maps.tile_maps.rfe_batch_cali
 .. autofunction:: embers.tile_maps.tile_maps.project_tile_healpix
+.. autofunction:: embers.tile_maps.tile_maps.mwa_clean_maps

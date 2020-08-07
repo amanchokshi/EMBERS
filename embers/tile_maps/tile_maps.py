@@ -1301,9 +1301,80 @@ def project_tile_healpix(
         "tile_map": tile_sat_data,
         "time_map": time_sat_data,
     }
-    tile_maps_sat = Path(f"{out_dir}/tile_maps_sat")
-    tile_maps_sat.mkdir(parents=True, exist_ok=True)
-    np.savez_compressed(f"{tile_maps_sat}/{tile}_{ref}_sat_maps.npz", **tile_sat_data)
+    tile_maps_raw = Path(f"{out_dir}/tile_maps_raw")
+    tile_maps_raw.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(f"{tile_maps_raw}/{tile}_{ref}_sat_maps.npz", **tile_sat_data)
+
+
+def mwa_clean_maps(nside, tile_map_raw, out_dir):
+    """Extract data from 18 good satellites and make the best possible MWA beam maps.
+
+    The maps created by :func:`~embers.tile_maps.tile_maps.project_tile_healpix` contains satellite data from all 72 satallites listed
+    in :func:`embers.sat_utils.sat_list.norad_ids`. Most of these satellites happen to be outside the frequency band of this beam expt
+    and all data from them is probably erroneous and mis-classified. Here, we extract a subset of the data belonging to a list of 18
+    satellites, identified for being active in the frequency band. Using this list of :samp:`good_sats`, significantly improves the
+    quality of beam maps.
+
+    :param nside: Healpix nside
+    :param tile_map_raw: Path to a tile_map_raw.npz file created by :func:`~embers.tile_maps.tile_maps.project_tile_healpix`
+    :param out_dir: Output directory where rfe calibration data will be saved as a :samp:`json` file
+
+    :returns:
+        - Clean MWA beam maps saved to :samp:`out_dir`
+
+    """
+
+    tile, ref, _, _ = Path(tile_map_raw).stem.split("_")
+
+    # Good sats from which to make plots
+    good_sats = [
+        25338,
+        25982,
+        25984,
+        25985,
+        28654,
+        40086,
+        40087,
+        40091,
+        41179,
+        41180,
+        41182,
+        41183,
+        41184,
+        41185,
+        41187,
+        41188,
+        41189,
+        44387,
+    ]
+
+    # list of beam pointings
+    pointings = ["0", "2", "4", "41"]
+
+    # load data from map .npz file
+    tile_raw = np.load(tile_map_raw, allow_pickle=True)
+    tile_raw = {key: tile_raw[key].item() for key in tile_raw}
+    mwa_map = tile_raw["mwa_map"]
+
+    mwa_maps_good = {p: [] for p in pointings}
+
+    for p in pointings:
+
+        # mwa map
+        mwa_map_good = [[] for pixel in range(hp.nside2npix(nside))]
+
+        for sat in good_sats:
+
+            for pix in range(hp.nside2npix(nside)):
+
+                mwa_map_good[pix].extend(mwa_map[p][sat][pix])
+
+        mwa_maps_good[p].extend(mwa_map_good)
+
+    # Save map arrays to npz file
+    mwa_good = Path(f"{out_dir}/tile_maps_clean")
+    mwa_good.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(f"{mwa_good}/{tile}_{ref}_tile_maps.npz", **mwa_maps_good)
 
 
 if __name__ == "__main__":
