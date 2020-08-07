@@ -105,7 +105,7 @@ def healpix_cardinal_slices(nside, hp_map, za_max):
     :param za_max: Maximum zenith angle
 
     :returns:
-        - :class:`~tuple` of NS, EW data slices of the imput healpix map
+        - :class:`~tuple` of NS, EW data slices of the imput healpix map, each of which contain the healpix indices and corresponding zenith angles
     """
 
     NS_indices, EW_indices, _ = healpix_cardinal_indices(nside, za_max=za_max)
