@@ -72,6 +72,7 @@ setup(
             "mwa_fee=embers.kindle.mwa_fee:main",
             "ref_models=embers.kindle.ref_models:main",
             "rfe_calibration=embers.kindle.rfe_calibration:main",
+            "tile_maps=embers.kindle.tile_maps:main",
         ],
     },
     keywords=("embers radio astronomy satellites beam measurement"),
