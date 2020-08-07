@@ -1,9 +1,16 @@
+from pathlib import Path
+
 import healpy as hp
+import matplotlib
 import numpy as np
-from embers.tile_maps.beam_utils import healpix_cardinal_slices, rotate_map
-from numpy.polynomial import polynomial as poly
+from embers.rf_tools.colormap import spectral
+from embers.tile_maps.beam_utils import map_slices, poly_fit, rotate_map
+from matplotlib import pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy import optimize as opt
-from scipy.stats import median_absolute_deviation as mad
+
+matplotlib.use("Agg")
+cmap, _ = spectral()
 
 
 def good_ref_maps(nside, map_dir, tile_pair):
@@ -60,65 +67,6 @@ def good_ref_maps(nside, map_dir, tile_pair):
     return good_ref_map
 
 
-def nan_mad(good_ref_map):
-    """Compute MAD of values in pixel of reference healpix map while ignoring nans.
-
-    :param good_ref_map: Reference healpix map, output from :func:`~embers.tile_maps.beam_utils.good_ref_maps`
-
-    :returns:
-        - ref_map_mad - Median Absolute Deviation of the input healpix map pixels
-
-    """
-
-    ref_map_mad = []
-    for j in good_ref_map:
-        if j != []:
-            j = np.asarray(j)
-            j = j[~np.isnan(j)]
-            ref_map_mad.append(mad(j))
-        else:
-            ref_map_mad.append(np.nan)
-
-    ref_map_mad = np.asarray(ref_map_mad)
-    ref_map_mad[np.where(ref_map_mad == np.nan)] = np.nanmean(ref_map_mad)
-
-    return ref_map_mad
-
-
-def ref_map_slice(good_map):
-
-    """slices ref healpix map along NS & EW"""
-
-    ref_map_NS, ref_map_EW = slice_map(np.asarray(good_map))
-
-    ref_med_map_NS = np.asarray(
-        [(np.nanmedian(i) if i != [] else np.nan) for i in ref_map_NS[0]]
-    )
-    # Scale mean map such that the max value is 0
-    ref_med_map_scaled_NS = np.asarray(
-        [i - np.nanmax(ref_med_map_NS) for i in ref_med_map_NS]
-    )
-    # ref_mad_map_NS = np.asarray([mad(i) for i in ref_map_NS[0]])
-    ref_mad_map_NS = np.asarray(nan_mad(ref_map_NS[0]))
-    za_NS = ref_map_NS[1]
-
-    ref_med_map_EW = np.asarray(
-        [(np.nanmedian(i) if i != [] else np.nan) for i in ref_map_EW[0]]
-    )
-    # Scale mean map such that the max value is 0
-    ref_med_map_scaled_EW = np.asarray(
-        [i - np.nanmax(ref_med_map_EW) for i in ref_med_map_EW]
-    )
-    # ref_mad_map_EW = np.asarray([mad(i) for i in ref_map_EW[0]])
-    ref_mad_map_EW = np.asarray(nan_mad(ref_map_EW[0]))
-    za_EW = ref_map_EW[1]
-
-    NS_data = [ref_med_map_scaled_NS, ref_mad_map_NS, za_NS]
-    EW_data = [ref_med_map_scaled_EW, ref_mad_map_EW, za_EW]
-
-    return [NS_data, EW_data]
-
-
 # chisquared minimization to best fit map to data
 def fit_gain(map_data=None, map_error=None, beam=None):
     """Fit the beam model to the measured data using
@@ -141,20 +89,6 @@ def fit_gain(map_data=None, map_error=None, beam=None):
     result = opt.minimize(chisqfunc, x0)
 
     return result.x
-
-
-def poly_fit(x, y, map_data, order):
-    """Fit polynominal of order to data"""
-
-    x = np.asarray(x)
-    y = np.asarray(y)
-
-    bad_values = np.isnan(map_data)
-    x_good = x[~bad_values]
-    y_good = y[~bad_values]
-    coefs = poly.polyfit(x_good, y_good, order)
-    fit = poly.polyval(x, coefs)
-    return fit
 
 
 def plt_slice(
@@ -206,8 +140,8 @@ def plt_slice(
     # ax.legend(loc='lower center')
     leg = ax.legend(loc="lower center", frameon=True, handlelength=1)
     leg.get_frame().set_facecolor("white")
-    for l in leg.legendHandles:
-        l.set_alpha(1)
+    for le in leg.legendHandles:
+        le.set_alpha(1)
     ax.set_xlim([-82, 82])
     ax.set_ylim([-26, 12])
 
@@ -277,8 +211,8 @@ def plt_null_test(
     # ax.legend(loc='upper left')
     leg = ax.legend(loc="upper left", frameon=True, handlelength=1)
     leg.get_frame().set_facecolor("white")
-    for l in leg.legendHandles:
-        l.set_alpha(1)
+    for le in leg.legendHandles:
+        le.set_alpha(1)
 
     if ylabel is True:
         ax.set_ylabel("Power [dB]")
@@ -291,24 +225,6 @@ def plt_null_test(
 if __name__ == "__main__":
 
     import argparse
-    from pathlib import Path
-
-    import matplotlib
-    import numpy as np
-
-    matplotlib.use("Agg")
-    import sys
-
-    from matplotlib import gridspec as gs
-    from matplotlib import pyplot as plt
-    from mpl_toolkits.axes_grid1 import make_axes_locatable
-
-    sys.path.append("../decode_rf_data")
-    from colormap import spectral
-    from plot_tile_maps import plot_healpix
-
-    # Custom spectral colormap
-    cmap = spectral()
 
     parser = argparse.ArgumentParser(
         description="""
@@ -351,38 +267,38 @@ if __name__ == "__main__":
 
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    ref_tiles = [
-        "S35XX_rf0XX_sat_maps.npz",
-        "S35YY_rf0YY_sat_maps.npz",
-        "S35XX_rf1XX_sat_maps.npz",
-        "S35YY_rf1YY_sat_maps.npz",
+    tile_pairs = [
+        ["S35XX", "rf0XX"],
+        ["S35YY", "rf0YY"],
+        ["S35XX", "rf1XX"],
+        ["S35YY", "rf1YY"],
     ]
-    good_rf0XX = rotate(
+    good_rf0XX = rotate_map(
         nside,
         angle=+(1 * np.pi) / 4.0,
-        healpix_array=np.asarray(good_maps(ref_tiles[0])),
+        healpix_array=np.asarray(good_ref_maps(32, map_dir, tile_pairs[0])),
     )
-    good_rf0YY = rotate(
+    good_rf0YY = rotate_map(
         nside,
         angle=+(1 * np.pi) / 4.0,
-        healpix_array=np.asarray(good_maps(ref_tiles[1])),
+        healpix_array=np.asarray(good_ref_maps(32, map_dir, tile_pairs[1])),
     )
-    good_rf1XX = rotate(
+    good_rf1XX = rotate_map(
         nside,
         angle=+(1 * np.pi) / 4.0,
-        healpix_array=np.asarray(good_maps(ref_tiles[2])),
+        healpix_array=np.asarray(good_ref_maps(32, map_dir, tile_pairs[2])),
     )
-    good_rf1YY = rotate(
+    good_rf1YY = rotate_map(
         nside,
         angle=+(1 * np.pi) / 4.0,
-        healpix_array=np.asarray(good_maps(ref_tiles[3])),
+        healpix_array=np.asarray(good_ref_maps(32, map_dir, tile_pairs[3])),
     )
 
     # NS, EW slices of all four reference tiles
-    rf0XX_NS, rf0XX_EW = ref_map_slice(good_rf0XX)
-    rf0YY_NS, rf0YY_EW = ref_map_slice(good_rf0YY)
-    rf1XX_NS, rf1XX_EW = ref_map_slice(good_rf1XX)
-    rf1YY_NS, rf1YY_EW = ref_map_slice(good_rf1YY)
+    rf0XX_NS, rf0XX_EW = map_slices(good_rf0XX)
+    rf0YY_NS, rf0YY_EW = map_slices(good_rf0YY)
+    rf1XX_NS, rf1XX_EW = map_slices(good_rf1XX)
+    rf1YY_NS, rf1YY_EW = map_slices(good_rf1YY)
 
     # Null test diff in power b/w rf0 & rf1
     ref01_XX_NS = rf0XX_NS[0] - rf1XX_NS[0]
@@ -402,13 +318,8 @@ if __name__ == "__main__":
     beam_YY = ref_fee_model["YY"]
 
     # Rotate beam models by pi/4 to match rotation of data
-    rotated_XX = rotate(nside, angle=-(1 * np.pi) / 4.0, healpix_array=beam_XX)
-    rotated_YY = rotate(nside, angle=-(1 * np.pi) / 4.0, healpix_array=beam_YY)
-
-    # These plots show that the pi/4 rotation was correct
-    # plot_healpix(data_map=rotated_XX,sub=(1,1,1), cmap=cmap, vmin=-40, vmax=-20)
-    # plot_healpix(data_map=rotated_YY,sub=(1,1,1), cmap=cmap, vmin=-40, vmax=-20)
-    # plt.show()
+    rotated_XX = rotate_map(nside, angle=-(1 * np.pi) / 4.0, healpix_array=beam_XX)
+    rotated_YY = rotate_map(nside, angle=-(1 * np.pi) / 4.0, healpix_array=beam_YY)
 
     # slice the XX rotated map along NS, EW
     XX_NS, XX_EW = slice_map(rotated_XX)

@@ -8,6 +8,8 @@ A set of tools used to create and visualize tile maps
 
 import healpy as hp
 import numpy as np
+from numpy.polynomial import polynomial as poly
+from scipy.stats import median_absolute_deviation as mad
 
 
 # rotate func written by Jack Line
@@ -131,6 +133,87 @@ def healpix_cardinal_slices(nside, hp_map, za_max):
     EW_data = [hp_map[EW_indices], zenith_angle_EW]
 
     return (NS_data, EW_data)
+
+
+def nan_mad(good_ref_map):
+    """Compute MAD of values in pixel of healpix map while ignoring nans.
+
+    :param good_ref_map: Reference healpix map, output from :func:`~embers.tile_maps.beam_utils.good_ref_maps`
+
+    :returns:
+        - ref_map_mad - Median Absolute Deviation of the input healpix map pixels
+
+    """
+
+    ref_map_mad = []
+    for j in good_ref_map:
+        if j != []:
+            j = np.asarray(j)
+            j = j[~np.isnan(j)]
+            ref_map_mad.append(mad(j))
+        else:
+            ref_map_mad.append(np.nan)
+
+    ref_map_mad = np.asarray(ref_map_mad)
+    ref_map_mad[np.where(ref_map_mad == np.nan)] = np.nanmean(ref_map_mad)
+
+    return ref_map_mad
+
+
+def map_slices(nside, good_map, za_max):
+    """Slice healpix map along NS & EW axes returning Median and MAD arrays of the cardinal slices.
+
+    :param nside: Healpix nside
+    :param good_map: Healpix map, with pixels having distribution of values in lists
+    :param za_max: Maximum zenith angle
+
+    :returns:
+        - :class:`~tuple` of NS & EW data, with each being a list of Median, MAD and Zenith angle arrays for the given cardianl slice of the healpix map
+
+    """
+
+    ref_map_NS, ref_map_EW = healpix_cardinal_slices(
+        nside, np.asarray(good_map), za_max
+    )
+
+    NS_med_map = np.asarray(
+        [(np.nanmedian(i) if i != [] else np.nan) for i in ref_map_NS[0]]
+    )
+    NS_mad_map = np.asarray(nan_mad(ref_map_NS[0]))
+    za_NS = ref_map_NS[1]
+
+    EW_med_map = np.asarray(
+        [(np.nanmedian(i) if i != [] else np.nan) for i in ref_map_EW[0]]
+    )
+    EW_mad_map = np.asarray(nan_mad(ref_map_EW[0]))
+    za_EW = ref_map_EW[1]
+
+    NS_data = [NS_med_map, NS_mad_map, za_NS]
+    EW_data = [EW_med_map, EW_mad_map, za_EW]
+
+    return (NS_data, EW_data)
+
+
+def poly_fit(x, y, data, order):
+    """Fit polynominal of any order to data
+
+    :param x: Data array
+    :param y: Data array
+    :param y: Array of same size as x, y, but with nan's which can be used to mask x,y
+    :param order: Degree of polynominal fit
+
+    """
+
+    x = np.asarray(x)
+    y = np.asarray(y)
+
+    bad_values = np.isnan(data)
+    x_good = x[~bad_values]
+    y_good = y[~bad_values]
+    coefs = poly.polyfit(x_good, y_good, order)
+    fit = poly.polyval(x, coefs)
+
+    return fit
 
 
 def plot_healpix(
