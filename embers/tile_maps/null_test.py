@@ -1,35 +1,27 @@
 import healpy as hp
 import numpy as np
+from embers.tile_maps.beam_utils import healpix_cardinal_slices, rotate_map
 from numpy.polynomial import polynomial as poly
 from scipy import optimize as opt
+from scipy.stats import median_absolute_deviation as mad
 
 
+def good_ref_maps(nside, map_dir, tile_pair):
+    """Collates reference data from 18 good satellites into a good_ref_map
 
+    :param nside: Healpix nside
+    :param map_dir: Path to directory with tile_maps_raw, created by :func:`~embers.tile_maps.tile_maps.project_tile_healpix`
+    :param tile_pair: List of a pair of mwa tile and reference names. Ex: ["S35XX", "rf0XX"]
 
-def nan_mad(ref_map):
-    """Compute mad while ignoring nans"""
-    ref_map_mad = []
-    for j in ref_map:
-        if j != []:
-            j = np.asarray(j)
-            j = j[~np.isnan(j)]
-            ref_map_mad.append(mad(j))
-        else:
-            ref_map_mad.append(np.nan)
+    :returns:
+        - good_ref_map healpix map, with each pixel of the healpix map containing an array of values from all satellite passes within the pixel
 
-    ref_map_mad = np.asarray(ref_map_mad)
-    ref_map_mad[np.where(ref_map_mad == np.nan)] = np.nanmean(ref_map_mad)
+    """
 
-    return ref_map_mad
-
-
-def good_maps(ref_map):
-    """Creates a ref map with only good satellites"""
-
-    pointings = ["0", "2", "4"]
+    pointings = ["0", "2", "4", "41"]
 
     # load data from map .npz file
-    f = Path(f"{map_dir}/{ref_map}")
+    f = Path(f"{map_dir}/{tile_pair[0]}_{tile_pair[1]}_sat_maps.npz")
     tile_data = np.load(f, allow_pickle=True)
     tile_data = {key: tile_data[key].item() for key in tile_data}
     ref_map = tile_data["ref_map"]
@@ -55,20 +47,46 @@ def good_maps(ref_map):
         44387,
     ]
 
-    # Empty good map
-    good_map = [[] for pixel in range(hp.nside2npix(nside))]
+    # Empty good ref map
+    good_ref_map = [[] for pixel in range(hp.nside2npix(nside))]
 
     for p in pointings:
 
-        # append to good map from all good sat data
+        # append to good ref map from all good sat data
         for sat in good_sats:
             for pix in range(hp.nside2npix(nside)):
-                good_map[pix].extend(ref_map[p][sat][pix])
+                good_ref_map[pix].extend(ref_map[p][sat][pix])
 
-    return good_map
+    return good_ref_map
+
+
+def nan_mad(good_ref_map):
+    """Compute MAD of values in pixel of reference healpix map while ignoring nans.
+
+    :param good_ref_map: Reference healpix map, output from :func:`~embers.tile_maps.beam_utils.good_ref_maps`
+
+    :returns:
+        - ref_map_mad - Median Absolute Deviation of the input healpix map pixels
+
+    """
+
+    ref_map_mad = []
+    for j in good_ref_map:
+        if j != []:
+            j = np.asarray(j)
+            j = j[~np.isnan(j)]
+            ref_map_mad.append(mad(j))
+        else:
+            ref_map_mad.append(np.nan)
+
+    ref_map_mad = np.asarray(ref_map_mad)
+    ref_map_mad[np.where(ref_map_mad == np.nan)] = np.nanmean(ref_map_mad)
+
+    return ref_map_mad
 
 
 def ref_map_slice(good_map):
+
     """slices ref healpix map along NS & EW"""
 
     ref_map_NS, ref_map_EW = slice_map(np.asarray(good_map))
@@ -99,35 +117,6 @@ def ref_map_slice(good_map):
     EW_data = [ref_med_map_scaled_EW, ref_mad_map_EW, za_EW]
 
     return [NS_data, EW_data]
-
-
-# rotate func written by Jack Line
-def rotate(nside, angle=None, healpix_array=None, savetag=None, flip=False):
-    """Takes in a healpix array, rotates it by the desired angle, and saves it.
-    Optionally flip the data, changes east-west into west-east because
-    astronomy"""
-
-    # theta phi values of each pixel
-    hp_indices = np.arange(hp.nside2npix(nside))
-    θ, ɸ = hp.pix2ang(nside, hp_indices)
-
-    new_hp_inds = hp.ang2pix(nside, θ, ɸ + angle)
-
-    ##Flip the data to match astro conventions
-    if flip == True:
-        new_angles = []
-        for phi in ɸ:
-            if phi <= np.pi:
-                new_angles.append(np.pi - phi)
-            else:
-                new_angles.append(3 * np.pi - phi)
-        new_hp_inds = hp.ang2pix(nside, ɸ, np.asarray(new_angles))
-
-    ##Save the array in the new order
-    if savetag:
-        np.savez_compressed(savetag, beammap=healpix_array[new_hp_inds])
-
-    return healpix_array[new_hp_inds]
 
 
 # chisquared minimization to best fit map to data
@@ -313,7 +302,6 @@ if __name__ == "__main__":
     from matplotlib import gridspec as gs
     from matplotlib import pyplot as plt
     from mpl_toolkits.axes_grid1 import make_axes_locatable
-    from scipy.stats import median_absolute_deviation as mad
 
     sys.path.append("../decode_rf_data")
     from colormap import spectral
