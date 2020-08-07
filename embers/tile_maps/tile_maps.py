@@ -16,19 +16,20 @@ from pathlib import Path
 import healpy as hp
 import matplotlib
 import numpy as np
-from embers.rf_tools.colormaps import spectral
+from embers.rf_tools.colormaps import jade, spectral
 from embers.rf_tools.rf_data import tile_names
 from embers.sat_utils.sat_channels import (noise_floor, read_aligned,
                                            time_filter, time_tree)
 from embers.sat_utils.sat_list import norad_ids
-from embers.tile_maps.beam_utils import rotate_map
+from embers.tile_maps.beam_utils import plot_healpix, rotate_map
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy import optimize as opt
 from scipy.stats import binned_statistic, chisquare
 
 matplotlib.use("Agg")
-cmap, _ = spectral()
+spec, _ = spectral()
+jade, _ = jade()
 
 
 def check_pointing(timestamp, obs_point_json):
@@ -740,7 +741,7 @@ def rfe_collate_cali(start_gain, stop_gain, rfe_cali_dir):
 
     plt.figure()
 
-    plt.hexbin(pass_data, pass_resi, gridsize=121, cmap=cmap, alpha=0.99, zorder=0)
+    plt.hexbin(pass_data, pass_resi, gridsize=121, cmap=spec, alpha=0.99, zorder=0)
 
     pass_data = np.array(pass_data)
     pass_resi = np.array(pass_resi)
@@ -1375,6 +1376,41 @@ def mwa_clean_maps(nside, tile_map_raw, out_dir):
     mwa_good = Path(f"{out_dir}/tile_maps_clean")
     mwa_good.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(f"{mwa_good}/{tile}_{ref}_tile_maps.npz", **mwa_maps_good)
+
+
+def plt_sat_maps(sat, out_dir):
+    """Create healpix plots of the sky coverage of a satellite
+
+    :param sat: Norad ID of satellite
+    :param out_dir: The output directory which contains raw tile maps, and where the sat maps will be saved
+
+    :returns:
+        - Healpix plots of satellite sky coverage at 4 pointings
+
+    """
+
+    f = Path(f"{out_dir}/tile_maps_raw/S07XX_rf0XX_sat_maps.npz")
+
+    pointings = ["0", "2", "4", "41"]
+
+    # load data from map .npz file
+    tile_data = np.load(f, allow_pickle=True)
+    tile_data = {key: tile_data[key].item() for key in tile_data}
+
+    for p in pointings:
+
+        Path(f"{out_dir}/sat_maps/{p}/").mkdir(parents=True, exist_ok=True)
+
+        fig = plt.figure(figsize=(8, 10))
+        fig.suptitle(f"Satellite [{sat}] @ pointing {p}", fontsize=16)
+        tile_sat_med = [
+            (np.median(i) if i != [] else np.nan) for i in tile_data["mwa_map"][p][sat]
+        ]
+        plot_healpix(data_map=np.asarray(tile_sat_med), sub=(1, 1, 1), cmap=jade)
+        plt.savefig(
+            f"{out_dir}/sat_maps/{p}/{sat}_{p}_passes.png", bbox_inches="tight",
+        )
+        plt.close()
 
 
 if __name__ == "__main__":

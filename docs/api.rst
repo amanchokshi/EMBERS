@@ -109,6 +109,7 @@ Tile Maps
     tile_maps.rfe_batch_cali
     tile_maps.project_tile_healpix
     tile_maps.mwa_clean_maps
+    tile_maps.plt_sat_maps
 
 
 Kindle
