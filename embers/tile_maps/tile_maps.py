@@ -967,6 +967,7 @@ def project_tile_healpix(
     :param chrono_dir: Path to directory containing chronological ephemeris data output from :func:`~embers.sat_utils.chrono_ephem.save_chrono_ephem`
     :param chan_map_dir: Path to directory containing satellite frequency channel maps. Output from :func:`~embers.sat_utils.sat_channels.batch_window_map`
     :param out_dir: Output directory where rfe calibration data will be saved as a :samp:`json` file
+    :param plots: If True, create a zillion diagnostic plots
 
     :returns:
         - Tile maps saved as :samp:`.noz` file to :samp:`out_dir`
@@ -980,15 +981,31 @@ def project_tile_healpix(
     dates, timestamps = time_tree(start_date, stop_date)
 
     if plots is True:
-        Path(f"{out_dir}/pass_plots/{tile}_{ref}/0").mkdir(parents=True, exist_ok=True)
-        Path(f"{out_dir}/pass_plots/{tile}_{ref}/2").mkdir(parents=True, exist_ok=True)
-        Path(f"{out_dir}/pass_plots/{tile}_{ref}/4").mkdir(parents=True, exist_ok=True)
-        Path(f"{out_dir}/pass_plots/{tile}_{ref}/41").mkdir(parents=True, exist_ok=True)
+        Path(f"{out_dir}/tile_maps_raw/pass_plots/{tile}_{ref}/0").mkdir(
+            parents=True, exist_ok=True
+        )
+        Path(f"{out_dir}/tile_maps_raw/pass_plots/{tile}_{ref}/2").mkdir(
+            parents=True, exist_ok=True
+        )
+        Path(f"{out_dir}/tile_maps_raw/pass_plots/{tile}_{ref}/4").mkdir(
+            parents=True, exist_ok=True
+        )
+        Path(f"{out_dir}/tile_maps_raw/pass_plots/{tile}_{ref}/41").mkdir(
+            parents=True, exist_ok=True
+        )
 
-        Path(f"{out_dir}/fit_plots/{tile}_{ref}/0").mkdir(parents=True, exist_ok=True)
-        Path(f"{out_dir}/fit_plots/{tile}_{ref}/2").mkdir(parents=True, exist_ok=True)
-        Path(f"{out_dir}/fit_plots/{tile}_{ref}/4").mkdir(parents=True, exist_ok=True)
-        Path(f"{out_dir}/fit_plots/{tile}_{ref}/41").mkdir(parents=True, exist_ok=True)
+        Path(f"{out_dir}/tile_maps_raw/fit_plots/{tile}_{ref}/0").mkdir(
+            parents=True, exist_ok=True
+        )
+        Path(f"{out_dir}/tile_maps_raw/fit_plots/{tile}_{ref}/2").mkdir(
+            parents=True, exist_ok=True
+        )
+        Path(f"{out_dir}/tile_maps_raw/fit_plots/{tile}_{ref}/4").mkdir(
+            parents=True, exist_ok=True
+        )
+        Path(f"{out_dir}/tile_maps_raw/fit_plots/{tile}_{ref}/41").mkdir(
+            parents=True, exist_ok=True
+        )
 
     # Initialize an empty dictionary for tile data
     # The map is list of length 12288 of empty lists to append pixel values to
@@ -1083,7 +1100,7 @@ def project_tile_healpix(
                                                 pow_thresh,
                                                 point,
                                                 plots,
-                                                out_dir,
+                                                f"{out_dir}/tile_maps_raw",
                                             )
 
                                             if sat_data != 0:
@@ -1215,7 +1232,7 @@ def project_tile_healpix(
                                                             mwa_fee_pass,
                                                             mwa_pass_fit_raw,
                                                             mwa_pass_fit,
-                                                            f"{out_dir}/fit_plots/{tile}_{ref}/",
+                                                            f"{out_dir}/tile_maps_raw/fit_plots/{tile}_{ref}/",
                                                             point,
                                                             timestamp,
                                                             sat,
@@ -1400,16 +1417,19 @@ def plt_sat_maps(sat, out_dir):
 
     for p in pointings:
 
-        Path(f"{out_dir}/tile_maps_raw/plots/{p}/").mkdir(parents=True, exist_ok=True)
+        Path(f"{out_dir}/tile_maps_raw/sat_plots/{p}/").mkdir(
+            parents=True, exist_ok=True
+        )
 
-        fig = plt.figure(figsize=(8, 10))
+        plt.style.use("seaborn")
+        fig = plt.figure(figsize=(10, 10))
         fig.suptitle(f"Satellite [{sat}] @ pointing {p}", fontsize=16)
         tile_sat_med = [
             (np.median(i) if i != [] else np.nan) for i in tile_data["mwa_map"][p][sat]
         ]
         plot_healpix(data_map=np.asarray(tile_sat_med), sub=(1, 1, 1), cmap=jade)
         plt.savefig(
-            f"{out_dir}/tile_maps_raw/plots/{p}/{sat}_{p}_passes.png",
+            f"{out_dir}/tile_maps_raw/sat_plots/{p}/{sat}_{p}_passes.png",
             bbox_inches="tight",
         )
         plt.close()
@@ -1436,13 +1456,13 @@ def plt_clean_maps(clean_map, out_dir):
 
     for p in pointings:
 
-        Path(f"{out_dir}/tile_maps_clean/plots/{p}/tile_maps").mkdir(
+        Path(f"{out_dir}/tile_maps_clean/clean_plots/{p}/tile_maps").mkdir(
             parents=True, exist_ok=True
         )
-        Path(f"{out_dir}/tile_maps_clean/plots/{p}/tile_errors").mkdir(
+        Path(f"{out_dir}/tile_maps_clean/clean_plots/{p}/tile_errors").mkdir(
             parents=True, exist_ok=True
         )
-        Path(f"{out_dir}/tile_maps_clean/plots/{p}/tile_counts").mkdir(
+        Path(f"{out_dir}/tile_maps_clean/clean_plots/{p}/tile_counts").mkdir(
             parents=True, exist_ok=True
         )
 
@@ -1451,11 +1471,12 @@ def plt_clean_maps(clean_map, out_dir):
             [(np.nanmedian(i) if i != [] else np.nan) for i in tile_data[p]]
         )
 
-        fig = plt.figure(figsize=(8, 10))
+        plt.style.use("seaborn")
+        fig = plt.figure(figsize=(10, 10))
         fig.suptitle(f"Good Map: {tile}/{ref} @ {p}", fontsize=16)
         plot_healpix(data_map=tile_map_med, sub=(1, 1, 1), cmap=jade, vmin=-50, vmax=0)
         plt.savefig(
-            f"{out_dir}/tile_maps_clean/plots/{p}/tile_maps/{tile}_{ref}_{p}_clean_map.png",
+            f"{out_dir}/tile_maps_clean/clean_plots/{p}/tile_maps/{tile}_{ref}_{p}_clean_map.png",
             bbox_inches="tight",
         )
         plt.close()
@@ -1473,7 +1494,8 @@ def plt_clean_maps(clean_map, out_dir):
         vmin = np.nanmin(tile_map_mad)
         vmax = np.nanmax(tile_map_mad)
 
-        fig = plt.figure(figsize=(8, 10))
+        plt.style.use("seaborn")
+        fig = plt.figure(figsize=(10, 10))
         fig.suptitle(f"Good Map MAD: {tile}/{ref} @ {p}", fontsize=16)
         plot_healpix(
             data_map=np.asarray(tile_map_mad),
@@ -1483,7 +1505,7 @@ def plt_clean_maps(clean_map, out_dir):
             vmax=vmax,
         )
         plt.savefig(
-            f"{out_dir}/tile_maps_clean/plots/{p}/tile_errors/{tile}_{ref}_{p}_clean_map_errors.png",
+            f"{out_dir}/tile_maps_clean/clean_plots/{p}/tile_errors/{tile}_{ref}_{p}_clean_map_errors.png",
             bbox_inches="tight",
         )
         plt.close()
@@ -1491,7 +1513,8 @@ def plt_clean_maps(clean_map, out_dir):
         # Plot satellite pass counts in pix
         tile_map_counts = [len(np.array(i)[~np.isnan(i)]) for i in tile_data[p]]
 
-        fig = plt.figure(figsize=(8, 10))
+        plt.style.use("seaborn")
+        fig = plt.figure(figsize=(10, 10))
         fig.suptitle(f"Good Map Counts: {tile}/{ref} @ {p}", fontsize=16)
         plot_healpix(
             data_map=np.asarray(tile_map_counts),
@@ -1501,154 +1524,54 @@ def plt_clean_maps(clean_map, out_dir):
             vmax=80,
         )
         plt.savefig(
-            f"{out_dir}/tile_maps_clean/plots/{p}/tile_counts/{tile}_{ref}_{p}_clean_map_counts.png",
+            f"{out_dir}/tile_maps_clean/clean_plots/{p}/tile_counts/{tile}_{ref}_{p}_clean_map_counts.png",
             bbox_inches="tight",
         )
         plt.close()
 
 
-if __name__ == "__main__":
+def tile_maps_batch(
+    start_date,
+    stop_date,
+    sat_thresh,
+    noi_thresh,
+    pow_thresh,
+    ref_model,
+    fee_map,
+    rfe_cali,
+    nside,
+    obs_point_json,
+    align_dir,
+    chrono_dir,
+    chan_map_dir,
+    out_dir,
+    plots,
+):
+    """Batch process satellite RF data to create clean beam maps and all intermediate data products.
 
-    parser = argparse.ArgumentParser(
-        description="""
-        Project a sat pass onto a healpix map using ephemeris data
-        """
-    )
+    Creates tile_maps_raw, which are tile maps with all possible raw data, sorted by satellite ID. Also creates clean_tile_maps which
+    contain data from only the 18 satellites found to be consitently transmitting in the correct frequency band. Plots of satellite
+    coverage and final clean beam maps are also saved to the out_dir.
 
-    parser.add_argument(
-        "--align_dir",
-        metavar="\b",
-        default="../../outputs/align_data/",
-        help="Dir where agligned data date is saved. Default:../../outputs/align_data",
-    )
+    :param start_date: Start date in :samp:`YYYY-MM-DD-HH:MM` format
+    :param stop_date: Stop date in :samp:`YYYY-MM-DD-HH:MM` format
+    :param start_gain: Power at which RFE gain variations begin. Ex: -50dBm
+    :param stop_gain: Power at which RFE gain variations saturate. Ex: -30dBm
+    :param sat_thresh: σ threshold to detect sats in the computation of rf data noise_floor. A good default is 1
+    :param noi_thresh: Noise Threshold: Multiples of MAD. 3 is a good default
+    :param pow_thresh: Peak power which must be exceeded for satellite pass to be considered
+    :param ref_model: Path to reference feko model :samp:`.npz` file, output by :func:`~embers.tile_maps.ref_fee_healpix.ref_healpix_save`
+    :param fee_map: Path to MWA fee model :samp:`.npz` file, output by :func:`~embers.mwa_utils.mwa_fee.mwa_fee_model`
+    :param rfe_cali: Path to RFE gain calibration solution, output by :func:`~embers.tile_maps.tile_maps.rfe_collate_cali`
+    :param nside: Healpix nside
+    :param obs_point_json: Path to :samp:`obs_pointings.json` created by :func:`~embers.mwa_utils.mwa_pointings.obs_pointings`
+    :param align_dir: Path to directory containing aligned rf data files, output from :func:`~embers.rf_tools.align_data.save_aligned`
+    :param chrono_dir: Path to directory containing chronological ephemeris data output from :func:`~embers.sat_utils.chrono_ephem.save_chrono_ephem`
+    :param chan_map_dir: Path to directory containing satellite frequency channel maps. Output from :func:`~embers.sat_utils.sat_channels.batch_window_map`
+    :param out_dir: Output directory where rfe calibration data will be saved as a :samp:`json` file
+    :param plots: If True, create a zillion diagnostic plots for the :func:`~embers.tile_maps.tile_maps.project_tile_healpix` stage
 
-    parser.add_argument(
-        "--out_dir",
-        metavar="\b",
-        default="./../../outputs/tile_maps/tile_maps_raw/",
-        help="Output directory. Default=./../../outputs/tile_maps/tile_maps_raw/",
-    )
-
-    parser.add_argument(
-        "--obs_point",
-        metavar="\b",
-        default="../../outputs/beam_pointings/obs_pointings.json",
-        help="Observation pointing lists. Default=../../outputs/beam_pointings/obs_pointings.json",
-    )
-
-    parser.add_argument(
-        "--chrono_dir",
-        metavar="\b",
-        default="./../../outputs/sat_ephemeris/chrono_json",
-        help="Output directory. Default=./../../outputs/sat_ephemeris/chrono_json/",
-    )
-
-    parser.add_argument(
-        "--map_dir",
-        metavar="\b",
-        default="../../outputs/sat_channels/window_maps/",
-        help="Satellite channel map. Default=../../outputs/sat_channels/window_maps/",
-    )
-
-    parser.add_argument(
-        "--ref_model",
-        metavar="\b",
-        default="../../outputs/reproject_ref/ref_dipole_models.npz",
-        help="Healpix reference FEE model file. default=../../outputs/reproject_ref/ref_dipole_models.npz",
-    )
-
-    parser.add_argument(
-        "--rfe_gain",
-        metavar="\b",
-        default="../../outputs/tile_maps/rfe_gain/rfe_gain_fit.npy",
-        help="RF Explorer gain fit. default=../../outputs/tile_maps/rfe_gain/rfe_gain_fit.npy",
-    )
-
-    parser.add_argument(
-        "--fee_map",
-        metavar="\b",
-        default="../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz",
-        help="Healpix FEE map of mwa tile. default=../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz",
-    )
-
-    parser.add_argument(
-        "--fee_map_flagged",
-        metavar="\b",
-        default="../../outputs/tile_maps/FEE_maps/mwa_fee_beam_9_flagged.npz",
-        help="Healpix FEE map of mwa tile. default=../../outputs/tile_maps/FEE_maps/mwa_fee_beam_9_flagged.npz",
-    )
-
-    parser.add_argument(
-        "--fit_thresh",
-        metavar="\b",
-        default=0.9,
-        help="Goodness of fit threshold. 0.9 seems to only reject obvious outliers",
-    )
-    parser.add_argument(
-        "--noi_thresh",
-        metavar="\b",
-        type=int,
-        default=3,
-        help="Noise Threshold: Multiples of MAD. Default=3.",
-    )
-    parser.add_argument(
-        "--sat_thresh",
-        metavar="\b",
-        type=int,
-        default=1,
-        help="σ threshold to detect sats Default=1.",
-    )
-    parser.add_argument(
-        "--pow_thresh",
-        metavar="\b",
-        type=int,
-        default=5,
-        help="Power Threshold to detect sats. Default=5 dB.",
-    )
-    parser.add_argument(
-        "--nside",
-        metavar="\b",
-        type=int,
-        default=32,
-        help="Healpix Nside. Default = 32",
-    )
-    parser.add_argument(
-        "--plots",
-        metavar="\b",
-        default=False,
-        help="If True, create a gazzillion plots for each sat pass. Default = False",
-    )
-    parser.add_argument(
-        "--start_date",
-        metavar="\b",
-        help="Date from which to start aligning data. Ex: 2019-10-10",
-    )
-    parser.add_argument(
-        "--stop_date",
-        metavar="\b",
-        help="Date until which to align data. Ex: 2019-10-11",
-    )
-
-    args = parser.parse_args()
-
-    start_date = args.start_date
-    stop_date = args.stop_date
-    obs_point = args.obs_point
-    noi_thresh = args.noi_thresh
-    sat_thresh = args.sat_thresh
-    pow_thresh = args.pow_thresh
-    fit_thresh = args.fit_thresh
-    nside = args.nside
-    plots = args.plots
-    ref_model = args.ref_model
-    rfe_gain = args.rfe_gain
-    fee_map = args.fee_map
-    fee_map_flagged = args.fee_map_flagged
-
-    align_dir = Path(args.align_dir)
-    chrono_dir = Path(args.chrono_dir)
-    out_dir = Path(args.out_dir)
-    map_dir = Path(args.map_dir)
+    """
 
     # Tile names
     refs = tile_names()[:4]
@@ -1664,25 +1587,39 @@ if __name__ == "__main__":
             for tile in [t for t in tiles if "YY" in t]:
                 tile_pairs.append([ref, tile])
 
-    # Read observation pointing list
-    with open(obs_point) as point:
-        obs_p = json.load(point)
-        point_0 = obs_p["point_0"]
-        point_2 = obs_p["point_2"]
-        point_4 = obs_p["point_4"]
-        point_41 = obs_p["point_41"]
-
-    # dates: list of days
-    # date_time = list of 30 min observation windows
-    dates, date_time = time_tree(start_date, stop_date)
-
     # Save logs
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-    sys.stdout = open(f"{out_dir}/logs_{start_date}_{stop_date}.txt", "a")
-
-    #    project_tile_healpix(tile_pairs[0])
-    #    project_tile_healpix(['rf0YY', 'S33YY'])
 
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(project_tile_healpix, tile_pairs)
+        executor.map(
+            project_tile_healpix,
+            repeat(start_date),
+            repeat(stop_date),
+            tile_pairs,
+            repeat(sat_thresh),
+            repeat(noi_thresh),
+            repeat(pow_thresh),
+            repeat(ref_model),
+            repeat(fee_map),
+            repeat(rfe_cali),
+            repeat(nside),
+            repeat(obs_point_json),
+            repeat(align_dir),
+            repeat(chrono_dir),
+            repeat(chan_map_dir),
+            repeat(out_dir),
+            repeat(plots),
+        )
+
+    raw_map_files = [f for f in Path(f"{out_dir}/tile_maps_raw").glob("*.npz")]
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        executor.map(mwa_clean_maps, repeat(nside), raw_map_files, repeat(out_dir))
+
+    clean_map_files = [f for f in Path(f"{out_dir}/tile_maps_clean").glob("*.npz")]
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        executor.map(plt_clean_maps, clean_map_files, repeat(out_dir))
+
+    sat_list = list(norad_ids().values())
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        executor.map(plt_sat_maps, sat_list, repeat(out_dir))
