@@ -1632,14 +1632,9 @@ def tile_maps_batch(
         executor.map(plt_sat_maps, sat_list, repeat(out_dir))
 
     raw_map_files = [f for f in Path(f"{out_dir}/tile_maps_raw").glob("*.npz")]
-    print(raw_map_files)
     with concurrent.futures.ProcessPoolExecutor() as executor:
         executor.map(mwa_clean_maps, repeat(nside), raw_map_files, repeat(out_dir))
 
     clean_map_files = [f for f in Path(f"{out_dir}/tile_maps_clean").glob("*.npz")]
-    print(clean_map_files)
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(plt_clean_maps, clean_map_files, repeat(out_dir))
-
-    for result in results:
-        print(result)
+        executor.map(plt_clean_maps, clean_map_files, repeat(out_dir))
