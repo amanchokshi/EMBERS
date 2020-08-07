@@ -107,6 +107,7 @@ Tile Maps
     tile_maps.rfe_calibration
     tile_maps.rfe_collate_cali
     tile_maps.rfe_batch_cali
+    tile_maps.project_tile_healpix
 
 
 Kindle

@@ -453,7 +453,7 @@ def rfe_calibration(
     :param noi_thresh: Noise Threshold: Multiples of MAD. 3 is a good default
     :param pow_thresh: Peak power which must be exceeded for satellite pass to be considered
     :param ref_model: Path to reference feko model :samp:`.npz` file, output by :func:`~embers.tile_maps.ref_fee_healpix.ref_healpix_save`
-    :param fee_map: Path to with MWA fee model :samp:`.npz` file, output by :func:`~embers.mwa_utils.mwa_fee.mwa_fee_model`
+    :param fee_map: Path to MWA fee model :samp:`.npz` file, output by :func:`~embers.mwa_utils.mwa_fee.mwa_fee_model`
     :param nside: Healpix nside
     :param obs_point_json: Path to :samp:`obs_pointings.json` created by :func:`~embers.mwa_utils.mwa_pointings.obs_pointings`
     :param align_dir: Path to directory containing aligned rf data files, output from :func:`~embers.rf_tools.align_data.save_aligned`
@@ -916,6 +916,60 @@ def project_tile_healpix(
     out_dir,
     plots,
 ):
+    """There be magic here. Project satellite RF data onto a sky healpix map.
+
+    For each satellite pass recorded my the MWA tiles and reference antennas, apply equation (1) from the beam paper to remove
+    satellite beam effect and calculate a resultant cross-sectional slice of the MWA beam. Using satellite ephemeris data, project
+    this beam slice onto a healpix map. This function also applies RFE gain correction using the gain solution created by
+    :func:`~embers.tile_maps.tile_maps.rfe_collate_cali`. The resulting healpix map is saved to a :samp:`.npz` file in :samp:`out_dir`,
+    with the data structured in nested dictionaries, which have the following structure.
+
+    .. code-block:: text
+
+        map*.npz
+        ├── mwa_map
+        │   └── pointings
+        │       └── satellites
+        │           └── healpix maps
+        ├── ref_map
+        │   └── pointings
+        │       └── satellites
+        │           └── healpix maps
+        ├── tile_map
+        │   └── pointings
+        │       └── satellites
+        │           └── healpix maps
+        └── time_map
+            └── pointings
+                └── satellites
+                    └── healpix maps
+
+    The highest level dictionary contains normalized mwa, reference, tile and time maps. Within each of these, there are dictionaries
+    for each of the telescope pointings:0, 2, 4, 41. Within which there are dictionaries for each satellite norad ID, which contain
+    a healpix map of data from one satellite, in one pointing. This structure map seem complicated, but is very useful for diagnostic
+    purposes, and determining where errors in the final tile maps come from. The time maps contain the times of every data point added
+    to the above maps.
+
+    :param start_date: Start date in :samp:`YYYY-MM-DD-HH:MM` format
+    :param stop_date: Stop date in :samp:`YYYY-MM-DD-HH:MM` format
+    :param tile_pair: A pair of reference and MWA tile names. Ex: ["rf0XX", "S06XX"]
+    :param sat_thresh: σ threshold to detect sats in the computation of rf data noise_floor. A good default is 1
+    :param noi_thresh: Noise Threshold: Multiples of MAD. 3 is a good default
+    :param pow_thresh: Peak power which must be exceeded for satellite pass to be considered
+    :param ref_model: Path to reference feko model :samp:`.npz` file, output by :func:`~embers.tile_maps.ref_fee_healpix.ref_healpix_save`
+    :param fee_map: Path to MWA fee model :samp:`.npz` file, output by :func:`~embers.mwa_utils.mwa_fee.mwa_fee_model`
+    :param rfe_cali: Path to RFE gain calibration solution, output by :func:`~embers.tile_maps.tile_maps.rfe_collate_cali`
+    :param nside: Healpix nside
+    :param obs_point_json: Path to :samp:`obs_pointings.json` created by :func:`~embers.mwa_utils.mwa_pointings.obs_pointings`
+    :param align_dir: Path to directory containing aligned rf data files, output from :func:`~embers.rf_tools.align_data.save_aligned`
+    :param chrono_dir: Path to directory containing chronological ephemeris data output from :func:`~embers.sat_utils.chrono_ephem.save_chrono_ephem`
+    :param chan_map_dir: Path to directory containing satellite frequency channel maps. Output from :func:`~embers.sat_utils.sat_channels.batch_window_map`
+    :param out_dir: Output directory where rfe calibration data will be saved as a :samp:`json` file
+
+    :returns:
+        - Tile maps saved as :samp:`.noz` file to :samp:`out_dir`
+
+    """
 
     ref, tile = tile_pair
 
