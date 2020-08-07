@@ -17,7 +17,7 @@ _parser = argparse.ArgumentParser(
 )
 
 _parser.add_argument(
-    "--nside", metavar="\b", type=int, default=32, help="Healpix nide"
+    "--nside", metavar="\b", type=int, default=32, help="Healpix nide. Default: 32"
 )
 _parser.add_argument(
     "--out_dir",
