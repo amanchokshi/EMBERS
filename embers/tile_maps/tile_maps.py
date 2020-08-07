@@ -26,6 +26,7 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy import optimize as opt
 from scipy.stats import binned_statistic, chisquare
+from scipy.stats import median_absolute_deviation as mad
 
 matplotlib.use("Agg")
 spec, _ = spectral()
@@ -1399,7 +1400,7 @@ def plt_sat_maps(sat, out_dir):
 
     for p in pointings:
 
-        Path(f"{out_dir}/sat_maps/{p}/").mkdir(parents=True, exist_ok=True)
+        Path(f"{out_dir}/tile_maps_raw/plots/{p}/").mkdir(parents=True, exist_ok=True)
 
         fig = plt.figure(figsize=(8, 10))
         fig.suptitle(f"Satellite [{sat}] @ pointing {p}", fontsize=16)
@@ -1408,7 +1409,100 @@ def plt_sat_maps(sat, out_dir):
         ]
         plot_healpix(data_map=np.asarray(tile_sat_med), sub=(1, 1, 1), cmap=jade)
         plt.savefig(
-            f"{out_dir}/sat_maps/{p}/{sat}_{p}_passes.png", bbox_inches="tight",
+            f"{out_dir}/tile_maps_raw/plots/{p}/{sat}_{p}_passes.png",
+            bbox_inches="tight",
+        )
+        plt.close()
+
+
+def plt_clean_maps(clean_map, out_dir):
+    """Plot healpix clean beam, error and count maps at all pointings.
+
+    :param clean_map: Path to a clean_map.npz data file created by :func:`~embers.tile_maps.tile_maps.mwa_clean_maps`
+    :param out_dir: The output directory where the clean maps will be saved
+
+    :returns:
+        - Healpix plots of beam, error, count maps at 4 pointings
+
+    """
+
+    f = Path(clean_map)
+    tile, ref, _, _ = f.stem.split("_")
+
+    pointings = ["0", "2", "4", "41"]
+
+    # load data from map .npz file
+    tile_data = np.load(f, allow_pickle=True)
+
+    for p in pointings:
+
+        Path(f"{out_dir}/tile_maps_clean/plots/{p}/tile_maps").mkdir(
+            parents=True, exist_ok=True
+        )
+        Path(f"{out_dir}/tile_maps_clean/plots/{p}/tile_errors").mkdir(
+            parents=True, exist_ok=True
+        )
+        Path(f"{out_dir}/tile_maps_clean/plots/{p}/tile_counts").mkdir(
+            parents=True, exist_ok=True
+        )
+
+        # healpix meadian map
+        tile_map_med = np.asarray(
+            [(np.nanmedian(i) if i != [] else np.nan) for i in tile_data[p]]
+        )
+
+        fig = plt.figure(figsize=(8, 10))
+        fig.suptitle(f"Good Map: {tile}/{ref} @ {p}", fontsize=16)
+        plot_healpix(data_map=tile_map_med, sub=(1, 1, 1), cmap=jade, vmin=-50, vmax=0)
+        plt.savefig(
+            f"{out_dir}/tile_maps_clean/plots/{p}/tile_maps/{tile}_{ref}_{p}_clean_map.png",
+            bbox_inches="tight",
+        )
+        plt.close()
+
+        # Plot MAD
+        tile_map_mad = []
+        for j in tile_data[p]:
+            if j != []:
+                j = np.asarray(j)
+                j = j[~np.isnan(j)]
+                tile_map_mad.append(mad(j))
+            else:
+                tile_map_mad.append(np.nan)
+
+        vmin = np.nanmin(tile_map_mad)
+        vmax = np.nanmax(tile_map_mad)
+
+        fig = plt.figure(figsize=(8, 10))
+        fig.suptitle(f"Good Map MAD: {tile}/{ref} @ {p}", fontsize=16)
+        plot_healpix(
+            data_map=np.asarray(tile_map_mad),
+            sub=(1, 1, 1),
+            cmap=jade,
+            vmin=vmin,
+            vmax=vmax,
+        )
+        plt.savefig(
+            f"{out_dir}/tile_maps_clean/plots/{p}/tile_errors/{tile}_{ref}_{p}_clean_map_errors.png",
+            bbox_inches="tight",
+        )
+        plt.close()
+
+        # Plot satellite pass counts in pix
+        tile_map_counts = [len(np.array(i)[~np.isnan(i)]) for i in tile_data[p]]
+
+        fig = plt.figure(figsize=(8, 10))
+        fig.suptitle(f"Good Map Counts: {tile}/{ref} @ {p}", fontsize=16)
+        plot_healpix(
+            data_map=np.asarray(tile_map_counts),
+            sub=(1, 1, 1),
+            cmap=jade,
+            vmin=0,
+            vmax=80,
+        )
+        plt.savefig(
+            f"{out_dir}/tile_maps_clean/plots/{p}/tile_counts/{tile}_{ref}_{p}_clean_map_counts.png",
+            bbox_inches="tight",
         )
         plt.close()
 

@@ -110,6 +110,7 @@ Tile Maps
     tile_maps.project_tile_healpix
     tile_maps.mwa_clean_maps
     tile_maps.plt_sat_maps
+    tile_maps.plt_clean_maps
 
 
 Kindle

@@ -26,3 +26,4 @@
 .. autofunction:: embers.tile_maps.tile_maps.project_tile_healpix
 .. autofunction:: embers.tile_maps.tile_maps.mwa_clean_maps
 .. autofunction:: embers.tile_maps.tile_maps.plt_sat_maps
+.. autofunction:: embers.tile_maps.tile_maps.plt_clean_maps
