@@ -111,6 +111,7 @@ Tile Maps
     tile_maps.mwa_clean_maps
     tile_maps.plt_sat_maps
     tile_maps.plt_clean_maps
+    tile_maps.tile_maps_batch
 
 
 Kindle
