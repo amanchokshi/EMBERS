@@ -3,7 +3,7 @@ from pathlib import Path
 import healpy as hp
 import matplotlib
 import numpy as np
-from embers.rf_tools.colormap import spectral
+from embers.rf_tools.colormaps import spectral
 from embers.tile_maps.beam_utils import (chisq_fit_gain,
                                          healpix_cardinal_slices, map_slices,
                                          poly_fit, rotate_map)

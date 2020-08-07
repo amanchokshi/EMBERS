@@ -112,7 +112,7 @@ def healpix_cardinal_slices(nside, hp_map, za_max):
         - :class:`~tuple` of NS, EW data slices of the imput healpix map, each of which contain the healpix indices and corresponding zenith angles
     """
 
-    NS_indices, EW_indices, _ = healpix_cardinal_indices(nside, za_max=za_max)
+    NS_indices, EW_indices = healpix_cardinal_indices(nside, za_max=za_max)
 
     θ_NS, ɸ_NS = np.degrees(hp.pix2ang(nside, NS_indices))
     θ_EW, ɸ_EW = np.degrees(hp.pix2ang(nside, EW_indices))
