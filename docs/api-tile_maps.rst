@@ -7,8 +7,8 @@
 
 .. automodule:: embers.tile_maps.beam_utils
 .. autofunction:: embers.tile_maps.beam_utils.rotate_map
-.. autofunction:: embers.tile_maps.beam_utils.healpix_cardial_indices
-.. autofunction:: embers.tile_maps.beam_utils.healpix_cardial_slices
+.. autofunction:: embers.tile_maps.beam_utils.healpix_cardinal_indices
+.. autofunction:: embers.tile_maps.beam_utils.healpix_cardinal_slices
 .. autofunction:: embers.tile_maps.beam_utils.plot_healpix
 
 .. automodule:: embers.tile_maps.ref_fee_healpix
