@@ -1,69 +1,9 @@
-import numpy as np
 import healpy as hp
-import scipy.optimize as opt
-import numpy.polynomial.polynomial as poly
+import numpy as np
+from numpy.polynomial import polynomial as poly
+from scipy import optimize as opt
 
 
-def hp_slices_horizon(nside=None):
-    """Healpix pix indices of NS, EW slices and above horizon"""
-    # theta phi values of each pixel
-    hp_indices = np.arange(hp.nside2npix(nside))
-    θ, ɸ = hp.pix2ang(nside, hp_indices)
-
-    # healpix indices above the horizon
-    above_horizon_indices = np.where(θ <= np.radians(80))[0]
-
-    # pixel coords above the horizon
-    ɸ_above_horizon = ɸ[above_horizon_indices]
-
-    NS_indices = []
-    EW_indices = []
-
-    # pixel indices along N, E, S, W slices
-    # order the indices such that they proceed from N -> S or E -> W
-    n_slice = sorted(
-        np.where((np.round(np.degrees(ɸ_above_horizon))) == 45)[0], reverse=True
-    )
-    e_slice = sorted(
-        np.where((np.round(np.degrees(ɸ_above_horizon))) == 135)[0], reverse=True
-    )
-    s_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 225)[0])
-    w_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 315)[0])
-
-    NS_indices.extend(n_slice)
-    NS_indices.extend(s_slice)
-    EW_indices.extend(e_slice)
-    EW_indices.extend(w_slice)
-
-    return [NS_indices, EW_indices, above_horizon_indices]
-
-
-def slice_map(hp_map):
-    """slices healpix map along NS, EW"""
-
-    NS_indices, EW_indices, _ = hp_slices_horizon(nside)
-
-    θ_NS, ɸ_NS = np.degrees(hp.pix2ang(nside, NS_indices))
-    θ_EW, ɸ_EW = np.degrees(hp.pix2ang(nside, EW_indices))
-
-    zenith_angle_NS = []
-    for i, j in zip(θ_NS, ɸ_NS):
-        if j <= 180:
-            zenith_angle_NS.append(-1 * i)
-        else:
-            zenith_angle_NS.append(i)
-
-    zenith_angle_EW = []
-    for i, j in zip(θ_EW, ɸ_EW):
-        if j <= 180:
-            zenith_angle_EW.append(-1 * i)
-        else:
-            zenith_angle_EW.append(i)
-
-    NS_data = [hp_map[NS_indices], zenith_angle_NS]
-    EW_data = [hp_map[EW_indices], zenith_angle_EW]
-
-    return [NS_data, EW_data]
 
 
 def nan_mad(ref_map):
@@ -362,21 +302,22 @@ def plt_null_test(
 if __name__ == "__main__":
 
     import argparse
-    import numpy as np
     from pathlib import Path
+
     import matplotlib
+    import numpy as np
 
     matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    import matplotlib.gridspec as gs
+    import sys
+
+    from matplotlib import gridspec as gs
+    from matplotlib import pyplot as plt
     from mpl_toolkits.axes_grid1 import make_axes_locatable
     from scipy.stats import median_absolute_deviation as mad
 
-    import sys
-
     sys.path.append("../decode_rf_data")
-    from plot_tile_maps import plot_healpix
     from colormap import spectral
+    from plot_tile_maps import plot_healpix
 
     # Custom spectral colormap
     cmap = spectral()

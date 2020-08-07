@@ -50,6 +50,89 @@ def rotate_map(nside, angle=None, healpix_array=None, savetag=None, flip=False):
     return healpix_array[new_hp_inds]
 
 
+def healpix_cardinal_indices(nside, za_max=90):
+    """Cardinal slices of healpix maps, upto an zenith angle threshold.
+
+    Healpix maps of nside=32 do not have pixels along their cardinal axes, but do have them along their diagonal axes. This function
+    determined the indices of diagonal slices of healpix maps, assuming the original map has been rotated by + 𝛑/4 using the
+    :func:`~embers.tile_maps.beam_utils.rotate_map` function.
+
+    :param nside: Healpix nside
+    :param za_max: Maximum zenith angle, default: 90 (horizon)
+
+    :returns:
+        - :class:`~tuple` of NS, EW healpix indices
+
+    """
+
+    # theta phi values of each pixel
+    hp_indices = np.arange(hp.nside2npix(nside))
+    θ, ɸ = hp.pix2ang(nside, hp_indices)
+
+    # healpix indices above the horizon
+    above_horizon_indices = np.where(θ <= np.radians(za_max))[0]
+
+    # pixel coords above the horizon
+    ɸ_above_horizon = ɸ[above_horizon_indices]
+
+    NS_indices = []
+    EW_indices = []
+
+    # pixel indices along N, E, S, W slices
+    # order the indices such that they proceed from N -> S or E -> W
+    n_slice = sorted(
+        np.where((np.round(np.degrees(ɸ_above_horizon))) == 45)[0], reverse=True
+    )
+    e_slice = sorted(
+        np.where((np.round(np.degrees(ɸ_above_horizon))) == 135)[0], reverse=True
+    )
+    s_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 225)[0])
+    w_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 315)[0])
+
+    NS_indices.extend(n_slice)
+    NS_indices.extend(s_slice)
+    EW_indices.extend(e_slice)
+    EW_indices.extend(w_slice)
+
+    return (NS_indices, EW_indices)
+
+
+def healpix_cardinal_slices(nside, hp_map, za_max):
+    """Slice healpix map along NS, EW axes, assuming it has been rotated by + 𝛑/4.
+
+    :param nside: Healpix nside
+    :param hp_map: Healpix imput data map
+    :param za_max: Maximum zenith angle
+
+    :returns:
+        - :class:`~tuple` of NS, EW data slices of the imput healpix map
+    """
+
+    NS_indices, EW_indices, _ = healpix_cardinal_indices(nside, za_max=za_max)
+
+    θ_NS, ɸ_NS = np.degrees(hp.pix2ang(nside, NS_indices))
+    θ_EW, ɸ_EW = np.degrees(hp.pix2ang(nside, EW_indices))
+
+    zenith_angle_NS = []
+    for i, j in zip(θ_NS, ɸ_NS):
+        if j <= 180:
+            zenith_angle_NS.append(-1 * i)
+        else:
+            zenith_angle_NS.append(i)
+
+    zenith_angle_EW = []
+    for i, j in zip(θ_EW, ɸ_EW):
+        if j <= 180:
+            zenith_angle_EW.append(-1 * i)
+        else:
+            zenith_angle_EW.append(i)
+
+    NS_data = [hp_map[NS_indices], zenith_angle_NS]
+    EW_data = [hp_map[EW_indices], zenith_angle_EW]
+
+    return (NS_data, EW_data)
+
+
 def plot_healpix(
     data_map=None,
     fig=None,

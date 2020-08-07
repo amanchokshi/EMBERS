@@ -95,6 +95,8 @@ Tile Maps
 .. autosummary::
 
     beam_utils.rotate_map
+    beam_utils.healpix_cardinal_indices
+    beam_utils.healpix_cardinal_slices
     beam_utils.plot_healpix
     ref_fee_healpix.create_model
     ref_fee_healpix.ref_healpix_save
@@ -116,6 +118,3 @@ Tile Maps
 
 Kindle
 ======
-
-
-
