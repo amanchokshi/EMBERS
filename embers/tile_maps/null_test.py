@@ -4,10 +4,11 @@ import healpy as hp
 import matplotlib
 import numpy as np
 from embers.rf_tools.colormap import spectral
-from embers.tile_maps.beam_utils import map_slices, poly_fit, rotate_map
+from embers.tile_maps.beam_utils import (chisq_fit_gain,
+                                         healpix_cardinal_slices, map_slices,
+                                         poly_fit, rotate_map)
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from scipy import optimize as opt
 
 matplotlib.use("Agg")
 cmap, _ = spectral()
@@ -65,30 +66,6 @@ def good_ref_maps(nside, map_dir, tile_pair):
                 good_ref_map[pix].extend(ref_map[p][sat][pix])
 
     return good_ref_map
-
-
-# chisquared minimization to best fit map to data
-def fit_gain(map_data=None, map_error=None, beam=None):
-    """Fit the beam model to the measured data using
-    chisquared minimization"""
-
-    bad_values = np.isnan(map_data)
-    map_data = map_data[~bad_values]
-    map_error = map_error[~bad_values]
-
-    map_error[np.where(map_error == 0)] = np.mean(map_error)
-
-    def chisqfunc(gain):
-        model = beam[~bad_values] + gain
-        chisq = sum((map_data - model) ** 2)
-        # chisq = sum(((map_data - model)/map_error)**2)
-        return chisq
-
-    x0 = np.array([0])
-
-    result = opt.minimize(chisqfunc, x0)
-
-    return result.x
 
 
 def plt_slice(
@@ -238,18 +215,21 @@ if __name__ == "__main__":
         default="../../outputs/tile_maps/null_test/",
         help="Output directory. Default=../../outputs/tile_maps/null_test/",
     )
+
     parser.add_argument(
         "--map_dir",
         metavar="\b",
         default="../../outputs/tile_maps/tile_maps_raw/",
         help="Output directory. Default=../../outputs/tile_maps/tile_maps_raw/",
     )
+
     parser.add_argument(
         "--ref_model",
         metavar="\b",
         default="../../outputs/reproject_ref/ref_dipole_models.npz",
         help="Healpix reference FEE model file. default=../../outputs/reproject_ref/ref_dipole_models.npz",
     )
+
     parser.add_argument(
         "--nside",
         metavar="\b",
@@ -258,12 +238,20 @@ if __name__ == "__main__":
         help="Healpix Nside. Default = 32",
     )
 
+    parser.add_argument(
+        "--za_max",
+        metavar="\b",
+        type=int,
+        default=80,
+        help="Maximum zenith angle. Default = 80 deg",
+    )
     args = parser.parse_args()
 
     out_dir = Path(args.out_dir)
     map_dir = Path(args.map_dir)
     ref_model = args.ref_model
     nside = args.nside
+    za_max = args.za_max
 
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -276,29 +264,29 @@ if __name__ == "__main__":
     good_rf0XX = rotate_map(
         nside,
         angle=+(1 * np.pi) / 4.0,
-        healpix_array=np.asarray(good_ref_maps(32, map_dir, tile_pairs[0])),
+        healpix_array=np.asarray(good_ref_maps(nside, map_dir, tile_pairs[0])),
     )
     good_rf0YY = rotate_map(
         nside,
         angle=+(1 * np.pi) / 4.0,
-        healpix_array=np.asarray(good_ref_maps(32, map_dir, tile_pairs[1])),
+        healpix_array=np.asarray(good_ref_maps(nside, map_dir, tile_pairs[1])),
     )
     good_rf1XX = rotate_map(
         nside,
         angle=+(1 * np.pi) / 4.0,
-        healpix_array=np.asarray(good_ref_maps(32, map_dir, tile_pairs[2])),
+        healpix_array=np.asarray(good_ref_maps(nside, map_dir, tile_pairs[2])),
     )
     good_rf1YY = rotate_map(
         nside,
         angle=+(1 * np.pi) / 4.0,
-        healpix_array=np.asarray(good_ref_maps(32, map_dir, tile_pairs[3])),
+        healpix_array=np.asarray(good_ref_maps(nside, map_dir, tile_pairs[3])),
     )
 
     # NS, EW slices of all four reference tiles
-    rf0XX_NS, rf0XX_EW = map_slices(good_rf0XX)
-    rf0YY_NS, rf0YY_EW = map_slices(good_rf0YY)
-    rf1XX_NS, rf1XX_EW = map_slices(good_rf1XX)
-    rf1YY_NS, rf1YY_EW = map_slices(good_rf1YY)
+    rf0XX_NS, rf0XX_EW = map_slices(nside, good_rf0XX, za_max)
+    rf0YY_NS, rf0YY_EW = map_slices(nside, good_rf0YY, za_max)
+    rf1XX_NS, rf1XX_EW = map_slices(nside, good_rf1XX, za_max)
+    rf1YY_NS, rf1YY_EW = map_slices(nside, good_rf1YY, za_max)
 
     # Null test diff in power b/w rf0 & rf1
     ref01_XX_NS = rf0XX_NS[0] - rf1XX_NS[0]
@@ -322,41 +310,25 @@ if __name__ == "__main__":
     rotated_YY = rotate_map(nside, angle=-(1 * np.pi) / 4.0, healpix_array=beam_YY)
 
     # slice the XX rotated map along NS, EW
-    XX_NS, XX_EW = slice_map(rotated_XX)
+    XX_NS, XX_EW = healpix_cardinal_slices(nside, rotated_XX, za_max)
     XX_NS_slice, za_NS = XX_NS
     XX_EW_slice, za_EW = XX_EW
 
     # slice the YY rotated map along NS, EW
-    YY_NS, YY_EW = slice_map(rotated_YY)
+    YY_NS, YY_EW = healpix_cardinal_slices(nside, rotated_YY, za_max)
     YY_NS_slice, za_NS = YY_NS
     YY_EW_slice, za_EW = YY_EW
 
     # Gain offsets for the 8 combinations of data and beam slices
-    gain_ref0_XX_NS = fit_gain(
-        map_data=rf0XX_NS[0], map_error=rf0XX_NS[1], beam=XX_NS_slice
-    )
-    gain_ref0_XX_EW = fit_gain(
-        map_data=rf0XX_EW[0], map_error=rf0XX_EW[1], beam=XX_EW_slice
-    )
-    gain_ref1_XX_NS = fit_gain(
-        map_data=rf1XX_NS[0], map_error=rf1XX_NS[1], beam=XX_NS_slice
-    )
-    gain_ref1_XX_EW = fit_gain(
-        map_data=rf1XX_EW[0], map_error=rf1XX_EW[1], beam=XX_EW_slice
-    )
+    gain_ref0_XX_NS = chisq_fit_gain(data=rf0XX_NS[0], model=XX_NS_slice)
+    gain_ref0_XX_EW = chisq_fit_gain(data=rf0XX_EW[0], model=XX_EW_slice)
+    gain_ref1_XX_NS = chisq_fit_gain(data=rf1XX_NS[0], model=XX_NS_slice)
+    gain_ref1_XX_EW = chisq_fit_gain(data=rf1XX_EW[0], model=XX_EW_slice)
 
-    gain_ref0_YY_NS = fit_gain(
-        map_data=rf0YY_NS[0], map_error=rf0YY_NS[1], beam=YY_NS_slice
-    )
-    gain_ref0_YY_EW = fit_gain(
-        map_data=rf0YY_EW[0], map_error=rf0YY_EW[1], beam=YY_EW_slice
-    )
-    gain_ref1_YY_NS = fit_gain(
-        map_data=rf1YY_NS[0], map_error=rf1YY_NS[1], beam=YY_NS_slice
-    )
-    gain_ref1_YY_EW = fit_gain(
-        map_data=rf1YY_EW[0], map_error=rf1YY_EW[1], beam=YY_EW_slice
-    )
+    gain_ref0_YY_NS = chisq_fit_gain(data=rf0YY_NS[0], model=YY_NS_slice)
+    gain_ref0_YY_EW = chisq_fit_gain(data=rf0YY_EW[0], model=YY_EW_slice)
+    gain_ref1_YY_NS = chisq_fit_gain(data=rf1YY_NS[0], model=YY_NS_slice)
+    gain_ref1_YY_EW = chisq_fit_gain(data=rf1YY_EW[0], model=YY_EW_slice)
 
     # Scale the data so that it best fits the beam slice
     rf0XX_NS = rf0XX_NS - gain_ref0_XX_NS
