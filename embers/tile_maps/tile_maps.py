@@ -1421,18 +1421,22 @@ def plt_sat_maps(sat, out_dir):
             parents=True, exist_ok=True
         )
 
-        plt.style.use("seaborn")
-        fig = plt.figure(figsize=(10, 10))
-        fig.suptitle(f"Satellite [{sat}] @ pointing {p}", fontsize=16)
-        tile_sat_med = [
-            (np.median(i) if i != [] else np.nan) for i in tile_data["mwa_map"][p][sat]
-        ]
-        plot_healpix(data_map=np.asarray(tile_sat_med), sub=(1, 1, 1), cmap=jade)
-        plt.savefig(
-            f"{out_dir}/tile_maps_raw/sat_plots/{p}/{sat}_{p}_passes.png",
-            bbox_inches="tight",
-        )
-        plt.close()
+        try:
+            plt.style.use("seaborn")
+            fig = plt.figure(figsize=(10, 10))
+            fig.suptitle(f"Satellite [{sat}] @ pointing {p}", fontsize=16)
+            tile_sat_med = [
+                (np.median(i) if i != [] else np.nan)
+                for i in tile_data["mwa_map"][p][sat]
+            ]
+            plot_healpix(data_map=np.asarray(tile_sat_med), sub=(1, 1, 1), cmap=jade)
+            plt.savefig(
+                f"{out_dir}/tile_maps_raw/sat_plots/{p}/{sat}_{p}_passes.png",
+                bbox_inches="tight",
+            )
+            plt.close()
+        except Exception as e:
+            print(e)
 
 
 def plt_clean_maps(clean_map, out_dir):
@@ -1467,67 +1471,78 @@ def plt_clean_maps(clean_map, out_dir):
         )
 
         # healpix meadian map
-        tile_map_med = np.asarray(
-            [(np.nanmedian(i) if i != [] else np.nan) for i in tile_data[p]]
-        )
+        try:
+            tile_map_med = np.asarray(
+                [(np.nanmedian(i) if i != [] else np.nan) for i in tile_data[p]]
+            )
 
-        plt.style.use("seaborn")
-        fig = plt.figure(figsize=(10, 10))
-        fig.suptitle(f"Good Map: {tile}/{ref} @ {p}", fontsize=16)
-        plot_healpix(data_map=tile_map_med, sub=(1, 1, 1), cmap=jade, vmin=-50, vmax=0)
-        plt.savefig(
-            f"{out_dir}/tile_maps_clean/clean_plots/{p}/tile_maps/{tile}_{ref}_{p}_clean_map.png",
-            bbox_inches="tight",
-        )
-        plt.close()
+            plt.style.use("seaborn")
+            fig = plt.figure(figsize=(10, 10))
+            fig.suptitle(f"Good Map: {tile}/{ref} @ {p}", fontsize=16)
+            plot_healpix(
+                data_map=tile_map_med, sub=(1, 1, 1), cmap=jade, vmin=-50, vmax=0
+            )
+            plt.savefig(
+                f"{out_dir}/tile_maps_clean/clean_plots/{p}/tile_maps/{tile}_{ref}_{p}_clean_map.png",
+                bbox_inches="tight",
+            )
+            plt.close()
+        except Exception as e:
+            print(e)
 
         # Plot MAD
-        tile_map_mad = []
-        for j in tile_data[p]:
-            if j != []:
-                j = np.asarray(j)
-                j = j[~np.isnan(j)]
-                tile_map_mad.append(mad(j))
-            else:
-                tile_map_mad.append(np.nan)
+        try:
+            tile_map_mad = []
+            for j in tile_data[p]:
+                if j != []:
+                    j = np.asarray(j)
+                    j = j[~np.isnan(j)]
+                    tile_map_mad.append(mad(j))
+                else:
+                    tile_map_mad.append(np.nan)
 
-        vmin = np.nanmin(tile_map_mad)
-        vmax = np.nanmax(tile_map_mad)
+            vmin = np.nanmin(tile_map_mad)
+            vmax = np.nanmax(tile_map_mad)
 
-        plt.style.use("seaborn")
-        fig = plt.figure(figsize=(10, 10))
-        fig.suptitle(f"Good Map MAD: {tile}/{ref} @ {p}", fontsize=16)
-        plot_healpix(
-            data_map=np.asarray(tile_map_mad),
-            sub=(1, 1, 1),
-            cmap=jade,
-            vmin=vmin,
-            vmax=vmax,
-        )
-        plt.savefig(
-            f"{out_dir}/tile_maps_clean/clean_plots/{p}/tile_errors/{tile}_{ref}_{p}_clean_map_errors.png",
-            bbox_inches="tight",
-        )
-        plt.close()
+            plt.style.use("seaborn")
+            fig = plt.figure(figsize=(10, 10))
+            fig.suptitle(f"Good Map MAD: {tile}/{ref} @ {p}", fontsize=16)
+            plot_healpix(
+                data_map=np.asarray(tile_map_mad),
+                sub=(1, 1, 1),
+                cmap=jade,
+                vmin=vmin,
+                vmax=vmax,
+            )
+            plt.savefig(
+                f"{out_dir}/tile_maps_clean/clean_plots/{p}/tile_errors/{tile}_{ref}_{p}_clean_map_errors.png",
+                bbox_inches="tight",
+            )
+            plt.close()
+        except Exception as e:
+            print(e)
 
         # Plot satellite pass counts in pix
-        tile_map_counts = [len(np.array(i)[~np.isnan(i)]) for i in tile_data[p]]
+        try:
+            tile_map_counts = [len(np.array(i)[~np.isnan(i)]) for i in tile_data[p]]
 
-        plt.style.use("seaborn")
-        fig = plt.figure(figsize=(10, 10))
-        fig.suptitle(f"Good Map Counts: {tile}/{ref} @ {p}", fontsize=16)
-        plot_healpix(
-            data_map=np.asarray(tile_map_counts),
-            sub=(1, 1, 1),
-            cmap=jade,
-            vmin=0,
-            vmax=80,
-        )
-        plt.savefig(
-            f"{out_dir}/tile_maps_clean/clean_plots/{p}/tile_counts/{tile}_{ref}_{p}_clean_map_counts.png",
-            bbox_inches="tight",
-        )
-        plt.close()
+            plt.style.use("seaborn")
+            fig = plt.figure(figsize=(10, 10))
+            fig.suptitle(f"Good Map Counts: {tile}/{ref} @ {p}", fontsize=16)
+            plot_healpix(
+                data_map=np.asarray(tile_map_counts),
+                sub=(1, 1, 1),
+                cmap=jade,
+                vmin=0,
+                vmax=80,
+            )
+            plt.savefig(
+                f"{out_dir}/tile_maps_clean/clean_plots/{p}/tile_counts/{tile}_{ref}_{p}_clean_map_counts.png",
+                bbox_inches="tight",
+            )
+            plt.close()
+        except Exception as e:
+            print(e)
 
 
 def tile_maps_batch(
@@ -1612,14 +1627,19 @@ def tile_maps_batch(
             repeat(plots),
         )
 
+    sat_list = list(norad_ids().values())
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        executor.map(plt_sat_maps, sat_list, repeat(out_dir))
+
     raw_map_files = [f for f in Path(f"{out_dir}/tile_maps_raw").glob("*.npz")]
+    print(raw_map_files)
     with concurrent.futures.ProcessPoolExecutor() as executor:
         executor.map(mwa_clean_maps, repeat(nside), raw_map_files, repeat(out_dir))
 
     clean_map_files = [f for f in Path(f"{out_dir}/tile_maps_clean").glob("*.npz")]
+    print(clean_map_files)
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        executor.map(plt_clean_maps, clean_map_files, repeat(out_dir))
+        results = executor.map(plt_clean_maps, clean_map_files, repeat(out_dir))
 
-    sat_list = list(norad_ids().values())
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        executor.map(plt_sat_maps, sat_list, repeat(out_dir))
+    for result in results:
+        print(result)
