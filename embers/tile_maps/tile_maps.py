@@ -6,10 +6,8 @@ A set of tools to project satellite passes onto a healpix map according to their
 
 """
 
-import argparse
 import concurrent.futures
 import json
-import sys
 from itertools import repeat
 from pathlib import Path
 
@@ -21,11 +19,11 @@ from embers.rf_tools.rf_data import tile_names
 from embers.sat_utils.sat_channels import (noise_floor, read_aligned,
                                            time_filter, time_tree)
 from embers.sat_utils.sat_list import norad_ids
-from embers.tile_maps.beam_utils import plot_healpix, rotate_map
+from embers.tile_maps.beam_utils import (chisq_fit_gain, plot_healpix,
+                                         rotate_map, test_chisq_fit)
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from scipy import optimize as opt
-from scipy.stats import binned_statistic, chisquare
+from scipy.stats import binned_statistic
 from scipy.stats import median_absolute_deviation as mad
 
 matplotlib.use("Agg")
@@ -64,56 +62,6 @@ def check_pointing(timestamp, obs_point_json):
         point = None
 
     return point
-
-
-def chisq_fit_gain(data=None, model=None):
-    """Chisqaured fit the data and model.
-
-    :param data: A data array to be fit to a model. Typically this if rf map data being fit to the fee model
-    :param model: The model to which the data is being fit. Typically the fee beam model
-
-    :returns:
-        - Single multiplicative gain value, which best fits data to model
-
-    """
-
-    bad_values = np.isnan(data)
-    data = data[~bad_values]
-    model = model[~bad_values]
-
-    def chisqfunc(gain):
-        mod = model + gain
-        chisq = sum((data - mod) ** 2)
-        return chisq
-
-    x0 = np.array([0])
-
-    result = opt.minimize(chisqfunc, x0)
-
-    return result.x
-
-
-def test_chisq_fit(data=None, model=None, offset=20):
-    """chi-squared test for goodness of fit betweet model and data
-
-    :param data: A data array to be fit to a model. Typically this if rf map data being fit to the fee model
-    :param model: The model to which the data is being fit. Typically the fee beam model
-    :param offset: An integer offset by which data and model can be shifted away from their original 0 peak, which pvalues struggle with. Default=20
-
-    :returns:
-        - pvalue - an indicator for goodess of fit
-    """
-
-    bad_values = np.isnan(data)
-    data = data[~bad_values]
-    model = model[~bad_values]
-
-    data = np.asarray(data) - np.nanmin(model) + offset
-    model = np.asarray(model) - np.nanmin(model) + offset
-
-    _, pvalue = chisquare(data, f_exp=model)
-
-    return pvalue
 
 
 def plt_channel(

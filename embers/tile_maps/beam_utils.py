@@ -9,6 +9,8 @@ A set of tools used to create and visualize tile maps
 import healpy as hp
 import numpy as np
 from numpy.polynomial import polynomial as poly
+from scipy import optimize as opt
+from scipy.stats import chisquare
 from scipy.stats import median_absolute_deviation as mad
 
 
@@ -214,6 +216,56 @@ def poly_fit(x, y, data, order):
     fit = poly.polyval(x, coefs)
 
     return fit
+
+
+def chisq_fit_gain(data=None, model=None):
+    """Chisqaured fit the data and model.
+
+    :param data: A data array to be fit to a model. Typically this if rf map data being fit to the fee model
+    :param model: The model to which the data is being fit. Typically the fee beam model
+
+    :returns:
+        - Single multiplicative gain value, which best fits data to model
+
+    """
+
+    bad_values = np.isnan(data)
+    data = data[~bad_values]
+    model = model[~bad_values]
+
+    def chisqfunc(gain):
+        mod = model + gain
+        chisq = sum((data - mod) ** 2)
+        return chisq
+
+    x0 = np.array([0])
+
+    result = opt.minimize(chisqfunc, x0)
+
+    return result.x
+
+
+def test_chisq_fit(data=None, model=None, offset=20):
+    """chi-squared test for goodness of fit betweet model and data
+
+    :param data: A data array to be fit to a model. Typically this if rf map data being fit to the fee model
+    :param model: The model to which the data is being fit. Typically the fee beam model
+    :param offset: An integer offset by which data and model can be shifted away from their original 0 peak, which pvalues struggle with. Default=20
+
+    :returns:
+        - pvalue - an indicator for goodess of fit
+    """
+
+    bad_values = np.isnan(data)
+    data = data[~bad_values]
+    model = model[~bad_values]
+
+    data = np.asarray(data) - np.nanmin(model) + offset
+    model = np.asarray(model) - np.nanmin(model) + offset
+
+    _, pvalue = chisquare(data, f_exp=model)
+
+    return pvalue
 
 
 def plot_healpix(
