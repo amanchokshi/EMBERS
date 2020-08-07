@@ -101,8 +101,6 @@ Tile Maps
     ref_fee_healpix.create_model
     ref_fee_healpix.ref_healpix_save
     tile_maps.check_pointing
-    tile_maps.chisq_fit_gain
-    tile_maps.test_chisq_fit
     tile_maps.plt_channel
     tile_maps.plt_fee_fit
     tile_maps.rf_apply_thresholds
