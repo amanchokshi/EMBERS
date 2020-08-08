@@ -143,59 +143,19 @@ def plt_null_test(
     return ax
 
 
-if __name__ == "__main__":
+def null_test(nside, za_max, ref_model, map_dir, out_dir):
+    """Plot all null tests for reference beam maps
 
-    import argparse
+    :param nside: Healpix nside
+    :param za_max: Maximum zenith angle
+    :param ref_model: Path to feko reference model, saved by :func:`~embers.tile_maps.ref_fee_healpix.ref_healpix_save`
+    :param map_dir: Path to directory with tile_maps_raw, created by :func:`~embers.tile_maps.tile_maps.project_tile_healpix`
+    :param out_dir: Output directory where null test plots will be saved
 
-    parser = argparse.ArgumentParser(
-        description="""
-        Plot healpix map of reference data
-        """
-    )
+    :returns:
+        - Null test plot saved to out_dir
 
-    parser.add_argument(
-        "--out_dir",
-        metavar="\b",
-        default="../../outputs/tile_maps/null_test/",
-        help="Output directory. Default=../../outputs/tile_maps/null_test/",
-    )
-
-    parser.add_argument(
-        "--map_dir",
-        metavar="\b",
-        default="../../outputs/tile_maps/tile_maps_raw/",
-        help="Output directory. Default=../../outputs/tile_maps/tile_maps_raw/",
-    )
-
-    parser.add_argument(
-        "--ref_model",
-        metavar="\b",
-        default="../../outputs/reproject_ref/ref_dipole_models.npz",
-        help="Healpix reference FEE model file. default=../../outputs/reproject_ref/ref_dipole_models.npz",
-    )
-
-    parser.add_argument(
-        "--nside",
-        metavar="\b",
-        type=int,
-        default=32,
-        help="Healpix Nside. Default = 32",
-    )
-
-    parser.add_argument(
-        "--za_max",
-        metavar="\b",
-        type=int,
-        default=80,
-        help="Maximum zenith angle. Default = 80 deg",
-    )
-    args = parser.parse_args()
-
-    out_dir = Path(args.out_dir)
-    map_dir = Path(args.map_dir)
-    ref_model = args.ref_model
-    nside = args.nside
-    za_max = args.za_max
+    """
 
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -512,3 +472,60 @@ if __name__ == "__main__":
 
     plt.tight_layout()
     fig1.savefig(f"{out_dir}/null_test.pdf", bbox_inches="tight")
+
+
+if __name__ == "__main__":
+
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="""
+        Plot healpix map of reference data
+        """
+    )
+
+    parser.add_argument(
+        "--out_dir",
+        metavar="\b",
+        default="../../outputs/tile_maps/null_test/",
+        help="Output directory. Default=../../outputs/tile_maps/null_test/",
+    )
+
+    parser.add_argument(
+        "--map_dir",
+        metavar="\b",
+        default="../../outputs/tile_maps/tile_maps_raw/",
+        help="Output directory. Default=../../outputs/tile_maps/tile_maps_raw/",
+    )
+
+    parser.add_argument(
+        "--ref_model",
+        metavar="\b",
+        default="../../outputs/reproject_ref/ref_dipole_models.npz",
+        help="Healpix reference FEE model file. default=../../outputs/reproject_ref/ref_dipole_models.npz",
+    )
+
+    parser.add_argument(
+        "--nside",
+        metavar="\b",
+        type=int,
+        default=32,
+        help="Healpix Nside. Default = 32",
+    )
+
+    parser.add_argument(
+        "--za_max",
+        metavar="\b",
+        type=int,
+        default=80,
+        help="Maximum zenith angle. Default = 80 deg",
+    )
+    args = parser.parse_args()
+
+    out_dir = Path(args.out_dir)
+    map_dir = Path(args.map_dir)
+    ref_model = args.ref_model
+    nside = args.nside
+    za_max = args.za_max
+
+    null_test(nside, za_max, ref_model, map_dir, out_dir)
