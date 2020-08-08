@@ -51,5 +51,5 @@ _out_dir = Path(_args.out_dir)
 
 def main():
     """Execute null test from terminal."""
-    print(f"Null tests saved to {_out_dir}")
+    print(f"Beam comparison plots saved to {_out_dir}")
     batch_compare_beam(_nside, _fee_model, _map_dir, _out_dir)

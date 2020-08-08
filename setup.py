@@ -74,6 +74,7 @@ setup(
             "rfe_calibration=embers.kindle.rfe_calibration:main",
             "tile_maps=embers.kindle.tile_maps:main",
             "null_test=embers.kindle.null_test:main",
+            "compare_beams=embers.kindle.compare_beams:main",
         ],
     },
     keywords=("embers radio astronomy satellites beam measurement"),
