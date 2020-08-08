@@ -53,8 +53,8 @@ table{border-collapse:collapse;border-spacing:0}
     src: url(Lato-Regular.ttf);
 }
 @font-face {
-    font-family: "Fira Code";
-    src: url(FiraCode.ttf);
+    font-family: "Tech";
+    src: url(ShareTechMono-Regular.ttf);
 }
 body, body > img {
     display: block;
@@ -113,7 +113,7 @@ h1, h2, h3 {
     border-bottom: 1px solid #969A9C77;
 }
 code, pre, tt, dt {
-    font-family: "Fira Code", monospace, serif;
+    font-family: "Tech", monospace, serif;
 }
 code, pre, tt {
     background-color: #F9F8Eb;
