@@ -181,6 +181,7 @@ def map_slices(nside, good_map, za_max):
     NS_med_map = np.asarray(
         [(np.nanmedian(i) if i != [] else np.nan) for i in ref_map_NS[0]]
     )
+    # Scale peak to 0
     NS_med_map = np.asarray([i - np.nanmax(NS_med_map) for i in NS_med_map])
     NS_mad_map = np.asarray(nan_mad(ref_map_NS[0]))
     za_NS = ref_map_NS[1]
@@ -188,6 +189,7 @@ def map_slices(nside, good_map, za_max):
     EW_med_map = np.asarray(
         [(np.nanmedian(i) if i != [] else np.nan) for i in ref_map_EW[0]]
     )
+    # Scale peak to 0
     EW_med_map = np.asarray([i - np.nanmax(EW_med_map) for i in EW_med_map])
     EW_mad_map = np.asarray(nan_mad(ref_map_EW[0]))
     za_EW = ref_map_EW[1]
