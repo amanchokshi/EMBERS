@@ -16,6 +16,16 @@ jade, _ = jade()
 
 
 def beam_slice(nside, tile_map, fee_map, out_dir):
+    """Compare slices of measured beam maps and FEE models.
+
+    NS & EW slices of measured MWA beam maps are compared to corresponding slices of FEE models. Complete sky maps are plotted to display
+    power gradients across the beam.
+
+    :param nside: Healpix nside
+    :param tile_map: Clean MWA tile map created by :func:`~embers.tile_maps.tile_maps.mwa_clean_maps`
+    :param fee_map: MWA FEE model created  my :func:`~embers.mwa_utils.mwa_fee`
+    :param out_dir: Path to output directory where diagnostic plots will be saved
+    """
 
     t_name, r_name, _, _ = tile_map.stem.split("_")
 
@@ -159,6 +169,13 @@ def beam_slice(nside, tile_map, fee_map, out_dir):
 
 
 def batch_compare_beam(nside, fee_map, map_dir, out_dir):
+    """Batch compare multiple beam maps
+
+    :param nside: Healpix nside
+    :param fee_map: MWA FEE model created  my :func:`~embers.mwa_utils.mwa_fee`
+    :param map_dir: Path to dir with clean MWA tile maps created by :func:`~embers.tile_maps.tile_maps.mwa_clean_maps`
+    :param out_dir: Path to output directory where diagnostic plots will be saved
+    """
 
     # make output dir if it doesn't exist
     out_dir.mkdir(parents=True, exist_ok=True)
