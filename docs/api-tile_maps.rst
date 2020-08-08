@@ -9,6 +9,12 @@
 .. autofunction:: embers.tile_maps.beam_utils.rotate_map
 .. autofunction:: embers.tile_maps.beam_utils.healpix_cardinal_indices
 .. autofunction:: embers.tile_maps.beam_utils.healpix_cardinal_slices
+.. autofunction:: embers.tile_maps.beam_utils.nan_mad
+.. autofunction:: embers.tile_maps.beam_utils.map_slices
+.. autofunction:: embers.tile_maps.beam_utils.poly_fit
+.. autofunction:: embers.tile_maps.beam_utils.chisq_fit_gain
+.. autofunction:: embers.tile_maps.beam_utils.test_chisq_fit
+.. autofunction:: embers.tile_maps.beam_utils.plt_slice
 .. autofunction:: embers.tile_maps.beam_utils.plot_healpix
 
 .. automodule:: embers.tile_maps.ref_fee_healpix
