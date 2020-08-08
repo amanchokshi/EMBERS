@@ -14,20 +14,22 @@ matplotlib.use("Agg")
 jade, _ = jade()
 
 
-def beam_slice(f):
+def beam_slice(nside, tile_map, fee_map, out_dir):
 
-    t_name, r_name, _, _ = f.stem.split("_")
+    t_name, r_name, _, _ = tile_map.stem.split("_")
 
     pointings = ["0", "2", "4", "41"]
 
     # load data from map .npz file
-    tile_map = np.load(f, allow_pickle=True)
+    tile_map = np.load(tile_map, allow_pickle=True)
     fee_m = np.load(fee_map, allow_pickle=True)
 
+    # MWA beam pointings
+    pointings = ["0", "2", "4", "41"]
+
     for p in pointings:
-        print("-----------------")
-        print(f"Pointings: {p}")
-        print("-----------------")
+
+        Path(f"{out_dir}/{p}/").mkdir(parents=True, exist_ok=True)
 
         try:
             tile = tile_map[p]
@@ -201,17 +203,10 @@ if __name__ == "__main__":
     # make output dir if it doesn't exist
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # MWA beam pointings
-    pointings = ["0", "2", "4", "41"]
-
-    # Create output directory structure
-    for p in pointings:
-        Path(f"{out_dir}/{p}/").mkdir(parents=True, exist_ok=True)
-
     # find all map files
     map_files = [item for item in map_dir.glob("*.npz")]
 
     # Parallization magic happens here
     # with concurrent.futures.ProcessPoolExecutor() as executor:
     #    results = executor.map(beam_slice, map_files)
-    beam_slice(map_files[0])
+    beam_slice(nside, map_files[0], fee_map, out_dir)
