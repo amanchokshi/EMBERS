@@ -116,7 +116,7 @@ def beam_slice(nside, tile_map, fee_map, out_dir):
                 slice_label="Tile NS",
                 model_label="FEE NS",
                 xlim=[-90, 90],
-                ylim=[-48, 4],
+                ylim=[-54, 4],
             )
 
             fig1.add_axes([0.48, 0.52, 0.48, 0.43])
@@ -149,7 +149,7 @@ def beam_slice(nside, tile_map, fee_map, out_dir):
                 model_label="FEE EW",
                 xlabel=True,
                 xlim=[-90, 90],
-                ylim=[-48, 4],
+                ylim=[-54, 4],
             )
 
             fig1.add_axes([0.48, 0.02, 0.48, 0.43])
