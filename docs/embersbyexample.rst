@@ -30,3 +30,37 @@ These tools come built with help functions, which can be accessed at any time wi
 
     $ test_tool --help
 
+Raw Data Tree
+^^^^^^^^^^^^^
+It is important to know the directory structure of input data that *EMBERS* prefers. Data is organised into a root directory called :samp:`tiles_data` within which
+sub directories for each MWA and reference tile exist (:samp:`S06XX`, :samp:`S06YY`, ......, :samp:`rf1XX`, :samp:`rf1YY`). Within each of these tile directories,
+there exists a date directory for every day of observations in the :samp:`YYYY-MM-DD` format, within which live the raw RF data, in binary :samp:`.txt` files
+saved every 30 minutes, with the naming convention as follows :samp:`S06XX_YYYY-DD-MM-hh:mm.txt`
+
+.. code-block:: console
+
+    tiles_data
+    ├── S06XX
+    │   ├── 2019-10-01
+    │   │   ├── S06XX_2019-10-01-00:00.txt
+    │   │   ├──         ........
+    │   │   └── S06XX_2019-10-01-23:30.txt
+    │   └── 2019-10-02
+    │       ├── S06XX_2019-10-02-00:00.txt
+    │       ├──         ........
+    │       └── S06XX_2019-10-02-23:30.txt
+    └── S06XX
+        ├── 2019-10-01
+        │   ├── S06XX_2019-10-01-00:00.txt
+        │   ├──         ........
+        │   └── S06XX_2019-10-01-23:30.txt
+        └── 2019-10-02
+            ├── S06XX_2019-10-02-00:00.txt
+            ├──         ........
+            └── S06XX_2019-10-02-23:30.txt
+
+RF Tools
+--------
+
+:mod:`embers.rf_tools` is used to pre process, condition and preview raw rf data. Outputs of this module are saved to the :samp:`./embers_out/rf_tools` directory.
+
