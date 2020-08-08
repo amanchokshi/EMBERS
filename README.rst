@@ -3,3 +3,6 @@
     :align: center
     :target: https://embers.readthedocs.io/
     :alt: EMBERS logo
+
+*Experimental Measurement of BEam Responses with Satellites*
+============================================================
