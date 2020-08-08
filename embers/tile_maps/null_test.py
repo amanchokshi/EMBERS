@@ -288,11 +288,19 @@ if __name__ == "__main__":
     rf1XX_NS, rf1XX_EW = map_slices(nside, good_rf1XX, za_max)
     rf1YY_NS, rf1YY_EW = map_slices(nside, good_rf1YY, za_max)
 
+    plt.scatter(rf0XX_NS[-1], rf0XX_NS[0])
+    plt.scatter(rf0YY_NS[-1], rf1YY_NS[0])
+    plt.savefig("t2.png")
+
     # Null test diff in power b/w rf0 & rf1
     ref01_XX_NS = rf0XX_NS[0] - rf1XX_NS[0]
     ref01_XX_EW = rf0XX_EW[0] - rf1XX_EW[0]
     ref01_YY_NS = rf0YY_NS[0] - rf1YY_NS[0]
     ref01_YY_EW = rf0YY_EW[0] - rf1YY_EW[0]
+
+    plt.scatter(rf0XX_NS[-1], ref01_XX_NS)
+    plt.scatter(rf0YY_NS[-1], ref01_YY_NS)
+    plt.savefig("test.png")
 
     # Error propogation in null test
     error_ref01_XX_NS = np.sqrt((rf0XX_NS[1]) ** 2 + (rf1XX_NS[1]) ** 2)
