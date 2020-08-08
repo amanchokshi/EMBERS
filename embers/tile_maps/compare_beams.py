@@ -158,48 +158,7 @@ def beam_slice(nside, tile_map, fee_map, out_dir):
             print(e)
 
 
-if __name__ == "__main__":
-
-    import argparse
-
-    parser = argparse.ArgumentParser(
-        description="""
-        Plot healpix map of reference data
-        """
-    )
-
-    parser.add_argument(
-        "--out_dir",
-        metavar="\b",
-        default="../../outputs/tile_maps/compare_beams/",
-        help="Output directory. Default=../../outputs/tile_maps/compare_beams/",
-    )
-    parser.add_argument(
-        "--map_dir",
-        metavar="\b",
-        default="../../outputs/tile_maps/tile_maps_norm/",
-        help="Tile map directory. Default=../../outputs/tile_maps/tile_maps_norm/",
-    )
-    parser.add_argument(
-        "--fee_map",
-        metavar="\b",
-        default="../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz",
-        help="Healpix FEE map of mwa tile. default=../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz",
-    )
-    parser.add_argument(
-        "--nside",
-        metavar="\b",
-        type=int,
-        default=32,
-        help="Healpix Nside. Default = 32",
-    )
-
-    args = parser.parse_args()
-
-    out_dir = Path(args.out_dir)
-    map_dir = Path(args.map_dir)
-    fee_map = args.fee_map
-    nside = args.nside
+def batch_compare_beam(nside, fee_map, map_dir, out_dir):
 
     # make output dir if it doesn't exist
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -212,5 +171,3 @@ if __name__ == "__main__":
         executor.map(
             beam_slice, repeat(nside), map_files, repeat(fee_map), repeat(out_dir)
         )
-
-    #  beam_slice(nside, map_files[0], fee_map, out_dir)
