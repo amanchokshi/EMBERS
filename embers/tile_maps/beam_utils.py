@@ -7,12 +7,15 @@ A set of tools used to create and visualize tile maps
 """
 
 import healpy as hp
+import matplotlib
 import numpy as np
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from numpy.polynomial import polynomial as poly
 from scipy import optimize as opt
 from scipy.stats import chisquare
 from scipy.stats import median_absolute_deviation as mad
 
+matplotlib.use("Agg")
 
 # rotate func written by Jack Line
 def rotate_map(nside, angle=None, healpix_array=None, savetag=None, flip=False):
@@ -270,6 +273,98 @@ def test_chisq_fit(data=None, model=None, offset=20):
     _, pvalue = chisquare(data, f_exp=model)
 
     return pvalue
+
+
+def plt_slice(
+    fig=None,
+    sub=(None, None, None),
+    zen_angle=None,
+    map_slice=None,
+    map_error=None,
+    model_slice=None,
+    delta_pow=None,
+    pow_fit=None,
+    slice_label=None,
+    model_label=None,
+    xlabel=False,
+    ylabel=True,
+    title=None,
+):
+
+    """Plot a slice of measured beam map with errorbars fit the fee beam model. Subplot with residual power.
+
+    :param fig: Figure number
+    :param sub: Subplot position, tuple of matplotlib indices. Ex: (1, 1, 1)
+    :param zen_angle: Array of zenith angles
+    :param map_slice: Array of beam powers from slice of beam map
+    :param map_error: Array of errors on map_slice
+    :param model_slice: Slice of beam model at given zenith angles
+    :param delta_pow: Residual power between measured beam slice and model beam
+    :param pow_fit: Polynomial fit to residual power
+    :param slice_label: Label of measured beam slice
+    :param model_label: Label of beam model slice
+    :param xlabel: If True, plot X label of plot
+    :param ylabel: If True, plot Y label of plot
+    :param title: Plot title
+
+    :returns:
+        - ax - :func:`~matplotlib.pyplot.subplot` object
+
+    """
+
+    ax = fig.add_subplot(sub[0], sub[1], sub[2])
+
+    ax.errorbar(
+        zen_angle,
+        map_slice,
+        yerr=map_error,
+        fmt=".",
+        color="#326765",
+        ecolor="#7da87b",
+        elinewidth=1.4,
+        capsize=1.4,
+        capthick=1.6,
+        alpha=0.9,
+        ms=7,
+        label=slice_label,
+    )
+
+    ax.plot(
+        zen_angle,
+        model_slice,
+        color="#c70039",
+        linewidth=1.4,
+        alpha=0.9,
+        label=model_label,
+    )
+
+    ax.text(0.02, 0.88, title, horizontalalignment="left", transform=ax.transAxes)
+
+    leg = ax.legend(loc="lower center", frameon=True, handlelength=1)
+    leg.get_frame().set_facecolor("white")
+    for le in leg.legendHandles:
+        le.set_alpha(1)
+    ax.set_xlim([-82, 82])
+    ax.set_ylim([-26, 12])
+    ax.set_xticklabels([])
+
+    divider = make_axes_locatable(ax)
+    dax = divider.append_axes("bottom", size="30%", pad=0.1)
+
+    dax.scatter(zen_angle, delta_pow, marker=".", s=30, color="#27296d")
+    dax.plot(zen_angle, pow_fit, linewidth=1.4, alpha=0.9, color="#ff8264")
+    dax.set_xlim([-82, 82])
+    dax.set_ylim([-5, 5])
+    if ylabel is True:
+        ax.set_ylabel("Power [dB]")
+        dax.set_ylabel(r"$\Delta$ref [dB]")
+    else:
+        dax.set_yticklabels([])
+        ax.set_yticklabels([])
+    if xlabel is False:
+        dax.set_xticklabels([])
+
+    return ax
 
 
 def plot_healpix(
