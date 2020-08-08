@@ -1,4 +1,5 @@
 import concurrent.futures
+from itertools import repeat
 from pathlib import Path
 
 import matplotlib
@@ -207,6 +208,9 @@ if __name__ == "__main__":
     map_files = [item for item in map_dir.glob("*.npz")]
 
     # Parallization magic happens here
-    # with concurrent.futures.ProcessPoolExecutor() as executor:
-    #    results = executor.map(beam_slice, map_files)
-    beam_slice(nside, map_files[0], fee_map, out_dir)
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        executor.map(
+            beam_slice, repeat(nside), map_files, repeat(fee_map), repeat(out_dir)
+        )
+
+    #  beam_slice(nside, map_files[0], fee_map, out_dir)
