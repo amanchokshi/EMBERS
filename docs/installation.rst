@@ -23,6 +23,8 @@ Embers can also be installed manually from it's github repository
 These methods should install embers and the small collection of Python libraries that embers depends on.
 Using a virtual environment is suggested as it prevents errors from conflicting dependancies
 
+The embers package can now be imported with :samp:`import embers`
+
 Pyenv virtual environment
 -------------------------
 Ember supports Python 3.6-3.9. Using a :samp:`pyenv` environment is the cleanest route to the correct pthon version. Install pyenv with the instructions at `<https://realpython.com/intro-to-pyenv/>`_. Now, to install the correct version of python and make a virtual environment
