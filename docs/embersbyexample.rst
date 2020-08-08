@@ -64,3 +64,39 @@ RF Tools
 
 :mod:`embers.rf_tools` is used to pre process, condition and preview raw rf data. Outputs of this module are saved to the :samp:`./embers_out/rf_tools` directory.
 
+Waterfall Plots
+^^^^^^^^^^^^^^^
+To get a quick preview of the raw RF data, we create waterfall plots. The following code creates a waterfall plot of sample data provided with *EMBERS*
+
+.. code-block:: console
+
+    $ waterfall_single
+    --------------------------------------------------
+    No input data provided, using packaged sample data
+    >>> waterfall_single --help, for more options
+    --------------------------------------------------
+    Waterfall plot saved to ./embers_out/rf_tools/S06XX_2019-10-10-02:30.png
+
+.. image:: _static/imgs/waterfall_sample.png
+    :width: 100%
+    :alt: Waterfall Plot
+
+We can also create a set of waterfall plots for all rf_files within a date interval
+
+.. code-block:: console
+
+    $ waterfall_batch --start_date=YYYY-MM-DD --stop_date=YYYY-MM-DD --data_dir=./tiles_data
+
+Colormaps
+^^^^^^^^^
+*EMBERS* comes with two beautiful custom colormaps called :samp:`spectral` & :samp:`jade`. The :samp:`spectral` colormap is non-linear and is just used to 
+visualise raw data and maximize dynamic range, while :samp:`jade` is perceptually uniform and sequential and is suitable for science. 
+To get a preview of how amazing they are
+
+.. code-block:: console
+
+    $ colormaps
+
+.. image:: _static/imgs/colormaps.png
+    :width: 100%
+    :alt: EMBERS custom colormaps
