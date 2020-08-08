@@ -13,12 +13,13 @@
 import os
 import sys
 
-import embers
 
 sys.path.insert(0, os.path.abspath(".."))
 
 
 # -- Project information -----------------------------------------------------
+
+import embers
 
 project = "embers"
 copyright = "2020, Aman Chokshi"
