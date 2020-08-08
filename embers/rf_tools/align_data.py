@@ -118,7 +118,7 @@ def plot_savgol_interp(
     """Plot single channel of power arrays to visualise :func:`~embers.rf_tools.align_data.savgol_interp`.
 
     Create a plot of a single channel of raw :samp:`rf_data` from reference and tile power arrays, along
-    with the outputs of :func:`~embers.rf_tools.align_data.savgol_interp` to visualise the effects of 
+    with the outputs of :func:`~embers.rf_tools.align_data.savgol_interp` to visualise the effects of
     interpolation and savgol smoothing.
 
     :param ref: path to reference data file :class:`~str`

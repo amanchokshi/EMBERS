@@ -100,3 +100,40 @@ To get a preview of how amazing they are
 .. image:: _static/imgs/colormaps.png
     :width: 100%
     :alt: EMBERS custom colormaps
+
+Align Data
+^^^^^^^^^^
+
+The RF Explorers used to record satellite data did not record data at exactly the same frequency and do not start recording at exactly the same time. 
+In fact, the older models record at approximately 6 Hz, while the newer ones are capable of a sampling rate of nearly 9 Hz. This discrepency in sampling
+rates makes it difficult to compare any two data samples. This issue is overcome by smoothing the data, along the time axis, with a Savitzky-Golay filter. 
+Interpolating the smoothed data and resampling it at a constant frequency [ 0.5 Hz ] gives us a easier data set to work with. 
+
+Two level of savgol filters are applied, first to capture deep nulls + small structure, and second level to smooth over noise. :samp:`align_single` can be
+used to play with the various parameters available. Sensible defaults are provided as a starting point. The following code plots one frequency channel of
+RF data and shows the efficacy of the selected smoothing filter.
+
+.. code-block:: console
+    
+    $ align_single
+    ----------------------------------------------------------
+    No ref_file provided, using packaged sample data
+    No tile_file provided, using packaged sample data
+    No frequency channel provided, using 59 for sample data
+    
+    >>> savgol_interp_sample --help, for more options
+    ----------------------------------------------------------
+    Saving sample savgol_interp plot to: ./embers_out/rf_tools
+
+
+.. image:: _static/imgs/align_data.png
+    :width: 100%
+    :alt: EMBERS custom colormaps
+
+We can now align all the raw RF files within a date interval. Every pair of reference and MWA tile are smoothed and aligned and saved to compressed
+:samp:`npz` file by :func:`~numpy.savez_compressed`.
+
+.. code-block:: console
+
+    $ align_batch --start_date=YYYY-MM-DD --stop_date=YYYY-MM-DD --data_dir=./tiles_data
+
