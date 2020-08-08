@@ -10,7 +10,7 @@
 
    *Experimental Measurement of BEam Responses with Satellites*
 
-EMBERS is a software package designed to enable polarised calibration of radio telescopes antennas using satellites. The methodology of the experimental setup can be found in the following paper [Coming soon].
+EMBERS is a software package designed to enable polarised measurements of radio telescopes antenna beam-patterns using satellites. The methodology of the experimental setup can be found in the following paper [Coming soon].
 
     - Written in pure Python and installs without any compilation
     - Supports Python 3.6-3.9
@@ -24,6 +24,7 @@ Embers documentation lives here at the main embers web site:
 
 - :doc:`toc`
 - :doc:`installation`
+- :doc:`embersbyexample`
 - :doc:`api`
 
 The source code and issue tracker live on other web sites:
