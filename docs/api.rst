@@ -118,6 +118,9 @@ Tile Maps
     tile_maps.plt_sat_maps
     tile_maps.plt_clean_maps
     tile_maps.tile_maps_batch
+    null_test.good_ref_maps
+    null_test.plt_null_test
+    null_test.null_test
 
 
 Kindle

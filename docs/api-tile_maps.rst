@@ -34,3 +34,8 @@
 .. autofunction:: embers.tile_maps.tile_maps.plt_sat_maps
 .. autofunction:: embers.tile_maps.tile_maps.plt_clean_maps
 .. autofunction:: embers.tile_maps.tile_maps.tile_maps_batch
+
+.. automodule:: embers.tile_maps.null_test
+.. autofunction:: embers.tile_maps.null_test.good_ref_maps
+.. autofunction:: embers.tile_maps.null_test.plt_null_test
+.. autofunction:: embers.tile_maps.null_test.null_test
