@@ -1,14 +1,17 @@
-import sys
-import numpy as np
+import concurrent.futures
+from pathlib import Path
+
 import healpy as hp
-import scipy.optimize as opt
-import numpy.polynomial.polynomial as poly
-from mwa_pb.mwa_sweet_spots import all_grid_points
+import matplotlib
+import numpy as np
+from embers.rf_tools.colormap import jade
+from embers.tile_maps.beam_utils import plot_healpix, nan_mad
+from matplotlib import pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from numpy.polynomial import polynomial as poly
+from scipy import optimize as opt
 
-sys.path.append("../decode_rf_data")
-from colormap import spectral, jade, kelp
-
-# Custom spectral colormap
+matplotlib.use("Agg")
 jade, _ = jade()
 
 
@@ -72,23 +75,6 @@ def slice_map(hp_map, za):
     EW_data = [hp_map[EW_indices], zenith_angle_EW]
 
     return [NS_data, EW_data]
-
-
-def nan_mad(ref_map):
-    """Compute mad while ignoring nans"""
-    ref_map_mad = []
-    for j in ref_map:
-        if j != []:
-            j = np.asarray(j)
-            j = j[~np.isnan(j)]
-            ref_map_mad.append(mad(j))
-        else:
-            ref_map_mad.append(np.nan)
-
-    ref_map_mad = np.asarray(ref_map_mad)
-    ref_map_mad[np.where(ref_map_mad == np.nan)] = np.nanmean(ref_map_mad)
-
-    return ref_map_mad
 
 
 def tile_map_slice(good_map, za):
@@ -245,88 +231,6 @@ def plt_slice(
     return ax
 
 
-def plot_healpix(
-    data_map=None,
-    fig=None,
-    sub=None,
-    title=None,
-    vmin=None,
-    vmax=None,
-    cmap=None,
-    cbar=True,
-):
-    """Yeesh do some healpix magic to plot the thing"""
-
-    # Disable cryptic healpy warnings. Can't figure out where they originate
-    import warnings
-
-    warnings.filterwarnings("ignore", category=RuntimeWarning)
-
-    hp.orthview(
-        map=data_map,
-        coord="E",
-        fig=fig,
-        half_sky=True,
-        rot=(0, 90, 180),
-        xsize=600,
-        title=title,
-        sub=sub,
-        min=vmin,
-        max=vmax,
-        cmap=cmap,
-        notext=True,
-        hold=True,
-        cbar=cbar,
-    )
-
-    hp.graticule(dpar=10, coord="E", color="k", alpha=0.3, dmer=45)
-
-    # Altitude grid
-    hp.projtext(
-        00.0 * (np.pi / 180.0), 225.0 * (np.pi / 180), "0", color="w", coord="E"
-    )
-    hp.projtext(
-        30.0 * (np.pi / 180.0), 225.0 * (np.pi / 180), "30", color="w", coord="E"
-    )
-    hp.projtext(
-        60.0 * (np.pi / 180.0), 225.0 * (np.pi / 180), "60", color="w", coord="E"
-    )
-
-    # NSEW
-    hp.projtext(
-        80.0 * (np.pi / 180.0),
-        000.0 * (np.pi / 180.0),
-        r"$N  $",
-        coord="E",
-        color="w",
-        verticalalignment="top",
-    )
-    hp.projtext(
-        80.0 * (np.pi / 180.0),
-        090.0 * (np.pi / 180.0),
-        r"$E  $",
-        coord="E",
-        color="w",
-        horizontalalignment="right",
-    )
-    hp.projtext(
-        80.0 * (np.pi / 180.0),
-        180.0 * (np.pi / 180.0),
-        r"$S  $",
-        coord="E",
-        color="w",
-        verticalalignment="bottom",
-    )
-    hp.projtext(
-        80.0 * (np.pi / 180.0),
-        270.0 * (np.pi / 180.0),
-        r"$W  $",
-        coord="E",
-        color="w",
-        horizontalalignment="left",
-    )
-
-
 def beam_slice(f):
 
     f_name, _ = f.name.split(".")
@@ -456,24 +360,6 @@ def beam_slice(f):
 if __name__ == "__main__":
 
     import argparse
-    import numpy as np
-    from pathlib import Path
-    import concurrent.futures
-    import matplotlib
-
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    import matplotlib.gridspec as gs
-    from mpl_toolkits.axes_grid1 import make_axes_locatable
-    from scipy.stats import median_absolute_deviation as mad
-
-    import sys
-
-    sys.path.append("../decode_rf_data")
-    from colormap import spectral
-
-    # Custom spectral colormap
-    cmap = spectral()
 
     parser = argparse.ArgumentParser(
         description="""
