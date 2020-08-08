@@ -13,6 +13,8 @@
 import os
 import sys
 
+import embers
+
 sys.path.insert(0, os.path.abspath(".."))
 
 
@@ -21,14 +23,8 @@ sys.path.insert(0, os.path.abspath(".."))
 project = "embers"
 copyright = "2020, Aman Chokshi"
 author = "Aman Chokshi"
-
-# The full version, including alpha/beta/rc tags
-import embers
-
 version = embers.__version__
 release = embers.__version__
-# release = '0.0.3'
-
 
 # -- General configuration ---------------------------------------------------
 
