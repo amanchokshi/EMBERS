@@ -325,7 +325,7 @@ def good_chans(
 ):
     """Determine the channels a satellite could occupy, in a 30 minute observation
 
-    Ephemeris from :samp:`chrono_file` is used to select a temoral :samp:`window`
+    Ephemeris from :samp:`chrono_file` is used to select a temporal :samp:`window`
     of the rf power array, within which the satellite is above the horizon. Looping
     through the frequency channels, a :samp:`noi_thresh`, :samp:`pow_thresh`, :samp:`occ_thresh`
     are used to identify possible channels occupied by the :samp:`sat_id`. If more than one
@@ -367,6 +367,7 @@ def good_chans(
     :param sat_id: Norad catalogue ID :class:`~str`
     :param sat_thresh: Satellite threshold from :func:`~embers.sat_utils.sat_channels.noise_floor` :class:`~int`
     :param noi_thresh: Noise threshold from :func:`~embers.sat_utils.sat_channels.noise_floor` :class:`~int`
+    :param pow_thresh: Minimum power threshold in :samp:`dBm` :class:`~float`
     :param occ_thresh: Window occupation threshold. Minimum fractional signal above the noise floor in window :class:`~float`
     :param timestamp: Time at start of observation in format :samp:`YYYY-MM-DD-HH:MM` :class:`~str`
     :param out_dir: Path to output directory to save plots :class:`~str`
@@ -621,6 +622,7 @@ def window_chan_map(
     :param chrono_dir: Path to directory containg chrono ephem json file from :func:`~embers.sat_utils.chrono_ephem.save_chrono_ephem` :class:`~str`
     :param sat_thresh: Satellite threshold from :func:`~embers.sat_utils.sat_channels.noise_floor` :class:`~int`
     :param noi_thresh: Noise threshold from :func:`~embers.sat_utils.sat_channels.noise_floor` :class:`~int`
+    :param pow_thresh: Minimum power threshold in :samp:`dBm` :class:`~float`
     :param occ_thresh: Window occupation threshold. Minimum fractional signal above the noise floor in window :class:`~float`
     :param timestamp: Time at start of observation in format :samp:`YYYY-MM-DD-HH:MM` :class:`~str`
     :param out_dir: Path to output directory to save plots :class:`~str`
@@ -753,6 +755,7 @@ def batch_window_map(
     :param chrono_dir: Path to directory containg chrono ephem json file from :func:`~embers.sat_utils.chrono_ephem.save_chrono_ephem` :class:`~str`
     :param sat_thresh: Satellite threshold from :func:`~embers.sat_utils.sat_channels.noise_floor` :class:`~int`
     :param noi_thresh: Noise threshold from :func:`~embers.sat_utils.sat_channels.noise_floor` :class:`~int`
+    :param pow_thresh: Minimum power threshold in :samp:`dBm` :class:`~float`
     :param occ_thresh: Window occupation threshold. Minimum fractional signal above the noise floor in window :class:`~float`
     :param out_dir: Path to output directory to save plots :class:`~str`
     :param plots: If :samp:`True`, disagnostic plots are generated and saved to :samp:`out_dir`
