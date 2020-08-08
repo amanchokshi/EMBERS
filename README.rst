@@ -17,17 +17,17 @@
 Here are the essential project links:
 
 * `Home page and documentation
-  <https://embers.readthedocs.io/en/latest/>`_.
+  <https://embers.readthedocs.io/en/latest/>`_
 
 * `Installing Embers
-  <https://embers.readthedocs.io/en/latest/installation.html>`_.
+  <https://embers.readthedocs.io/en/latest/installation.html>`_
 
 * `Embers by Example
-  <https://embers.readthedocs.io/en/latest/embersbyexample.html>`_.
+  <https://embers.readthedocs.io/en/latest/embersbyexample.html>`_
 
 * `Embers package <https://pypi.org/project/embers/>`_
-  on the Python Package Index.
+  on the Python Package Index
 
 * `Issue tracker
   <https://github.com/amanchokshi/EMBERS/issues>`_
-  on GitHub.
+  on GitHub
