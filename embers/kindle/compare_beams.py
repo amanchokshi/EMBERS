@@ -54,6 +54,6 @@ def main():
     batch_compare_beam(_nside, _fee_map, _map_dir, _out_dir)
 
     print(
-        "------------------------------------------------------------------------------"
+        "-----------------------------------------------------------------"
     )
     print(f"Beam comparison plots saved to {_out_dir}")
