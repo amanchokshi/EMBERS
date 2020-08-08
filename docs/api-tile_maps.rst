@@ -39,3 +39,7 @@
 .. autofunction:: embers.tile_maps.null_test.good_ref_maps
 .. autofunction:: embers.tile_maps.null_test.plt_null_test
 .. autofunction:: embers.tile_maps.null_test.null_test
+
+.. automodule:: embers.tile_maps.compare_beams
+.. autofunction:: embers.tile_maps.compare_beams.beam_slice
+.. autofunction:: embers.tile_maps.compare_beams.batch_compare_beam

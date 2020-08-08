@@ -1,3 +1,11 @@
+"""
+Compare Beams
+-------------
+
+A set of tools to compare measured MWA beam maps with FEE models
+
+"""
+
 import concurrent.futures
 from itertools import repeat
 from pathlib import Path

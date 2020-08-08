@@ -121,6 +121,8 @@ Tile Maps
     null_test.good_ref_maps
     null_test.plt_null_test
     null_test.null_test
+    compare_beams.beam_slice
+    compare_beams.batch_compare_beam
 
 
 Kindle
