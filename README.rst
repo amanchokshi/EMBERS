@@ -19,13 +19,13 @@ Here are the essential project links:
 * `Home page and documentation
   <https://embers.readthedocs.io/en/latest/>`_.
 
-* `Installing *EMBERS*
+* `Installing Embers
   <https://embers.readthedocs.io/en/latest/installation.html>`_.
 
-* `*EMBERS* by Example
+* `Embers by Example
   <https://embers.readthedocs.io/en/latest/embersbyexample.html>`_.
 
-* `*EMBERS* package <https://pypi.org/project/embers/>`_
+* `Embers package <https://pypi.org/project/embers/>`_
   on the Python Package Index.
 
 * `Issue tracker
