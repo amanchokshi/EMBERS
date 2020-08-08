@@ -288,6 +288,8 @@ def plt_slice(
     model_label=None,
     xlabel=False,
     ylabel=True,
+    xlim=[-82, 82],
+    ylim=[-26, 12],
     title=None,
 ):
 
@@ -305,6 +307,8 @@ def plt_slice(
     :param model_label: Label of beam model slice
     :param xlabel: If True, plot X label of plot
     :param ylabel: If True, plot Y label of plot
+    :param xlim: X limits on the plot. Default: [-82, 82]
+    :param ylim: Y limits on the plot. Default: [-26, 12]
     :param title: Plot title
 
     :returns:
@@ -344,16 +348,16 @@ def plt_slice(
     leg.get_frame().set_facecolor("white")
     for le in leg.legendHandles:
         le.set_alpha(1)
-    ax.set_xlim([-82, 82])
-    ax.set_ylim([-26, 12])
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
     ax.set_xticklabels([])
 
     divider = make_axes_locatable(ax)
-    dax = divider.append_axes("bottom", size="30%", pad=0.1)
+    dax = divider.append_axes("bottom", size="30%", pad=0.06)
 
     dax.scatter(zen_angle, delta_pow, marker=".", s=30, color="#27296d")
     dax.plot(zen_angle, pow_fit, linewidth=1.4, alpha=0.9, color="#ff8264")
-    dax.set_xlim([-82, 82])
+    dax.set_xlim(xlim)
     dax.set_ylim([-5, 5])
     if ylabel is True:
         ax.set_ylabel("Power [dB]")
@@ -364,7 +368,7 @@ def plt_slice(
     if xlabel is False:
         dax.set_xticklabels([])
     else:
-        dax.set_xlable("Zenith Angle [deg]")
+        dax.set_xlabel("Zenith Angle [deg]")
 
     return ax
 
