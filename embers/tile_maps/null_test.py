@@ -80,7 +80,25 @@ def plt_null_test(
     title=None,
 ):
 
-    """Plot graphs for a null test"""
+    """Plot null test between two corresponding slices of reference beam maps
+
+    :param fig: Figure number
+    :param sub: Subplot position, tuple of matplotlib indices. Ex: (1, 1, 1)
+    :param zen_angle: Array of zenith angles
+    :param delta_pow: Null test power b/w corresponding slices of reference beam maps
+    :param del_err: Errors on del_pow (MAD)
+    :param del_beam: Difference b/w ref beam models, should be zero is both references have the same beam model
+    :param del_fit: Polynomial fit to residual power
+    :param null_label: Label of null test data
+    :param beam_label: Label of beam slice
+    :param fit_label: Label of del_fit data
+    :param ylabel: If True, plot Y label of plot
+    :param title: Plot title
+
+    :returns:
+        - ax - :func:`~matplotlib.pyplot.subplot` object
+
+    """
 
     ax = fig.add_subplot(sub[0], sub[1], sub[2])
 
@@ -111,7 +129,7 @@ def plt_null_test(
 
     ax.set_xlim([-82, 82])
     ax.set_ylim([-10, 10])
-    ax.set_xlabel("Zenith Angle [degrees]")
+    ax.set_xlabel("Zenith Angle [deg]")
     leg = ax.legend(loc="lower center", frameon=True, handlelength=1)
     leg.get_frame().set_facecolor("white")
     for le in leg.legendHandles:

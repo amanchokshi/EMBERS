@@ -363,6 +363,8 @@ def plt_slice(
         ax.set_yticklabels([])
     if xlabel is False:
         dax.set_xticklabels([])
+    else:
+        dax.set_xlable("Zenith Angle [deg]")
 
     return ax
 
