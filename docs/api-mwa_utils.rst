@@ -1,7 +1,7 @@
 
-===============================
- API Reference — MWA Metadata
-===============================
+===========================
+ API Reference — MWA Utils
+===========================
 
 .. automodule:: embers.mwa_utils
 

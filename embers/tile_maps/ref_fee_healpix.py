@@ -1,6 +1,6 @@
 """
-Referece FEKO Model
--------------------
+Referece Models
+---------------
 
 Convert FEKO models on the reference antennas into usable healpix maps
 

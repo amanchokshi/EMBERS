@@ -63,8 +63,8 @@ Sat Utils
     sat_channels.batch_window_map
 
 
-MWA Meta
-========
+MWA Utils
+=========
 
 .. currentmodule:: embers.mwa_utils
 

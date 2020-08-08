@@ -1,7 +1,7 @@
 
-=================================
- API Reference — Satellite Utils
-=================================
+===========================
+ API Reference — Sat Utils
+===========================
 
 .. automodule:: embers.sat_utils
 
