@@ -258,7 +258,105 @@ Finally, an ephemeris plot of the trajectories of the two satellites identified
 
 MWA Utils
 ---------
+:mod:`embers.mwa_utils` is used to download and metadata of the `MWA Telescope <http://www.mwatelescope.org/>`_ and compute FEE beam models. Outputs of this
+module are saved to :samp:`./embers_out/mwa_utils`. The MWA telescope is electronically pointed using delay-line beam-formers. Metadata regarding the pointing
+of the telescope at various times and the health of dipoles that make up the MWA tiles can be obtained from metadata created by the telescope.
 
+MWA Pointings
+^^^^^^^^^^^^^
+Download MWA metadata and determine the pointings of the telescope during each 30 minute rf observation. Before we download the metadata, we have a couple of 
+hoops to jump through. 
+
+MWA metadata is downloaded in json format, from website. Each webpage can contain a maximum of 200 entries. We need to visit 
+`ws.mwatelescope.org/metadata/find <http://ws.mwatelescope.org/metadata/find>`_ and determine the number of pages required to download all metadata
+within a date interval.
+
+On the site, enter the start and stop date, change the page size to 200 and click search. Note down the number of pages returned by the search.
+
+.. image:: _static/imgs/metadata-1.jpg
+    :width: 100%
+
+.. image:: _static/imgs/metadata-2.jpg
+    :width: 100%
+
+We now know that we need to download 200 pages of metadata, which can be done with
+
+.. code-block:: console
+
+    $ mwa_pointings --start_date=YYYY-MM-DD --stop_date=YYYY-MM-DD --num_pages=77 --rf_dir=./tiles_data
+
+This process will take a couple of hours due to network limits on frequency of downloads from the MWA servers. A file called obs_pointing.json will be created which 
+contains all 30 minute observations with more than a 60% majority of time at a single pointing. A histogram showing maximum theoretical integration times per
+pointing is created. This limit is often not achieved due to pointings changing during 30 minute observations and equipment malfunctions. By checking to see if
+corresponding RF raw data files exist for given observation times, a plot of actual integration time for each tile is generated.
+
+The following plots contain data from ~6 months between 2019-09-12 and 2020-03-16.
+
+.. image:: _static/imgs/pointing_integration.png
+   :width: 100%
+
+.. image:: _static/imgs/tiles_pointing_integration.png
+   :width: 100%
+
+MWA Dipoles
+^^^^^^^^^^^
+MWA metadata can also tell us if dipoles in the tiles which have been used are not functional.
+
+.. code-block:: console
+
+    $ mwa_dipoles
+
+.. image:: _static/imgs/flagged_dipoles.png
+    :width: 100%
+
+The above figure show us that tile :samp:`S33YY` had its 9th dipole flagged for most of the duration of the observational period. 
+
+MWA FEE
+^^^^^^^
+MWA Fully Embedded Element (FEE) beam models represent the cutting edge of simulated MWA beam models. We generate MWA FEE model healpix maps at the given nside
+using the `MWA Primay Beam <https://github.com/MWATelescope/mwa_pb>`_ GitHub repository. 
+
+.. code-block:: console
+
+    $ mwa_fee
+
+
+.. image:: _static/imgs/mwa_fee_beam_0_XX.png
+    :width: 24%
+
+.. image:: _static/imgs/mwa_fee_beam_2_XX.png
+    :width: 24%
+
+.. image:: _static/imgs/mwa_fee_beam_4_XX.png
+    :width: 24%
+
+.. image:: _static/imgs/mwa_fee_beam_41_XX.png
+    :width: 24%
+
+.. image:: _static/imgs/mwa_fee_beam_0_YY.png
+    :width: 24%
+
+.. image:: _static/imgs/mwa_fee_beam_0_YY.png
+    :width: 24%
+
+.. image:: _static/imgs/mwa_fee_beam_0_YY.png
+    :width: 24%
+
+.. image:: _static/imgs/mwa_fee_beam_0_YY.png
+    :width: 24%
 
 Tile Maps
 ---------
+:mod:`embers.tile_maps` is used to create tile maps by aggregating satellite data. Outputs of this module are saved to :samp:`./embers_out/tile_maps`
+
+Ref Models
+^^^^^^^^^^
+
+RFE Calibration
+^^^^^^^^^^^^^^^
+
+Tile Maps
+^^^^^^^^^
+
+Compare Beams
+^^^^^^^^^^^^^
