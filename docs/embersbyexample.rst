@@ -347,10 +347,21 @@ using the `MWA Primay Beam <https://github.com/MWATelescope/mwa_pb>`_ GitHub rep
 
 Tile Maps
 ---------
+There be magic here. We can finally make beam maps of the MWA tiles!
+
 :mod:`embers.tile_maps` is used to create tile maps by aggregating satellite data. Outputs of this module are saved to :samp:`./embers_out/tile_maps`
 
 Ref Models
 ^^^^^^^^^^
+Convert FEKO models on the reference antennas into usable healpix maps, which will later be used to remove effects introduced by satellite beam shapes.
+
+.. code-block:: console
+
+    $ ref_models
+
+.. image:: _static/imgs/reproject_dipole_models.png
+   :width: 100%
+
 
 RFE Calibration
 ^^^^^^^^^^^^^^^
