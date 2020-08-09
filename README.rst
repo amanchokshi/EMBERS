@@ -26,12 +26,14 @@ Here are the essential project links:
 
 * `Issue tracker <https://github.com/amanchokshi/EMBERS/issues>`_ on GitHub
 
-.. |ReadTheDocs| image:: https://readthedocs.org/projects/embers/badge/?version=latest
-    :target: https://embers.readthedocs.io/en/latest/?badge=latest
+.. |ReadTheDocs| image:: https://img.shields.io/readthedocs/embers/latest?color=green&logo=Read%20The%20Docs&logoColor=white
+    :target: https://embers.readthedocs.io
     :alt: Documentation Status
 
-.. |PyPI| image:: https://badge.fury.io/py/embers.svg
-    :target: https://badge.fury.io/py/embers
+.. |PyPI| image:: https://img.shields.io/pypi/v/EMBERS.svg?color=green&logo=python&logoColor=white&label=PyPI
+    :target: https://pypi.org/project/embers/
+    :alt: PyPI - Latest Release
 
 .. |License| image:: https://img.shields.io/github/license/amanchokshi/EMBERS?color=green&logo=License
     :target: https://github.com/amanchokshi/EMBERS/blob/master/LICENSE
+    :alt: MIT License
