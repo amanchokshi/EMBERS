@@ -1,5 +1,6 @@
 """Setup script for EMBERS package."""
 
+from codecs import open
 from pathlib import Path
 
 from setuptools import find_packages, setup
@@ -9,9 +10,9 @@ from embers import __author__, __version__
 version = __version__
 author = __author__
 
-#  # Get long description from README
-#  with open("README.rst", "r", encoding="utf-8") as fh:
-    #  long_description = fh.read()
+# Get long description from README
+with open("README.rst", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
 
 # Get the requirements list
 with open("requirements.txt", "r") as f:
@@ -32,12 +33,11 @@ setup(
     name="embers",
     version=version,
     license="MIT",
-    author=author,
+    author="Aman Chokshi",
     author_email="achokshi@student.unimelb.edu.au",
     description="Experimental Measurement of BEam Response with Satellites",
-    #  long_description=long_description,
-    long_description=open('README.rst', 'rb').read().decode('utf-8'),
-    long_description_content_type="text/markdown",
+    long_description=long_description,
+    #  long_description_content_type="text/markdown",
     url="http://embers.readthedocs.io",
     classifiers=[
         "Development Status :: 3 - Alpha",
@@ -79,7 +79,7 @@ setup(
     },
     keywords=("embers radio astronomy satellites beam measurement"),
     packages=find_packages(),
-    package_dir={'embers': "embers"},
+    package_dir={"embers": "embers"},
     include_package_data=True,
     package_data={"": data_files("embers/kindle/data", ["*.txt", "*.ffe"])},
     install_requires=requirements,
