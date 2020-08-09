@@ -199,17 +199,17 @@ trajectories at the geographic location. Save chronological ephemeris data to js
 
 Satellite Channels
 ^^^^^^^^^^^^^^^^^^
-As access to the ORBCOMM interface box was not available, the channels in which each satellite transimits can be determined with a careful analysis of the 
-RF data and satellite ephemeris. We use reference data to detect satellite channels because it has the best SNR. Pairing a reference RF data file, with it's 
-corresponding chrono_ephem.json file gives us the satellite expected within each 30 minute observation. Looping over the satellites in the chrono_ephem files, 
-we identify the temporal region of the rf data where we expect to see its signal. We now use a series of thresholding criteria to help identify the most 
+As access to the ORBCOMM interface box was not available, the channels in which each satellite transimits can be determined with a careful analysis of the
+RF data and satellite ephemeris. We use reference data to detect satellite channels because it has the best SNR. Pairing a reference RF data file, with it's
+corresponding chrono_ephem.json file gives us the satellite expected within each 30 minute observation. Looping over the satellites in the chrono_ephem files,
+we identify the temporal region of the rf data where we expect to see its signal. We now use a series of thresholding criteria to help identify the most
 probable channel. The following thresholds were used to identify the correct channel:
 
 Noise threshold
 ...............
-A Noise floor of the RF data array is determined by using a standard deviation (σ) -threshold. We define a satellite theshold called :samp:`s`. If a channel of 
+A Noise floor of the RF data array is determined by using a standard deviation (σ) -threshold. We define a satellite theshold called :samp:`s`. If a channel of
 the RF data array has power exceeding :samp:`s•σ`, it is masked out. By default, σ=1, which means that any channel with power exceeding one std above the median
-power are excluded. The median power of the remaining data is called :samp:`μ_noise`. The median absolute deviation (MAD) of the remaining data is called 
+power are excluded. The median power of the remaining data is called :samp:`μ_noise`. The median absolute deviation (MAD) of the remaining data is called
 :samp:`σ_noise`. We now defile a noise floor of the RF data array, based on a noise theshold denoted by :samp:`n`, which defaults to 3.
 
 :samp:`noise floor` = :samp:`μ_noise` + :samp:`n•σ_noise`
@@ -264,10 +264,10 @@ of the telescope at various times and the health of dipoles that make up the MWA
 
 MWA Pointings
 ^^^^^^^^^^^^^
-Download MWA metadata and determine the pointings of the telescope during each 30 minute rf observation. Before we download the metadata, we have a couple of 
-hoops to jump through. 
+Download MWA metadata and determine the pointings of the telescope during each 30 minute rf observation. Before we download the metadata, we have a couple of
+hoops to jump through.
 
-MWA metadata is downloaded in json format, from website. Each webpage can contain a maximum of 200 entries. We need to visit 
+MWA metadata is downloaded in json format, from website. Each webpage can contain a maximum of 200 entries. We need to visit
 `ws.mwatelescope.org/metadata/find <http://ws.mwatelescope.org/metadata/find>`_ and determine the number of pages required to download all metadata
 within a date interval.
 
@@ -285,7 +285,7 @@ We now know that we need to download 200 pages of metadata, which can be done wi
 
     $ mwa_pointings --start_date=YYYY-MM-DD --stop_date=YYYY-MM-DD --num_pages=77 --rf_dir=./tiles_data
 
-This process will take a couple of hours due to network limits on frequency of downloads from the MWA servers. A file called obs_pointing.json will be created which 
+This process will take a couple of hours due to network limits on frequency of downloads from the MWA servers. A file called obs_pointing.json will be created which
 contains all 30 minute observations with more than a 60% majority of time at a single pointing. A histogram showing maximum theoretical integration times per
 pointing is created. This limit is often not achieved due to pointings changing during 30 minute observations and equipment malfunctions. By checking to see if
 corresponding RF raw data files exist for given observation times, a plot of actual integration time for each tile is generated.
@@ -309,12 +309,12 @@ MWA metadata can also tell us if dipoles in the tiles which have been used are n
 .. image:: _static/imgs/flagged_dipoles.png
     :width: 100%
 
-The above figure show us that tile :samp:`S33YY` had its 9th dipole flagged for most of the duration of the observational period. 
+The above figure show us that tile :samp:`S33YY` had its 9th dipole flagged for most of the duration of the observational period.
 
 MWA FEE
 ^^^^^^^
 MWA Fully Embedded Element (FEE) beam models represent the cutting edge of simulated MWA beam models. We generate MWA FEE model healpix maps at the given nside
-using the `MWA Primay Beam <https://github.com/MWATelescope/mwa_pb>`_ GitHub repository. 
+using the `MWA Primay Beam <https://github.com/MWATelescope/mwa_pb>`_ GitHub repository.
 
 .. code-block:: console
 
@@ -365,6 +365,33 @@ Convert FEKO models on the reference antennas into usable healpix maps, which wi
 
 RFE Calibration
 ^^^^^^^^^^^^^^^
+Calibrate non-linear gains of RF Explorers at high powers by comparing satellite rf data to corresponding slices of the MWA FEE model.
+
+It was observed that the RF explorers enter a non-linear gain regime at high input powers, leading to a deficit in recorded power. In this
+section we aim to solve for a global gain calibration solution which can be applied to all data recorded by the RF Explorers, recovering the
+missing power. This non-linear effects were only observed for RF Explorers connected to the MWA tiles and not the reference antennas.
+
+To first order, we presume that the FEE models of the MWA beam are a good representation of reality. The RF explorers were set to be sensitive to
+power in the range of -120 dBm to +5 dBm. We observe a "flattening" of the RF Explorer response when powers exceed -50 dBm. To characterise this
+we compute a MWA beam slice, for every satellite pass, using eq (1) from the paper.
+
+:samp:`MWA` = (:samp:`tile`/:samp:`ref`)•:samp:`ref_fee`
+
+The MWA beam profile is the ratio of tile and reference power, multiplied by the reference FEE model. The MWA beam profile is then scaled back down
+to the power of the original tile data, using a single multiplicative gain factor, determined using a chi-squared minimization. We now compare the
+scaled mwa slice to a corresponding slice of the MWA FEE beam model. This tells us where there is missing power. We record the observed power and
+the residual power between the scaled MWA slice and the FEE model. By repeatings this process for all satellite passes observed, we build up a
+distribution of residual power, which can be fit by a low order polymonial. This polynomial is the global calibration solution of the non-linear
+RF Explorer gain, which can be applied to data in the next step.
+
+.. code-block:: console
+
+    $ rfe_calibration --start_date=YYYY-MM-DD --stop_date=YYYY-MM-DD
+
+The following plot represents RF Explorer gain calibration using 6 months of data
+
+.. image:: _static/imgs/rfe_gain_fit.png
+   :width: 100%
 
 Tile Maps
 ^^^^^^^^^
