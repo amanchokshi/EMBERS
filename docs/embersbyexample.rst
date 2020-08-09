@@ -395,6 +395,129 @@ The following plot represents RF Explorer gain calibration using 6 months of dat
 
 Tile Maps
 ^^^^^^^^^
+Batch process satellite RF data to create MWA beam maps and intermediate plots.
+
+As in the previous section, satellite data is gridded onto a healpix map based on ephemeris trajectories in the sky. The data from the MWA tiles is corrected
+using the RF Explorer gain calibration solution formed in the perevious section. A couple of different types of data products are created. 
+
+.. code-block:: console
+
+    $ tile_maps --start_date=YYYY-MM-DD --stip_date=YYYY-MM-DD --plots=True
+
+Tile Maps Raw
+.............
+For each satellite pass recorded by the MWA tiles and reference antennas, apply equation (1) from the beam paper to remove
+satellite beam effect and calculate a resultant cross-sectional slice of the MWA beam. Using satellite ephemeris data, project
+this beam slice onto a healpix map. This function also applies RFE gain correction using the gain solution created by
+:func:`~embers.tile_maps.tile_maps.rfe_collate_cali`. The resulting healpix map is saved to a :samp:`.npz` file in
+with the data structured in nested dictionaries, which have the following structure.
+
+.. code-block:: text
+
+    map*.npz
+    ├── mwa_map
+    │   └── pointings
+    │       └── satellites
+    │           └── healpix maps
+    ├── ref_map
+    │   └── pointings
+    │       └── satellites
+    │           └── healpix maps
+    ├── tile_map
+    │   └── pointings
+    │       └── satellites
+    │           └── healpix maps
+    └── time_map
+        └── pointings
+            └── satellites
+                └── healpix maps
+
+The highest level dictionary contains normalized mwa, reference, tile and time maps. Within each of these, there are dictionaries
+for each of the telescope pointings:0, 2, 4, 41. Within which there are dictionaries for each satellite norad ID, which contain
+a healpix map of data from one satellite, in one pointing. This structure may seem complicated, but is very useful for diagnostic
+purposes, and determining where errors in the final tile maps come from. The time maps contain the times of every data point added
+to the above maps.
+
+Sat Plots
+.........
+Using the raw tile maps generated above, we can plot sky coverage maps for each of the 72 satellites used. This proccess was extremely useful in showing us
+that most of the 72 selected satellites are out of the frequnecy window of this experiment. This is seen by extremely sparce sky coverage for satellite data
+collected over the course of 6 months, which strongly suggests that the few passes identifies in these sparce satellite maps must be misidentifications 
+at the :samp:`satellite channels` stage of processing. We use these maps to select 18 good satellites which have excellent sky coverage. 
+
+.. image:: _static/imgs/25984_0_passes.png
+   :width: 32%
+
+.. image:: _static/imgs/40086_0_passes.png
+   :width: 32%
+
+.. image:: _static/imgs/44387_0_passes.png
+   :width: 32%
+
+For further processing, we restrict our maps to data from the 18 good satellite, which significantly improves the quality of the beam maps by excluding spurious
+misidentified signals. 
+
+We also plot profiles of each satellite pass to see how effective the RF Explorer gain calibration is and also implement a p-value goodness of fit test, which
+is used to filter out the last couple of bad signals which have persisted. This filter is set to a very conservative value, only rejecting satellite passes which
+are completely different from corresponding slices of the MWA FEE beam.
+
+.. image:: _static/imgs/2019-10-02-16:00_41189_52_channel.png
+   :width: 49%
+
+.. image:: _static/imgs/2019-10-03-10:00_41187_25_channel.png
+   :width: 49%
+
+.. image:: _static/imgs/2019-10-02-16:00_41189.png
+   :width: 49%
+
+.. image:: _static/imgs/2019-10-03-10:00_41187.png
+   :width: 49%
+
+The upper two pannels show the tile and reference RF power profiles for two satellite passes. The latter two panels display the raw tile data in green, with the
+blue data indicating RF gain corrected tile data. The crimson data is a corresponding slice of the MWA FEE model, and shows good agreement with the corrected (blue)
+tile data.
+
+Tile Maps Clean
+...............
+We now form clean MWA beam maps at all four pointings (0, 2, 4, 41), using the 18 good satellites. The first row of images are MWA beam maps, the 
+second row are satellite pass counts in each pixel while the third row are errors on each pixel.
+
+.. image:: _static/imgs/S07XX_rf0XX_0_clean_map.png
+    :width: 24%
+
+.. image:: _static/imgs/S07XX_rf0XX_2_clean_map.png
+    :width: 24%
+
+.. image:: _static/imgs/S07XX_rf0XX_4_clean_map.png
+    :width: 24%
+
+.. image:: _static/imgs/S07XX_rf0XX_41_clean_map.png
+    :width: 24%
+
+.. image:: _static/imgs/S07XX_rf0XX_0_clean_map_counts.png
+    :width: 24%
+
+.. image:: _static/imgs/S07XX_rf0XX_2_clean_map_counts.png
+    :width: 24%
+
+.. image:: _static/imgs/S07XX_rf0XX_4_clean_map_counts.png
+    :width: 24%
+
+.. image:: _static/imgs/S07XX_rf0XX_41_clean_map_counts.png
+    :width: 24%
+
+.. image:: _static/imgs/S07XX_rf0XX_0_clean_map_errors.png
+    :width: 24%
+
+.. image:: _static/imgs/S07XX_rf0XX_2_clean_map_errors.png
+    :width: 24%
+
+.. image:: _static/imgs/S07XX_rf0XX_4_clean_map_errors.png
+    :width: 24%
+
+.. image:: _static/imgs/S07XX_rf0XX_41_clean_map_errors.png
+    :width: 24%
+
 
 Compare Beams
 ^^^^^^^^^^^^^

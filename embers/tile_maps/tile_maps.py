@@ -868,7 +868,7 @@ def project_tile_healpix(
 ):
     """There be magic here. Project satellite RF data onto a sky healpix map.
 
-    For each satellite pass recorded my the MWA tiles and reference antennas, apply equation (1) from the beam paper to remove
+    For each satellite pass recorded by the MWA tiles and reference antennas, apply equation (1) from the beam paper to remove
     satellite beam effect and calculate a resultant cross-sectional slice of the MWA beam. Using satellite ephemeris data, project
     this beam slice onto a healpix map. This function also applies RFE gain correction using the gain solution created by
     :func:`~embers.tile_maps.tile_maps.rfe_collate_cali`. The resulting healpix map is saved to a :samp:`.npz` file in :samp:`out_dir`,
@@ -896,7 +896,7 @@ def project_tile_healpix(
 
     The highest level dictionary contains normalized mwa, reference, tile and time maps. Within each of these, there are dictionaries
     for each of the telescope pointings:0, 2, 4, 41. Within which there are dictionaries for each satellite norad ID, which contain
-    a healpix map of data from one satellite, in one pointing. This structure map seem complicated, but is very useful for diagnostic
+    a healpix map of data from one satellite, in one pointing. This structure may seem complicated, but is very useful for diagnostic
     purposes, and determining where errors in the final tile maps come from. The time maps contain the times of every data point added
     to the above maps.
 
