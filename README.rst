@@ -37,3 +37,6 @@ Here are the essential project links:
 .. |License| image:: https://img.shields.io/github/license/amanchokshi/EMBERS?color=green&logo=License
     :target: https://github.com/amanchokshi/EMBERS/blob/master/LICENSE
     :alt: MIT License
+
+.. |Python| image:: https://img.shields.io/badge/Python-3.6%2B-3282b8?logo=python&logoColor=white
+    :target: https://pypi.org/project/embers/
