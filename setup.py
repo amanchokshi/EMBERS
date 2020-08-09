@@ -37,7 +37,6 @@ setup(
     author_email="achokshi@student.unimelb.edu.au",
     description="Experimental Measurement of BEam Response with Satellites",
     long_description=long_description,
-    #  long_description_content_type="text/markdown",
     url="http://embers.readthedocs.io",
     classifiers=[
         "Development Status :: 3 - Alpha",
