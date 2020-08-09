@@ -9,9 +9,9 @@ from embers import __author__, __version__
 version = __version__
 author = __author__
 
-# Get long description from README
-with open("README.rst", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
+#  # Get long description from README
+#  with open("README.rst", "r", encoding="utf-8") as fh:
+    #  long_description = fh.read()
 
 # Get the requirements list
 with open("requirements.txt", "r") as f:
@@ -35,10 +35,10 @@ setup(
     author=author,
     author_email="achokshi@student.unimelb.edu.au",
     description="Experimental Measurement of BEam Response with Satellites",
-    long_description=long_description,
+    #  long_description=long_description,
+    long_description=open('README.rst', 'rb').read().decode('utf-8'),
     long_description_content_type="text/markdown",
-    url="https://github.com/amanchokshi/EMBERS",
-    packages=find_packages(),
+    url="http://embers.readthedocs.io",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Science/Research",
@@ -78,9 +78,11 @@ setup(
         ],
     },
     keywords=("embers radio astronomy satellites beam measurement"),
+    packages=find_packages(),
+    package_dir={'embers': "embers"},
+    include_package_data=True,
     package_data={"": data_files("embers/kindle/data", ["*.txt", "*.ffe"])},
     install_requires=requirements,
     python_requires=">=3.6, <4",
-    include_package_data=True,
     zip_safe=False,
 )
