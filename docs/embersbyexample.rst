@@ -518,6 +518,36 @@ second row are satellite pass counts in each pixel while the third row are error
 .. image:: _static/imgs/S07XX_rf0XX_41_clean_map_errors.png
     :width: 24%
 
+Null Test
+^^^^^^^^^
+The two reference antennas provide the ability to perform a null test, in which we compare the performance of each refrerence antenna against each other.
+
+.. code-block:: console
+
+    $ null_test
+
+The first two rows represent slices of the measured reference beam pattern, compared to the FEKO reference beam model. The last row compares corresponding
+slices of two reference maps against each other.
+
+.. image:: _static/imgs/null_test.jpg
+   :width: 100%
 
 Compare Beams
 ^^^^^^^^^^^^^
+Compare measured MWA beam maps created above, with MWA FEE models
+
+.. code-block:: console
+
+    $ compare_beams
+
+.. image:: _static/imgs/S07XX_rf0XX_0_beam_slices.png
+   :width: 49%
+
+.. image:: _static/imgs/S07XX_rf0XX_2_beam_slices.png
+   :width: 49%
+
+.. image:: _static/imgs/S07XX_rf0XX_4_beam_slices.png
+   :width: 49%
+
+.. image:: _static/imgs/S07XX_rf0XX_41_beam_slices.png
+   :width: 49%
