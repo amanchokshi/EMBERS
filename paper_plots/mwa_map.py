@@ -30,8 +30,8 @@ parser.add_argument(
 parser.add_argument(
     "--out_dir",
     metavar="\b",
-    default="../embers_out/paper_pdfs",
-    help="Output Directory. Default=./embers_out/paper_pdfs",
+    default="../embers_out/paper_plots",
+    help="Output Directory. Default=./embers_out/paper_plots",
 )
 
 args = parser.parse_args()
