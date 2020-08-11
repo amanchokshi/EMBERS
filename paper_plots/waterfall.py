@@ -1,6 +1,6 @@
 """
-FIGURE II.
-----------
+FIGURE III.
+-----------
 
 """
 
@@ -148,4 +148,4 @@ ax2.set_yticks([])
 
 plt.savefig(f"{out_dir}/waterfall.png", dpi=600, bbox_inches="tight")
 
-print(f"Figure II saved to {out_dir}")
+print(f"Figure III saved to {out_dir}")
