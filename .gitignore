@@ -10,3 +10,5 @@
 /embers/sat_utils/deltat.data
 /embers/sat_utils/deltat.preds
 embers.egg-info/
+
+/paper_plots/paper_pdfs/*
