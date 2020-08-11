@@ -1,34 +1,41 @@
-import json
+"""
+FIGURE I.
+--------
+
+"""
+
 import argparse
 import numpy as np
 from pathlib import Path
 from astropy.io import fits
-import matplotlib.pylab as pl
 import matplotlib.pyplot as plt
 
 parser = argparse.ArgumentParser(
     description="""
-        Look for dead dipoles
+        Figure 1 of the paper. Map of MWA tile & reference locations
         """
 )
 
 parser.add_argument(
     "--metafits",
     metavar="\b",
-    default="./../../outputs/beam_pointings/metafits/1262518040.metafits",
-    help="Directory where metafits files live. Default=./../../outputs/beam_pointings/metafits/1262518040.metafits",
+    default="../embers_out/mwa_utils/mwa_metafits/",
+    help="Directory where metafits files live. Default=../embers_out/mwa_utils/mwa_metafits/",
 )
 
 parser.add_argument(
     "--out_dir",
     metavar="\b",
-    default="./../../outputs/paper_plots/",
-    help="Directory where metafits files live. Default=./../../outputs/paper_plots/",
+    default="paper_pdfs",
+    help="Output Directory. Default=paper_pdfs",
 )
 
 args = parser.parse_args()
 metafits = Path(args.metafits)
 out_dir = Path(args.out_dir)
+
+out_dir.mkdir(parents=True, exist_ok=True)
+meta = [f for f in metafits.glob("*.metafits")][0]
 
 # list of all tiles used in this experiment
 tiles_14 = [
@@ -53,7 +60,7 @@ tiles_14 = [
 tiles = []
 N = []
 E = []
-hdu = fits.open(metafits)
+hdu = fits.open(meta)
 tile_names = hdu[1].data["TileName"]
 north = hdu[1].data["North"]
 east = hdu[1].data["East"]
@@ -122,8 +129,8 @@ leg.get_frame().set_edgecolor("w")
 leg.get_frame().set_facecolor("#222222")
 for text in leg.get_texts():
     text.set_color("white")
-for l in leg.legendHandles:
-    l.set_alpha(1)
+for le in leg.legendHandles:
+    le.set_alpha(1)
 
 # ax.legend()
 ax.set_aspect("equal")
