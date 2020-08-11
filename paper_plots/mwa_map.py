@@ -16,7 +16,7 @@ matplotlib.use("Agg")
 
 parser = argparse.ArgumentParser(
     description="""
-        Figure 1 of the paper. Map of MWA tile & reference locations
+        Figure 1 of the paper - MWA map
         """
 )
 
