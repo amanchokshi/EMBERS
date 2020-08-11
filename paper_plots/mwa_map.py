@@ -5,10 +5,14 @@ FIGURE I.
 """
 
 import argparse
-import numpy as np
 from pathlib import Path
+
+import matplotlib
+import numpy as np
 from astropy.io import fits
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
+
+matplotlib.use("Agg")
 
 parser = argparse.ArgumentParser(
     description="""
@@ -26,8 +30,8 @@ parser.add_argument(
 parser.add_argument(
     "--out_dir",
     metavar="\b",
-    default="paper_pdfs",
-    help="Output Directory. Default=paper_pdfs",
+    default="../embers_out/paper_pdfs",
+    help="Output Directory. Default=./embers_out/paper_pdfs",
 )
 
 args = parser.parse_args()
@@ -140,3 +144,5 @@ ax.set_ylabel("North [m]")
 ax.set_xlabel("East [m]")
 
 plt.savefig(f"{out_dir}/mwa_map.pdf", transparent=True, bbox_inches="tight")
+
+print(f"Figure I saved to {out_dir}")
