@@ -127,9 +127,6 @@ def rfe_collate_cali(start_gain, stop_gain, rfe_cali_dir):
     # Mathematical function of fit, which can be evaluated anywhere
     f = np.poly1d(poly)
 
-    # save polyfit to file
-    np.save(f"{rfe_cali_dir}/rfe_gain_fit.npy", poly)
-
     # x_f = [f.roots[0], -45, -40, -35, -30, -25, -20]
     x_f = np.linspace(max(f.roots), -25, num=10)
     y_f = f(x_f)
