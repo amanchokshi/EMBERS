@@ -1,121 +1,83 @@
-import sys
+"""
+TILE MAPS.
+----------
+"""
+
+import argparse
+import concurrent.futures
+from itertools import repeat
+from pathlib import Path
+
+import matplotlib
 import numpy as np
-import healpy as hp
-import scipy.optimize as opt
-import numpy.polynomial.polynomial as poly
-from mwa_pb.mwa_sweet_spots import all_grid_points
+from embers.rf_tools.colormaps import jade
+from embers.tile_maps.beam_utils import plot_healpix
+from matplotlib import pyplot as plt
 
-sys.path.append("../decode_rf_data")
-from colormap import spectral, jade, kelp
-
-# Custom spectral colormap
+matplotlib.use("Agg")
 jade, _ = jade()
 
+parser = argparse.ArgumentParser(
+    description="""
+    Tile Maps paper plot
+    """
+)
 
-def plot_healpix(
-    data_map=None,
-    fig=None,
-    sub=None,
-    title=None,
-    vmin=None,
-    vmax=None,
-    cmap=None,
-    cbar=True,
-):
-    """Yeesh do some healpix magic to plot the thing"""
+parser.add_argument(
+    "--out_dir",
+    metavar="\b",
+    default="../embers_out/paper_plots/tile_maps/",
+    help="Output directory. Default=../embers_out/paper_plots/tile_maps",
+)
+parser.add_argument(
+    "--map_dir",
+    metavar="\b",
+    default="../embers_out/tile_maps/tile_maps/tile_maps_clean/",
+    help="Tile map directory. Default=../embers_out/tile_maps/tile_maps/tile_maps_clean",
+)
+parser.add_argument(
+    "--fee_map",
+    metavar="\b",
+    default="../embers_out/mwa_utils/mwa_fee/mwa_fee_beam.npz",
+    help="Healpix FEE map of mwa tile. default=../embers_out/mwa_utils/mwa_fee/mwa_fee_beam.npz",
+)
+parser.add_argument(
+    "--nside", metavar="\b", type=int, default=32, help="Healpix Nside. Default = 32",
+)
 
-    # Disable cryptic healpy warnings. Can't figure out where they originate
-    import warnings
+args = parser.parse_args()
 
-    warnings.filterwarnings("ignore", category=RuntimeWarning)
+out_dir = Path(args.out_dir)
+map_dir = Path(args.map_dir)
+fee_map = args.fee_map
+nside = args.nside
 
-    hp.delgraticules()
-    hp.orthview(
-        map=data_map,
-        coord="E",
-        fig=fig,
-        half_sky=True,
-        rot=(0, 90, 180),
-        xsize=1200,
-        title=title,
-        sub=sub,
-        min=vmin,
-        max=vmax,
-        cmap=cmap,
-        notext=True,
-        hold=True,
-        cbar=cbar,
-        return_projected_map=False,
-    )
+# make output dir if it doesn't exist
+out_dir.mkdir(parents=True, exist_ok=True)
 
-    hp.graticule(dpar=10, coord="E", color="k", alpha=0.7, dmer=45, lw=0.4, ls=":")
+tiles = [
+    "S06",
+    "S07",
+    "S08",
+    "S09",
+    "S10",
+    "S12",
+    "S29",
+    "S30",
+    "S31",
+    "S32",
+    "S33",
+    "S34",
+    "S35",
+    "S36",
+]
 
-    # Altitude grid
-    hp.projtext(
-        00.0 * (np.pi / 180.0),
-        225.0 * (np.pi / 180),
-        "0",
-        color="k",
-        coord="E",
-        fontsize=6,
-        fontweight="light",
-    )
-    hp.projtext(
-        30.0 * (np.pi / 180.0),
-        225.0 * (np.pi / 180),
-        "30",
-        color="k",
-        coord="E",
-        fontsize=6,
-        fontweight="light",
-    )
-    hp.projtext(
-        60.0 * (np.pi / 180.0),
-        225.0 * (np.pi / 180),
-        "60",
-        color="k",
-        coord="E",
-        fontsize=6,
-        fontweight="light",
-    )
+refs = ["rf0", "rf1"]
 
-    # NSEW
-    hp.projtext(
-        80.0 * (np.pi / 180.0),
-        000.0 * (np.pi / 180.0),
-        r"$N  $",
-        coord="E",
-        color="w",
-        fontweight="light",
-        verticalalignment="top",
-    )
-    hp.projtext(
-        80.0 * (np.pi / 180.0),
-        090.0 * (np.pi / 180.0),
-        r"$E  $",
-        coord="E",
-        color="w",
-        fontweight="light",
-        horizontalalignment="right",
-    )
-    hp.projtext(
-        80.0 * (np.pi / 180.0),
-        180.0 * (np.pi / 180.0),
-        r"$S  $",
-        coord="E",
-        color="w",
-        fontweight="light",
-        verticalalignment="bottom",
-    )
-    hp.projtext(
-        80.0 * (np.pi / 180.0),
-        270.0 * (np.pi / 180.0),
-        r"$W  $",
-        coord="E",
-        color="w",
-        fontweight="light",
-        horizontalalignment="left",
-    )
+tile_pairs = []
+for r in refs:
+    for t in tiles:
+        tile_pairs.append([t, r])
 
 
 def beam_maps(f):
@@ -146,16 +108,16 @@ def beam_maps(f):
         tile_med = np.asarray([(np.nanmedian(j) if j != [] else np.nan) for j in tile])
 
         residuals = tile_med - fee
-        residuals[np.where(fee < -30)] = np.nan
-        residuals[np.where(tile_med == np.nan)] = np.nan
 
         maps.append([tile_med, residuals])
 
     return maps
 
 
-def plt_grid(tile_name, ref_name):
+def plt_grid(tile_pair, map_dir, out_dir):
     # This is an Awesome plot
+
+    tile_name, ref_name = tile_pair
 
     f_xx = f"{map_dir}/{tile_name}XX_{ref_name}XX_tile_maps.npz"
     f_yy = f"{map_dir}/{tile_name}YY_{ref_name}YY_tile_maps.npz"
@@ -177,10 +139,6 @@ def plt_grid(tile_name, ref_name):
         "ytick.labelsize": 8,
     }
     plt.rcParams.update(nice_fonts)
-    # plt.rcParams['grid.color'] = '#cccccc'
-    # plt.rcParams['grid.linestyle'] = ':'
-    # plt.rcParams['grid.linewidth'] = 0.3
-    # plt.style.use('seaborn')
 
     fig1 = plt.figure(figsize=(7.6, 9.0))
 
@@ -194,6 +152,7 @@ def plt_grid(tile_name, ref_name):
         vmax=0,
         cbar=False,
     )
+
     ax2 = fig1.add_axes([0.30, 0.75, 0.29, 0.22])
     plot_healpix(
         data_map=maps_xx[1][0],
@@ -204,6 +163,7 @@ def plt_grid(tile_name, ref_name):
         vmax=0,
         cbar=False,
     )
+
     ax3 = fig1.add_axes([0.60, 0.75, 0.29, 0.22])
     plot_healpix(
         data_map=maps_xx[2][0],
@@ -217,7 +177,7 @@ def plt_grid(tile_name, ref_name):
     ax3 = plt.gca()
     image = ax3.get_images()[0]
     cax1 = fig1.add_axes([0.91, 0.75, 0.015, 0.22])
-    cbar1 = fig1.colorbar(image, cax=cax1, label="Power [dB]")
+    fig1.colorbar(image, cax=cax1, label="Power [dB]")
 
     ax4 = fig1.add_axes([0.01, 0.50, 0.29, 0.22])
     plot_healpix(
@@ -229,6 +189,7 @@ def plt_grid(tile_name, ref_name):
         vmax=5,
         cbar=False,
     )
+
     ax5 = fig1.add_axes([0.30, 0.50, 0.29, 0.22])
     plot_healpix(
         data_map=maps_xx[1][1],
@@ -239,6 +200,7 @@ def plt_grid(tile_name, ref_name):
         vmax=5,
         cbar=False,
     )
+
     ax6 = fig1.add_axes([0.60, 0.50, 0.29, 0.22])
     plot_healpix(
         data_map=maps_xx[2][1],
@@ -252,7 +214,7 @@ def plt_grid(tile_name, ref_name):
     ax6 = plt.gca()
     image = ax6.get_images()[0]
     cax2 = fig1.add_axes([0.91, 0.50, 0.015, 0.22])
-    cbar2 = fig1.colorbar(image, cax=cax2, label="Power [dB]")
+    fig1.colorbar(image, cax=cax2, label="Power [dB]")
 
     ax7 = fig1.add_axes([0.01, 0.25, 0.29, 0.22])
     plot_healpix(
@@ -264,6 +226,7 @@ def plt_grid(tile_name, ref_name):
         vmax=0,
         cbar=False,
     )
+
     ax8 = fig1.add_axes([0.30, 0.25, 0.29, 0.22])
     plot_healpix(
         data_map=maps_yy[1][0],
@@ -274,6 +237,7 @@ def plt_grid(tile_name, ref_name):
         vmax=0,
         cbar=False,
     )
+
     ax9 = fig1.add_axes([0.60, 0.25, 0.29, 0.22])
     plot_healpix(
         data_map=maps_yy[2][0],
@@ -287,7 +251,7 @@ def plt_grid(tile_name, ref_name):
     ax9 = plt.gca()
     image = ax9.get_images()[0]
     cax3 = fig1.add_axes([0.91, 0.25, 0.015, 0.22])
-    cbar3 = fig1.colorbar(image, cax=cax3, label="Power [dB]")
+    fig1.colorbar(image, cax=cax3, label="Power [dB]")
 
     ax10 = fig1.add_axes([0.01, 0.0, 0.29, 0.22])
     plot_healpix(
@@ -299,6 +263,7 @@ def plt_grid(tile_name, ref_name):
         vmax=5,
         cbar=False,
     )
+
     ax11 = fig1.add_axes([0.30, 0.0, 0.29, 0.22])
     plot_healpix(
         data_map=maps_yy[1][1],
@@ -309,6 +274,7 @@ def plt_grid(tile_name, ref_name):
         vmax=5,
         cbar=False,
     )
+
     ax12 = fig1.add_axes([0.60, 0.0, 0.29, 0.22])
     plot_healpix(
         data_map=maps_yy[2][1],
@@ -322,7 +288,7 @@ def plt_grid(tile_name, ref_name):
     ax12 = plt.gca()
     image = ax12.get_images()[0]
     cax4 = fig1.add_axes([0.91, 0.0, 0.015, 0.22])
-    cbar4 = fig1.colorbar(image, cax=cax4, label="Power [dB]")
+    fig1.colorbar(image, cax=cax4, label="Power [dB]")
 
     plt.savefig(
         f"{out_dir}/{tile_name}_{ref_name}_maps.pdf", bbox_inches="tight", dpi=420
@@ -332,89 +298,7 @@ def plt_grid(tile_name, ref_name):
 
 if __name__ == "__main__":
 
-    import argparse
-    import numpy as np
-    from pathlib import Path
-    import concurrent.futures
-    import matplotlib
-
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    import matplotlib.gridspec as gs
-    from mpl_toolkits.axes_grid1 import make_axes_locatable
-    from scipy.stats import median_absolute_deviation as mad
-
-    import sys
-
-    sys.path.append("../decode_rf_data")
-    from colormap import spectral
-
-    # Custom spectral colormap
-    cmap = spectral()
-
-    parser = argparse.ArgumentParser(
-        description="""
-        Plot healpix map of reference data
-        """
-    )
-
-    parser.add_argument(
-        "--out_dir",
-        metavar="\b",
-        default="../../outputs/paper_plots/tile_grids/",
-        help="Output directory. Default=../../outputs/paper_plots/tile_grids",
-    )
-    parser.add_argument(
-        "--map_dir",
-        metavar="\b",
-        default="../../outputs/tile_maps/tile_maps_norm/",
-        help="Tile map directory. Default=../../outputs/tile_maps/tile_maps_norm/",
-    )
-    parser.add_argument(
-        "--fee_map",
-        metavar="\b",
-        default="../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz",
-        help="Healpix FEE map of mwa tile. default=../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz",
-    )
-    parser.add_argument(
-        "--nside",
-        metavar="\b",
-        type=int,
-        default=32,
-        help="Healpix Nside. Default = 32",
-    )
-
-    args = parser.parse_args()
-
-    out_dir = Path(args.out_dir)
-    map_dir = Path(args.map_dir)
-    fee_map = args.fee_map
-    nside = args.nside
-
-    # make output dir if it doesn't exist
-    out_dir.mkdir(parents=True, exist_ok=True)
-
-    tiles = [
-        "S06",
-        "S07",
-        "S08",
-        "S09",
-        "S10",
-        "S12",
-        "S29",
-        "S30",
-        "S31",
-        "S32",
-        "S33",
-        "S34",
-        "S35",
-        "S36",
-    ]
-
-    refs = ["rf0", "rf1"]
-
-    # for r in refs:
-    #    for t in tiles:
-    #        plt_grid(t, r)
-
-    plt_grid("S07", "rf1")
+    #  plt_grid(tile_pairs[0], map_dir, out_dir)
+    # Parallization magic happens here
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        executor.map(plt_grid, tile_pairs, repeat(map_dir), repeat(out_dir))
