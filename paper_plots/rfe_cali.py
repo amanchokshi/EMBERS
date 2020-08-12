@@ -135,32 +135,32 @@ def rfe_collate_cali(start_gain, stop_gain, rfe_cali_dir):
         x_f,
         y_f,
         color="w",
-        lw=2.1,
+        lw=1.8,
         marker="s",
         markeredgecolor="k",
-        markeredgewidth=1.6,
-        markersize=4.9,
+        markeredgewidth=1.4,
+        markersize=4.2,
         alpha=1,
         label="Gain fit",
-        zorder=2,
+        zorder=1,
     )
     plt.scatter(
         bin_centers,
         bin_med,
         marker="X",
-        s=28,
+        s=24,
         facecolors="#ee4540",
         lw=0.7,
         edgecolors="w",
         alpha=1,
         label="Median residuals",
-        zorder=1,
+        zorder=2,
     )
 
-    leg = plt.legend(loc="lower right", frameon=True, markerscale=0.9, handlelength=1.4)
+    leg = plt.legend(loc="lower right", frameon=True, markerscale=0.96, handlelength=1.4)
     leg.get_frame().set_facecolor("#cccccc")
     for le in leg.legendHandles:
-        le.set_alpha(0.77)
+        le.set_alpha(0.9)
 
     plt.xlabel("Observed power [dBm]")
     plt.ylabel("Residuals power [dB]")
