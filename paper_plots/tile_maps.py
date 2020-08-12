@@ -108,6 +108,8 @@ def beam_maps(f):
         tile_med = np.asarray([(np.nanmedian(j) if j != [] else np.nan) for j in tile])
 
         residuals = tile_med - fee
+        residuals[np.where(fee < -30)] = np.nan
+        residuals[np.where(tile_med == np.nan)] = np.nan
 
         maps.append([tile_med, residuals])
 
