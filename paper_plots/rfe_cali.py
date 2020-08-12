@@ -142,19 +142,19 @@ def rfe_collate_cali(start_gain, stop_gain, rfe_cali_dir):
         markersize=4.9,
         alpha=1,
         label="Gain fit",
-        zorder=1,
+        zorder=2,
     )
     plt.scatter(
         bin_centers,
         bin_med,
         marker="X",
-        s=36,
+        s=28,
         facecolors="#ee4540",
-        lw=0.9,
+        lw=0.7,
         edgecolors="w",
         alpha=1,
         label="Median residuals",
-        zorder=2,
+        zorder=1,
     )
 
     leg = plt.legend(loc="lower right", frameon=True, markerscale=0.9, handlelength=1.4)
