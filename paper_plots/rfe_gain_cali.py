@@ -1,5 +1,5 @@
 """
-FIGURE IX.
+RFE CALI.
 ---------
 """
 
@@ -16,7 +16,7 @@ spec, _ = spectral()
 
 parser = argparse.ArgumentParser(
     description="""
-    Figure 9 of the paper - RFE Gain Fit
+    RFE gain fit paper plot
     """
 )
 
@@ -174,4 +174,4 @@ def rfe_collate_cali(start_gain, stop_gain, rfe_cali_dir):
 
 
 rfe_collate_cali(start_gain, stop_gain, rfe_cali)
-print(f"Figure IX saved to {out_dir}")
+print(f"RFE CALI saved to {out_dir}")

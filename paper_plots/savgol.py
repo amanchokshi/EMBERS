@@ -1,6 +1,6 @@
 """
-FIGURE IV.
-----------
+SAVGOL INTERP.
+--------------
 """
 
 import argparse
@@ -15,7 +15,7 @@ matplotlib.use("Agg")
 
 parser = argparse.ArgumentParser(
     description="""
-        Figure 4 of the paper - Savgol Interpolation
+        Savgol Interpolation paper plot
         """
 )
 
@@ -112,7 +112,7 @@ try:
     plt.xlabel("Time [s]")
     plt.tight_layout()
     plt.savefig(f"{out_dir}/savgol.pdf", bbox_inches="tight")
-    print(f"Figure IV saved to {out_dir}")
+    print(f"SAVGOL INTERP saved to {out_dir}")
 
 except Exception as e:
     print(e)

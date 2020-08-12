@@ -1,6 +1,6 @@
 """
-FIGURE VII.
------------
+NULL TEST.
+----------
 
 """
 
@@ -11,7 +11,7 @@ from embers.tile_maps.null_test import null_test
 
 parser = argparse.ArgumentParser(
     description="""
-    Figure 7 in Paper - Null Tests
+    Null Test paper plot
     """
 )
 
@@ -57,4 +57,4 @@ out_dir = Path(args.out_dir)
 
 
 null_test(nside, za_max, ref_model, map_dir, out_dir)
-print(f"FIGURE VII saved to {out_dir}")
+print(f"NULL TEST saved to {out_dir}")

@@ -1,5 +1,5 @@
 """
-FIGURE III.
+WATERFALLS.
 -----------
 
 """
@@ -18,7 +18,7 @@ matplotlib.use("Agg")
 
 parser = argparse.ArgumentParser(
     description="""
-        Plot Figure II in paper - Waterfall
+        Waterfall paper plots
         """
 )
 
@@ -148,4 +148,4 @@ ax2.set_yticks([])
 
 plt.savefig(f"{out_dir}/waterfall.png", dpi=600, bbox_inches="tight")
 
-print(f"Figure III saved to {out_dir}")
+print(f"WATERRFALL PLOT saved to {out_dir}")

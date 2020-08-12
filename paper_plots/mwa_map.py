@@ -1,5 +1,5 @@
 """
-FIGURE I.
+MWA MAP.
 --------
 
 """
@@ -16,7 +16,7 @@ matplotlib.use("Agg")
 
 parser = argparse.ArgumentParser(
     description="""
-        Figure 1 of the paper - MWA map
+        MWA Map paper plot
         """
 )
 
@@ -145,4 +145,4 @@ ax.set_xlabel("East [m]")
 
 plt.savefig(f"{out_dir}/mwa_map.pdf", transparent=True, bbox_inches="tight")
 
-print(f"Figure I saved to {out_dir}")
+print(f"MWA MAP saved to {out_dir}")

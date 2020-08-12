@@ -1,5 +1,5 @@
 """
-FIGURE IV.
+NULL SATS.
 ----------
 """
 
@@ -17,7 +17,7 @@ matplotlib.use("Agg")
 
 parser = argparse.ArgumentParser(
     description="""
-    Plot healpix map of reference data
+    Null Sats paper plot
     """
 )
 
@@ -296,7 +296,7 @@ try:
 
     plt.savefig(f"{out_dir}/ref_residuals.pdf", bbox_inches="tight")
 
-    print(f"Figure VI saved to {out_dir}")
+    print(f"NULL SATS saved to {out_dir}")
 
 
 except Exception as e:
