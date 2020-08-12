@@ -1,189 +1,84 @@
-import sys
+import argparse
+import concurrent.futures
+from pathlib import Path
+
+import matplotlib
 import numpy as np
-import healpy as hp
-import scipy.optimize as opt
-import numpy.polynomial.polynomial as poly
-from mwa_pb.mwa_sweet_spots import all_grid_points
+from embers.tile_maps.beam_utils import (chisq_fit_gain,
+                                         healpix_cardinal_slices, map_slices,
+                                         poly_fit, rotate_map)
+from matplotlib import pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-sys.path.append("../decode_rf_data")
-from colormap import spectral, jade, kelp
-
-# Custom spectral colormap
-jade, _ = jade()
+matplotlib.use("Agg")
 
 
-def hp_slices_horizon(nside=None, zenith_angle=90):
-    """Healpix pix indices of NS, EW slices and above horizon"""
-    # theta phi values of each pixel
-    hp_indices = np.arange(hp.nside2npix(nside))
-    θ, ɸ = hp.pix2ang(nside, hp_indices)
+parser = argparse.ArgumentParser(
+    description="""
+    Tile Slices paper plot
+    """
+)
 
-    # healpix indices above the horizon
-    above_horizon_indices = np.where(θ <= np.radians(zenith_angle))[0]
+parser.add_argument(
+    "--out_dir",
+    metavar="\b",
+    default="../embers_out/paper_plots/tile_slices/",
+    help="Output directory. Default=../embers_out/paper_plots/tile_slices",
+)
+parser.add_argument(
+    "--map_dir",
+    metavar="\b",
+    default="../embers_out/tile_maps/tile_maps/tile_maps_clean/",
+    help="Tile map directory. Default=../embers_out/tile_maps/tile_maps/tile_maps_clean",
+)
+parser.add_argument(
+    "--fee_map",
+    metavar="\b",
+    default="../embers_out/mwa_utils/mwa_fee/mwa_fee_beam.npz",
+    help="Healpix FEE map of mwa tile. default=../embers_out/mwa_utils/mwa_fee/mwa_fee_beam.npz",
+)
+parser.add_argument(
+    "--nside", metavar="\b", type=int, default=32, help="Healpix Nside. Default = 32",
+)
 
-    # pixel coords above the horizon
-    ɸ_above_horizon = ɸ[above_horizon_indices]
+args = parser.parse_args()
 
-    NS_indices = []
-    EW_indices = []
+out_dir = Path(args.out_dir)
+map_dir = Path(args.map_dir)
+fee_map = args.fee_map
+nside = args.nside
 
-    # pixel indices along N, E, S, W slices
-    # order the indices such that they proceed from N -> S or E -> W
-    n_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 45)[0])
-    e_slice = sorted(np.where((np.round(np.degrees(ɸ_above_horizon))) == 135)[0])
-    s_slice = sorted(
-        np.where((np.round(np.degrees(ɸ_above_horizon))) == 225)[0], reverse=True
-    )
-    w_slice = sorted(
-        np.where((np.round(np.degrees(ɸ_above_horizon))) == 315)[0], reverse=True
-    )
+# make output dir if it doesn't exist
+out_dir.mkdir(parents=True, exist_ok=True)
 
-    NS_indices.extend(s_slice)
-    NS_indices.extend(n_slice)
-    EW_indices.extend(w_slice)
-    EW_indices.extend(e_slice)
+tiles = [
+    "S06",
+    "S07",
+    "S08",
+    "S09",
+    "S10",
+    "S12",
+    "S29",
+    "S30",
+    "S31",
+    "S32",
+    "S33",
+    "S34",
+    "S35",
+    "S36",
+]
 
-    return [NS_indices, EW_indices, above_horizon_indices]
+refs = ["rf0", "rf1"]
 
-
-def slice_map(hp_map, za):
-    """slices healpix map along NS, EW"""
-
-    NS_indices, EW_indices, _ = hp_slices_horizon(nside, zenith_angle=za)
-
-    θ_NS, ɸ_NS = np.degrees(hp.pix2ang(nside, NS_indices))
-    θ_EW, ɸ_EW = np.degrees(hp.pix2ang(nside, EW_indices))
-
-    zenith_angle_NS = []
-    for i, j in zip(θ_NS, ɸ_NS):
-        if j <= 180:
-            zenith_angle_NS.append(-1 * i)
-        else:
-            zenith_angle_NS.append(i)
-
-    zenith_angle_EW = []
-    for i, j in zip(θ_EW, ɸ_EW):
-        if j <= 180:
-            zenith_angle_EW.append(-1 * i)
-        else:
-            zenith_angle_EW.append(i)
-
-    NS_data = [hp_map[NS_indices], zenith_angle_NS]
-    EW_data = [hp_map[EW_indices], zenith_angle_EW]
-
-    return [NS_data, EW_data]
-
-
-def nan_mad(ref_map):
-    """Compute mad while ignoring nans"""
-    ref_map_mad = []
-    for j in ref_map:
-        if j != []:
-            j = np.asarray(j)
-            j = j[~np.isnan(j)]
-            ref_map_mad.append(mad(j))
-        else:
-            ref_map_mad.append(np.nan)
-
-    ref_map_mad = np.asarray(ref_map_mad)
-    ref_map_mad[np.where(ref_map_mad == np.nan)] = np.nanmean(ref_map_mad)
-
-    return ref_map_mad
-
-
-def tile_map_slice(good_map, za):
-    """slices ref healpix map along NS & EW"""
-
-    ref_map_NS, ref_map_EW = slice_map(np.asarray(good_map), za)
-
-    ref_med_map_NS = np.asarray(
-        [(np.nanmedian(i) if i != [] else np.nan) for i in ref_map_NS[0]]
-    )
-    ref_mad_map_NS = np.asarray(nan_mad(ref_map_NS[0]))
-    za_NS = ref_map_NS[1]
-
-    ref_med_map_EW = np.asarray(
-        [(np.nanmedian(i) if i != [] else np.nan) for i in ref_map_EW[0]]
-    )
-    ref_mad_map_EW = np.asarray(nan_mad(ref_map_EW[0]))
-    za_EW = ref_map_EW[1]
-
-    NS_data = [ref_med_map_NS, ref_mad_map_NS, za_NS]
-    EW_data = [ref_med_map_EW, ref_mad_map_EW, za_EW]
-
-    return [NS_data, EW_data]
-
-
-# rotate func written by Jack Line
-def rotate(nside, angle=None, healpix_array=None, savetag=None, flip=False):
-    """Takes in a healpix array, rotates it by the desired angle, and saves it.
-    Optionally flip the data, changes east-west into west-east because
-    astronomy"""
-
-    # theta phi values of each pixel
-    hp_indices = np.arange(hp.nside2npix(nside))
-    θ, ɸ = hp.pix2ang(nside, hp_indices)
-
-    new_hp_inds = hp.ang2pix(nside, θ, ɸ + angle)
-
-    ##Flip the data to match astro conventions
-    if flip == True:
-        new_angles = []
-        for phi in ɸ:
-            if phi <= np.pi:
-                new_angles.append(np.pi - phi)
-            else:
-                new_angles.append(3 * np.pi - phi)
-        new_hp_inds = hp.ang2pix(nside, ɸ, np.asarray(new_angles))
-
-    ##Save the array in the new order
-    if savetag:
-        np.savez_compressed(savetag, beammap=healpix_array[new_hp_inds])
-
-    return healpix_array[new_hp_inds]
-
-
-# chisquared minimization to best fit map to data
-def fit_gain(map_data=None, map_error=None, beam=None):
-    """Fit the beam model to the measured data using
-    chisquared minimization"""
-
-    bad_values = np.isnan(map_data)
-    map_data = map_data[~bad_values]
-    map_error = map_error[~bad_values]
-
-    map_error[np.where(map_error == 0)] = np.mean(map_error)
-
-    def chisqfunc(gain):
-        model = beam[~bad_values] + gain
-        chisq = sum((map_data - model) ** 2)
-        # chisq = sum(((map_data - model)/map_error)**2)
-        return chisq
-
-    x0 = np.array([0])
-
-    result = opt.minimize(chisqfunc, x0)
-
-    return result.x
-
-
-def poly_fit(x, y, map_data, order):
-    """Fit polynominal of order to data"""
-
-    x = np.asarray(x)
-    y = np.asarray(y)
-
-    bad_values = np.isnan(map_data)
-    x_good = x[~bad_values]
-    y_good = y[~bad_values]
-    coefs = poly.polyfit(x_good, y_good, order)
-    fit = poly.polyval(x, coefs)
-    return fit
+tile_pairs = []
+for r in refs:
+    for t in tiles:
+        tile_pairs.append([t, r])
 
 
 def plt_slice(
     fig=None,
-    sub=[1, 1, 1],
+    sub=(None, None, None),
     zen_angle=None,
     map_slice=None,
     map_error=None,
@@ -193,14 +88,34 @@ def plt_slice(
     slice_label=None,
     model_label=None,
     xlabel=False,
-    ylabel=False,
+    ylabel=True,
+    xlim=[-82, 82],
+    ylim=[-26, 12],
     title=None,
 ):
 
-    """Plot a slice of the beam, with measured
-    data, errorbars, and fit the simulated beam
-    to the data. Also plot the diff b/w data and
-    the model"""
+    """Plot a slice of measured beam map with errorbars fit the fee beam model. Subplot with residual power.
+
+    :param fig: Figure number
+    :param sub: Subplot position, tuple of matplotlib indices. Ex: (1, 1, 1)
+    :param zen_angle: Array of zenith angles
+    :param map_slice: Array of beam powers from slice of beam map
+    :param map_error: Array of errors on map_slice
+    :param model_slice: Slice of beam model at given zenith angles
+    :param delta_pow: Residual power between measured beam slice and model beam
+    :param pow_fit: Polynomial fit to residual power
+    :param slice_label: Label of measured beam slice
+    :param model_label: Label of beam model slice
+    :param xlabel: If True, plot X label of plot
+    :param ylabel: If True, plot Y label of plot
+    :param xlim: X limits on the plot. Default: [-82, 82]
+    :param ylim: Y limits on the plot. Default: [-26, 12]
+    :param title: Plot title
+
+    :returns:
+        - ax - :func:`~matplotlib.pyplot.subplot` object
+
+    """
 
     ax = fig.add_subplot(sub[0], sub[1], sub[2])
 
@@ -211,10 +126,11 @@ def plt_slice(
         fmt=".",
         color="#326765",
         ecolor="#7da87b",
-        elinewidth=1.2,
-        capsize=1.2,
-        capthick=1.4,
+        elinewidth=1.4,
+        capsize=1.4,
+        capthick=1.6,
         alpha=0.9,
+        ms=7,
         label=slice_label,
     )
 
@@ -222,61 +138,142 @@ def plt_slice(
         zen_angle,
         model_slice,
         color="#c70039",
-        linewidth=1.2,
+        linewidth=1.4,
         alpha=0.9,
         label=model_label,
     )
+
+    ax.text(0.02, 0.88, title, horizontalalignment="left", transform=ax.transAxes)
     ax.set_xticks([-75, -50, -25, 0, 25, 50, 75])
+    ax.set_yticks([0, -10, -20, -30, -40])
 
-    leg = ax.legend(loc="upper right", frameon=True, handlelength=1)
+    leg = ax.legend(loc="lower center", frameon=True, handlelength=1)
     leg.get_frame().set_facecolor("white")
-    for l in leg.legendHandles:
-        l.set_alpha(0.7)
-
-    # ax.set_ylim(bottom=-30)
-    ax.set_xlim([-92, 92])
-    ax.set_ylim([-50, 5])
-    ax.set_title(title, loc="left")
+    for le in leg.legendHandles:
+        le.set_alpha(1)
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+    ax.set_xticklabels([])
 
     divider = make_axes_locatable(ax)
-    dax = divider.append_axes("bottom", size="30%", pad=0.05)
+    dax = divider.append_axes("bottom", size="30%", pad=0.06)
+
+    dax.scatter(zen_angle, delta_pow, marker=".", s=30, color="#27296d")
+    dax.plot(zen_angle, pow_fit, linewidth=1.4, alpha=0.9, color="#ff8264")
     dax.set_xticks([-75, -50, -25, 0, 25, 50, 75])
-
-    if xlabel is True:
-        dax.set_xlabel("Zenith Angle [deg]")
-    else:
-        dax.set_xticklabels([])
-        ax.set_xticklabels([])
-
+    dax.set_ylim([-10, 10])
+    dax.set_xlim(xlim)
+    dax.set_ylim([-5, 5])
     if ylabel is True:
         ax.set_ylabel("Power [dB]")
-        ax.set_yticks([-40, -30, -20, -10, 0])
-        dax.set_ylabel(r"$\Delta$P [dB]")
+        dax.set_ylabel(r"$\Delta$ref [dB]")
     else:
         dax.set_yticklabels([])
         ax.set_yticklabels([])
-
-    # dax = fig.add_subplot(2,1,2)
-    dax.scatter(zen_angle, delta_pow, marker=".", s=36, alpha=0.9, color="#27296d")
-    dax.plot(zen_angle, pow_fit, linewidth=1.2, alpha=0.9, color="#ff8264")
-    dax.set_ylim([-10, 10])
-    # dax.set_xticklabels([])
-    dax.set_xlim([-92, 92])
+    if xlabel is False:
+        dax.set_xticklabels([])
+    else:
+        dax.set_xlabel("Zenith Angle [deg]")
 
     return ax
 
 
-def beam_maps(f):
+# def plt_slice(
+#    fig=None,
+#    sub=[1, 1, 1],
+#    zen_angle=None,
+#    map_slice=None,
+#    map_error=None,
+#    model_slice=None,
+#    delta_pow=None,
+#    pow_fit=None,
+#    slice_label=None,
+#    model_label=None,
+#    xlabel=False,
+#    ylabel=False,
+#    title=None,
+# ):
+#
+#    """Plot a slice of the beam, with measured
+#    data, errorbars, and fit the simulated beam
+#    to the data. Also plot the diff b/w data and
+#    the model"""
+#
+#    ax = fig.add_subplot(sub[0], sub[1], sub[2])
+#
+#    ax.errorbar(
+#        zen_angle,
+#        map_slice,
+#        yerr=map_error,
+#        fmt=".",
+#        color="#326765",
+#        ecolor="#7da87b",
+#        elinewidth=1.2,
+#        capsize=1.2,
+#        capthick=1.4,
+#        alpha=0.9,
+#        label=slice_label,
+#    )
+#
+#    ax.plot(
+#        zen_angle,
+#        model_slice,
+#        color="#c70039",
+#        linewidth=1.2,
+#        alpha=0.9,
+#        label=model_label,
+#    )
+#    ax.set_xticks([-75, -50, -25, 0, 25, 50, 75])
+#
+#    leg = ax.legend(loc="upper right", frameon=True, handlelength=1)
+#    leg.get_frame().set_facecolor("white")
+#    for l in leg.legendHandles:
+#        l.set_alpha(0.7)
+#
+#    # ax.set_ylim(bottom=-30)
+#    ax.set_xlim([-92, 92])
+#    ax.set_ylim([-50, 5])
+#    ax.set_title(title, loc="left")
+#
+#    divider = make_axes_locatable(ax)
+#    dax = divider.append_axes("bottom", size="30%", pad=0.05)
+#    dax.set_xticks([-75, -50, -25, 0, 25, 50, 75])
+#
+#    if xlabel is True:
+#        dax.set_xlabel("Zenith Angle [deg]")
+#    else:
+#        dax.set_xticklabels([])
+#        ax.set_xticklabels([])
+#
+#    if ylabel is True:
+#        ax.set_ylabel("Power [dB]")
+#        ax.set_yticks([-40, -30, -20, -10, 0])
+#        dax.set_ylabel(r"$\Delta$P [dB]")
+#    else:
+#        dax.set_yticklabels([])
+#        ax.set_yticklabels([])
+#
+#    # dax = fig.add_subplot(2,1,2)
+#    dax.scatter(zen_angle, delta_pow, marker=".", s=36, alpha=0.9, color="#27296d")
+#    dax.plot(zen_angle, pow_fit, linewidth=1.2, alpha=0.9, color="#ff8264")
+#    dax.set_ylim([-10, 10])
+#    # dax.set_xticklabels([])
+#    dax.set_xlim([-92, 92])
+#
+#    return ax
+
+
+def beam_slices(map_file, fee_map, nside):
     """Returns pairs of [NS,EW] slices of maps, for each pointing"""
-    f_name, _ = Path(f).name.split(".")
-    t_name, r_name, _, _ = f_name.split("_")
+
+    t_name, r_name, _, _ = Path(map_file).stem.split("_")
 
     pointings = ["0", "2", "4"]
 
     maps = []
 
     # load data from map .npz file
-    tile_map = np.load(f, allow_pickle=True)
+    tile_map = np.load(map_file, allow_pickle=True)
     fee_m = np.load(fee_map, allow_pickle=True)
 
     for p in pointings:
@@ -289,21 +286,21 @@ def beam_maps(f):
             fee = fee_m[p][1]
 
         # rotate maps so slices can be taken
-        fee_r = rotate(nside, angle=-np.pi / 4, healpix_array=fee)
-        tile_r = rotate(nside, angle=-np.pi / 4, healpix_array=tile)
+        fee_r = rotate_map(nside, angle=-np.pi / 4, healpix_array=fee)
+        tile_r = rotate_map(nside, angle=-np.pi / 4, healpix_array=tile)
 
         # slice the tile and fee maps along NS, EW
         # zenith angle thresh of 70 to determine fit gain factor
-        NS_f, EW_f = slice_map(fee_r, 70)
-        NS_t, EW_t = tile_map_slice(tile_r, 70)
+        NS_f, EW_f = healpix_cardinal_slices(nside, fee_r, 70)
+        NS_t, EW_t = map_slices(nside, tile_r, 70)
 
-        gain_NS = fit_gain(map_data=NS_t[0], map_error=NS_t[1], beam=NS_f[0])
-        gain_EW = fit_gain(map_data=EW_t[0], map_error=EW_t[1], beam=EW_f[0])
+        gain_NS = chisq_fit_gain(data=NS_t[0], model=NS_f[0])
+        gain_EW = chisq_fit_gain(data=EW_t[0], model=EW_f[0])
 
         # slice the tile and fee maps along NS, EW.
         # the above gain factor is applied to full beam slices
-        NS_fee, EW_fee = slice_map(fee_r, 90)
-        NS_tile, EW_tile = tile_map_slice(tile_r, 90)
+        NS_fee, EW_fee = healpix_cardinal_slices(nside, fee_r, 90)
+        NS_tile, EW_tile = map_slices(nside, tile_r, 90)
 
         # Scale the data so that it best fits the beam slice
         NS_tile_med = NS_tile[0] - gain_NS[0]
@@ -327,14 +324,14 @@ def beam_maps(f):
     return maps
 
 
-def plt_grid(tile_name, ref_name):
+def plt_grid(tile_name, ref_name, fee_map, nside, map_dir, out_dir):
     # This is an Awesome plot
 
     f_xx = f"{map_dir}/{tile_name}XX_{ref_name}XX_tile_maps.npz"
     f_yy = f"{map_dir}/{tile_name}YY_{ref_name}YY_tile_maps.npz"
 
-    maps_xx = beam_maps(f_xx)
-    maps_yy = beam_maps(f_yy)
+    maps_xx = beam_slices(f_xx, fee_map, nside)
+    maps_yy = beam_slices(f_yy, fee_map, nside)
 
     plt.style.use("seaborn")
 
@@ -358,7 +355,8 @@ def plt_grid(tile_name, ref_name):
 
     # ax1  = fig1.add_axes([0.01, 0.75, 0.29, 0.22])
 
-    ax1 = plt.subplot(4, 3, 1)
+    plt.subplot(4, 3, 1)
+    plt.title(fr"($i$) NS slice of {tile_name}XX [zenith]", loc="left")
     plt_slice(
         fig=fig1,
         sub=[4, 3, 1],
@@ -371,10 +369,14 @@ def plt_grid(tile_name, ref_name):
         slice_label="Tile NS",
         model_label="FEE NS",
         ylabel=True,
-        title=fr"($i$) NS slice of {tile_name}XX [zenith]",
+        xlim=[-92, 92],
+        ylim=[-50, 5],
     )
+    ax1 = plt.gca()
+    ax1.set_xticks([-75, -50, -25, 0, 25, 50, 75])
 
-    ax2 = plt.subplot(4, 3, 2)
+    plt.subplot(4, 3, 2)
+    plt.title(fr"($ii$) NS slice of {tile_name}XX [2]", loc="left"),
     plt_slice(
         fig=fig1,
         sub=[4, 3, 2],
@@ -386,10 +388,12 @@ def plt_grid(tile_name, ref_name):
         pow_fit=maps_xx[1][0][4],
         slice_label="Tile NS",
         model_label="FEE NS",
-        title=fr"($ii$) NS slice of {tile_name}XX [2]",
+        xlim=[-92, 92],
+        ylim=[-50, 5],
     )
 
-    ax3 = plt.subplot(4, 3, 3)
+    plt.subplot(4, 3, 3)
+    plt.title(fr"($iii$) NS slice of {tile_name}XX [4]", loc="left"),
     plt_slice(
         fig=fig1,
         sub=[4, 3, 3],
@@ -401,10 +405,12 @@ def plt_grid(tile_name, ref_name):
         pow_fit=maps_xx[2][0][4],
         slice_label="Tile NS",
         model_label="FEE NS",
-        title=fr"($iii$) NS slice of {tile_name}XX [4]",
+        xlim=[-92, 92],
+        ylim=[-50, 5],
     )
 
-    ax4 = plt.subplot(4, 3, 4)
+    plt.subplot(4, 3, 4)
+    plt.title(fr"($iv$) EW slice of {tile_name}XX [zenith]", loc="left"),
     plt_slice(
         fig=fig1,
         sub=[4, 3, 4],
@@ -417,10 +423,12 @@ def plt_grid(tile_name, ref_name):
         slice_label="Tile EW",
         model_label="FEE EW",
         ylabel=True,
-        title=fr"($iv$) EW slice of {tile_name}XX [zenith]",
+        xlim=[-92, 92],
+        ylim=[-50, 5],
     )
 
-    ax5 = plt.subplot(4, 3, 5)
+    plt.subplot(4, 3, 5)
+    plt.title(fr"($v$) EW slice of {tile_name}XX [2]", loc="left"),
     plt_slice(
         fig=fig1,
         sub=[4, 3, 5],
@@ -432,10 +440,12 @@ def plt_grid(tile_name, ref_name):
         pow_fit=maps_xx[1][1][4],
         slice_label="Tile EW",
         model_label="FEE EW",
-        title=fr"($v$) EW slice of {tile_name}XX [2]",
+        xlim=[-92, 92],
+        ylim=[-50, 5],
     )
 
-    ax6 = plt.subplot(4, 3, 6)
+    plt.subplot(4, 3, 6)
+    plt.title(fr"($vi$) EW slice of {tile_name}XX [4]", loc="left"),
     plt_slice(
         fig=fig1,
         sub=[4, 3, 6],
@@ -447,10 +457,12 @@ def plt_grid(tile_name, ref_name):
         pow_fit=maps_xx[2][1][4],
         slice_label="Tile EW",
         model_label="FEE EW",
-        title=fr"($vi$) EW slice of {tile_name}XX [4]",
+        xlim=[-92, 92],
+        ylim=[-50, 5],
     )
 
-    ax7 = plt.subplot(4, 3, 7)
+    plt.subplot(4, 3, 7)
+    plt.title(fr"($vii$) NS slice of {tile_name}YY [zenith]", loc="left"),
     plt_slice(
         fig=fig1,
         sub=[4, 3, 7],
@@ -463,10 +475,12 @@ def plt_grid(tile_name, ref_name):
         slice_label="Tile NS",
         model_label="FEE NS",
         ylabel=True,
-        title=fr"($vii$) NS slice of {tile_name}YY [zenith]",
+        xlim=[-92, 92],
+        ylim=[-50, 5],
     )
 
-    ax8 = plt.subplot(4, 3, 8)
+    plt.subplot(4, 3, 8)
+    plt.title(fr"($viii$) NS slice of {tile_name}YY [2]", loc="left"),
     plt_slice(
         fig=fig1,
         sub=[4, 3, 8],
@@ -478,10 +492,12 @@ def plt_grid(tile_name, ref_name):
         pow_fit=maps_yy[1][0][4],
         slice_label="Tile NS",
         model_label="FEE NS",
-        title=fr"($viii$) NS slice of {tile_name}YY [2]",
+        xlim=[-92, 92],
+        ylim=[-50, 5],
     )
 
-    ax9 = plt.subplot(4, 3, 9)
+    plt.subplot(4, 3, 9)
+    plt.title(fr"($ix$) NS slice of {tile_name}YY [4]", loc="left"),
     plt_slice(
         fig=fig1,
         sub=[4, 3, 9],
@@ -493,10 +509,14 @@ def plt_grid(tile_name, ref_name):
         pow_fit=maps_yy[2][0][4],
         slice_label="Tile NS",
         model_label="FEE NS",
-        title=fr"($ix$) NS slice of {tile_name}YY [4]",
+        xlim=[-92, 92],
+        ylim=[-50, 5],
     )
 
-    ax10 = plt.subplot(4, 3, 10)
+    plt.subplot(4, 3, 10)
+    plt.title(
+        fr"($x$) EW slice of {tile_name}YY [Zenith]", loc="left",
+    )
     plt_slice(
         fig=fig1,
         sub=[4, 3, 10],
@@ -510,10 +530,12 @@ def plt_grid(tile_name, ref_name):
         model_label="FEE EW",
         ylabel=True,
         xlabel=True,
-        title=fr"($x$) EW slice of {tile_name}YY [Zenith]",
+        xlim=[-92, 92],
+        ylim=[-50, 5],
     )
 
-    ax11 = plt.subplot(4, 3, 11)
+    plt.subplot(4, 3, 11)
+    plt.title(fr"($xi$) EW slice of {tile_name}YY [2]", loc="left"),
     plt_slice(
         fig=fig1,
         sub=[4, 3, 11],
@@ -526,10 +548,12 @@ def plt_grid(tile_name, ref_name):
         slice_label="Tile EW",
         model_label="FEE EW",
         xlabel=True,
-        title=fr"($xi$) EW slice of {tile_name}YY [2]",
+        xlim=[-92, 92],
+        ylim=[-50, 5],
     )
 
-    ax12 = plt.subplot(4, 3, 12)
+    plt.subplot(4, 3, 12)
+    plt.title(fr"($xii$) EW slice of {tile_name}YY [4]", loc="left"),
     plt_slice(
         fig=fig1,
         sub=[4, 3, 12],
@@ -542,7 +566,8 @@ def plt_grid(tile_name, ref_name):
         slice_label="Tile EW",
         model_label="FEE EW",
         xlabel=True,
-        title=fr"($xii$) EW slice of {tile_name}YY [4]",
+        xlim=[-92, 92],
+        ylim=[-50, 5],
     )
 
     plt.tight_layout()
@@ -552,91 +577,4 @@ def plt_grid(tile_name, ref_name):
     plt.close()
 
 
-if __name__ == "__main__":
-
-    import argparse
-    import numpy as np
-    from pathlib import Path
-    import concurrent.futures
-    import matplotlib
-
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    import matplotlib.gridspec as gs
-    from mpl_toolkits.axes_grid1 import make_axes_locatable
-    from scipy.stats import median_absolute_deviation as mad
-
-    import sys
-
-    sys.path.append("../decode_rf_data")
-    from colormap import spectral
-
-    # Custom spectral colormap
-    cmap = spectral()
-
-    parser = argparse.ArgumentParser(
-        description="""
-        Plot healpix map of reference data
-        """
-    )
-
-    parser.add_argument(
-        "--out_dir",
-        metavar="\b",
-        default="../../outputs/paper_plots/tile_grids/",
-        help="Output directory. Default=../../outputs/paper_plots/tile_grids",
-    )
-    parser.add_argument(
-        "--map_dir",
-        metavar="\b",
-        default="../../outputs/tile_maps/tile_maps_norm/",
-        help="Tile map directory. Default=../../outputs/tile_maps/tile_maps_norm/",
-    )
-    parser.add_argument(
-        "--fee_map",
-        metavar="\b",
-        default="../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz",
-        help="Healpix FEE map of mwa tile. default=../../outputs/tile_maps/FEE_maps/mwa_fee_beam.npz",
-    )
-    parser.add_argument(
-        "--nside",
-        metavar="\b",
-        type=int,
-        default=32,
-        help="Healpix Nside. Default = 32",
-    )
-
-    args = parser.parse_args()
-
-    out_dir = Path(args.out_dir)
-    map_dir = Path(args.map_dir)
-    fee_map = args.fee_map
-    nside = args.nside
-
-    # make output dir if it doesn't exist
-    out_dir.mkdir(parents=True, exist_ok=True)
-
-    tiles = [
-        "S06",
-        "S07",
-        "S08",
-        "S09",
-        "S10",
-        "S12",
-        "S29",
-        "S30",
-        "S31",
-        "S32",
-        "S33",
-        "S34",
-        "S35",
-        "S36",
-    ]
-
-    refs = ["rf0", "rf1"]
-
-    # for r in refs:
-    #    for t in tiles:
-    #        plt_grid(t, r)
-
-    plt_grid("S07", "rf1")
+plt_grid("S07", "rf0", fee_map, 32, map_dir, out_dir)
