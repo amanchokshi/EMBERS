@@ -55,6 +55,7 @@ def plt_fee_fit(
 
     """
 
+    plt.style.use("seaborn")
     nice_fonts = {
         # Use LaTeX to write all text
         # "text.usetex": True,
@@ -70,7 +71,6 @@ def plt_fee_fit(
 
     plt.rcParams.update(nice_fonts)
 
-    plt.style.use("seaborn")
     fig = plt.figure(figsize=(3.6, 2.4))
     ax1 = fig.add_subplot(1, 1, 1)
 
@@ -104,7 +104,7 @@ def plt_fee_fit(
     ax1.set_ylabel("Power [dBm]")
     ax1.set_xlabel("Time [minutes]")
 
-    leg = ax1.legend(frameon=True, markerscale=2)
+    leg = ax1.legend(frameon=True, markerscale=2, loc="upper left")
     leg.get_frame().set_facecolor("grey")
     leg.get_frame().set_alpha(0.2)
     for le in leg.legendHandles:
