@@ -1,8 +1,6 @@
 """
-Tile Maps
-----------
-
-A set of tools to project satellite passes onto a healpix map according to their ephemeris.
+RFE GAIN.
+---------
 
 """
 
@@ -76,8 +74,10 @@ def plt_fee_fit(
     fig = plt.figure(figsize=(3.6, 2.4))
     ax1 = fig.add_subplot(1, 1, 1)
 
+    times = (times - min(times))/60
+
     ax1.scatter(
-        times, mwa_fee_pass, color="#c70039", alpha=0.6, marker=".", label="FEE model"
+        times, mwa_fee_pass, color="#c70039", alpha=0.6, marker="p", s=10, label="FEE model"
     )
 
     ax1.scatter(
@@ -85,8 +85,9 @@ def plt_fee_fit(
         mwa_pass_fit_raw,
         color="#7da87b",
         alpha=0.9,
-        marker=".",
-        label="RF data raw",
+        marker="p",
+        s=10,
+        label="RF raw",
     )
     ax1.set_ylim(-50, 2)
 
@@ -95,21 +96,22 @@ def plt_fee_fit(
         mwa_pass_fit,
         color="#023e8a",
         alpha=0.9,
-        marker=".",
-        label="RF gain calibrated",
+        marker="p",
+        s=10,
+        label="RF cali",
     )
     ax1.set_ylim(-50, 2)
     ax1.set_ylabel("Power [dBm]")
-    ax1.set_xticklabels([])
+    ax1.set_xlabel("Time [minutes]")
 
-    leg = ax1.legend(frameon=True)
+    leg = ax1.legend(frameon=True, markerscale=2)
     leg.get_frame().set_facecolor("grey")
     leg.get_frame().set_alpha(0.2)
     for le in leg.legendHandles:
         le.set_alpha(1)
 
     plt.tight_layout()
-    plt.savefig(f"{out_dir}/{timestamp}_{sat}.png")
+    plt.savefig(f"{out_dir}/{timestamp}_{sat}.pdf", bbox_inches="tight")
     plt.close()
 
 
@@ -386,3 +388,4 @@ project_tile_healpix(
     chan_map_dir,
     out_dir,
 )
+print(f"RFE GAIN plots saved to {out_dir}")
