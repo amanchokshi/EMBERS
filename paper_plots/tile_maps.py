@@ -298,7 +298,6 @@ def plt_grid(tile_pair, map_dir, out_dir):
 
 if __name__ == "__main__":
 
-    #  plt_grid(tile_pairs[0], map_dir, out_dir)
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor() as executor:
         executor.map(plt_grid, tile_pairs, repeat(map_dir), repeat(out_dir))

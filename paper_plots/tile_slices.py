@@ -1,5 +1,6 @@
 import argparse
 import concurrent.futures
+from itertools import repeat
 from pathlib import Path
 
 import matplotlib
@@ -324,8 +325,11 @@ def beam_slices(map_file, fee_map, nside):
     return maps
 
 
-def plt_grid(tile_name, ref_name, fee_map, nside, map_dir, out_dir):
+def plt_grid(tile_pair, fee_map, nside, map_dir, out_dir):
     # This is an Awesome plot
+
+    tile_name = tile_pair[0]
+    ref_name = tile_pair[1]
 
     f_xx = f"{map_dir}/{tile_name}XX_{ref_name}XX_tile_maps.npz"
     f_yy = f"{map_dir}/{tile_name}YY_{ref_name}YY_tile_maps.npz"
@@ -577,4 +581,8 @@ def plt_grid(tile_name, ref_name, fee_map, nside, map_dir, out_dir):
     plt.close()
 
 
-plt_grid("S07", "rf0", fee_map, 32, map_dir, out_dir)
+if __name__ == "__main__":
+
+    # Parallization magic happens here
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        executor.map(plt_grid, tile_pairs, repeat(fee_map), repeat(nside), repeat(map_dir), repeat(out_dir))
