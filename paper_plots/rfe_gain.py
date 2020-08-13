@@ -77,7 +77,7 @@ def plt_fee_fit(
     times = (times - min(times))/60
 
     ax1.scatter(
-        times, mwa_fee_pass, color="#c70039", alpha=0.6, marker="p", s=10, label="FEE model"
+        times, mwa_fee_pass, color="#c70039", alpha=0.6, marker="p", s=10, label=r"B$_{fee}$"
     )
 
     ax1.scatter(
@@ -87,7 +87,7 @@ def plt_fee_fit(
         alpha=0.9,
         marker="p",
         s=10,
-        label="RF raw",
+        label=r"B$_{def}$",
     )
     ax1.set_ylim(-50, 2)
 
@@ -98,7 +98,7 @@ def plt_fee_fit(
         alpha=0.9,
         marker="p",
         s=10,
-        label="RF cali",
+        label=r"B$_{cali}$",
     )
     ax1.set_ylim(-50, 2)
     ax1.set_ylabel("Power [dBm]")
