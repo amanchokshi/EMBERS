@@ -39,7 +39,7 @@ setup(
     long_description=long_description,
     url="http://embers.readthedocs.io",
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
