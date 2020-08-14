@@ -45,5 +45,5 @@ Here are the essential project links:
 .. |Python| image:: https://img.shields.io/badge/Python-3.6%2B-3282b8?logo=python&logoColor=white
     :target: https://pypi.org/project/embers/
 
-.. |Black| image:: https://img.shields.io/badge/Code%20Style-Black-000000.svg?logo=powershell&logoColor=white
+.. |Black| image:: https://img.shields.io/badge/Code%20Style-Black-222222.svg?logo=powershell&logoColor=white
     :target: https://black.readthedocs.io/
