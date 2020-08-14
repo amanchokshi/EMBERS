@@ -30,7 +30,7 @@ Here are the essential project links:
     :target: https://embers.readthedocs.io
     :alt: Documentation Status
 
-.. |Travis| image:: https://img.shields.io/travis/com/amanchokshi/EMBERS/master.svg?color=green&logo=travis%20ci&logoColor=white&label=Travis%20CI
+.. |Travis| image:: https://img.shields.io/travis/amanchokshi/EMBERS.svg?color=green&logo=travis%20ci&logoColor=white&label=Travis%20CI
     :target: https://travis-ci.org/github/amanchokshi/EMBERS
     :alt: Travis CI - Build Status
 
