@@ -31,7 +31,7 @@ Here are the essential project links:
     :alt: Documentation Status
 
 .. |Travis| image:: https://img.shields.io/travis/com/amanchokshi/EMBERS/master.svg?color=green&logo=travis%20ci&logoColor=white&label=Travis%20CI
-    :target: https://travis-ci.com/amanchokshi/EMBERS
+    :target: https://travis-ci.org/github/amanchokshi/EMBERS
     :alt: Travis CI - Build Status
 
 .. |PyPI| image:: https://img.shields.io/pypi/v/EMBERS.svg?color=green&logo=python&logoColor=white&label=PyPI
