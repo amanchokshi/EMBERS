@@ -17,7 +17,7 @@ before_install:
   - pip install -r requirements_dev.txt
 
 install:
-  - pip install .
+  - python setup.py sdist bdist_wheel
 
 script:
   - py.test --cov-report=xml --cov=src/embers tests
