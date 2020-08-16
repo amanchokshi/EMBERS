@@ -20,7 +20,8 @@ install:
   - pip install .
 
 script:
-  - pytest
+  - pytest --cov=src
+
 after_success:
   - curl -s https://codecov.io/bash | bash
 
