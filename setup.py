@@ -5,11 +5,6 @@ from pathlib import Path
 
 from setuptools import find_packages, setup
 
-from embers import __author__, __version__
-
-version = __version__
-author = __author__
-
 # Get long description from README
 with open("README.rst", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -31,7 +26,7 @@ def data_files(data_dir, data_types):
 
 setup(
     name="embers",
-    version=version,
+    version="0.6.9",
     license="MIT",
     author="Aman Chokshi",
     author_email="achokshi@student.unimelb.edu.au",
@@ -77,8 +72,8 @@ setup(
         ],
     },
     keywords=("embers radio astronomy satellites beam measurement"),
-    packages=find_packages(),
-    package_dir={"embers": "embers"},
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
     include_package_data=True,
     package_data={"": data_files("embers/kindle/data", ["*.txt", "*.ffe"])},
     install_requires=requirements,

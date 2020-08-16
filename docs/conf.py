@@ -14,18 +14,15 @@ import os
 import sys
 
 
-sys.path.insert(0, os.path.abspath(".."))
+sys.path.insert(0, os.path.abspath("../src"))
 
 
 # -- Project information -----------------------------------------------------
 
-import embers
-
 project = "embers"
 copyright = "2020, Aman Chokshi"
 author = "Aman Chokshi"
-version = embers.__version__
-release = embers.__version__
+version = "0.6.9"
 
 # -- General configuration ---------------------------------------------------
 
