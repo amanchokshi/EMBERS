@@ -23,7 +23,7 @@ script:
   - py.test --cov-report=xml --cov=src/embers tests
 
 after_success:
-  - curl -s https://codecov.io/bash | bash
+  - codecov
 
 notifications:
   email:
