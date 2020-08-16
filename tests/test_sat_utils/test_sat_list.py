@@ -1,8 +1,4 @@
-# Package imports
-import pytest
-
-# Embers imports
-from embers.sat_utils.sat_list import norad_ids, download_tle
+from embers.sat_utils.sat_list import download_tle, norad_ids
 
 
 def test_norad_ids_length():

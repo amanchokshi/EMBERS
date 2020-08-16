@@ -1,23 +1,10 @@
-# Built-in imports
-import os
 import shutil
 from os import path
-
-# Package imports
-import pytest
 from pathlib import Path
-import matplotlib.pyplot as plt
 
-# Embers imports
-from embers.rf_tools.rf_data import (
-    read_data,
-    tile_names,
-    tile_pairs,
-    time_tree,
-    plt_waterfall,
-    single_waterfall,
-    batch_waterfall,
-)
+from embers.rf_tools.rf_data import (batch_waterfall, plt_waterfall, read_data,
+                                     single_waterfall, tile_names, tile_pairs,
+                                     time_tree)
 
 # Save the path to this directory
 dirpath = path.dirname(__file__)

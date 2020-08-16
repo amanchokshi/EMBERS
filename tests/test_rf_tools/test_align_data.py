@@ -1,14 +1,8 @@
-# Built-in imports
-import os
 import shutil
 from os import path
-
-# Package imports
-import pytest
 from pathlib import Path
 
-# Embers imports
-from embers.rf_tools.align_data import savgol_interp, save_aligned
+from embers.rf_tools.align_data import save_aligned, savgol_interp
 
 # Save the path to this directory
 dirpath = path.dirname(__file__)
