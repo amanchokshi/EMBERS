@@ -1,3 +1,5 @@
+.coverage
+/htmlcov/*
 /embers_out/*
 /outputs/*
 /venv/*
