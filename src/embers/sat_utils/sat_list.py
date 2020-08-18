@@ -120,7 +120,13 @@ def norad_ids():
 
 
 def download_tle(
-    start_date, stop_date, norad_ids, st_ident=None, st_pass=None, out_dir=None
+    start_date,
+    stop_date,
+    norad_ids,
+    st_ident=None,
+    st_pass=None,
+    out_dir=None,
+    mock=False,
 ):
     """Download TLEs from space-track.org.
 
@@ -151,6 +157,7 @@ def download_tle(
     :param st_ident: space-track.org login identity :class:`~str`
     :param st_pass: space-track.org login password :class:`~str`
     :param out_dir: output dir to save TLE files :class:`~str`
+    :param mock: For testing purposes. If True, will use a sample string to write test data to tle file
 
     :return:
         - tle file - saved to output directory
@@ -170,13 +177,16 @@ def download_tle(
             print(
                 f"downloading tle for {sat_name} satellite [{sat_id}] from space-tracks.org"
             )
-            data = st.tle(
-                iter_lines=True,
-                norad_cat_id=sat_id,
-                orderby="epoch asc",
-                epoch=f"{start_date}--{stop_date}",
-                format="tle",
-            )
+            if mock is True:
+                data = "Hello!"
+            else:
+                data = st.tle(
+                    iter_lines=True,
+                    norad_cat_id=sat_id,
+                    orderby="epoch asc",
+                    epoch=f"{start_date}--{stop_date}",
+                    format="tle",
+                )
 
             with open(f"{out_dir}/{sat_id}.txt", "w") as fp:
                 for line in data:
