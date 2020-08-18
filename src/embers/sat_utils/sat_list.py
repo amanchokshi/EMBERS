@@ -167,6 +167,9 @@ def download_tle(
         print("Starting TLE download")
         print("Grab a coffee, this may take a while")
         for sat_name, sat_id in norad_ids.items():
+            print(
+                f"downloading tle for {sat_name} satellite [{sat_id}] from space-tracks.org"
+            )
             data = st.tle(
                 iter_lines=True,
                 norad_cat_id=sat_id,
@@ -175,9 +178,6 @@ def download_tle(
                 format="tle",
             )
 
-            print(
-                f"downloading tle for {sat_name} satellite [{sat_id}] from space-tracks.org"
-            )
             with open(f"{out_dir}/{sat_id}.txt", "w") as fp:
                 for line in data:
                     fp.write(line + "\n")
