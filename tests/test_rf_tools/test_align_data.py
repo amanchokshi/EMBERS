@@ -78,3 +78,18 @@ def test_save_aligned_file():
     assert ali_file.is_file() is True
     if ali_file.is_file() is True:
         shutil.rmtree(f"{test_data}/2019-10-01")
+
+
+def test_save_aligned_err():
+    out_str = save_aligned(
+        ("rf0XX", "S06XX"),
+        "2019-10-01-14:00",
+        11,
+        15,
+        2,
+        "cubic",
+        1,
+        f"{test_data}/rf_data",
+        f"{test_data}",
+    )
+    assert type(out_str).__name__ == "FileNotFoundError"

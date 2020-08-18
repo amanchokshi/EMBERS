@@ -292,7 +292,5 @@ def save_aligned(
 
         return f"Saved aligned file to {save_dir}/{ref}_{tile}_{time_stamp}_aligned.npz"
 
-    except FileNotFoundError as e:
-        return e
     except Exception as e:
         return e
