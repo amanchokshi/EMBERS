@@ -167,8 +167,6 @@ def download_tle(
         print("Starting TLE download")
         print("Grab a coffee, this may take a while")
         for sat_name, sat_id in norad_ids.items():
-            # Sleep to limit downloads to 200 TLEs per hour
-            time.sleep(20)
             data = st.tle(
                 iter_lines=True,
                 norad_cat_id=sat_id,
@@ -183,6 +181,8 @@ def download_tle(
             with open(f"{out_dir}/{sat_id}.txt", "w") as fp:
                 for line in data:
                     fp.write(line + "\n")
+            # Sleep to limit downloads to 200 TLEs per hour
+            time.sleep(20)
     else:
         print(
             "Space-Track.org credentials not provided. Make an account before downloading TLEs"

@@ -23,3 +23,18 @@ def test_download_tle_fail(capfd):
         captured.out
         == "Space-Track.org credentials not provided. Make an account before downloading TLEs\n"
     )
+
+
+def test_download_tle_http_err(capfd):
+    n_ids = norad_ids()
+    try:
+        download_tle(
+            "2020-01-01",
+            "2020-02-01",
+            n_ids,
+            st_ident="test",
+            st_pass="user",
+            out_dir="./",
+        )
+    except Exception as e:
+        assert type(e).__name__ == "HTTPError"
