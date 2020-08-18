@@ -2,7 +2,8 @@ import shutil
 from os import path
 from pathlib import Path
 
-from embers.rf_tools.align_data import save_aligned, savgol_interp
+from embers.rf_tools.align_data import (plot_savgol_interp, save_aligned,
+                                        savgol_interp)
 
 # Save the path to this directory
 dirpath = path.dirname(__file__)
@@ -32,8 +33,6 @@ out_str = save_aligned(
     f"{test_data}",
 )
 
-print(out_str)
-
 
 def test_savgol_interp_ref_tile_shape():
     assert ref_ali.shape == tile_ali.shape
@@ -45,6 +44,24 @@ def test_savgol_interp_ref_time_shape():
 
 def test_savgol_interp_ref_time_arrow():
     assert time_array[0] <= time_array[-1]
+
+
+def test_plot_savgol_interp():
+    plot_savgol_interp(
+        ref=f"{test_data}/rf_data/rf0XX/2019-10-01/rf0XX_2019-10-01-14:30.txt",
+        tile=f"{test_data}/rf_data/S06XX/2019-10-01/S06XX_2019-10-01-14:30.txt",
+        savgol_window_1=11,
+        savgol_window_2=15,
+        polyorder=2,
+        interp_type="cubic",
+        interp_freq=1,
+        channel=14,
+        out_dir=".",
+    )
+    png = Path("savgol_interp_sample.png")
+    assert png.is_file() is True
+    if png.is_file() is True:
+        png.unlink()
 
 
 def test_save_aligned_str():
