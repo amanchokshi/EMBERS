@@ -1,7 +1,7 @@
 from os import path
 from pathlib import Path
 
-from embers.rf_tools.colormaps import jade, spectral, waves_2d
+from embers.rf_tools.colormaps import jade, plt_colormaps, spectral, waves_2d
 
 # Save the path to this directory
 dirpath = path.dirname(__file__)
@@ -34,3 +34,12 @@ def test_waves_2d():
     wave = waves_2d()
     assert wave.shape == (512, 512)
 
+
+def test_plt_colormaps():
+    spec, spec_r = spectral()
+    ja, ja_r = jade()
+    plt_colormaps(spec, spec_r, ja, ja_r, ".")
+    png = Path("colormaps.png")
+    assert png.is_file() is True
+    if png.is_file() is True:
+        png.unlink()
