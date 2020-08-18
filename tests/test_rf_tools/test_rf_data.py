@@ -137,3 +137,8 @@ def test_batch_waterfall():
     assert batch_waterfall_png.is_file() is True
     if batch_waterfall_png.is_file() is True:
         shutil.rmtree(f"{test_data}/waterfalls")
+
+
+def test_batch_waterfall_err():
+    e = batch_waterfall("S06XX", "2019-10-01-14:30", ".", ".")
+    assert type(e).__name__ == "FileNotFoundError"
