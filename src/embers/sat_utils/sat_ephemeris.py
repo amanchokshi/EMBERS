@@ -92,7 +92,7 @@ def epoch_ranges(epochs):
     return epoch_range
 
 
-def epoch_time_array(epoch_range, index_epoch=None, cadence=None):
+def epoch_time_array(epoch_range, index_epoch=None, cadence=None, skyfield_dir="./embers_out/sat_utils/skyfield-data"):
     """Create a Skyfield :class:`~skyfield.timelib.Timescale` object at which to evaluate satellite positions.
 
     Begins by downloading up-to-date time files, using the skyfield :class:`~skyfield.iokit.Loader` class,
@@ -122,7 +122,8 @@ def epoch_time_array(epoch_range, index_epoch=None, cadence=None):
 
     :param index_epoch: Index of :samp:`epoch_range` to be converted to time array :class:`~int`
     :param epoch_range: List of time intervals where an epoch is most accurate, from :func:`embers.sat_utils.sat_ephemeris.epoch_ranges`
-    :param cadence: time cadence at which to evaluate sat position, in seconds :class:`~int`
+    :param cadence: Time cadence at which to evaluate sat position, in seconds :class:`~int`
+    :param skyfield_dir: Path to directory where skyfield time, leap-second data files will be saved
 
     :returns:
         A :class:`~tuple` of (t_arr, index_epoch)
@@ -133,15 +134,8 @@ def epoch_time_array(epoch_range, index_epoch=None, cadence=None):
     """
 
     # Skyfield Timescale
-    load = Loader("./embers_out/sat_utils/skyfield-data")
-
-    try:
-        ts = load.timescale()
-    except Exception as e:
-        if e is not None:
-            print("Unable to download skyfield time files")
-            print("Falling back to built in time files")
-            ts = load.timescale(builtin=True)
+    load = Loader(skyfield_dir)
+    ts = load.timescale()
 
     # find time between epochs/ midpoints in seconds, using Astropy Time
     t1 = Time(epoch_range[index_epoch], scale="tt", format="jd").gps
