@@ -22,27 +22,43 @@ print(data)
 
 
 def test_load_tle_sats():
+    tle_file = f"{test_data}/TLE/25986.txt"
+    sats, epochs = load_tle(tle_file)
     sat_id = sats[0].model.satnum
     assert sat_id == 25986
 
 
 def test_load_tle_epochs():
+    tle_file = f"{test_data}/TLE/25986.txt"
+    sats, epochs = load_tle(tle_file)
     assert epochs[0] == 2458738.5
 
 
 def test_epoch_ranges_length():
+    tle_file = f"{test_data}/TLE/25986.txt"
+    sats, epochs = load_tle(tle_file)
+    epoch_range = epoch_ranges(epochs)
     assert len(epoch_range) == 311
 
 
 def test_epoch_time_array_index():
+    tle_file = f"{test_data}/TLE/25986.txt"
+    sats, epochs = load_tle(tle_file)
+    epoch_range = epoch_ranges(epochs)
+    t_arr, index_epoch = epoch_time_array(epoch_range, index_epoch=0, cadence=10)
     assert index_epoch == 0
 
 
 def test_epoch_time_array_arr():
+    tle_file = f"{test_data}/TLE/25986.txt"
+    sats, epochs = load_tle(tle_file)
+    epoch_range = epoch_ranges(epochs)
+    t_arr, index_epoch = epoch_time_array(epoch_range, index_epoch=0, cadence=10)
     assert type(t_arr).__name__ == "Time"
 
 
 def test_sat_pass_passes_1():
+    tle_file = f"{test_data}/TLE/25986.txt"
     sats, epochs = load_tle(tle_file)
     epoch_range = epoch_ranges(epochs)
     t_arr, index_epoch = epoch_time_array(epoch_range, index_epoch=0, cadence=10)
@@ -51,6 +67,7 @@ def test_sat_pass_passes_1():
 
 
 def test_sat_pass_passes_2():
+    tle_file = f"{test_data}/TLE/25986.txt"
     sats, epochs = load_tle(tle_file)
     epoch_range = epoch_ranges(epochs)
     t_arr, index_epoch = epoch_time_array(epoch_range, index_epoch=1, cadence=10)
@@ -59,6 +76,7 @@ def test_sat_pass_passes_2():
 
 
 def test_sat_pass_alt_az():
+    tle_file = f"{test_data}/TLE/25986.txt"
     sats, epochs = load_tle(tle_file)
     epoch_range = epoch_ranges(epochs)
     t_arr, index_epoch = epoch_time_array(epoch_range, index_epoch=0, cadence=10)
