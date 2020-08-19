@@ -1,4 +1,3 @@
-import socket
 from pathlib import Path
 
 from embers.sat_utils.sat_list import download_tle, norad_ids
@@ -28,8 +27,7 @@ def test_download_tle_fail(capfd):
     )
 
 
-def test_download_tle_http_err(socket_enabled):
-    assert socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+def test_download_tle_http_err():
     n_ids = norad_ids()
     try:
         download_tle(

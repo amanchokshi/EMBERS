@@ -3,7 +3,6 @@ codecov>=2.1.8
 coverage>=5.2.1
 pytest>=6.0.1
 pytest-cov
-pytest-socket>=0.3.5
 setuptools>=49.6.0
 Sphinx>=3.1.2
 twine>=3.2.0
