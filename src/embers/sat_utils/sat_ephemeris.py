@@ -208,16 +208,14 @@ def sat_pass(sats, t_arr, index_epoch, location=None):
         # Boundary times at which the sat either rises or sets
         (boundaries,) = np.diff(above_horizon).nonzero()
 
-        if above_horizon[0] is True:
+        if above_horizon[0]:
+            print("I")
             boundaries = [indicies[0]] + list(boundaries)
             boundaries = np.asarray(boundaries)
 
-        if above_horizon[-1] is True:
+        if above_horizon[-1]:
+            print("II")
             boundaries = list(boundaries) + [indicies[-1]]
-            boundaries = np.asarray(boundaries)
-
-        if above_horizon[-1] is True and above_horizon[0] is True:
-            boundaries = [indicies[0]] + list(boundaries) + [indicies[-1]]
             boundaries = np.asarray(boundaries)
 
         # Reshape into pairs rise & set indicies
