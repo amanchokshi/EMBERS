@@ -1,4 +1,6 @@
+import shutil
 from os import path
+from pathlib import Path
 
 from embers.sat_utils.sat_ephemeris import (ephem_data, epoch_ranges,
                                             epoch_time_array, load_tle,
@@ -14,11 +16,13 @@ test_data = path.abspath(path.join(dirpath, "../data"))
 tle_file = f"{test_data}/TLE/25986.txt"
 
 sats, epochs = load_tle(tle_file)
-print(epochs)
 epoch_range = epoch_ranges(epochs)
 t_arr, index_epoch = epoch_time_array(epoch_range, index_epoch=0, cadence=10)
 data = sat_pass(sats, t_arr, 0, location=(-26.703319, 116.670815, 337.83))
-print(data)
+passes, alt, az = data
+time_array, sat_alt, sat_az = ephem_data(t_arr, passes[0], alt, az)
+plt = sat_plot(25986, sat_alt, sat_az)
+print(plt.__name__)
 
 
 def test_load_tle_sats():
@@ -91,3 +95,75 @@ def test_sat_pass_alt_err():
     t_arr, index_epoch = epoch_time_array(epoch_range, index_epoch=0, cadence=10)
     data = sat_pass(sats, t_arr, 0, location=(-26.703319, 116.670815, 337.83))
     assert data is None
+
+
+def test_ephem_data_time():
+    tle_file = f"{test_data}/TLE/25986.txt"
+    sats, epochs = load_tle(tle_file)
+    epoch_range = epoch_ranges(epochs)
+    t_arr, index_epoch = epoch_time_array(epoch_range, index_epoch=0, cadence=10)
+    data = sat_pass(sats, t_arr, 0, location=(-26.703319, 116.670815, 337.83))
+    passes, alt, az = data
+    time_array, sat_alt, sat_az = ephem_data(t_arr, passes[0], alt, az)
+    assert time_array[0] == 1568250500.8159928
+
+
+def test_ephem_data_alt():
+    tle_file = f"{test_data}/TLE/25986.txt"
+    sats, epochs = load_tle(tle_file)
+    epoch_range = epoch_ranges(epochs)
+    t_arr, index_epoch = epoch_time_array(epoch_range, index_epoch=0, cadence=10)
+    data = sat_pass(sats, t_arr, 0, location=(-26.703319, 116.670815, 337.83))
+    passes, alt, az = data
+    time_array, sat_alt, sat_az = ephem_data(t_arr, passes[0], alt, az)
+    assert sat_alt[0] == -1.0159332456208832
+
+
+def test_ephem_data_az():
+    tle_file = f"{test_data}/TLE/25986.txt"
+    sats, epochs = load_tle(tle_file)
+    epoch_range = epoch_ranges(epochs)
+    t_arr, index_epoch = epoch_time_array(epoch_range, index_epoch=0, cadence=10)
+    data = sat_pass(sats, t_arr, 0, location=(-26.703319, 116.670815, 337.83))
+    passes, alt, az = data
+    time_array, sat_alt, sat_az = ephem_data(t_arr, passes[0], alt, az)
+    assert sat_az[0] == 5.637281344505886
+
+
+def test_sat_plot():
+    tle_file = f"{test_data}/TLE/25986.txt"
+    sats, epochs = load_tle(tle_file)
+    epoch_range = epoch_ranges(epochs)
+    t_arr, index_epoch = epoch_time_array(epoch_range, index_epoch=0, cadence=10)
+    data = sat_pass(sats, t_arr, 0, location=(-26.703319, 116.670815, 337.83))
+    passes, alt, az = data
+    time_array, sat_alt, sat_az = ephem_data(t_arr, passes[0], alt, az)
+    plt = sat_plot(25986, sat_alt, sat_az)
+    assert plt.__name__ == "matplotlib.pyplot"
+
+
+def test_save_ephem_empty_file():
+    error = save_ephem(
+        12345,
+        f"{test_data}/TLE",
+        10,
+        (-26.703319, 116.670815, 337.83),
+        0.5,
+        f"{test_data}/ephem_tmp",
+    )
+    assert error == f"File {test_data}/TLE/12345 is empty, skipping"
+
+
+def test_save_ephem_plot():
+    save_ephem(
+        44387,
+        f"{test_data}/TLE",
+        10,
+        (-26.703319, 116.670815, 337.83),
+        0.5,
+        f"{test_data}/ephem_tmp",
+    )
+    png = Path(f"{test_data}/ephem_tmp/ephem_plots/44387.png")
+    assert png.is_file() is True
+    if png.is_file() is True:
+        shutil.rmtree(f"{test_data}/ephem_tmp")

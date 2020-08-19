@@ -209,12 +209,10 @@ def sat_pass(sats, t_arr, index_epoch, location=None):
         (boundaries,) = np.diff(above_horizon).nonzero()
 
         if above_horizon[0]:
-            print("I")
             boundaries = [indicies[0]] + list(boundaries)
             boundaries = np.asarray(boundaries)
 
         if above_horizon[-1]:
-            print("II")
             boundaries = list(boundaries) + [indicies[-1]]
             boundaries = np.asarray(boundaries)
 
@@ -392,8 +390,6 @@ def save_ephem(sat, tle_dir, cadence, location, alpha, out_dir):
 
             return f"Saved sky coverage plot of satellite [{sat}] to {out_dir}ephem_plots \nSaved ephemeris of satellite [{sat}] to {out_dir}ephem_data"
 
-        except FileNotFoundError as e:
-            return e
         except Exception as e:
             return e
 
