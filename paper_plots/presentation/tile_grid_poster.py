@@ -108,23 +108,23 @@ def plt_grid(tile_name, ref_name):
     # This is an Awesome plot
 
     f_xx = f"{map_dir}/{tile_name}XX_{ref_name}XX_tile_maps.npz"
-    f_yy = f"{map_dir}/{tile_name}YY_{ref_name}YY_tile_maps.npz"
+    # f_yy = f"{map_dir}/{tile_name}YY_{ref_name}YY_tile_maps.npz"
 
     maps_xx = beam_maps(f_xx)
-    maps_yy = beam_maps(f_yy)
+    # maps_yy = beam_maps(f_yy)
 
     nice_fonts = {
         # Use LaTeX to write all text
         # "text.usetex": True,
         "font.family": "sans-serif",
         # Use 10pt font in plots, to match 10pt font in document
-        "axes.labelsize": 14,
-        "axes.titlesize": 14,
-        "font.size": 14,
+        "axes.labelsize": 18,
+        "axes.titlesize": 18,
+        "font.size": 18,
         # Make the legend/label fonts a little smaller
-        "legend.fontsize": 12,
-        "xtick.labelsize": 10,
-        "ytick.labelsize": 10,
+        "legend.fontsize": 16,
+        "xtick.labelsize": 14,
+        "ytick.labelsize": 14,
         "ytick.color": "w",
         "xtick.color": "w",
         "axes.labelcolor": "w",
@@ -136,9 +136,9 @@ def plt_grid(tile_name, ref_name):
     # plt.rcParams['grid.linewidth'] = 0.3
     # plt.style.use('seaborn')
 
-    fig1 = plt.figure(figsize=(6, 11))
+    fig1 = plt.figure(figsize=(8, 15))
 
-    ax1 = fig1.add_axes([0.01, 0.5, 0.95, 0.44])
+    ax1 = fig1.add_axes([0.09, 0.5, 1, 0.44])
     plot_healpix(
         data_map=maps_xx[0][0],
         fig=fig1,
@@ -150,10 +150,10 @@ def plt_grid(tile_name, ref_name):
     )
     ax1 = plt.gca()
     image = ax1.get_images()[0]
-    cax1 = fig1.add_axes([0.91, 0.5, 0.04, 0.44])
-    cbar1 = fig1.colorbar(image, cax=cax1, label="Power [dB]")
+    cax1 = fig1.add_axes([0.02, 0.5, 0.04, 0.44])
+    fig1.colorbar(image, cax=cax1, label="Power [dB]")
 
-    ax2 = fig1.add_axes([0.01, 0.0, 0.95, 0.44])
+    ax2 = fig1.add_axes([0.09, 0.0, 1, 0.44])
     plot_healpix(
         data_map=maps_xx[0][1],
         fig=fig1,
@@ -165,8 +165,8 @@ def plt_grid(tile_name, ref_name):
     )
     ax2 = plt.gca()
     image = ax2.get_images()[0]
-    cax2 = fig1.add_axes([0.91, 0.0, 0.04, 0.44])
-    cbar2 = fig1.colorbar(image, cax=cax2, label="Power [dB]")
+    cax2 = fig1.add_axes([0.02, 0.0, 0.04, 0.44])
+    fig1.colorbar(image, cax=cax2, label="Power [dB]")
 
     plt.savefig(
         f"{out_dir}/{tile_name}_{ref_name}_maps.png",
