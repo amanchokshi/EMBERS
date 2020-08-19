@@ -18,7 +18,7 @@ ratelimiter==1.2.0.post0
 Represent==1.6.0
 requests==2.23.0
 scipy==1.4.1
-seaborn==0.10.1
+seaborn>=0.10.1
 sgp4==2.12
 six==1.15.0
 skyfield==1.22

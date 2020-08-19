@@ -14,7 +14,7 @@ import numpy as np
 import skyfield as sf
 from astropy.time import Time
 from matplotlib import pyplot as plt
-from skyfield.api import Loader, Topos
+from skyfield.api import Topos, load
 
 mpl.use("Agg")
 
@@ -92,7 +92,9 @@ def epoch_ranges(epochs):
     return epoch_range
 
 
-def epoch_time_array(epoch_range, index_epoch=None, cadence=None, skyfield_dir="./embers_out/sat_utils/skyfield-data"):
+def epoch_time_array(
+    epoch_range, index_epoch=None, cadence=None,
+):
     """Create a Skyfield :class:`~skyfield.timelib.Timescale` object at which to evaluate satellite positions.
 
     Begins by downloading up-to-date time files, using the skyfield :class:`~skyfield.iokit.Loader` class,
@@ -113,17 +115,9 @@ def epoch_time_array(epoch_range, index_epoch=None, cadence=None, skyfield_dir="
 
         t_arr, index_epoch = epoch_time_array(epoch_range, index_epoch, cadence)
 
-    .. code-block:: console
-
-        >>> skyfield time files downloaded to ./embers_out/sat_utils/skyfield-data
-        >>> [#################################] 100% deltat.data
-        >>> [#################################] 100% deltat.preds
-        >>> [#################################] 100% Leap_Second.dat
-
     :param index_epoch: Index of :samp:`epoch_range` to be converted to time array :class:`~int`
     :param epoch_range: List of time intervals where an epoch is most accurate, from :func:`embers.sat_utils.sat_ephemeris.epoch_ranges`
     :param cadence: Time cadence at which to evaluate sat position, in seconds :class:`~int`
-    :param skyfield_dir: Path to directory where skyfield time, leap-second data files will be saved
 
     :returns:
         A :class:`~tuple` of (t_arr, index_epoch)
@@ -134,8 +128,7 @@ def epoch_time_array(epoch_range, index_epoch=None, cadence=None, skyfield_dir="
     """
 
     # Skyfield Timescale
-    load = Loader(skyfield_dir)
-    ts = load.timescale()
+    ts = load.timescale(builtin=True)
 
     # find time between epochs/ midpoints in seconds, using Astropy Time
     t1 = Time(epoch_range[index_epoch], scale="tt", format="jd").gps
