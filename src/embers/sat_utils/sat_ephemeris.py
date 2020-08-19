@@ -355,42 +355,38 @@ def save_ephem(sat, tle_dir, cadence, location, alpha, out_dir):
     if tle_path.stat().st_size != 0:
 
         # Check if tle file exists
-        try:
-            tle_path.is_file()
-            sats, epochs = load_tle(tle_path)
-            epoch_range = epoch_ranges(epochs)
+        tle_path.is_file()
+        sats, epochs = load_tle(tle_path)
+        epoch_range = epoch_ranges(epochs)
 
-            for i in range(len(epoch_range) - 1):
-                t_arr, index_epoch = epoch_time_array(
-                    epoch_range, index_epoch=i, cadence=cadence
+        for i in range(len(epoch_range) - 1):
+            t_arr, index_epoch = epoch_time_array(
+                epoch_range, index_epoch=i, cadence=cadence
+            )
+
+            try:
+                passes, alt, az = sat_pass(
+                    sats, t_arr, index_epoch, location=location
                 )
 
-                try:
-                    passes, alt, az = sat_pass(
-                        sats, t_arr, index_epoch, location=location
+                for pass_index in passes:
+                    time_array, sat_alt, sat_az = ephem_data(
+                        t_arr, pass_index, alt, az
                     )
 
-                    for pass_index in passes:
-                        time_array, sat_alt, sat_az = ephem_data(
-                            t_arr, pass_index, alt, az
-                        )
+                    sat_ephem["time_array"].append(time_array)
+                    sat_ephem["sat_alt"].append(sat_alt)
+                    sat_ephem["sat_az"].append(sat_az)
 
-                        sat_ephem["time_array"].append(time_array)
-                        sat_ephem["sat_alt"].append(sat_alt)
-                        sat_ephem["sat_az"].append(sat_az)
+            # Catch exceptions in sat_pass
+            # sometimes sat_object is empty and can't be iterated over
+            except Exception:
+                pass
 
-                # Catch exceptions in sat_pass
-                # sometimes sat_object is empty and can't be iterated over
-                except Exception:
-                    pass
+        plt = sat_plot(sat, sat_ephem["sat_alt"], sat_ephem["sat_az"], alpha=alpha)
+        plt.savefig(f"{out_dir}/ephem_plots/{sat}.png")
+        np.savez_compressed(f"{out_dir}/ephem_data/{sat}.npz", **sat_ephem)
 
-            plt = sat_plot(sat, sat_ephem["sat_alt"], sat_ephem["sat_az"], alpha=alpha)
-            plt.savefig(f"{out_dir}/ephem_plots/{sat}.png")
-            np.savez_compressed(f"{out_dir}/ephem_data/{sat}.npz", **sat_ephem)
-
-            return f"Saved sky coverage plot of satellite [{sat}] to {out_dir}ephem_plots \nSaved ephemeris of satellite [{sat}] to {out_dir}ephem_data"
-
-        except Exception as e:
-            return e
+        return f"Saved sky coverage plot of satellite [{sat}] to {out_dir}ephem_plots \nSaved ephemeris of satellite [{sat}] to {out_dir}ephem_data"
 
     return f"File {tle_dir}/{sat} is empty, skipping"

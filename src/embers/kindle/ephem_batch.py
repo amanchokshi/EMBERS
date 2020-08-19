@@ -20,7 +20,7 @@ _parser.add_argument(
     "--tle_dir",
     metavar="\b",
     default="./embers_out/sat_utils/TLE",
-    help="Path to directory with TLE files. Default=./embers_out/sat_utils/TL",
+    help="Path to directory with TLE files. Default=./embers_out/sat_utils/TLE",
 )
 _parser.add_argument(
     "--cadence",
