@@ -13,18 +13,6 @@ dirpath = path.dirname(__file__)
 test_data = path.abspath(path.join(dirpath, "../data"))
 
 
-tle_file = f"{test_data}/TLE/25986.txt"
-
-sats, epochs = load_tle(tle_file)
-epoch_range = epoch_ranges(epochs)
-t_arr, index_epoch = epoch_time_array(epoch_range, index_epoch=0, cadence=10)
-data = sat_pass(sats, t_arr, 0, location=(-26.703319, 116.670815, 337.83))
-passes, alt, az = data
-time_array, sat_alt, sat_az = ephem_data(t_arr, passes[0], alt, az)
-plt = sat_plot(25986, sat_alt, sat_az)
-print(plt.__name__)
-
-
 def test_load_tle_sats():
     tle_file = f"{test_data}/TLE/25986.txt"
     sats, epochs = load_tle(tle_file)
@@ -105,7 +93,7 @@ def test_ephem_data_time():
     data = sat_pass(sats, t_arr, 0, location=(-26.703319, 116.670815, 337.83))
     passes, alt, az = data
     time_array, sat_alt, sat_az = ephem_data(t_arr, passes[0], alt, az)
-    assert time_array[0] == 1568250500.8159928
+    assert time_array.shape[0] == 98
 
 
 def test_ephem_data_alt():
@@ -116,7 +104,7 @@ def test_ephem_data_alt():
     data = sat_pass(sats, t_arr, 0, location=(-26.703319, 116.670815, 337.83))
     passes, alt, az = data
     time_array, sat_alt, sat_az = ephem_data(t_arr, passes[0], alt, az)
-    assert sat_alt[0] == -1.0159332456208832
+    assert sat_alt.shape[0] == 98
 
 
 def test_ephem_data_az():
@@ -127,7 +115,7 @@ def test_ephem_data_az():
     data = sat_pass(sats, t_arr, 0, location=(-26.703319, 116.670815, 337.83))
     passes, alt, az = data
     time_array, sat_alt, sat_az = ephem_data(t_arr, passes[0], alt, az)
-    assert sat_az[0] == 5.637281344505886
+    assert sat_az.shape[0] == 98
 
 
 def test_sat_plot():
