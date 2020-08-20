@@ -623,21 +623,10 @@ def window_chan_map(
     channel_map = {}
     date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
 
-    if Path(
-        f"{ali_dir}/{date}/{timestamp}/rf0XX_S07XX_{timestamp}_aligned.npz"
-    ).is_file():
-        ali_file = f"{ali_dir}/{date}/{timestamp}/rf0XX_S07XX_{timestamp}_aligned.npz"
-    elif Path(
-        f"{ali_dir}/{date}/{timestamp}/rf0XX_S36XX_{timestamp}_aligned.npz"
-    ).is_file():
-        ali_file = f"{ali_dir}/{date}/{timestamp}/rf0XX_S36XX_{timestamp}_aligned.npz"
-    else:
-        ali_file = f"{ali_dir}/{date}/{timestamp}/rf0XX_S06XX_{timestamp}_aligned.npz"
-
-    chrono_file = f"{chrono_dir}/{timestamp}.json"
-
     try:
-        Path(ali_file).is_file()
+        ali_files = [i for i in Path(f"{ali_dir}/{date}/{timestamp}").glob("*.npz")]
+        ali_file = ali_files[0]
+        chrono_file = f"{chrono_dir}/{timestamp}.json"
 
         with open(chrono_file) as chrono:
             chrono_ephem = json.load(chrono)
