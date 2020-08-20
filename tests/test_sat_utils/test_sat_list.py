@@ -52,6 +52,7 @@ def test_download_tle_write():
         st_ident="test",
         st_pass="user",
         out_dir="./",
+        sleep=0,
         mock=True,
     )
     txt = Path("21576.txt")

@@ -126,6 +126,7 @@ def download_tle(
     st_ident=None,
     st_pass=None,
     out_dir=None,
+    sleep=20,
     mock=False,
 ):
     """Download TLEs from space-track.org.
@@ -157,6 +158,7 @@ def download_tle(
     :param st_ident: space-track.org login identity :class:`~str`
     :param st_pass: space-track.org login password :class:`~str`
     :param out_dir: output dir to save TLE files :class:`~str`
+    :param sleep: The amount of time to sleep between downloads. Default is 20 so as not to exceed the space-track download limit
     :param mock: For testing purposes. If True, will use a sample string to write test data to tle file
 
     :return:
@@ -192,7 +194,7 @@ def download_tle(
                 for line in data:
                     fp.write(line + "\n")
             # Sleep to limit downloads to 200 TLEs per hour
-            time.sleep(20)
+            time.sleep(sleep)
     else:
         print(
             "Space-Track.org credentials not provided. Make an account before downloading TLEs"
