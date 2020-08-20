@@ -310,6 +310,5 @@ def test_batch_window_map():
     chan_map = Path(
         f"{test_data}/sat_utils/good_chans_tmp/window_maps/2019-10-01-14:30.json"
     )
-
     assert chan_map.is_file()
     shutil.rmtree(f"{test_data}/sat_utils/good_chans_tmp")
