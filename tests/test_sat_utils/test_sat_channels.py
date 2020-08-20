@@ -18,20 +18,13 @@ test_data = path.abspath(path.join(dirpath, "../data"))
 ali_file = Path(
     f"{test_data}/rf_tools/align_data/2019-10-01/2019-10-01-14:30/rf0XX_S06XX_2019-10-01-14:30_aligned.npz"
 )
-chrono_file = Path(f"{test_data}/sat_utils/chrono_json/2019-10-01-14:30.json")
 
-good_chan = good_chans(
-    ali_file,
-    chrono_file,
-    25417,
-    1,
-    3,
-    15,
-    0.8,
-    "2019-10-01-14:30",
-    f"{test_data}/sat_utils/",
+ali_file_2 = Path(
+    f"{test_data}/rf_tools/align_data/2019-10-10/2019-10-10-02:30/rf0XX_S06XX_2019-10-10-02:30_aligned.npz"
 )
-print(good_chan)
+
+chrono_file = Path(f"{test_data}/sat_utils/chrono_json/2019-10-01-14:30.json")
+chrono_file_2 = Path(f"{test_data}/sat_utils/chrono_json/2019-10-10-02:30.json")
 
 
 def test_read_aligned_ref_tile_shape():
@@ -129,18 +122,18 @@ def test_plt_channel():
 
 def test_plt_sats():
     plt = plt_sats(
-        [25115, 25116],
+        ["25115", "25116"],
         f"{test_data}/sat_utils/chrono_json/2019-10-01-14:30.json",
         "2019-10-01-14:30",
     )
     assert type(plt).__name__ == "module"
 
 
-def test_good_chans_none():
+def test_good_chans_41():
     good_chan = good_chans(
         ali_file,
         chrono_file,
-        25115,
+        "41184",
         1,
         3,
         15,
@@ -148,14 +141,71 @@ def test_good_chans_none():
         "2019-10-01-14:30",
         f"{test_data}/sat_utils/good_chans_tmp",
     )
-    assert good_chan is None
+    assert good_chan == 41
 
 
-def test_good_chans_none_46():
+def test_good_chans_41_plts():
+    good_chans(
+        ali_file,
+        chrono_file,
+        "41184",
+        1,
+        3,
+        15,
+        0.8,
+        "2019-10-01-14:30",
+        f"{test_data}/sat_utils/good_chans_tmp",
+        plots=True,
+    )
+    waterfall = Path(
+        f"{test_data}/sat_utils/good_chans_tmp/window_plots/2019-10-01/2019-10-01-14:30/41184_waterfall_41.png"
+    )
+
+    assert waterfall.is_file()
+    shutil.rmtree(f"{test_data}/sat_utils/good_chans_tmp")
+
+
+def test_good_chans_45():
+    good_chan = good_chans(
+        ali_file_2,
+        chrono_file_2,
+        "41188",
+        1,
+        3,
+        15,
+        0.8,
+        "2019-10-10-02:30",
+        f"{test_data}/sat_utils/good_chans_tmp",
+    )
+    assert good_chan == 45
+
+
+def test_good_chans_45_plts():
+    good_chans(
+        ali_file_2,
+        chrono_file_2,
+        "41188",
+        1,
+        3,
+        15,
+        0.8,
+        "2019-10-10-02:30",
+        f"{test_data}/sat_utils/good_chans_tmp",
+        plots=True,
+    )
+    waterfall = Path(
+        f"{test_data}/sat_utils/good_chans_tmp/window_plots/2019-10-10/2019-10-10-02:30/41188_waterfall_45.png"
+    )
+
+    assert waterfall.is_file()
+    shutil.rmtree(f"{test_data}/sat_utils/good_chans_tmp")
+
+
+def test_good_chans_46():
     good_chan = good_chans(
         ali_file,
         chrono_file,
-        25417,
+        "25417",
         1,
         3,
         15,
@@ -164,3 +214,45 @@ def test_good_chans_none_46():
         f"{test_data}/sat_utils/good_chans_tmp",
     )
     assert good_chan == 46
+
+
+def test_good_chans_46_plts():
+    good_chans(
+        ali_file,
+        chrono_file,
+        "25417",
+        1,
+        3,
+        15,
+        0.8,
+        "2019-10-01-14:30",
+        f"{test_data}/sat_utils/good_chans_tmp",
+        plots=True,
+    )
+    waterfall = Path(
+        f"{test_data}/sat_utils/good_chans_tmp/window_plots/2019-10-01/2019-10-01-14:30/25417_waterfall_46.png"
+    )
+
+    assert waterfall.is_file()
+    shutil.rmtree(f"{test_data}/sat_utils/good_chans_tmp")
+
+
+def test_good_chans_plts_nochans():
+    good_chans(
+        ali_file,
+        chrono_file,
+        "44028",
+        1,
+        3,
+        15,
+        0.8,
+        "2019-10-01-14:30",
+        f"{test_data}/sat_utils/good_chans_tmp",
+        plots=True,
+    )
+    waterfall = Path(
+        f"{test_data}/sat_utils/good_chans_tmp/window_plots/2019-10-01/2019-10-01-14:30/44028_waterfall_window.png"
+    )
+
+    assert waterfall.is_file()
+    shutil.rmtree(f"{test_data}/sat_utils/good_chans_tmp")

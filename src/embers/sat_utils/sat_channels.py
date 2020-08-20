@@ -405,174 +405,160 @@ def good_chans(
         # indices of times, when sat rose and set
         intvl = time_filter(rise_ephem, set_ephem, np.asarray(times))
 
-        # If sat was in the sky in the 30 min obs
-        if intvl is not None:
+        # Window start, stop
+        w_start, w_stop = intvl
+        window_len = w_stop - w_start + 1
 
-            # Window start, stop
-            w_start, w_stop = intvl
-            window_len = w_stop - w_start + 1
+        # Slice the power/times arrays to the times of sat pass
+        power_c = power[w_start : w_stop + 1, :]
+        times_c = times[w_start : w_stop + 1]
 
-            # Slice the power/times arrays to the times of sat pass
-            power_c = power[w_start : w_stop + 1, :]
-            times_c = times[w_start : w_stop + 1]
+        # possible identified channels
+        possible_chans = []
+        # window occupancy of possible channels
+        occu_list = []
 
-            # possible identified channels
-            possible_chans = []
-            # window occupancy of possible channels
-            occu_list = []
+        # Loop over every channel
+        for s_chan in range(len(power_c[0])):
 
-            # Loop over every channel
-            for s_chan in range(len(power_c[0])):
+            channel_power = power_c[:, s_chan]
 
-                channel_power = power_c[:, s_chan]
+            # Percentage of signal occupancy above noise threshold
+            window_occupancy = (np.where(channel_power >= noise_threshold))[
+                0
+            ].size / window_len
 
-                # Percentage of signal occupancy above noise threshold
-                window_occupancy = (np.where(channel_power >= noise_threshold))[
-                    0
-                ].size / window_len
+            # Power threshold below which satellites aren't counted
+            # Only continue if there is signal for more than 80% of satellite pass
+            if (
+                max(channel_power) >= p_med + pow_thresh
+                and occ_thresh <= window_occupancy < 1.00
+            ):
 
-                # Power threshold below which satellites aren't counted
-                # Only continue if there is signal for more than 80% of satellite pass
-                if (
-                    max(channel_power) >= p_med + pow_thresh
-                    and occ_thresh <= window_occupancy < 1.00
-                ):
+                # If satellite window begins from the start of the observation
+                if times[0] == times_c[0]:
+                    # last 10 data points (10 seconds) are below the noise threshold
+                    if (
+                        all(p < noise_threshold for p in channel_power[-11:-1])
+                    ) is True:
+                        occu_list.append(window_occupancy)
+                        possible_chans.append(s_chan)
 
-                    # If satellite window begins from the start of the observation
-                    if times[0] == times_c[0]:
-                        # last 10 data points (10 seconds) are below the noise threshold
-                        if (
-                            all(p < noise_threshold for p in channel_power[-11:-1])
-                        ) is True:
-                            occu_list.append(window_occupancy)
-                            possible_chans.append(s_chan)
+                        if plots is True:
+                            plt = plt_channel(
+                                times_c,
+                                channel_power,
+                                p_med,
+                                s_chan,
+                                [
+                                    np.amin(channel_power) - 1,
+                                    np.amax(channel_power) + 1,
+                                ],
+                                noise_threshold,
+                                pow_thresh + p_med,
+                            )
+                            date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
+                            plt_dir = Path(f"{out_dir}/window_plots/{date}/{timestamp}")
+                            plt_dir.mkdir(parents=True, exist_ok=True)
+                            plt.savefig(
+                                f"{plt_dir}/{sat_id}_channel_{s_chan}_{window_occupancy:.2f}.png"
+                            )
+                            plt.close()
 
-                            if plots is True:
-                                plt = plt_channel(
-                                    times_c,
-                                    channel_power,
-                                    p_med,
-                                    s_chan,
-                                    [
-                                        np.amin(channel_power) - 1,
-                                        np.amax(channel_power) + 1,
-                                    ],
-                                    noise_threshold,
-                                    pow_thresh + p_med,
-                                )
-                                date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
-                                plt_dir = Path(
-                                    f"{out_dir}/window_plots/{date}/{timestamp}"
-                                )
-                                plt_dir.mkdir(parents=True, exist_ok=True)
-                                plt.savefig(
-                                    f"{plt_dir}/{sat_id}_channel_{s_chan}_{window_occupancy:.2f}.png"
-                                )
-                                plt.close()
+                # if the satellite window ends and the end of the observation
+                elif times[-1] == times_c[-1]:
 
-                    # if the satellite window ends and the end of the observation
-                    elif times[-1] == times_c[-1]:
+                    # first 10 data points (10 seconds) are below the noise threshold
+                    if (all(p < noise_threshold for p in channel_power[:10])) is True:
+                        occu_list.append(window_occupancy)
+                        possible_chans.append(s_chan)
 
-                        # first 10 data points (10 seconds) are below the noise threshold
-                        if (
-                            all(p < noise_threshold for p in channel_power[:10])
-                        ) is True:
-                            occu_list.append(window_occupancy)
-                            possible_chans.append(s_chan)
+                        if plots is True:
+                            plt = plt_channel(
+                                times_c,
+                                channel_power,
+                                p_med,
+                                s_chan,
+                                [
+                                    np.amin(channel_power) - 1,
+                                    np.amax(channel_power) + 1,
+                                ],
+                                noise_threshold,
+                                pow_thresh + p_med,
+                            )
+                            date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
+                            plt_dir = Path(f"{out_dir}/window_plots/{date}/{timestamp}")
+                            plt_dir.mkdir(parents=True, exist_ok=True)
+                            plt.savefig(
+                                f"{plt_dir}/{sat_id}_channel_{s_chan}_{window_occupancy:.2f}.png"
+                            )
+                            plt.close()
 
-                            if plots is True:
-                                plt = plt_channel(
-                                    times_c,
-                                    channel_power,
-                                    p_med,
-                                    s_chan,
-                                    [
-                                        np.amin(channel_power) - 1,
-                                        np.amax(channel_power) + 1,
-                                    ],
-                                    noise_threshold,
-                                    pow_thresh + p_med,
-                                )
-                                date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
-                                plt_dir = Path(
-                                    f"{out_dir}/window_plots/{date}/{timestamp}"
-                                )
-                                plt_dir.mkdir(parents=True, exist_ok=True)
-                                plt.savefig(
-                                    f"{plt_dir}/{sat_id}_channel_{s_chan}_{window_occupancy:.2f}.png"
-                                )
-                                plt.close()
+                # satellite window completely within the observation
+                else:
+                    # first and last 10 data points (10 seconds) are below the noise threshold
+                    if (
+                        all(p < noise_threshold for p in channel_power[:10])
+                        and all(p < noise_threshold for p in channel_power[-11:-1])
+                    ) is True:
+                        occu_list.append(window_occupancy)
+                        possible_chans.append(s_chan)
 
-                    # satellite window completely within the observation
-                    else:
-                        # first and last 10 data points (10 seconds) are below the noise threshold
-                        if (
-                            all(p < noise_threshold for p in channel_power[:10])
-                            and all(p < noise_threshold for p in channel_power[-11:-1])
-                        ) is True:
-                            occu_list.append(window_occupancy)
-                            possible_chans.append(s_chan)
+                        if plots is True:
+                            plt = plt_channel(
+                                times_c,
+                                channel_power,
+                                p_med,
+                                s_chan,
+                                [
+                                    np.amin(channel_power) - 1,
+                                    np.amax(channel_power) + 1,
+                                ],
+                                noise_threshold,
+                                pow_thresh + p_med,
+                            )
+                            date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
+                            plt_dir = Path(f"{out_dir}/window_plots/{date}/{timestamp}")
+                            plt_dir.mkdir(parents=True, exist_ok=True)
+                            plt.savefig(
+                                f"{plt_dir}/{sat_id}_channel_{s_chan}_{window_occupancy:.2f}.png"
+                            )
+                            plt.close()
 
-                            if plots is True:
-                                plt = plt_channel(
-                                    times_c,
-                                    channel_power,
-                                    p_med,
-                                    s_chan,
-                                    [
-                                        np.amin(channel_power) - 1,
-                                        np.amax(channel_power) + 1,
-                                    ],
-                                    noise_threshold,
-                                    pow_thresh + p_med,
-                                )
-                                date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
-                                plt_dir = Path(
-                                    f"{out_dir}/window_plots/{date}/{timestamp}"
-                                )
-                                plt_dir.mkdir(parents=True, exist_ok=True)
-                                plt.savefig(
-                                    f"{plt_dir}/{sat_id}_channel_{s_chan}_{window_occupancy:.2f}.png"
-                                )
-                                plt.close()
+        # If channels are identified in the 30 min obs
+        n_chans = len(possible_chans)
+        if n_chans > 0:
 
-            # If channels are identified in the 30 min obs
-            n_chans = len(possible_chans)
-            if n_chans > 0:
+            # The most probable channel is one with the highest occupation
+            good_chan = possible_chans[occu_list.index(max(occu_list))]
 
-                # The most probable channel is one with the highest occupation
-                good_chan = possible_chans[occu_list.index(max(occu_list))]
+            if plots is True:
+                plt = plt_window_chans(
+                    power,
+                    sat_id,
+                    w_start,
+                    w_stop,
+                    spec,
+                    chs=possible_chans,
+                    good_ch=good_chan,
+                )
+                date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
+                plt_dir = Path(f"{out_dir}/window_plots/{date}/{timestamp}")
+                plt_dir.mkdir(parents=True, exist_ok=True)
+                plt.savefig(f"{plt_dir}/{sat_id}_waterfall_{good_chan}.png")
+                plt.close()
 
-                if plots is True:
-                    plt = plt_window_chans(
-                        power,
-                        sat_id,
-                        w_start,
-                        w_stop,
-                        spec,
-                        chs=possible_chans,
-                        good_ch=good_chan,
-                    )
-                    date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
-                    plt_dir = Path(f"{out_dir}/window_plots/{date}/{timestamp}")
-                    plt_dir.mkdir(parents=True, exist_ok=True)
-                    plt.savefig(f"{plt_dir}/{sat_id}_waterfall_{good_chan}.png")
-                    plt.close()
-
-                return good_chan
-
-            else:
-                if plots == "True":
-                    plt = plt_window_chans(power, sat_id, w_start, w_stop, spec)
-                    date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
-                    plt_dir = Path(f"{out_dir}/window_plots/{date}/{timestamp}")
-                    plt_dir.mkdir(parents=True, exist_ok=True)
-                    plt.savefig(f"{plt_dir}/{sat_id}_waterfall_window.png")
-                    plt.close()
-
-                return None
+            return good_chan
 
         else:
+            if plots is True:
+                plt = plt_window_chans(power, sat_id, w_start, w_stop, spec)
+                date = re.search(r"\d{4}.\d{2}.\d{2}", timestamp)[0]
+                plt_dir = Path(f"{out_dir}/window_plots/{date}/{timestamp}")
+                plt_dir.mkdir(parents=True, exist_ok=True)
+                plt.savefig(f"{plt_dir}/{sat_id}_waterfall_window.png")
+                plt.close()
+
             return None
 
 
