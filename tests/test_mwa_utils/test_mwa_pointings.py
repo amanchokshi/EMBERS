@@ -14,10 +14,7 @@ dirpath = path.dirname(__file__)
 # Obtain path to directory with test_data
 test_data = path.abspath(path.join(dirpath, "../data"))
 
-obs_time, obs_gps, obs_gps_end = rf_obs_times(
-    "2019-10-01", "2019-10-01", "Australia/Perth"
-)
-print(obs_gps[0])
+obs_pointings("2019-10-01", "2019-10-01", "Australia/Perth", f"{test_data}/mwa_utils")
 
 
 def test_download_meta():
@@ -95,3 +92,13 @@ def test_rf_obs_times_interval():
         "2019-10-01", "2019-10-01", "Australia/Perth"
     )
     assert obs_gps_end[0] - obs_gps[0] == 1800
+
+
+def test_obs_pointings():
+    obs_pointings(
+        "2019-10-01", "2019-10-01", "Australia/Perth", f"{test_data}/mwa_utils"
+    )
+    obs_p = Path(f"{test_data}/mwa_utils/obs_pointings.json")
+    assert obs_p.is_file()
+    if obs_p.is_file():
+        obs_p.unlink()

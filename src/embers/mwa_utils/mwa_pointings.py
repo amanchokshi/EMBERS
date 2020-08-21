@@ -415,8 +415,7 @@ def obs_pointings(start, stop, time_zone, out_dir):
                     point_4.append(obs_time[i])
                 elif pointings[j] == 41:
                     point_41.append(obs_time[i])
-                else:
-                    pass
+                # should there be an else statement here?
 
     # Create dictionary to be saved to json
     obs_pointings = {}
