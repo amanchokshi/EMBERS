@@ -16,13 +16,13 @@ test_data = path.abspath(path.join(dirpath, "../data"))
 nside = 32
 npix = hp.nside2npix(nside)
 npix = hp.nside2npix(nside)
-beam_response_XX = np.zeros(npix)
-beam_response_YY = np.zeros(npix)
 above_horizon = range(int(npix / 2))
 beam_zas, beam_azs = hp.pix2ang(nside, above_horizon)
 
-response = local_beam([list(beam_zas)], [list(beam_azs)], freq=137e6, power=False)
-print(response[0][0][0])
+mwa_fee_model(f"{test_data}/mwa_utils/mwa_fee_tmp", nside, pointings=[0])
+
+response = local_beam([list(beam_zas)], [list(beam_azs)], freq=137e6, jones=True,)
+print(response[0][0][0][0].real)
 
 
 def test_local_beam():
@@ -37,9 +37,26 @@ def test_local_beam_interp():
 
 def test_local_beam_jones():
     response = local_beam([list(beam_zas)], [list(beam_azs)], freq=137e6, jones=True,)
-    assert response[0][0][0][0] == (0.7036201076403841 - 0.011709834111186911j)
+    assert response[0][0][0][0].real == 0.7036201076403841
 
 
 def test_local_beam_power_false():
     response = local_beam([list(beam_zas)], [list(beam_azs)], freq=137e6, power=False,)
     assert response[0][0][0] == 0.9955297721856747
+
+
+def test_mwa_fee_model():
+    mwa_fee_model(f"{test_data}/mwa_utils/mwa_fee_tmp", nside, pointings=[0])
+    npz = Path(f"{test_data}/mwa_utils/mwa_fee_tmp/mwa_fee/mwa_fee_beam.npz")
+
+    assert npz.is_file()
+    if npz.is_file():
+        shutil.rmtree(f"{test_data}/mwa_utils/mwa_fee_tmp")
+
+def test_mwa_fee_model_flagged():
+    mwa_fee_model(f"{test_data}/mwa_utils/mwa_fee_tmp", nside, pointings=[0], flags=[1])
+    npz = Path(f"{test_data}/mwa_utils/mwa_fee_tmp/mwa_fee/mwa_fee_beam.npz")
+
+    assert npz.is_file()
+    if npz.is_file():
+        shutil.rmtree(f"{test_data}/mwa_utils/mwa_fee_tmp")
