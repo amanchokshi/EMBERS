@@ -15,8 +15,6 @@ dirpath = path.dirname(__file__)
 test_data = path.abspath(path.join(dirpath, "../data"))
 
 start_gps, stop_gps, obs_length, pointings = clean_meta_json(f"{test_data}/mwa_utils/")
-print(start_gps)
-print(pointings)
 
 
 def test_download_meta():
@@ -41,3 +39,16 @@ def test_clean_meta_json_point():
         f"{test_data}/mwa_utils"
     )
     assert pointings[0] == 0
+
+
+def test_combine_pointings():
+    start_gps, stop_gps, obs_length, pointings = clean_meta_json(
+        f"{test_data}/mwa_utils"
+    )
+    combine_pointings(
+        start_gps, stop_gps, obs_length, pointings, f"{test_data}/mwa_utils/tmp"
+    )
+    mwa_meta = Path(f"{test_data}/mwa_utils//tmp/mwa_pointings.json")
+    assert mwa_meta.is_file()
+    if mwa_meta.is_file():
+        mwa_meta.unlink()
