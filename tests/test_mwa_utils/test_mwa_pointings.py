@@ -14,7 +14,10 @@ dirpath = path.dirname(__file__)
 # Obtain path to directory with test_data
 test_data = path.abspath(path.join(dirpath, "../data"))
 
-start_gps, stop_gps, obs_length, pointings = clean_meta_json(f"{test_data}/mwa_utils/")
+obs_time, obs_gps, obs_gps_end = rf_obs_times(
+    "2019-10-01", "2019-10-01", "Australia/Perth"
+)
+print(obs_gps[0])
 
 
 def test_download_meta():
@@ -52,3 +55,43 @@ def test_combine_pointings():
     assert mwa_meta.is_file()
     if mwa_meta.is_file():
         mwa_meta.unlink()
+
+
+def test_point_integration_point_0():
+    pointings, int_hours = point_integration(f"{test_data}/mwa_utils")
+    assert pointings[0] == 0
+
+
+def test_point_integration_int_0():
+    pointings, int_hours = point_integration(f"{test_data}/mwa_utils")
+    assert round(int_hours[0]) == 24
+
+
+def test_pointing_hist():
+    pointings, int_hours = point_integration(f"{test_data}/mwa_utils")
+    pointing_hist(pointings, int_hours, 4, f"{test_data}/mwa_utils/tmp")
+    hist = Path(f"{test_data}/mwa_utils/tmp/pointing_integration.png")
+    assert hist.is_file()
+    if hist.is_file():
+        shutil.rmtree(f"{test_data}/mwa_utils/tmp")
+
+
+def test_rf_obs_times_start():
+    obs_time, obs_gps, obs_gps_end = rf_obs_times(
+        "2019-10-01", "2019-10-01", "Australia/Perth"
+    )
+    assert obs_time[0] == "2019-10-01-00:00"
+
+
+def test_rf_obs_times_gps():
+    obs_time, obs_gps, obs_gps_end = rf_obs_times(
+        "2019-10-01", "2019-10-01", "Australia/Perth"
+    )
+    assert obs_gps[0] == 1253894418.0
+
+
+def test_rf_obs_times_interval():
+    obs_time, obs_gps, obs_gps_end = rf_obs_times(
+        "2019-10-01", "2019-10-01", "Australia/Perth"
+    )
+    assert obs_gps_end[0] - obs_gps[0] == 1800
