@@ -19,7 +19,7 @@ from matplotlib import pyplot as plt
 mpl.use("Agg")
 
 
-def download_metafits(num_files, out_dir):
+def download_metafits(num_files, wait, out_dir):
     """
     Download metafits files from `mwatelescope.org <http://mwatelescope.org/>`_
 
@@ -28,6 +28,7 @@ def download_metafits(num_files, out_dir):
     created the required obsid files.
 
     :param num_files: The number of metafits files to download. Usually, 20 is sufficent :class:`~int`
+    :param wait: Time to sleep between downloads so as not to overload servers. Default=29
     :param out_dir: Path to output directory where the metafits files will be saved :class:`~str`
 
     :returns:
@@ -37,7 +38,6 @@ def download_metafits(num_files, out_dir):
 
     print("Downloading MWA metafits files")
     print("Due to download limits, this will take a while")
-    wait = 29  # seconds between downloads
     t = wait * num_files
     m, _ = divmod(t, 60)
     h, m = divmod(m, 60)
@@ -182,16 +182,17 @@ def find_flags(out_dir):
     print(f"Dipole flagging plot saved to {out_dir}")
 
 
-def mwa_flagged_dipoles(num_files, out_dir):
+def mwa_flagged_dipoles(num_files, out_dir, wait=29):
     """Download metafits and find flagged dipoles
 
     :param num_files: The number of metafits files to download. Usually, 20 is sufficent :class:`~int`
     :param out_dir: Path to output directory where the metafits files will be saved :class:`~str`
+    :param wait: Time to sleep between downloads so as not to overload servers. Default=29
 
     :returns:
         Metafits files and dipole flagging plot saved to :samp:`out_dir`
 
     """
 
-    download_metafits(num_files, out_dir)
+    download_metafits(num_files, wait, out_dir)
     find_flags(out_dir)
