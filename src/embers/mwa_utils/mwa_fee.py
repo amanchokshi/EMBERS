@@ -65,8 +65,6 @@ def local_beam(
     # insead of first 2 dims.
     if len(j.shape) == 4:
         j = np.swapaxes(np.swapaxes(j, 0, 2), 1, 3)
-    elif len(j.shape) == 3:  # 1-D
-        j = np.swapaxes(np.swapaxes(j, 1, 2), 0, 1)
     else:  # single value
         pass
 
