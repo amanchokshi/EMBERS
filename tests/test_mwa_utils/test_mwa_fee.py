@@ -17,11 +17,6 @@ npix = hp.nside2npix(nside)
 above_horizon = range(int(npix / 2))
 beam_zas, beam_azs = hp.pix2ang(nside, above_horizon)
 
-mwa_fee_model(f"{test_data}/mwa_utils/mwa_fee_tmp", nside, pointings=[0])
-
-response = local_beam([list(beam_zas)], [list(beam_azs)], freq=137e6, jones=True,)
-print(response[0][0][0][0].real)
-
 
 def test_local_beam():
     response = local_beam([list(beam_zas)], [list(beam_azs)], freq=137e6, interp=False,)

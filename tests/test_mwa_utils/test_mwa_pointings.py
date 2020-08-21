@@ -14,6 +14,10 @@ dirpath = path.dirname(__file__)
 # Obtain path to directory with test_data
 test_data = path.abspath(path.join(dirpath, "../data"))
 
+start_gps, stop_gps, obs_length, pointings = clean_meta_json(f"{test_data}/mwa_utils/")
+print(start_gps)
+print(pointings)
+
 
 def test_download_meta():
     download_meta(
@@ -24,3 +28,16 @@ def test_download_meta():
     if meta.is_file():
         shutil.rmtree(f"{test_data}/mwa_utils/mwa_meta_tmp")
 
+
+def test_clean_meta_json_start():
+    start_gps, stop_gps, obs_length, pointings = clean_meta_json(
+        f"{test_data}/mwa_utils"
+    )
+    assert start_gps[0] == 1253960760
+
+
+def test_clean_meta_json_point():
+    start_gps, stop_gps, obs_length, pointings = clean_meta_json(
+        f"{test_data}/mwa_utils"
+    )
+    assert pointings[0] == 0
