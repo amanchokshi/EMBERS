@@ -21,13 +21,14 @@ from matplotlib import pyplot as plt
 mpl.use("Agg")
 
 
-def download_meta(start, stop, num_pages, out_dir):
+def download_meta(start, stop, num_pages, out_dir, wait=29):
     """Download MWA metadata from `mwatelescope.org <http://mwatelescope.org/>`_
 
     :param start: start date in :samp:`isot` format :samp:`YYYY-MM-DDTHH:MM:SS` :class:`~str`
     :param stop: stop date in :samp:`isot` format :samp:`YYYY-MM-DDTHH:MM:SS` :class:`~str`
     :param num_pages: Each page contains 200 observation. Visit `ws.mwatelescope.org/metadata/find <http://ws.mwatelescope.org/metadata/find>`_ to find the total number of pages :class:`~int`
     :param out_dir: Path to output directory where metadata will be saved :class:`~str`
+    :param wait: Time to sleep between downloads so as not to overload servers. Default=29
 
     :returns:
         MWA metadata json files saved to :samp:`out_dir`
@@ -36,7 +37,6 @@ def download_meta(start, stop, num_pages, out_dir):
 
     print("Downloading MWA metadata")
     print("Due to download limits, this will take a while")
-    wait = 29  # seconds between downloads
     t = wait * num_pages
     m, _ = divmod(t, 60)
     h, m = divmod(m, 60)

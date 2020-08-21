@@ -1,10 +1,8 @@
-import json
 import shutil
 from os import path
 from pathlib import Path
 
 import healpy as hp
-import numpy as np
 from embers.mwa_utils.mwa_fee import local_beam, mwa_fee_model
 
 # Save the path to this directory
@@ -52,6 +50,7 @@ def test_mwa_fee_model():
     assert npz.is_file()
     if npz.is_file():
         shutil.rmtree(f"{test_data}/mwa_utils/mwa_fee_tmp")
+
 
 def test_mwa_fee_model_flagged():
     mwa_fee_model(f"{test_data}/mwa_utils/mwa_fee_tmp", nside, pointings=[0], flags=[1])
