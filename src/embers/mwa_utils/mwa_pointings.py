@@ -21,7 +21,7 @@ from matplotlib import pyplot as plt
 mpl.use("Agg")
 
 
-def download_meta(start, stop, num_pages, out_dir, wait=29):
+def download_meta(start, stop, num_pages, out_dir, wait):
     """Download MWA metadata from `mwatelescope.org <http://mwatelescope.org/>`_
 
     :param start: start date in :samp:`isot` format :samp:`YYYY-MM-DDTHH:MM:SS` :class:`~str`
@@ -591,7 +591,9 @@ def plt_hist_array(tile_ints, out_dir):
     print(f"Tile integration plot saved to {out_dir}")
 
 
-def mwa_point_meta(start, stop, num_pages, time_thresh, time_zone, rf_dir, out_dir):
+def mwa_point_meta(
+    start, stop, num_pages, time_thresh, time_zone, rf_dir, out_dir, wait=29
+):
     """
     Download mwa pointing metadata, sort and parse it, and create diagonistic plots,
 
@@ -602,6 +604,7 @@ def mwa_point_meta(start, stop, num_pages, time_thresh, time_zone, rf_dir, out_d
     :param time_zone: A :class:`~str` representing :samp:`pytz` `timezones <https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568>`_.
     :param rf_dir: Path to root of directory with rf data files :class:`~str`
     :param out_dir: Path to output directory where metadata will be saved :class:`~str`
+    :param wait: Time to sleep between downloads so as not to overload servers. Default=29
 
     :returns:
         Data products saved to :samp:`out_dir`
@@ -609,7 +612,7 @@ def mwa_point_meta(start, stop, num_pages, time_thresh, time_zone, rf_dir, out_d
     """
 
     # Download pointing metadata
-    download_meta(start, stop, num_pages, out_dir)
+    download_meta(start, stop, num_pages, out_dir, wait)
     print("\nMetadata download complete")
 
     # Organize and combine metadata
