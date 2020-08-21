@@ -481,8 +481,8 @@ def tile_integration(out_dir, rf_dir):
                         p_4 += 0.5
                     elif time_stamps[day][ts] in point_41:
                         p_41 += 0.5
-                    else:
-                        pass
+                    # should there be an else statement here?
+
         tile_ints[f"{tile}"] = [p_0, p_2, p_4, p_41]
 
     return tile_ints

@@ -15,6 +15,8 @@ dirpath = path.dirname(__file__)
 test_data = path.abspath(path.join(dirpath, "../data"))
 
 obs_pointings("2019-10-01", "2019-10-01", "Australia/Perth", f"{test_data}/mwa_utils")
+tile_ints = tile_integration(f"{test_data}/mwa_utils", f"{test_data}/rf_tools/rf_data")
+print(tile_ints)
 
 
 def test_download_meta():
@@ -100,5 +102,18 @@ def test_obs_pointings():
     )
     obs_p = Path(f"{test_data}/mwa_utils/obs_pointings.json")
     assert obs_p.is_file()
+    if obs_p.is_file():
+        obs_p.unlink()
+
+
+def test_tile_integration():
+    obs_pointings(
+        "2019-10-01", "2019-10-01", "Australia/Perth", f"{test_data}/mwa_utils"
+    )
+    tile_ints = tile_integration(
+        f"{test_data}/mwa_utils", f"{test_data}/rf_tools/rf_data"
+    )
+    assert tile_ints["rf0XX"] == [0, 0, 0, 0]
+    obs_p = Path(f"{test_data}/mwa_utils/obs_pointings.json")
     if obs_p.is_file():
         obs_p.unlink()
