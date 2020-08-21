@@ -79,10 +79,7 @@ def local_beam(
         return (vis[:, :, 0, 0].real, vis[:, :, 1, 1].real)
 
 
-pointings = ["0", "2", "4", "41"]
-
-
-def mwa_fee_model(out_dir, nside, pointings=[], flags=[]):
+def mwa_fee_model(out_dir, nside, pointings=[0, 2, 4, 41], flags=[]):
     """
     Create MWA FEE beam models at multiple pointings, with dipoles flagged.
 
@@ -103,9 +100,6 @@ def mwa_fee_model(out_dir, nside, pointings=[], flags=[]):
 
     # Custom Jade colormap
     jd, _ = jade()
-
-    if len(pointings) == 0:
-        pointings = [0, 2, 4, 41]
 
     # Default amplitudes of 1 for all dipoles
     amps = np.ones((2, 16))
