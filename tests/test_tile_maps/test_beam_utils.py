@@ -1,4 +1,3 @@
-import shutil
 from os import path
 from pathlib import Path
 
@@ -6,7 +5,7 @@ import numpy as np
 from embers.tile_maps.beam_utils import (chisq_fit_gain, chisq_fit_test,
                                          healpix_cardinal_indices,
                                          healpix_cardinal_slices, map_slices,
-                                         nan_mad, plot_healpix, plt_slice,
+                                         nan_mad, plt_slice,
                                          poly_fit, rotate_map)
 from matplotlib import pyplot as plt
 
