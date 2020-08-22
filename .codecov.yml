@@ -11,10 +11,10 @@ coverage:
     status:
         project:
             default:
-                target: 50%
+                target: 90%
         patch:
             default:
-                target: 50%
+                target: 90%
         changes: yes
 
 comment:
