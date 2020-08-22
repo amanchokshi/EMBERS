@@ -48,7 +48,7 @@ def rotate_map(nside, angle=None, healpix_array=None, savetag=None, flip=False):
                 new_angles.append(np.pi - phi)
             else:
                 new_angles.append(3 * np.pi - phi)
-        new_hp_inds = hp.ang2pix(nside, ɸ, np.asarray(new_angles))
+        new_hp_inds = hp.ang2pix(nside, θ, np.asarray(new_angles))
 
     # Save the array in the new order
     if savetag:

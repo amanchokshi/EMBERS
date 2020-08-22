@@ -3,11 +3,11 @@ from os import path
 from pathlib import Path
 
 import numpy as np
-from embers.tile_maps.beam_utils import (chisq_fit_gain,
+from embers.tile_maps.beam_utils import (chisq_fit_gain, chisq_fit_test,
                                          healpix_cardinal_indices,
                                          healpix_cardinal_slices, map_slices,
                                          nan_mad, plot_healpix, plt_slice,
-                                         poly_fit, rotate_map, chisq_fit_test)
+                                         poly_fit, rotate_map)
 
 # Save the path to this directory
 dirpath = path.dirname(__file__)
@@ -22,5 +22,18 @@ nside = 32
 
 
 def test_rotate_map():
-    map_rot = rotate_map(nside, angle=0, healpix_array=map_med)
-    assert map_rot.all() == map_med.all()
+    map_rot = rotate_map(nside, angle=np.pi, healpix_array=map_med)
+    assert map_rot[1] == map_med[3]
+
+
+def test_rotate_map_flip():
+    map_rot = rotate_map(nside, angle=0, healpix_array=map_med, flip=True)
+    assert map_rot[1] == map_med[0]
+
+
+def test_rotate_map_save():
+    npz = Path(f"{test_data}/tile_maps/tmp_rot_map.npz")
+    rotate_map(nside, angle=0, healpix_array=map_med, flip=True, savetag=npz)
+    assert npz.is_file()
+    if npz.is_file():
+        npz.unlink()
