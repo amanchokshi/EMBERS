@@ -37,3 +37,13 @@ def test_rotate_map_save():
     assert npz.is_file()
     if npz.is_file():
         npz.unlink()
+
+
+def test_healpix_cardinal_indices():
+    NS, EW = healpix_cardinal_indices(nside)
+    assert [NS[0], EW[0]] == [5968, 6000]
+
+
+def test_healpix_cardinal_slices():
+    NS, EW = healpix_cardinal_slices(nside, map_med, 90)
+    assert [round(np.nanmedian(NS[0])), round(np.nanmedian(EW[0]))] == [-37.0, -24.0]
