@@ -208,7 +208,7 @@ def poly_fit(x, y, data, order):
 
     :param x: Data array
     :param y: Data array
-    :param y: Array of same size as x, y, but with nan's which can be used to mask x,y
+    :param data: Array of same size as x, y, but with nan's which can be used to mask x,y
     :param order: Degree of polynominal fit
 
     """

@@ -8,6 +8,7 @@ from embers.tile_maps.beam_utils import (chisq_fit_gain, chisq_fit_test,
                                          healpix_cardinal_slices, map_slices,
                                          nan_mad, plot_healpix, plt_slice,
                                          poly_fit, rotate_map)
+from matplotlib import pyplot as plt
 
 # Save the path to this directory
 dirpath = path.dirname(__file__)
@@ -47,3 +48,68 @@ def test_healpix_cardinal_indices():
 def test_healpix_cardinal_slices():
     NS, EW = healpix_cardinal_slices(nside, map_med, 90)
     assert [round(np.nanmedian(NS[0])), round(np.nanmedian(EW[0]))] == [-37.0, -24.0]
+
+
+def test_nan_mad():
+    map_mad = nan_mad(map_data["0"])
+    assert map_mad[0] == 0
+
+
+def test_map_slices():
+    NS, EW = map_slices(nside, map_data["0"], 90)
+    assert round(NS[2][0]) == -89
+
+
+def test_poly_fit():
+    fit = poly_fit(
+        np.linspace(1, 10, 10), np.linspace(3, 13, 10), np.linspace(1, 10, 10), 3
+    )
+    assert round(fit[0]) == 3
+
+
+def test_chisq_fit_test():
+    pval = chisq_fit_test(
+        data=np.linspace(1, 10, 10), model=np.linspace(3, 13, 10), offset=20
+    )
+    assert round(pval) == 1
+
+
+def test_chisq_fit_gain():
+    gain = chisq_fit_gain(np.linspace(1, 10, 10), np.linspace(3, 13, 10))
+    assert round(gain[0]) == -3
+
+
+def test_plt_slice():
+    NS, _ = map_slices(nside, map_data["0"], 90)
+    fig = plt.figure()
+    ax = plt_slice(
+        fig=fig,
+        sub=[1, 1, 1],
+        zen_angle=NS[2],
+        map_slice=NS[0],
+        model_slice=NS[0],
+        delta_pow=NS[0],
+        slice_label="test",
+        pow_fit=NS[0],
+        xlabel=True,
+        ylabel=True,
+    )
+    assert type(ax).__name__ == "AxesSubplot"
+
+
+def test_plt_slice_labels():
+    NS, _ = map_slices(nside, map_data["0"], 90)
+    fig = plt.figure()
+    ax = plt_slice(
+        fig=fig,
+        sub=[1, 1, 1],
+        zen_angle=NS[2],
+        map_slice=NS[0],
+        model_slice=NS[0],
+        delta_pow=NS[0],
+        slice_label="test",
+        pow_fit=NS[0],
+        xlabel=False,
+        ylabel=False,
+    )
+    assert type(ax).__name__ == "AxesSubplot"
