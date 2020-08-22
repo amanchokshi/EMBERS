@@ -19,8 +19,8 @@ from embers.rf_tools.rf_data import tile_names
 from embers.sat_utils.sat_channels import (noise_floor, read_aligned,
                                            time_filter, time_tree)
 from embers.sat_utils.sat_list import norad_ids
-from embers.tile_maps.beam_utils import (chisq_fit_gain, plot_healpix,
-                                         rotate_map, test_chisq_fit)
+from embers.tile_maps.beam_utils import (chisq_fit_gain, chisq_fit_test,
+                                         plot_healpix, rotate_map)
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.stats import binned_statistic
@@ -180,7 +180,7 @@ def plt_fee_fit(
 
     """
 
-    pval = test_chisq_fit(data=mwa_pass_fit, model=mwa_fee_pass)
+    pval = chisq_fit_test(data=mwa_pass_fit, model=mwa_fee_pass)
 
     plt.style.use("seaborn")
 
@@ -622,7 +622,7 @@ def rfe_calibration(
                                                 ):
 
                                                     # determine how well the data fits the model with chi-square
-                                                    pval = test_chisq_fit(
+                                                    pval = chisq_fit_test(
                                                         data=mwa_pass_fit[dis_filter][
                                                             null_filter
                                                         ],
@@ -1156,7 +1156,7 @@ def project_tile_healpix(
                                                 if mwa_pass_fit.size != 0:
 
                                                     # determine how well the data fits the model with chi-square
-                                                    pval = test_chisq_fit(
+                                                    pval = chisq_fit_test(
                                                         data=mwa_pass_fit,
                                                         model=mwa_fee_pass,
                                                     )

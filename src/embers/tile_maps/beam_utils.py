@@ -252,7 +252,7 @@ def chisq_fit_gain(data=None, model=None):
     return result.x
 
 
-def test_chisq_fit(data=None, model=None, offset=20):
+def chisq_fit_test(data=None, model=None, offset=20):
     """chi-squared test for goodness of fit betweet model and data
 
     :param data: A data array to be fit to a model. Typically this if rf map data being fit to the fee model

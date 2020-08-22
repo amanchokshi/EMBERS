@@ -101,7 +101,7 @@ Tile Maps
     beam_utils.map_slices
     beam_utils.poly_fit
     beam_utils.chisq_fit_gain
-    beam_utils.test_chisq_fit
+    beam_utils.chisq_fit_test
     beam_utils.plt_slice
     beam_utils.plot_healpix
     ref_fee_healpix.create_model

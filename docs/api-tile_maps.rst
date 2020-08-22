@@ -13,7 +13,7 @@
 .. autofunction:: embers.tile_maps.beam_utils.map_slices
 .. autofunction:: embers.tile_maps.beam_utils.poly_fit
 .. autofunction:: embers.tile_maps.beam_utils.chisq_fit_gain
-.. autofunction:: embers.tile_maps.beam_utils.test_chisq_fit
+.. autofunction:: embers.tile_maps.beam_utils.chisq_fit_test
 .. autofunction:: embers.tile_maps.beam_utils.plt_slice
 .. autofunction:: embers.tile_maps.beam_utils.plot_healpix
 
