@@ -24,16 +24,24 @@ date: XXX
 bibliography: paper.bib
 ---
 
-# Summary
+# Introduction
 
-*EMBERS* is a python package which provides a modular framework for radio telescopes and interferometric arrays such as the 
-MWA^[https://www.mwatelescope.org], HERA^[http://reionization.org] and the upcoming SKA^[https://www.skatelescope.org] to accurately measure the all sky 
-beam-patterns of their antennas using weather and communication satellites. Radio frequency (RF) satellite data acquired using experiments such as those 
-described in [Chokshi et al., in prep] and [@JLBLine_2018]. Trajectories of satellites are computed using Skyfield [@Skyfield_2019] which in turn are used to 
-project calibrated RF data onto sky maps. 
+*EMBERS* is a python package which provides a modular framework for radio telescopes and interferometric arrays such as the
+MWA^[https://www.mwatelescope.org], HERA^[http://reionization.org] and the upcoming SKA^[https://www.skatelescope.org] to accurately measure the all sky
+beam responses of their antennas using weather and communication satellites. Such measurements can reveal environmental factors which have perturbed the ideal,
+simulated beam shapes in complex ways. Results from (Chokshi et al., in prep) and [@JLBLine_2018] reveal the presence of gradients in ground screens,
+dead dipoles and the effect of small 'bushes' near the antennas. Telescopes such as the MWA, HERA & SKA, which may benefit from in-situ measurements, are involved
+in large scale surveys and the search for some of the earliest signals from our Universe. Such studies push the boundaries of precision calibration where undetermined
+beam errors could potentially introduce unknown flux and hinder detections. *EMBERS* could form the backbone of a passive parallel monitoring system for large
+radio telescopes, concurrently measuring beam shape without any disruption to regular observations, providing researchers with additional information to include in their
+instrumental models.
 
-
-The source code for the *EMBERS* project can be at https://github.com/amanchokshi/EMBERS, with detailed documentation at https://embers.readthedocs.io.
+Chokshi et al (in prep) represents the first complete large scale implementation of a satellite based beam measurement system. The large data volume produced over 6
+months of observations necessitated the creation of an automated pipeline for it's analysis. *EMBERS* contains modules to pre-process and temporally align raw
+RF data, download large batches of satellite ephemerides from Space-Track.org^[https://www.space-track.org/] and compute the trajectories of satellites using
+Skyfield [@Skyfield_2019]. *EMBERS* implements a unique cross-matching technique to automatically determine the transmission frequency of satellites based on
+their trajectories and RF power in the calibrated data. Satellite signals are further processed to remove modulations due to the satellites and non-linear 
+amplification effects, before being projected onto sky maps.
 
 
 # Acknowledgements
