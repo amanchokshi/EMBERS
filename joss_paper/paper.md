@@ -66,7 +66,7 @@ With each satellite pass, we measure a cross sectional slice of the AUT beam res
 # Acknowledgements
 
 I would like to thank Rachel Webster for introducing me to this project and supporting my work. Further, I would like to thank Nichole Barry for her valuable
-suggestion for improving and expanding *EMBERS*. Parts of this research was supported by the Australian Research Council Centre of Excellence for All Sky
+suggestion for improving and expanding *EMBERS*. Parts of this research were supported by the Australian Research Council Centre of Excellence for All Sky
 Astrophysics in 3 Dimensions (ASTRO 3D), through project number ****************.
 
 
