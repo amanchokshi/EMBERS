@@ -28,20 +28,37 @@ bibliography: paper.bib
 
 *EMBERS* is a python package which provides a modular framework for radio telescopes and interferometric arrays such as the
 MWA^[https://www.mwatelescope.org], HERA^[http://reionization.org] and the upcoming SKA^[https://www.skatelescope.org] to accurately measure the all sky
-beam responses of their antennas using weather and communication satellites. Such measurements can reveal environmental factors which have perturbed the ideal,
+beam responses of their antennas using weather and communication satellites. Such measurements can reveal environmental factors which have perturbed ideal,
 simulated beam shapes in complex ways. Results from (Chokshi et al., in prep) and [@JLBLine_2018] reveal the presence of gradients in ground screens,
-dead dipoles and the effect of small 'bushes' near the antennas. Telescopes such as the MWA, HERA & SKA, which may benefit from in-situ measurements, are involved
-in large scale surveys and the search for some of the earliest signals from our Universe. Such studies push the boundaries of precision calibration where undetermined
-beam errors could potentially introduce unknown flux and hinder detections. *EMBERS* could form the backbone of a passive parallel monitoring system for large
+dead dipoles and the effect of small 'bushes' near the antennas. Telescopes such as the MWA, HERA & SKA, which may benefit from in-situ beam measurements, are involved
+in large scale surveys and the search for some of the earliest signals in our Universe. Such studies push the boundaries of precision calibration where undetermined
+beam errors could potentially introduce spurious contaminants and hinder detections. *EMBERS* could form the backbone of a passive parallel monitoring system for large
 radio telescopes, concurrently measuring beam shape without any disruption to regular observations, providing researchers with additional information to include in their
 instrumental models.
 
-Chokshi et al (in prep) represents the first complete large scale implementation of a satellite based beam measurement system. The large data volume produced over 6
+Chokshi et al (in prep) represents the first complete large scale implementation of a satellite based beam measurement system. The large data volume recorded over 6
 months of observations necessitated the creation of an automated pipeline for it's analysis. *EMBERS* contains modules to pre-process and temporally align raw
-RF data, download large batches of satellite ephemerides from Space-Track.org^[https://www.space-track.org/] and compute the trajectories of satellites using
+RF data, download large batches of satellite ephemerides from Space-Track.org^[https://www.space-track.org] and compute the trajectories of satellites using
 Skyfield [@Skyfield_2019]. *EMBERS* implements a unique cross-matching technique to automatically determine the transmission frequency of satellites based on
 their trajectories and RF power in the calibrated data. Satellite signals are further processed to remove modulations due to the satellites and non-linear 
-amplification effects, before being projected onto sky maps.
+amplification effects, before being projected onto all-sky beam maps.
+
+# Theory
+
+At the heart of *EMBERS* is a simple concept. Satellite measurements are simultaneously made using multiple Antennas Under Test (AUTs) and reference antennas 
+(ref) which enables us to account for any modulation in transmitted satellite power. The power received by the AUT is the product of the beam response $B_{AUT}$ 
+and the flux transmitted by the satellite $F$. A reference antenna with a simple, well known beam response $B_{ref}$ is used to record the modulation of the 
+transmitted flux, and can subsequently be used to compute the beam shape of the AUT. The power received by the AUT and reference antenna are $P_{AUT} = B_{AUT}F$ and $P_{ref} = B_{ref}F$ respectively. 
+These expression can be rearranges to obtain the beam response of the AUT: 
+
+
+\begin{equation}
+    B_{AUT} = \frac{P_{AUT}}{P_{ref}}B_{ref}. 
+	\label{eq:beam_eq}
+\end{equation}
+
+
+With each satellite pass, we measure a cross sectional slice of the AUT beam response. With sufficient observation time, an all-sky beam response is built up.
 
 
 # Acknowledgements
