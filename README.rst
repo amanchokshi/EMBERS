@@ -24,6 +24,8 @@ Here are the essential project links:
 
 * `Embers package <https://pypi.org/project/embers/>`_ on the Python Package Index
 
+* `Contributing to EMBERS <https://github.com/amanchokshi/EMBERS/blob/master/contrib.rst>`_
+
 * `Issue tracker <https://github.com/amanchokshi/EMBERS/issues>`_ on GitHub
 
 .. |ReadTheDocs| image:: https://img.shields.io/readthedocs/embers/latest?color=green&logo=Read%20The%20Docs&logoColor=white
