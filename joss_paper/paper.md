@@ -26,10 +26,11 @@ bibliography: paper.bib
 
 # Summary
 
-*EMBERS* is a python package which package provides a modular framework for radio telescope and interferometric arrays such as the 
-MWA^[https://www.mwatelescope.org], HERA^[http://reionization.org/] and the upcoming SKA^[https://www.skatelescope.org/] to accurately measure the all sky 
-beam-patterns of their antennas using weather and communication satellites. The data acquired by experiments described in  [Chokshi et al., in prep] and 
-[@JLBLine_2018] can be used to generate all 
+*EMBERS* is a python package which provides a modular framework for radio telescopes and interferometric arrays such as the 
+MWA^[https://www.mwatelescope.org], HERA^[http://reionization.org] and the upcoming SKA^[https://www.skatelescope.org] to accurately measure the all sky 
+beam-patterns of their antennas using weather and communication satellites. Radio frequency (RF) satellite data acquired using experiments such as those 
+described in [Chokshi et al., in prep] and [@JLBLine_2018]. Trajectories of satellites are computed using Skyfield [@Skyfield_2019] which in turn are used to 
+project calibrated RF data onto sky maps. 
 
 
 The source code for the *EMBERS* project can be at https://github.com/amanchokshi/EMBERS, with detailed documentation at https://embers.readthedocs.io.
