@@ -26,8 +26,10 @@ bibliography: paper.bib
 
 # Summary
 
-*EMBERS* is a python package designed to enable polarised measurements of radio telescope antenna beam-patterns using satellites. This package provides a
-modular framework for the analysis of radio frequency satellite data recorded by experiments described in [Chokshi et al., in prep] and [@JLBLine_2018].
+*EMBERS* is a python package which package provides a modular framework for radio telescope and interferometric arrays such as the 
+MWA^[https://www.mwatelescope.org], HERA^[http://reionization.org/] and the upcoming SKA^[https://www.skatelescope.org/] to accurately measure the all sky 
+beam-patterns of their antennas using weather and communication satellites. The data acquired by experiments described in  [Chokshi et al., in prep] and 
+[@JLBLine_2018] can be used to generate all 
 
 
 The source code for the *EMBERS* project can be at https://github.com/amanchokshi/EMBERS, with detailed documentation at https://embers.readthedocs.io.
