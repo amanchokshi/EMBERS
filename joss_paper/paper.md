@@ -27,10 +27,10 @@ bibliography: paper.bib
 # Introduction
 
 *EMBERS* is a python package which provides a modular framework for radio telescopes and interferometric arrays such as the
-MWA^[https://www.mwatelescope.org], HERA^[http://reionization.org] and the upcoming SKA^[https://www.skatelescope.org] to accurately measure the all sky
+MWA^[https://www.mwatelescope.org], HERA^[http://reionization.org], and the upcoming SKA^[https://www.skatelescope.org] to accurately measure the all sky
 beam responses of their antennas using weather and communication satellites. Such measurements can reveal environmental factors which have perturbed ideal,
 simulated beam shapes in complex ways. Results from (Chokshi et al., in prep) and [@JLBLine_2018] reveal the presence of gradients in ground screens,
-dead dipoles and the effect of small 'bushes' near the antennas. Telescopes such as the MWA, HERA & SKA, which may benefit from in-situ beam measurements, are involved
+dead dipoles, and the effect of foliage near the antennas. Telescopes such as the MWA, HERA & SKA, which may benefit from in-situ beam measurements, are involved
 in large scale surveys and the search for some of the earliest signals in our Universe. Such studies push the boundaries of precision calibration where undetermined
 beam errors could potentially introduce spurious contaminants and hinder detections. *EMBERS* could form the backbone of a passive parallel monitoring system for large
 radio telescopes, concurrently measuring beam shape without any disruption to regular observations, providing astronomers with additional information to include in their
@@ -67,7 +67,7 @@ With each satellite pass, we measure a cross sectional slice of the AUT beam res
 
 I would like to thank Rachel Webster for introducing me to this project and supporting my work. Further, I would like to thank Nichole Barry for her valuable
 suggestion for improving and expanding *EMBERS*. Parts of this research were supported by the Australian Research Council Centre of Excellence for All Sky
-Astrophysics in 3 Dimensions (ASTRO 3D), through project number ****************.
+Astrophysics in 3 Dimensions (ASTRO 3D), through project number CE170100013.
 
 
 # References
