@@ -33,7 +33,7 @@ simulated beam shapes in complex ways. Results from (Chokshi et al., in prep) an
 dead dipoles and the effect of small 'bushes' near the antennas. Telescopes such as the MWA, HERA & SKA, which may benefit from in-situ beam measurements, are involved
 in large scale surveys and the search for some of the earliest signals in our Universe. Such studies push the boundaries of precision calibration where undetermined
 beam errors could potentially introduce spurious contaminants and hinder detections. *EMBERS* could form the backbone of a passive parallel monitoring system for large
-radio telescopes, concurrently measuring beam shape without any disruption to regular observations, providing researchers with additional information to include in their
+radio telescopes, concurrently measuring beam shape without any disruption to regular observations, providing astronomers with additional information to include in their
 instrumental models.
 
 Chokshi et al (in prep) represents the first complete large scale implementation of a satellite based beam measurement system. The large data volume recorded over 6
