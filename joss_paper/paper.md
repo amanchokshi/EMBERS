@@ -43,11 +43,7 @@ Chokshi et al (in prep) represents the first complete large scale implementation
 months of observations necessitated the creation of an automated pipeline for its analysis. *EMBERS* contains modules to pre-process and temporally align raw
 RF data, download large batches of satellite ephemerides from Space-Track.org^[https://www.space-track.org] and compute the trajectories of satellites using
 Skyfield [@Skyfield_2019]. *EMBERS* implements a unique cross-matching technique to automatically determine the transmission frequency of satellites based on
-<<<<<<< HEAD
 their trajectories and observed RF power. Satellite signals are further processed to remove modulations due to the satellites and non-linear 
-=======
-their trajectories and RF power in the calibrated data. Satellite signals are further processed to remove modulations due to the satellites and non-linear
->>>>>>> eb9e6302a22a1c8529aa73089d4a57ebb21eb5a4
 amplification effects, before being projected onto all-sky beam maps.
 
 # Theory
