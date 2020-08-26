@@ -7,11 +7,13 @@ tags:
   - Experiment
   - Telescope
 authors:
-  - name: Aman Chokshi
+  - name: A. Chokshi
     orcid: 0000-0003-1130-6390
     affiliation: "1, 3"
-  - name: JLB Line
+  - name: J. L. B. Line
     orcid: 0000-0002-9130-5920
+    affiliation: "2, 3"
+  - name: B. McKinley
     affiliation: "2, 3"
 affiliations:
  - name: School of Physics, University of Melbourne, Parkville, Victoria, 3010, Australia
