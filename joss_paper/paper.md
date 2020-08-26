@@ -40,23 +40,27 @@ radio telescopes, concurrently measuring beam shape without any disruption to re
 instrumental models.
 
 Chokshi et al (in prep) represents the first complete large scale implementation of a satellite based beam measurement system. The large data volume recorded over 6
-months of observations necessitated the creation of an automated pipeline for it's analysis. *EMBERS* contains modules to pre-process and temporally align raw
+months of observations necessitated the creation of an automated pipeline for its analysis. *EMBERS* contains modules to pre-process and temporally align raw
 RF data, download large batches of satellite ephemerides from Space-Track.org^[https://www.space-track.org] and compute the trajectories of satellites using
 Skyfield [@Skyfield_2019]. *EMBERS* implements a unique cross-matching technique to automatically determine the transmission frequency of satellites based on
+<<<<<<< HEAD
 their trajectories and observed RF power. Satellite signals are further processed to remove modulations due to the satellites and non-linear 
+=======
+their trajectories and RF power in the calibrated data. Satellite signals are further processed to remove modulations due to the satellites and non-linear
+>>>>>>> eb9e6302a22a1c8529aa73089d4a57ebb21eb5a4
 amplification effects, before being projected onto all-sky beam maps.
 
 # Theory
 
-At the heart of *EMBERS* is a simple concept. Satellite measurements are simultaneously made using multiple Antennas Under Test (AUTs) and reference antennas 
-(ref) which enables us to account for any modulation in transmitted satellite power. The power received by the AUT is the product of the beam response $B_{AUT}$ 
-and the flux transmitted by the satellite $F$. A reference antenna with a simple, well known beam response $B_{ref}$ is used to record the modulation of the 
-transmitted flux, and can subsequently be used to compute the beam shape of the AUT. The power received by the AUT and reference antenna are $P_{AUT} = B_{AUT}F$ and $P_{ref} = B_{ref}F$ respectively. 
-These expression can be rearranges to obtain the beam response of the AUT: 
+At the heart of *EMBERS* is a simple concept. Satellite measurements are simultaneously made using multiple Antennas Under Test (AUTs) and reference antennas
+(ref) which enables us to account for any modulation in transmitted satellite power. The power received by the AUT is the product of the beam response $B_{AUT}$
+and the flux transmitted by the satellite $F$. A reference antenna with a simple, well known beam response $B_{ref}$ is used to record the modulation of the
+transmitted flux, and can subsequently be used to compute the beam shape of the AUT. The power received by the AUT and reference antenna are $P_{AUT} = B_{AUT}F$ and $P_{ref} = B_{ref}F$ respectively.
+These expressions can be combined to obtain the beam response of the AUT:
 
 
 \begin{equation}
-    B_{AUT} = \frac{P_{AUT}}{P_{ref}}B_{ref}. 
+    B_{AUT} = \frac{P_{AUT}}{P_{ref}}B_{ref}.
 	\label{eq:beam_eq}
 \end{equation}
 
