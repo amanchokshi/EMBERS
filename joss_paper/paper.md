@@ -14,6 +14,7 @@ authors:
     orcid: 0000-0002-9130-5920
     affiliation: "2, 3"
   - name: B. McKinley
+  - orcid: 0000-0002-9006-1450
     affiliation: "2, 3"
 affiliations:
  - name: School of Physics, University of Melbourne, Parkville, Victoria, 3010, Australia
@@ -42,7 +43,7 @@ Chokshi et al (in prep) represents the first complete large scale implementation
 months of observations necessitated the creation of an automated pipeline for it's analysis. *EMBERS* contains modules to pre-process and temporally align raw
 RF data, download large batches of satellite ephemerides from Space-Track.org^[https://www.space-track.org] and compute the trajectories of satellites using
 Skyfield [@Skyfield_2019]. *EMBERS* implements a unique cross-matching technique to automatically determine the transmission frequency of satellites based on
-their trajectories and RF power in the calibrated data. Satellite signals are further processed to remove modulations due to the satellites and non-linear 
+their trajectories and observed RF power. Satellite signals are further processed to remove modulations due to the satellites and non-linear 
 amplification effects, before being projected onto all-sky beam maps.
 
 # Theory
