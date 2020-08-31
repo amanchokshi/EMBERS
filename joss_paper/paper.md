@@ -14,7 +14,7 @@ authors:
     orcid: 0000-0002-9130-5920
     affiliation: "2, 3"
   - name: B. McKinley
-  - orcid: 0000-0002-9006-1450
+    orcid: 0000-0002-9006-1450
     affiliation: "2, 3"
 affiliations:
  - name: School of Physics, University of Melbourne, Parkville, Victoria, 3010, Australia
