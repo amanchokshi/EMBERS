@@ -179,91 +179,6 @@ def plt_slice(
     return ax
 
 
-# def plt_slice(
-#    fig=None,
-#    sub=[1, 1, 1],
-#    zen_angle=None,
-#    map_slice=None,
-#    map_error=None,
-#    model_slice=None,
-#    delta_pow=None,
-#    pow_fit=None,
-#    slice_label=None,
-#    model_label=None,
-#    xlabel=False,
-#    ylabel=False,
-#    title=None,
-# ):
-#
-#    """Plot a slice of the beam, with measured
-#    data, errorbars, and fit the simulated beam
-#    to the data. Also plot the diff b/w data and
-#    the model"""
-#
-#    ax = fig.add_subplot(sub[0], sub[1], sub[2])
-#
-#    ax.errorbar(
-#        zen_angle,
-#        map_slice,
-#        yerr=map_error,
-#        fmt=".",
-#        color="#326765",
-#        ecolor="#7da87b",
-#        elinewidth=1.2,
-#        capsize=1.2,
-#        capthick=1.4,
-#        alpha=0.9,
-#        label=slice_label,
-#    )
-#
-#    ax.plot(
-#        zen_angle,
-#        model_slice,
-#        color="#c70039",
-#        linewidth=1.2,
-#        alpha=0.9,
-#        label=model_label,
-#    )
-#    ax.set_xticks([-75, -50, -25, 0, 25, 50, 75])
-#
-#    leg = ax.legend(loc="upper right", frameon=True, handlelength=1)
-#    leg.get_frame().set_facecolor("white")
-#    for l in leg.legendHandles:
-#        l.set_alpha(0.7)
-#
-#    # ax.set_ylim(bottom=-30)
-#    ax.set_xlim([-92, 92])
-#    ax.set_ylim([-50, 5])
-#    ax.set_title(title, loc="left")
-#
-#    divider = make_axes_locatable(ax)
-#    dax = divider.append_axes("bottom", size="30%", pad=0.05)
-#    dax.set_xticks([-75, -50, -25, 0, 25, 50, 75])
-#
-#    if xlabel is True:
-#        dax.set_xlabel("Zenith Angle [deg]")
-#    else:
-#        dax.set_xticklabels([])
-#        ax.set_xticklabels([])
-#
-#    if ylabel is True:
-#        ax.set_ylabel("Power [dB]")
-#        ax.set_yticks([-40, -30, -20, -10, 0])
-#        dax.set_ylabel(r"$\Delta$P [dB]")
-#    else:
-#        dax.set_yticklabels([])
-#        ax.set_yticklabels([])
-#
-#    # dax = fig.add_subplot(2,1,2)
-#    dax.scatter(zen_angle, delta_pow, marker=".", s=36, alpha=0.9, color="#27296d")
-#    dax.plot(zen_angle, pow_fit, linewidth=1.2, alpha=0.9, color="#ff8264")
-#    dax.set_ylim([-10, 10])
-#    # dax.set_xticklabels([])
-#    dax.set_xlim([-92, 92])
-#
-#    return ax
-
-
 def beam_slices(map_file, fee_map, nside):
     """Returns pairs of [NS,EW] slices of maps, for each pointing"""
 
@@ -585,4 +500,11 @@ if __name__ == "__main__":
 
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        executor.map(plt_grid, tile_pairs, repeat(fee_map), repeat(nside), repeat(map_dir), repeat(out_dir))
+        executor.map(
+            plt_grid,
+            tile_pairs,
+            repeat(fee_map),
+            repeat(nside),
+            repeat(map_dir),
+            repeat(out_dir),
+        )
