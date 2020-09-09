@@ -139,12 +139,15 @@ def beam_slices(map_file, fee_map, nside):
     return maps
 
 
-slice_0_NS = {}
-slice_0_EW = {}
-slice_2_NS = {}
-slice_2_EW = {}
-slice_4_NS = {}
-slice_4_EW = {}
+# Extract a bunch of data
+
+NS_0 = {}
+EW_0 = {}
+NS_2 = {}
+EW_2 = {}
+NS_4 = {}
+EW_4 = {}
+
 
 for tile in tile_pairs:
 
@@ -155,16 +158,17 @@ for tile in tile_pairs:
         f_tile = f"{map_dir}/{tile_name}{pol}_{ref_name}{pol}_tile_maps.npz"
         try:
             slices = beam_slices(f_tile, fee_map, nside)
-            slice_0_NS[f"{tile_name}{pol}"] = slices[0][0]
-            slice_0_EW[f"{tile_name}{pol}"] = slices[0][1]
-            slice_2_NS[f"{tile_name}{pol}"] = slices[1][0]
-            slice_2_EW[f"{tile_name}{pol}"] = slices[1][1]
-            slice_4_NS[f"{tile_name}{pol}"] = slices[2][0]
-            slice_4_EW[f"{tile_name}{pol}"] = slices[2][1]
+            NS_0[f"{tile_name}{pol}"] = slices[0][0]
+            EW_0[f"{tile_name}{pol}"] = slices[0][1]
+            NS_2[f"{tile_name}{pol}"] = slices[1][0]
+            EW_2[f"{tile_name}{pol}"] = slices[1][1]
+            NS_4[f"{tile_name}{pol}"] = slices[2][0]
+            EW_4[f"{tile_name}{pol}"] = slices[2][1]
         except Exception as e:
             print(e)
 
 
+# Plotting stuff
 plt.style.use("seaborn")
 
 nice_fonts = {
@@ -182,22 +186,22 @@ plt.rcParams.update(nice_fonts)
 
 ax = plt.figure(figsize=(6, 5))
 
-tile_keys = list(slice_0_NS.keys())
+tile_keys = list(NS_0.keys())
 colors = _spec(np.linspace(0.17, 0.9, len(tile_keys)))
 
 plt.plot(
-    slice_4_NS["S06YY"][0][2],
-    slice_4_NS["S06YY"][1][0],
+    NS_0["S06XX"][0][2],
+    NS_0["S06XX"][1][0],
     color="black",
     lw=2,
     label="FEE",
 )
 
 for i, k in enumerate(tile_keys):
-    if "YY" in k:
+    if "XX" in k:
         plt.scatter(
-            slice_4_NS[k][0][2],
-            slice_4_NS[k][2],
+            NS_0[k][0][2],
+            NS_0[k][2],
             label=k,
             s=21,
             color=colors[i],
@@ -214,4 +218,4 @@ plt.xlabel("Zenith Angle [deg]")
 plt.ylabel("Power [dB]")
 plt.ylim([-55, 3])
 plt.tight_layout()
-plt.savefig(f"{out_dir}/YY_4.pdf")
+plt.savefig(f"{out_dir}/XX_0.pdf")
