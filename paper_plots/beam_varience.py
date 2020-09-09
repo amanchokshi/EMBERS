@@ -25,7 +25,7 @@ parser.add_argument(
     "--out_dir",
     metavar="\b",
     default="../embers_out/paper_plots/tile_slices/",
-    help="Output directory. Default=../embers_out/paper_plots/tile_slices",
+    help="Output directory. Default=../embers_out/paper_plots",
 )
 parser.add_argument(
     "--map_dir",
@@ -190,11 +190,7 @@ tile_keys = list(NS_0.keys())
 colors = _spec(np.linspace(0.17, 0.9, len(tile_keys)))
 
 plt.plot(
-    NS_0["S06XX"][0][2],
-    NS_0["S06XX"][1][0],
-    color="black",
-    lw=2,
-    label="FEE",
+    NS_0["S06XX"][0][2], NS_0["S06XX"][1][0], color="black", lw=2, label="FEE",
 )
 
 for i, k in enumerate(tile_keys):
@@ -203,7 +199,7 @@ for i, k in enumerate(tile_keys):
             NS_0[k][0][2],
             NS_0[k][2],
             label=k,
-            s=21,
+            s=16,
             color=colors[i],
             alpha=0.88,
             edgecolor="black",
