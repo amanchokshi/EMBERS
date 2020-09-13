@@ -1,11 +1,10 @@
 """
-TILE MAPS.
+TILE TILT.
 ----------
 """
 
 import argparse
 import concurrent.futures
-import itertools
 from itertools import repeat
 from pathlib import Path
 
@@ -13,9 +12,8 @@ import healpy as hp
 import matplotlib
 import numpy as np
 from embers.rf_tools.colormaps import jade
-from embers.tile_maps.beam_utils import plot_healpix
 from matplotlib import pyplot as plt
-from scipy.interpolate import RectSphereBivariateSpline
+from scipy.linalg import lstsq
 
 matplotlib.use("Agg")
 jade, _ = jade()
@@ -119,27 +117,7 @@ def beam_maps(f):
     return maps
 
 
-# https://stackoverflow.com/questions/7997152/python-3d-polynomial-surface-fit-order-dependent
-
-
-def polyfit2d(x, y, z, order=1):
-    ncols = (order + 1) ** 2
-    G = np.zeros((x.size, ncols))
-    ij = itertools.product(range(order + 1), range(order + 1))
-    for k, (i, j) in enumerate(ij):
-        G[:, k] = x ** i * y ** j
-    m, _, _, _ = np.linalg.lstsq(G, z, rcond=None)
-    return m
-
-
-def polyval2d(x, y, m):
-    order = int(np.sqrt(len(m))) - 1
-    ij = itertools.product(range(order + 1), range(order + 1))
-    z = np.zeros_like(x)
-    for a, (i, j) in zip(m, ij):
-        z += a * x ** i * y ** j
-    return z
-
+# https://math.stackexchange.com/questions/99299/best-fitting-plane-given-a-set-of-points
 
 def tile_gradint(f, za):
 
@@ -156,21 +134,26 @@ def tile_gradint(f, za):
     x = x[:pb][~np.isnan(res)]
     y = y[:pb][~np.isnan(res)]
 
-    # Fit a 3rd order, 2d polynomial
-    m = polyfit2d(x, y, z)
+    tmp_A = []
+    tmp_b = []
+    for i in range(len(x)):
+        tmp_A.append([x[i], y[i], 1])
+        tmp_b.append(z[i])
+    b = np.matrix(tmp_b).T
+    A = np.matrix(tmp_A)
+    fit, residual, rnk, s = lstsq(A, b)
 
-    # Evaluate it on a grid...
-    nx, ny = 128, 128
-    xx, yy = np.meshgrid(
-        np.linspace(x.min(), x.max(), nx), np.linspace(y.min(), y.max(), ny)
-    )
-    zz = polyval2d(xx, yy, m)
-
+    X, Y = np.meshgrid(np.linspace(-1, 1, 128), np.linspace(-1, 1, 128))
+    Z = np.zeros(X.shape)
+    for r in range(X.shape[0]):
+        for c in range(X.shape[1]):
+            Z[r, c] = fit[0] * X[r, c] + fit[1] * Y[r, c] + fit[2]
     fig, ax = plt.subplots()
-    im = ax.imshow(zz, extent=(-1, 1, 1, -1))
+    im = ax.imshow(Z, extent=(-1, 1, 1, -1))
     sc = ax.scatter(x, y, c=z, s=7)
     fig.colorbar(im, ax=ax)
+
     plt.savefig("surf.png")
 
 
-tile_gradint(f"{map_dir}/S06XX_rf0XX_tile_maps.npz", 60)
+tile_gradint(f"{map_dir}/S06XX_rf0XX_tile_maps.npz", 90)
