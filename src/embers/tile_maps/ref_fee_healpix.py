@@ -134,14 +134,24 @@ def ref_healpix_save(nside, out_dir):
 
     ax3 = fig.add_subplot(2, 2, 1)
     plot_healpix(
-        data_map=healpix_XX, sub=(2, 2, 1), title="Reference XX", vmin=-20, vmax=0, cmap=cmap
+        data_map=healpix_XX,
+        sub=(2, 2, 1),
+        title="Reference XX",
+        vmin=-20,
+        vmax=0,
+        cmap=cmap,
     )
     ax3.axis("off")
     ax3.set_title("Healpix XX", x=0.4, y=-0.33)
 
     ax4 = fig.add_subplot(2, 2, 2)
     plot_healpix(
-        data_map=healpix_YY, sub=(2, 2, 2), title="Reference YY", vmin=-20, vmax=0, cmap=cmap
+        data_map=healpix_YY,
+        sub=(2, 2, 2),
+        title="Reference YY",
+        vmin=-20,
+        vmax=0,
+        cmap=cmap,
     )
     ax4.axis("off")
     ax4.set_title("Healpix YY", x=0.6, y=-0.33)
