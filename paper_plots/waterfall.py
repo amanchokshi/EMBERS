@@ -105,7 +105,7 @@ freqs = np.arange(start_freq, stop_freq, 0.25)
 x_ticks = np.arange(0, x_ax, (0.25 / 0.0125))  # .0125MHz/ch
 ax1.set_xticks(x_ticks)
 ax1.set_xticklabels(freqs)
-ax1.set_xlabel("Freqency [MHz]")
+ax1.set_xlabel("Frequency [MHz]")
 
 # Y-axis stuff
 y_ax = t_image.shape[0]
@@ -140,7 +140,7 @@ freqs = np.arange(start_freq, stop_freq, 0.25)
 x_ticks = np.arange(0, x_ax, (0.25 / 0.0125))  # .0125MHz/ch
 ax2.set_xticks(x_ticks)
 ax2.set_xticklabels(freqs)
-ax2.set_xlabel("Freqency [MHz]")
+ax2.set_xlabel("Frequency [MHz]")
 
 # Y-axis stuff
 ax2.set_yticklabels([])
