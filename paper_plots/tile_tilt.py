@@ -2976,4 +2976,61 @@ def tile_gradint(f):
         plt.close()
 
 
-tile_gradint(f"{map_dir}/S06YY_rf0YY_tile_maps.npz")
+def tile_gradint_combined(fXY):
+
+    pointings = ["0", "2", "4"]
+
+    xx = []
+    yy = []
+    zz = []
+
+    for b in fXY:
+
+        b_maps = beam_maps(b)
+        for i, p in enumerate(pointings):
+            res = b_maps[i][1]
+
+            pixels = np.arange(hp.nside2npix(nside))
+            x, y, _ = hp.pix2vec(nside, pixels)
+
+            # Select central section of beam residual to fit
+            #  pb = int(hp.ang2pix(32, np.radians(za), 0))
+            #  res = res[:pb]
+            #  z = res[~np.isnan(res)]
+            #  x = x[:pb][~np.isnan(res)]
+            #  y = y[:pb][~np.isnan(res)]
+
+            z = res[~np.isnan(res)]
+            x = x[~np.isnan(res)]
+            y = y[~np.isnan(res)]
+            xx.extend(x.tolist())
+            yy.extend(y.tolist())
+            zz.extend(z.tolist())
+
+    tmp_A = []
+    tmp_b = []
+    for i in range(len(xx)):
+        tmp_A.append([xx[i], yy[i], 1])
+        tmp_b.append(zz[i])
+    b = np.matrix(tmp_b).T
+    A = np.matrix(tmp_A)
+    fit, residual, rnk, s = lstsq(A, b)
+
+    X, Y = np.meshgrid(np.linspace(-1, 1, 128), np.linspace(-1, 1, 128))
+    Z = np.zeros(X.shape)
+    for r in range(X.shape[0]):
+        for c in range(X.shape[1]):
+            Z[r, c] = fit[0] * X[r, c] + fit[1] * Y[r, c] + fit[2]
+
+    fig, ax = plt.subplots(figsize=(9, 7))
+    im = ax.imshow(Z, extent=(-1, 1, 1, -1))
+    sc = ax.scatter(xx, yy, c=zz, s=7)
+    fig.colorbar(im, ax=ax)
+    ax.set_title("Tile Tilt for all pointings combined")
+
+    plt.tight_layout()
+    plt.savefig(f"surf_combined.png")
+    plt.close()
+
+#  tile_gradint(f"{map_dir}/S06YY_rf0YY_tile_maps.npz")
+tile_gradint_combined([f"{map_dir}/S06XX_rf0XX_tile_maps.npz", f"{map_dir}/S06YY_rf0YY_tile_maps.npz"])
