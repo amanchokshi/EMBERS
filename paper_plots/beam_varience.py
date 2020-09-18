@@ -190,14 +190,14 @@ tile_keys = list(NS_0.keys())
 colors = _spec(np.linspace(0.17, 0.9, len(tile_keys)))
 
 plt.plot(
-    NS_0["S06XX"][0][2], NS_0["S06XX"][1][0], color="black", lw=2, label="FEE",
+    NS_4["S06XX"][0][2], NS_4["S06XX"][1][0], color="black", lw=2, label="FEE",
 )
 
 for i, k in enumerate(tile_keys):
     if "XX" in k:
         plt.scatter(
-            NS_0[k][0][2],
-            NS_0[k][2],
+            NS_4[k][0][2],
+            NS_4[k][2],
             label=k,
             s=16,
             color=colors[i],
@@ -214,4 +214,4 @@ plt.xlabel("Zenith Angle [deg]")
 plt.ylabel("Power [dB]")
 plt.ylim([-55, 3])
 plt.tight_layout()
-plt.savefig(f"{out_dir}/XX_0.pdf")
+plt.savefig(f"{out_dir}/XX_NS_4.pdf")
