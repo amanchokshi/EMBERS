@@ -217,18 +217,27 @@ def slice_residual():
 
     plt.rcParams.update(nice_fonts)
 
+    colors = _spec(np.linspace(0.17, 0.9, 4))
+
     ax = plt.figure(figsize=(6, 5))
-    plt.scatter(za, NS_XX_res, label="NS_XX")
-    plt.scatter(za, NS_YY_res, label="NS_YY")
-    plt.scatter(za, EW_XX_res, label="EW_XX")
-    plt.scatter(za, EW_YY_res, label="EW_YY")
-    plt.plot(za, NS_XX_fit, label="NS_XX")
-    plt.plot(za, NS_YY_fit, label="NS_YY")
-    plt.plot(za, EW_XX_fit, label="EW_XX")
-    plt.plot(za, EW_YY_fit, label="EW_YY")
-    plt.legend()
+    plt.scatter(za, NS_XX_res, s=16, alpha=0.88, edgecolor="black", linewidth=0.2, color=colors[0])
+    plt.scatter(za, NS_YY_res, s=16, alpha=0.88, edgecolor="black", linewidth=0.2, color=colors[1])
+    plt.scatter(za, EW_XX_res, s=16, alpha=0.88, edgecolor="black", linewidth=0.2, color=colors[2])
+    plt.scatter(za, EW_YY_res, s=16, alpha=0.88, edgecolor="black", linewidth=0.2, color=colors[3])
+    plt.plot(za, NS_XX_fit, label="NS_XX", linewidth=3, color=colors[0])
+    plt.plot(za, NS_YY_fit, label="NS_YY", linewidth=3, color=colors[1])
+    plt.plot(za, EW_XX_fit, label="EW_XX", linewidth=3, color=colors[2])
+    plt.plot(za, EW_YY_fit, label="EW_YY", linewidth=3, color=colors[3])
+    
+    leg = plt.legend(loc="lower right", frameon=True, markerscale=4, handlelength=1)
+    leg.get_frame().set_facecolor("white")
+    for le in leg.legendHandles:
+        le.set_alpha(1)
+
+    plt.xlabel("Zenith Angle [degrees]")
+    plt.ylabel("Residual Power [dB]")
     plt.tight_layout()
-    plt.savefig("resi.png")
+    plt.savefig("resi.pdf")
 
 
 slice_residual()
