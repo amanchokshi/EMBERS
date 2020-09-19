@@ -1,0 +1,2 @@
+Hi. Just had a quick look in numpy. I plotted the fft of a 1D Gaussian and the amplitude of the imaginary part is proportional to the offset. e.g. plot(x,imag(fftshift(fft(fftshift(exp(-(x+0.1)**2/(2*1.5**2))))))). Not sure about 2D though. I will send you a link to Sanjay’s beam offset fitting paper 
+The Pointing Self-calibration Algorithm for Aperture Synthesis Radio Telescopes, Bhatnagar, S.; Cornwell, T. J., The Astronomical Journal, Volume 154, Issue 5, id.197
