@@ -1,6 +1,4 @@
 import argparse
-import concurrent.futures
-from itertools import repeat
 from pathlib import Path
 
 import matplotlib
@@ -10,7 +8,7 @@ from embers.tile_maps.beam_utils import (chisq_fit_gain,
                                          healpix_cardinal_slices, map_slices,
                                          poly_fit, rotate_map)
 from matplotlib import pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
+from matplotlib.lines import Line2D
 
 matplotlib.use("Agg")
 _spec, _ = spectral()
@@ -24,7 +22,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     "--out_dir",
     metavar="\b",
-    default="../embers_out/paper_plots/tile_slices/",
+    default="../embers_out/paper_plots",
     help="Output directory. Default=../embers_out/paper_plots",
 )
 parser.add_argument(
@@ -169,8 +167,7 @@ for tile in tile_pairs:
 
 
 def slice_scatter(
-    fig=None,
-    sub=(None, None, None),
+    ax,
     data=None,
     pol=None,
     xlabel=False,
@@ -186,8 +183,6 @@ def slice_scatter(
         - ax - :func:`~matplotlib.pyplot.subplot` object
 
     """
-
-    ax = fig.add_subplot(sub[0], sub[1], sub[2])
 
     tile_keys = list(data.keys())
     colors = _spec(np.linspace(0.17, 0.9, len(tile_keys)))
@@ -250,63 +245,106 @@ plt.rcParams.update(nice_fonts)
 
 fig1 = plt.figure(figsize=(7.6, 9.0))
 
-plt.subplot(4, 3, 1)
+ax1 = fig1.add_axes([0.00, 0.72, 0.32, 0.21])
 plt.title(r"($i$) NS slice of XX beam [zenith]", loc="left")
 slice_scatter(
-    fig=fig1, sub=[4, 3, 1], data=NS_0, pol="XX",
+    ax1, data=NS_0, pol="XX",
 )
 
-plt.subplot(4, 3, 2)
+ax2 = fig1.add_axes([0.33, 0.72, 0.32, 0.21])
 plt.title(r"($ii$) NS slice of XX beam [2]", loc="left")
-slice_scatter(fig=fig1, sub=[4, 3, 2], data=NS_2, pol="XX", ylabel=False)
+slice_scatter(ax2, data=NS_2, pol="XX", ylabel=False)
 
-plt.subplot(4, 3, 3)
+ax3 = fig1.add_axes([0.66, 0.72, 0.32, 0.21])
 plt.title(r"($iii$) NS slice of XX beam [4]", loc="left")
-slice_scatter(fig=fig1, sub=[4, 3, 3], data=NS_4, pol="XX", ylabel=False)
+slice_scatter(ax3, data=NS_4, pol="XX", ylabel=False)
 
-plt.subplot(4, 3, 4)
+ax4 = fig1.add_axes([0.00, 0.48, 0.32, 0.21])
 plt.title(r"($iv$) EW slice of XX beam [zenith]", loc="left")
 slice_scatter(
-    fig=fig1, sub=[4, 3, 4], data=EW_0, pol="XX",
+    ax4, data=EW_0, pol="XX",
 )
 
-plt.subplot(4, 3, 5)
+ax5 = fig1.add_axes([0.33, 0.48, 0.32, 0.21])
 plt.title(r"($v$) EW slice of XX beam [2]", loc="left")
-slice_scatter(fig=fig1, sub=[4, 3, 5], data=EW_2, pol="XX", ylabel=False)
+slice_scatter(ax5, data=EW_2, pol="XX", ylabel=False)
 
 
-plt.subplot(4, 3, 6)
+ax6 = fig1.add_axes([0.66, 0.48, 0.32, 0.21])
 plt.title(r"($vi$) EW slice of XX beam [4]", loc="left")
-slice_scatter(fig=fig1, sub=[4, 3, 6], data=EW_4, pol="XX", ylabel=False)
+slice_scatter(ax6, data=EW_4, pol="XX", ylabel=False)
 
-
-plt.subplot(4, 3, 7)
+ax7 = fig1.add_axes([0.00, 0.24, 0.32, 0.21])
 plt.title(r"($vii$) NS slice of YY beam [zenith]", loc="left")
 slice_scatter(
-    fig=fig1, sub=[4, 3, 7], data=NS_0, pol="YY",
+    ax7, data=NS_0, pol="YY",
 )
 
-plt.subplot(4, 3, 8)
+ax8 = fig1.add_axes([0.33, 0.24, 0.32, 0.21])
 plt.title(r"($viii$) NS slice of YY beam [2]", loc="left")
-slice_scatter(fig=fig1, sub=[4, 3, 8], data=NS_2, pol="YY", ylabel=False)
+slice_scatter(ax8, data=NS_2, pol="YY", ylabel=False)
 
-plt.subplot(4, 3, 9)
+ax9 = fig1.add_axes([0.66, 0.24, 0.32, 0.21])
 plt.title(r"($ix$) NS slice of YY beam [4]", loc="left")
-slice_scatter(fig=fig1, sub=[4, 3, 9], data=NS_4, pol="YY", ylabel=False)
+slice_scatter(ax9, data=NS_4, pol="YY", ylabel=False)
 
-plt.subplot(4, 3, 10)
+ax10 = fig1.add_axes([0.00, 0.0, 0.32, 0.21])
 plt.title(r"($x$) EW slice of YY beam [zenith]", loc="left")
-slice_scatter(fig=fig1, sub=[4, 3, 10], data=EW_0, pol="YY", xlabel=True)
+slice_scatter(ax10, data=EW_0, pol="YY", xlabel=True)
 
-plt.subplot(4, 3, 11)
+ax11 = fig1.add_axes([0.33, 0.0, 0.32, 0.21])
 plt.title(r"($xi$) EW slice of YY beam [2]", loc="left")
-slice_scatter(fig=fig1, sub=[4, 3, 11], data=EW_2, pol="YY", ylabel=False, xlabel=True)
+slice_scatter(ax11, data=EW_2, pol="YY", ylabel=False, xlabel=True)
 
-
-plt.subplot(4, 3, 12)
+ax12 = fig1.add_axes([0.66, 0.0, 0.32, 0.21])
 plt.title(r"($xii$) EW slice of YY beam [4]", loc="left")
-slice_scatter(fig=fig1, sub=[4, 3, 12], data=EW_4, pol="YY", ylabel=False, xlabel=True)
+ax = slice_scatter(
+    ax12, data=EW_4, pol="YY", ylabel=False, xlabel=True
+)
 
-plt.tight_layout()
+
+colors = _spec(np.linspace(0.17, 0.9, len(tiles)))
+fee_leg = Line2D([0], [0], color="black", linewidth=3, linestyle="--")
+ti = [
+    Line2D(
+        [0],
+        [0],
+        color=c,
+        linewidth=3,
+        linestyle="None",
+        marker="o",
+        markerfacecolor=c,
+        markersize=7,
+    )
+    for c in colors
+]
+
+lines = [fee_leg]
+for i in ti:
+    lines.append(i)
+
+
+labels = [
+    "FEE",
+    "S06",
+    "S07",
+    "S08",
+    "S09",
+    "S10",
+    "S12",
+    "S29",
+    "S30",
+    "S31",
+    "S32",
+    "S33",
+    "S34",
+    "S35",
+    "S36",
+]
+
+ax13 = fig1.add_axes([-0.005, 0.95, 0.99, 0.04])
+ax13.axis('off')
+ax13.legend(lines, labels, mode="expand", ncol=15, frameon=True, loc="upper left")
+
 plt.savefig(f"{out_dir}/beam_varience.pdf", bbox_inches="tight", dpi=420)
 plt.close()
