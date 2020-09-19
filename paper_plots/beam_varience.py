@@ -168,55 +168,6 @@ for tile in tile_pairs:
             print(e)
 
 
-# Plotting stuff
-plt.style.use("seaborn")
-
-nice_fonts = {
-    "font.family": "sans-serif",
-    "axes.labelsize": 8,
-    "axes.titlesize": 9,
-    "font.size": 8,
-    "legend.fontsize": 6,
-    "xtick.labelsize": 8,
-    "ytick.labelsize": 8,
-}
-
-
-plt.rcParams.update(nice_fonts)
-
-ax = plt.figure(figsize=(6, 5))
-
-tile_keys = list(NS_0.keys())
-colors = _spec(np.linspace(0.17, 0.9, len(tile_keys)))
-
-plt.plot(
-    NS_4["S06XX"][0][2], NS_4["S06XX"][1][0], color="black", lw=2, label="FEE",
-)
-
-for i, k in enumerate(tile_keys):
-    if "XX" in k:
-        plt.scatter(
-            NS_4[k][0][2],
-            NS_4[k][2],
-            label=k,
-            s=16,
-            color=colors[i],
-            alpha=0.88,
-            edgecolor="black",
-            linewidth=0.2,
-        )
-
-leg = ax.legend(frameon=True, handlelength=1)
-leg.get_frame().set_facecolor("white")
-for le in leg.legendHandles:
-    le.set_alpha(1)
-plt.xlabel("Zenith Angle [deg]")
-plt.ylabel("Power [dB]")
-plt.ylim([-55, 3])
-plt.tight_layout()
-plt.savefig(f"{out_dir}/XX_NS_4.pdf")
-
-
 def slice_scatter(
     fig=None,
     sub=(None, None, None),
@@ -224,8 +175,8 @@ def slice_scatter(
     pol=None,
     xlabel=False,
     ylabel=True,
-    xlim=[-82, 82],
-    ylim=[-55, 3],
+    xlim=[-94, 94],
+    ylim=[-55, 5],
     title=None,
 ):
 
@@ -243,19 +194,19 @@ def slice_scatter(
 
     plt.plot(
         data[f"S06{pol}"][0][2],
-        data["S06{pol}"][1][0],
+        data[f"S06{pol}"][1][0],
         color="black",
-        lw=3,
+        lw=1.4,
         alpha=0.9,
     )
 
     for i, k in enumerate(tile_keys):
         if pol in k:
             plt.scatter(
-                NS_4[k][0][2],
-                NS_4[k][2],
+                data[k][0][2],
+                data[k][2],
                 label=k,
-                s=16,
+                s=14,
                 color=colors[i],
                 alpha=0.88,
                 edgecolor="black",
@@ -268,7 +219,6 @@ def slice_scatter(
 
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
-    ax.set_xticklabels([])
 
     if ylabel is True:
         ax.set_ylabel("Power [dB]")
@@ -280,3 +230,83 @@ def slice_scatter(
         ax.set_xlabel("Zenith Angle [deg]")
 
     return ax
+
+
+# Plotting stuff
+plt.style.use("seaborn")
+
+nice_fonts = {
+    "font.family": "sans-serif",
+    "axes.labelsize": 8,
+    "axes.titlesize": 9,
+    "font.size": 8,
+    "legend.fontsize": 6,
+    "xtick.labelsize": 8,
+    "ytick.labelsize": 8,
+}
+
+
+plt.rcParams.update(nice_fonts)
+
+fig1 = plt.figure(figsize=(7.6, 9.0))
+
+plt.subplot(4, 3, 1)
+plt.title(r"($i$) NS slice of XX beam [zenith]", loc="left")
+slice_scatter(
+    fig=fig1, sub=[4, 3, 1], data=NS_0, pol="XX",
+)
+
+plt.subplot(4, 3, 2)
+plt.title(r"($ii$) NS slice of XX beam [2]", loc="left")
+slice_scatter(fig=fig1, sub=[4, 3, 2], data=NS_2, pol="XX", ylabel=False)
+
+plt.subplot(4, 3, 3)
+plt.title(r"($iii$) NS slice of XX beam [4]", loc="left")
+slice_scatter(fig=fig1, sub=[4, 3, 3], data=NS_4, pol="XX", ylabel=False)
+
+plt.subplot(4, 3, 4)
+plt.title(r"($iv$) EW slice of XX beam [zenith]", loc="left")
+slice_scatter(
+    fig=fig1, sub=[4, 3, 4], data=EW_0, pol="XX",
+)
+
+plt.subplot(4, 3, 5)
+plt.title(r"($v$) EW slice of XX beam [2]", loc="left")
+slice_scatter(fig=fig1, sub=[4, 3, 5], data=EW_2, pol="XX", ylabel=False)
+
+
+plt.subplot(4, 3, 6)
+plt.title(r"($vi$) EW slice of XX beam [4]", loc="left")
+slice_scatter(fig=fig1, sub=[4, 3, 6], data=EW_4, pol="XX", ylabel=False)
+
+
+plt.subplot(4, 3, 7)
+plt.title(r"($vii$) NS slice of YY beam [zenith]", loc="left")
+slice_scatter(
+    fig=fig1, sub=[4, 3, 7], data=NS_0, pol="YY",
+)
+
+plt.subplot(4, 3, 8)
+plt.title(r"($viii$) NS slice of YY beam [2]", loc="left")
+slice_scatter(fig=fig1, sub=[4, 3, 8], data=NS_2, pol="YY", ylabel=False)
+
+plt.subplot(4, 3, 9)
+plt.title(r"($ix$) NS slice of YY beam [4]", loc="left")
+slice_scatter(fig=fig1, sub=[4, 3, 9], data=NS_4, pol="YY", ylabel=False)
+
+plt.subplot(4, 3, 10)
+plt.title(r"($x$) EW slice of YY beam [zenith]", loc="left")
+slice_scatter(fig=fig1, sub=[4, 3, 10], data=EW_0, pol="YY", xlabel=True)
+
+plt.subplot(4, 3, 11)
+plt.title(r"($xi$) EW slice of YY beam [2]", loc="left")
+slice_scatter(fig=fig1, sub=[4, 3, 11], data=EW_2, pol="YY", ylabel=False, xlabel=True)
+
+
+plt.subplot(4, 3, 12)
+plt.title(r"($xii$) EW slice of YY beam [4]", loc="left")
+slice_scatter(fig=fig1, sub=[4, 3, 12], data=EW_4, pol="YY", ylabel=False, xlabel=True)
+
+plt.tight_layout()
+plt.savefig(f"{out_dir}/beam_varience.pdf", bbox_inches="tight", dpi=420)
+plt.close()
