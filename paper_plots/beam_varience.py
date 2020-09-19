@@ -215,3 +215,68 @@ plt.ylabel("Power [dB]")
 plt.ylim([-55, 3])
 plt.tight_layout()
 plt.savefig(f"{out_dir}/XX_NS_4.pdf")
+
+
+def slice_scatter(
+    fig=None,
+    sub=(None, None, None),
+    data=None,
+    pol=None,
+    xlabel=False,
+    ylabel=True,
+    xlim=[-82, 82],
+    ylim=[-55, 3],
+    title=None,
+):
+
+    """Plot the scatter of various beam slices.
+
+    :returns:
+        - ax - :func:`~matplotlib.pyplot.subplot` object
+
+    """
+
+    ax = fig.add_subplot(sub[0], sub[1], sub[2])
+
+    tile_keys = list(data.keys())
+    colors = _spec(np.linspace(0.17, 0.9, len(tile_keys)))
+
+    plt.plot(
+        data[f"S06{pol}"][0][2],
+        data["S06{pol}"][1][0],
+        color="black",
+        lw=3,
+        alpha=0.9,
+    )
+
+    for i, k in enumerate(tile_keys):
+        if pol in k:
+            plt.scatter(
+                NS_4[k][0][2],
+                NS_4[k][2],
+                label=k,
+                s=16,
+                color=colors[i],
+                alpha=0.88,
+                edgecolor="black",
+                linewidth=0.2,
+            )
+
+    ax.text(0.02, 0.88, title, horizontalalignment="left", transform=ax.transAxes)
+    ax.set_xticks([-75, -50, -25, 0, 25, 50, 75])
+    ax.set_yticks([0, -10, -20, -30, -40, -50])
+
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+    ax.set_xticklabels([])
+
+    if ylabel is True:
+        ax.set_ylabel("Power [dB]")
+    else:
+        ax.set_yticklabels([])
+    if xlabel is False:
+        ax.set_xticklabels([])
+    else:
+        ax.set_xlabel("Zenith Angle [deg]")
+
+    return ax
