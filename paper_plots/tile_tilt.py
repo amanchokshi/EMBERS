@@ -4,8 +4,6 @@ TILE TILT.
 """
 
 import argparse
-import concurrent.futures
-from itertools import repeat
 from pathlib import Path
 
 import healpy as hp
@@ -3022,15 +3020,32 @@ def tile_gradint_combined(fXY):
         for c in range(X.shape[1]):
             Z[r, c] = fit[0] * X[r, c] + fit[1] * Y[r, c] + fit[2]
 
-    fig, ax = plt.subplots(figsize=(9, 7))
-    im = ax.imshow(Z, extent=(-1, 1, 1, -1))
-    sc = ax.scatter(xx, yy, c=zz, s=7)
-    fig.colorbar(im, ax=ax)
-    ax.set_title("Tile Tilt for all pointings combined")
+    #  fig, ax = plt.subplots(figsize=(9, 7))
+    #  im = ax.imshow(Z, extent=(-1, 1, 1, -1))
+    #  sc = ax.scatter(xx, yy, c=zz, s=7)
+    #  fig.colorbar(im, ax=ax)
+    #  ax.set_title("Tile Tilt for all pointings combined")
 
-    plt.tight_layout()
-    plt.savefig(f"surf_combined.png")
-    plt.close()
+    #  plt.tight_layout()
+    #  plt.savefig(f"surf_combined.png")
+    #  plt.close()
+
+    #  ind = np.unravel_index(np.argmin(Z, axis=None), Z.shape)
+    #  print(ind)
+    #  print(Z[ind])
+
+    A = np.array([X[63, 63], Y[63, 63], Z[63, 63]])
+    B = np.array([X[0, 63], Y[0, 63], Z[0, 63]])
+    C = np.array([X[63, 0], Y[63, 0], Z[63, 0]])
+
+    CA = C - A
+    BA = B - A
+    #  print(CA, BA)
+    #  print(np.linalg.norm(CA))
+    #  print(np.linalg.norm(BA))
+
+    norm = np.cross(CA, BA)
+    print(norm)
 
 #  tile_gradint(f"{map_dir}/S06YY_rf0YY_tile_maps.npz")
-tile_gradint_combined([f"{map_dir}/S06XX_rf0XX_tile_maps.npz", f"{map_dir}/S06YY_rf0YY_tile_maps.npz"])
+tile_gradint_combined([f"{map_dir}/S07XX_rf0XX_tile_maps.npz", f"{map_dir}/S07YY_rf0YY_tile_maps.npz"])
