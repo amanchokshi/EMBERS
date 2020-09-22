@@ -5,6 +5,7 @@ import numpy as np
 from embers.rf_tools.colormaps import jade
 from matplotlib import pyplot as plt
 from scipy import interpolate
+from scipy.spatial.transform import Rotation as R
 
 jade, _ = jade()
 
@@ -86,7 +87,7 @@ def beam_spline(beam_map):
     mask = circular_mask(znew.shape[0], znew.shape[1])
     znew[~mask] = np.nan
 
-    return (xnew_edges, ynew_edges, znew)
+    return (xnew, ynew, znew)
 
 
 fee_x, fee_y, fee_z = beam_spline(fee)
@@ -97,8 +98,25 @@ fee_z[np.isnan(fee_z)] = -80
 mask = np.where(fee_z < -30)
 res_z[mask] = np.nan
 
-plt.figure()
-plt.pcolormesh(beam_x, beam_y, res_z, shading="flat", vmin=-5, vmax=5)
-plt.colorbar()
-plt.title("Interpolated function.")
+# stack the meshgrid to position vectors
+xyz = np.vstack(
+    [fee_x.ravel(), fee_y.ravel(), fee_z.ravel(),]
+).T
+
+r = R.from_euler("zyz", [45, 10, -10], degrees=True)
+
+rot_beam = r.apply(xyz)
+rot_beam = rot_beam.T
+
+x_r = rot_beam[0].reshape(511, 511)
+y_r = rot_beam[0].reshape(511, 511)
+z_r = rot_beam[0].reshape(511, 511)
+
+plt.imshow(z_r)
 plt.show()
+#  plt.figure()
+#  #  plt.pcolormesh(beam_x, beam_y, res_z, shading="flat", vmin=-5, vmax=5)
+#  plt.pcolormesh(x_r, y_r, fee_z, shading="flat")
+#  plt.colorbar()
+#  plt.title("Interpolated function.")
+#  plt.show()
