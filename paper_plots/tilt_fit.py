@@ -28,7 +28,7 @@ def reproject_map(nside, pixel=None, healpix_array=None):
     theta, phi = hp.pix2ang(nside, pixel)
 
     vec = hp.pix2vec(nside, np.arange(hp.nside2npix(nside)))
-    eu_mat = euler(phi, theta, -1 * phi)
+    eu_mat = euler(-phi, -theta, phi)
     rot_map = hp.rotator.rotateVector(eu_mat, vec)
     new_hp_inds = hp.vec2pix(nside, rot_map[0], rot_map[1], rot_map[2])
 
@@ -216,14 +216,18 @@ o_map = np.arange(hp.nside2npix(4))
 #  o_map[3] = 4
 #  o_map[4] = 5
 
-maps[100] = -50
+maps[5] = -50
 maps[0] = -50
+maps[1] = -50
+maps[2] = -50
+maps[3] = -50
+
 
 plot_healpix(data_map=maps, vmin=-50, vmax=0)
 plt.savefig("rot_i.png")
 plt.close()
 
-map_rot = reproject_map(nside, 100, healpix_array=maps)
+map_rot = reproject_map(nside, 5, healpix_array=maps)
 plot_healpix(data_map=map_rot, vmin=-50, vmax=0)
 plt.savefig("rot_ii.png")
 plt.close()
