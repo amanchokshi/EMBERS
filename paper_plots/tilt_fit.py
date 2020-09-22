@@ -3,9 +3,8 @@ from pathlib import Path
 import healpy as hp
 import numpy as np
 from embers.rf_tools.colormaps import jade
-from matplotlib import pyplot as plt
 from healpy.rotator import euler_matrix_new as euler
-
+from matplotlib import pyplot as plt
 
 jade, _ = jade()
 
@@ -28,27 +27,10 @@ def reproject_map(nside, pixel=None, healpix_array=None):
     # coordinated of new phase centre
     theta, phi = hp.pix2ang(nside, pixel)
 
-    # theta phi values of each pixel
-    hp_indices = np.arange(hp.nside2npix(nside))
-    θ, ɸ = hp.pix2ang(nside, hp_indices)
-
-    new_theta = []
-    new_phi = []
-
-    for i in θ - theta:
-        if i >= 0:
-            new_theta.append(i)
-        else:
-            new_theta.append(-i)
-
-    for j in ɸ - phi:
-        if j <= 2 * np.pi:
-            new_phi.append(j)
-        else:
-            new_phi.append(j - 2 * np.pi)
-
-    new_hp_inds = hp.ang2pix(nside, new_theta, ɸ)
-    #  new_hp_inds = hp.ang2pix(nside, θ - theta, ɸ - phi)
+    vec = hp.pix2vec(nside, np.arange(hp.nside2npix(nside)))
+    eu_mat = euler(phi, theta, -1 * phi)
+    rot_map = hp.rotator.rotateVector(eu_mat, vec)
+    new_hp_inds = hp.vec2pix(nside, rot_map[0], rot_map[1], rot_map[2])
 
     return healpix_array[new_hp_inds]
 
@@ -59,8 +41,8 @@ def plot_healpix(
     fig=None,
     sub=None,
     title=None,
-    vmin=-50,
-    vmax=0,
+    vmin=None,
+    vmax=None,
     cmap=None,
     cbar=True,
 ):
@@ -214,16 +196,34 @@ maps = beam_maps(
     "../embers_out/tile_maps/tile_maps/tile_maps_clean/S06XX_rf0XX_tile_maps.npz"
 )[0][0]
 
-#  map_rot = reproject_map(nside, 0, healpix_array=maps)
+#  map_rot = reproject_map(nside, 100, healpix_array=maps)
 
 #  rot_map = plot_healpix(data_map=maps, rot=(90, 75, 90))
 #  plt.savefig("rot.png")
 
 
+#  vec = hp.pix2vec(nside, np.arange(hp.nside2npix(nside)))
+#  eu_mat = euler(0, 10, 0, deg=True)
+#  rot_map = hp.rotator.rotateVector(eu_mat, vec)
+#  new_inds = hp.vec2pix(nside, rot_map[0], rot_map[1], rot_map[2])
+#  plot_healpix(data_map=maps[new_inds])
 
-vec = hp.pix2vec(nside, np.arange(hp.nside2npix(nside)))
-eu_mat = euler(0, 10, 0, deg=True)
-rot_map = hp.rotator.rotateVector(eu_mat, vec)
-new_inds = hp.vec2pix(nside, rot_map[0], rot_map[1], rot_map[2])
-plot_healpix(data_map=maps[new_inds])
-plt.savefig("rot.png")
+
+o_map = np.arange(hp.nside2npix(4))
+#  o_map[0] = 1
+#  o_map[1] = 2
+#  o_map[2] = 3
+#  o_map[3] = 4
+#  o_map[4] = 5
+
+maps[100] = -50
+maps[0] = -50
+
+plot_healpix(data_map=maps, vmin=-50, vmax=0)
+plt.savefig("rot_i.png")
+plt.close()
+
+map_rot = reproject_map(nside, 100, healpix_array=maps)
+plot_healpix(data_map=map_rot, vmin=-50, vmax=0)
+plt.savefig("rot_ii.png")
+plt.close()
