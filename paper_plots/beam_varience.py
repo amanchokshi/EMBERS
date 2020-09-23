@@ -1,3 +1,5 @@
+# Plot profiles of all beam maps on the same plot to visualize beam varience
+
 import argparse
 from pathlib import Path
 
