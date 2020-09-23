@@ -94,27 +94,27 @@ def beam_rbf(beam_map):
     power = power[~mask]
     rbfi = interp.Rbf(theta, phi, power, function="cubic")
 
-    t, p = hp.pix2ang(512, np.arange(int(hp.nside2npix(512))))
+    t, p = hp.pix2ang(256, np.arange(int(hp.nside2npix(256))))
 
-    p_512 = rbfi(t, p)
+    p_256 = rbfi(t, p)
     #  plot_healpix(data_map=p_128, vmin=-50, vmax=0)
     #  plt.savefig("rbf.png")
-    return p_512
+    return p_256
 
 
-b_512 = beam_rbf(b_map)
-print("Beam 512 done")
-np.savez_compressed('beam_512', array=b_512)
-f_512 = beam_rbf(fee)
-print("FEE 512 done")
-np.savez_compressed('fee_512', array=f_512)
+b_256 = beam_rbf(b_map)
+print("Beam 256 done")
+np.savez_compressed('beam_256', array=b_256)
+f_256 = beam_rbf(fee)
+print("FEE 256 done")
+np.savez_compressed('fee_256', array=f_256)
 
 for i in range(141):
-    b_512 = reproject_map(512, i, b_128)
-    res_512 = b_128 - f_512
-    mask = np.where(f_512 < -30)
-    res_512[mask] = np.nan
+    b_256 = reproject_map(256, i, b_256)
+    res_256 = b_256 - f_256
+    mask = np.where(f_256 < -30)
+    res_256[mask] = np.nan
 
-    plot_healpix(data_map=res_512, vmin=-5, vmax=5)
+    plot_healpix(data_map=res_256, vmin=-5, vmax=5)
     plt.savefig(f"res_rot_{i}.png")
     plt.close()
