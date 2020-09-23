@@ -96,17 +96,21 @@ def beam_rbf(beam_map):
 
     t, p = hp.pix2ang(512, np.arange(int(hp.nside2npix(512))))
 
-    p_128 = rbfi(t, p)
+    p_512 = rbfi(t, p)
     #  plot_healpix(data_map=p_128, vmin=-50, vmax=0)
     #  plt.savefig("rbf.png")
-    return p_128
+    return p_512
 
 
-b_128 = beam_rbf(b_map)
-f_128 = beam_rbf(fee)
+b_512 = beam_rbf(b_map)
+print("Beam 512 done")
+np.savez_compressed('beam_512', array=b_512)
+f_512 = beam_rbf(fee)
+print("FEE 512 done")
+np.savez_compressed('fee_512', array=f_512)
 
 for i in range(141):
-    b_128 = reproject_map(128, i, b_128)
+    b_128 = reproject_map(512, i, b_128)
     res_128 = b_128 - f_128
     mask = np.where(f_128 < -30)
     res_128[mask] = np.nan
