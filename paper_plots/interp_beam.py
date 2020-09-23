@@ -132,11 +132,11 @@ if __name__ == "__main__":
             else:
                 fee = fee_m[p][1]
 
-                beam_interp = beam_rbf_interp(fee, 32, 256)
+            beam_interp = beam_rbf_interp(fee, 32, 256)
 
-                np.savez_compressed(
-                    f"{out_dir}/FEE/fee_{pol}_{p}_N256", healpix=beam_interp
-                )
+            np.savez_compressed(
+                f"{out_dir}/FEE/fee_{pol}_{p}_N256", healpix=beam_interp
+            )
 
     # Interpolate beams to nside = 256
     for pair in tile_pairs:
