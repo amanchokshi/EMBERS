@@ -110,11 +110,11 @@ print("FEE 512 done")
 np.savez_compressed('fee_512', array=f_512)
 
 for i in range(141):
-    b_128 = reproject_map(512, i, b_128)
-    res_128 = b_128 - f_128
-    mask = np.where(f_128 < -30)
-    res_128[mask] = np.nan
+    b_512 = reproject_map(512, i, b_128)
+    res_512 = b_128 - f_512
+    mask = np.where(f_512 < -30)
+    res_512[mask] = np.nan
 
-    plot_healpix(data_map=res_128, vmin=-5, vmax=5)
+    plot_healpix(data_map=res_512, vmin=-5, vmax=5)
     plt.savefig(f"res_rot_{i}.png")
     plt.close()
