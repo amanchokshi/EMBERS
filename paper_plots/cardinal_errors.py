@@ -1,6 +1,8 @@
+# Script to determine the differece in power between the FEE/measured maps along cardinal slices
+# More power measured alone more sensitive axis of the dipole - perpendicular to dipole
+# And vice-versa
+
 import argparse
-import concurrent.futures
-from itertools import repeat
 from pathlib import Path
 
 import matplotlib
@@ -10,7 +12,6 @@ from embers.tile_maps.beam_utils import (chisq_fit_gain,
                                          healpix_cardinal_slices, map_slices,
                                          poly_fit, rotate_map)
 from matplotlib import pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 matplotlib.use("Agg")
 _spec, _ = spectral()
@@ -201,7 +202,6 @@ def slice_residual():
     EW_XX_fit = poly_fit(za, EW_XX_res, EW_XX_res, 2)
     EW_YY_fit = poly_fit(za, EW_YY_res, EW_YY_res, 2)
 
-
     # Plotting stuff
     plt.style.use("seaborn")
 
@@ -219,16 +219,48 @@ def slice_residual():
 
     colors = _spec(np.linspace(0.17, 0.9, 4))
 
-    ax = plt.figure(figsize=(6, 5))
-    plt.scatter(za, NS_XX_res, s=16, alpha=0.88, edgecolor="black", linewidth=0.2, color=colors[0])
-    plt.scatter(za, NS_YY_res, s=16, alpha=0.88, edgecolor="black", linewidth=0.2, color=colors[1])
-    plt.scatter(za, EW_XX_res, s=16, alpha=0.88, edgecolor="black", linewidth=0.2, color=colors[2])
-    plt.scatter(za, EW_YY_res, s=16, alpha=0.88, edgecolor="black", linewidth=0.2, color=colors[3])
+    plt.figure(figsize=(6, 5))
+    plt.scatter(
+        za,
+        NS_XX_res,
+        s=16,
+        alpha=0.88,
+        edgecolor="black",
+        linewidth=0.2,
+        color=colors[0],
+    )
+    plt.scatter(
+        za,
+        NS_YY_res,
+        s=16,
+        alpha=0.88,
+        edgecolor="black",
+        linewidth=0.2,
+        color=colors[1],
+    )
+    plt.scatter(
+        za,
+        EW_XX_res,
+        s=16,
+        alpha=0.88,
+        edgecolor="black",
+        linewidth=0.2,
+        color=colors[2],
+    )
+    plt.scatter(
+        za,
+        EW_YY_res,
+        s=16,
+        alpha=0.88,
+        edgecolor="black",
+        linewidth=0.2,
+        color=colors[3],
+    )
     plt.plot(za, NS_XX_fit, label="NS_XX", linewidth=3, color=colors[0])
     plt.plot(za, NS_YY_fit, label="NS_YY", linewidth=3, color=colors[1])
     plt.plot(za, EW_XX_fit, label="EW_XX", linewidth=3, color=colors[2])
     plt.plot(za, EW_YY_fit, label="EW_YY", linewidth=3, color=colors[3])
-    
+
     leg = plt.legend(loc="lower right", frameon=True, markerscale=4, handlelength=1)
     leg.get_frame().set_facecolor("white")
     for le in leg.legendHandles:
@@ -241,5 +273,3 @@ def slice_residual():
 
 
 slice_residual()
-
-
