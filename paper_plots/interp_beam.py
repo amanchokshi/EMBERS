@@ -116,6 +116,29 @@ if __name__ == "__main__":
         for t in tiles:
             tile_pairs.append([t, r])
 
+    # Interpolate FEE to nside = 256
+    fee_m = np.load(fee_map, allow_pickle=True)
+    # Make output directory
+    Path(f"{out_dir}/FEE").mkdir(parents=True, exist_ok=True)
+
+    for p in ["0", "2", "4"]:
+
+        for pol in ["XX", "YY"]:
+
+            print(f"Crunching FEE [{pol}] at pointing [{p}]")
+
+            if pol == "XX":
+                fee = fee_m[p][0]
+            else:
+                fee = fee_m[p][1]
+
+                beam_interp = beam_rbf_interp(fee, 32, 256)
+
+                np.savez_compressed(
+                    f"{out_dir}/FEE/fee_{pol}_{p}_N256", healpix=beam_interp
+                )
+
+    # Interpolate beams to nside = 256
     for pair in tile_pairs:
         for pol in ["XX", "YY"]:
             tile = f"{pair[0]}{pol}_{pair[1]}{pol}"
@@ -125,7 +148,6 @@ if __name__ == "__main__":
 
             # load data from map .npz file
             tile_map = np.load(f_tile, allow_pickle=True)
-            fee_m = np.load(fee_map, allow_pickle=True)
 
             for p in pointings:
 
@@ -134,16 +156,11 @@ if __name__ == "__main__":
                 # Make output directory
                 Path(f"{out_dir}/{p}").mkdir(parents=True, exist_ok=True)
 
-                tile = tile_map[p]
-
-                if pol == "XX":
-                    fee = fee_m[p][0]
-                else:
-                    fee = fee_m[p][1]
+                tile_p = tile_map[p]
 
                 # healpix meadian map
                 tile_med = np.asarray(
-                    [(np.nanmedian(j) if j != [] else np.nan) for j in tile]
+                    [(np.nanmedian(j) if j != [] else np.nan) for j in tile_p]
                 )
 
                 beam_interp = beam_rbf_interp(tile_med, 32, 256)
