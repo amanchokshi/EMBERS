@@ -5,9 +5,7 @@ import numpy as np
 from embers.rf_tools.colormaps import jade
 from embers.tile_maps.beam_utils import plot_healpix
 from matplotlib import pyplot as plt
-from scipy import interpolate
 from scipy import interpolate as interp
-from scipy.spatial.transform import Rotation as R
 
 jade, _ = jade()
 
@@ -57,72 +55,6 @@ b_map = beam_maps(
 
 fee_m = np.load(fee_map, allow_pickle=True)
 fee = fee_m["0"][0]
-
-
-def beam_spline(beam_map):
-
-    # Input data
-    pix_ind = np.arange(hp.nside2npix(nside))
-    x, y, _ = hp.pix2vec(nside, pix_ind)
-    z = beam_map[:6144]
-    mask = np.isnan(z)
-    x = x[:6144][~mask]
-    y = y[:6144][~mask]
-    z = z[~mask]
-
-    #  def circular_mask(h, w):
-
-    #  center = (int(w / 2), int(h / 2))
-    #  radius = min(center[0], center[1], w - center[0], h - center[1])
-
-    #  Y, X = np.ogrid[:h, :w]
-    #  dist_from_center = np.sqrt((X - center[0]) ** 2 + (Y - center[1]) ** 2)
-
-    #  mask = dist_from_center <= radius
-    #  return mask
-
-    #  xnew_edges, ynew_edges = np.mgrid[-1:1:512j, -1:1:512j]
-    #  xnew = xnew_edges[:-1, :-1] + np.diff(xnew_edges[:2, 0])[0] / 2.0
-    #  ynew = ynew_edges[:-1, :-1] + np.diff(ynew_edges[0, :2])[0] / 2.0
-
-    tck = interpolate.bisplrep(x, y, z, s=5000)
-    #  znew = interpolate.bisplev(xnew[:, 0], ynew[0, :], tck)
-    #  mask = circular_mask(znew.shape[0], znew.shape[1])
-    #  znew[~mask] = np.nan
-
-    #  return (xnew, ynew, znew)
-    znew = interpolate.bisplev([1, 0, -1], [0, 1, 0], tck)
-    print(znew)
-
-
-#  fee_x, fee_y, fee_z = beam_spline(fee)
-#  beam_x, beam_y, beam_z = beam_spline(b_map)
-
-#  res_z = beam_z - fee_z
-#  fee_z[np.isnan(fee_z)] = -80
-#  mask = np.where(fee_z < -30)
-#  res_z[mask] = np.nan
-
-#  # stack the meshgrid to position vectors
-#  xyz = np.vstack([fee_x.ravel(), fee_y.ravel(), fee_z.ravel(),]).T
-
-#  r = R.from_euler("zyz", [45, 10, -10], degrees=True)
-
-#  rot_beam = r.apply(xyz)
-#  rot_beam = rot_beam.T
-
-#  x_r = rot_beam[0].reshape(511, 511)
-#  y_r = rot_beam[0].reshape(511, 511)
-#  z_r = rot_beam[0].reshape(511, 511)
-
-#  plt.imshow(z_r)
-#  plt.show()
-#  plt.figure()
-#  #  plt.pcolormesh(beam_x, beam_y, res_z, shading="flat", vmin=-5, vmax=5)
-#  plt.pcolormesh(x_r, y_r, fee_z, shading="flat")
-#  plt.colorbar()
-#  plt.title("Interpolated function.")
-#  plt.show()
 
 
 def beam_rbf(beam_map):
