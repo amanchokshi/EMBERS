@@ -29,3 +29,26 @@ def reproject_map(nside, pixel, healpix_array=None):
     new_hp_inds = hp.vec2pix(nside, rot_map[0], rot_map[1], rot_map[2])
 
     return healpix_array[new_hp_inds]
+
+
+def pointing_residual(nside, pixel, beam=None, fee=None):
+
+    # Select primary and secondary lobes
+    mask = np.where(fee < -30)
+
+    rot_beam = reproject_map(nside, pixel, healpix_array=beam)
+
+    resi = rot_beam - fee
+    resi[mask] = np.nan
+
+    # Select central 40 deg of beam. Primary + edges of secondary lobes
+    ind = int(hp.ang2pix(nside, np.radians(40), 0))
+    resi = resi[:ind]
+
+    # Mean of residuals as proxy for pointing errors
+    resi_mean = np.nanmean(resi)
+
+    return(resi_mean)
+
+if __name__ == "__main__":
+    pass
