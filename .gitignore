@@ -14,3 +14,5 @@
 embers.egg-info/
 
 /paper_plots/paper_pdfs/*
+/paper_plots/interp_maps/*
+/paper_plots/temp_plots/*
