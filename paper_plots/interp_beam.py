@@ -1,3 +1,7 @@
+# Interpolate healpix map using a radial basis function
+# N=33 -> N=265. Uses a massive amount of memory (All ram + ~60GB of swap)
+# Takes 18 hours to complete for all maps
+
 from pathlib import Path
 
 import healpy as hp
