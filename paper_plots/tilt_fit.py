@@ -1,8 +1,11 @@
+# Phase beam maps to be centered around sucessive healpix pixels, and compute mean residuals
+# Make pix vs mean residual plot and save data dictionary to json file
+
+import json
 from pathlib import Path
 
 import healpy as hp
 import numpy as np
-from embers.tile_maps.beam_utils import plot_healpix
 from healpy.rotator import euler_matrix_new as euler
 from matplotlib import pyplot as plt
 
@@ -48,7 +51,76 @@ def pointing_residual(nside, pixel, beam=None, fee=None):
     # Mean of residuals as proxy for pointing errors
     resi_mean = np.nanmean(resi)
 
-    return(resi_mean)
+    return resi_mean
+
 
 if __name__ == "__main__":
-    pass
+
+    out_dir = "./interp_maps"
+
+    nside = 256
+
+    tiles = [
+        "S06",
+        "S07",
+        "S08",
+        "S09",
+        "S10",
+        "S12",
+        "S29",
+        "S30",
+        "S31",
+        "S32",
+        "S33",
+        "S34",
+        "S35",
+        "S36",
+    ]
+
+    refs = ["rf0", "rf1"]
+
+    tile_pairs = []
+    for r in refs:
+        for t in tiles:
+            tile_pairs.append([t, r])
+
+    # Make output directory
+    Path(f"{out_dir}/tile_tilt").mkdir(parents=True, exist_ok=True)
+
+    pix_residuals = {}
+
+    for pair in tile_pairs:
+        for pol in ["XX", "YY"]:
+
+            pointings = ["0", "2", "4"]
+
+            for p in pointings:
+
+                try:
+
+                    tile = f"{pair[0]}{pol}_{pair[1]}{pol}"
+                    beam = f"{out_dir}/{p}/{tile}_{p}_N256.npz"
+                    fee = f"{out_dir}/FEE/fee_{pol}_{p}_N256.npz"
+                    beam = np.load(beam)["healpix"]
+                    fee = np.load(fee)["healpix"]
+
+                    pix_res = []
+                    for pix in range(1500):
+                        res_mean = pointing_residual(nside, pix, beam=beam, fee=fee)
+                        pix_res.append(res_mean)
+
+                    plt.style.use("seaborn")
+                    plt.scatter(range(1500), pix_res, color="seagreen", s=7)
+                    plt.tight_layout()
+                    plt.savefig(
+                        f"{out_dir}/tile_tilt/{pair[0]}{pol}_{pair[1]}{pol}_{p}res.png"
+                    )
+                    plt.close()
+                    print(f"{pair[0]}{pol}_{pair[1]}{pol}_{p}res.png saved")
+                    pix_residuals[f"{pair[0]}{pol}_{pair[1]}{pol}_{p}"] = pix_res
+
+                except Exception as e:
+                    print(e)
+
+    with open(f"{out_dir}/pix_resi.json", "w") as f:
+        json.dump(pix_residuals, f, indent=4)
