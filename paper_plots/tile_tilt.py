@@ -2,20 +2,21 @@ import json
 
 import healpy as hp
 import numpy as np
-from embers.rf_tools.colormaps import spectral
-#  from embers.tile_maps.beam_utils import plot_healpix
+from embers.rf_tools.colormaps import jade, spectral
+from embers.tile_maps.beam_utils import plot_healpix
 from matplotlib import pyplot as plt
 
+from tilt_fit import reproject_map
+
 _spec, _ = spectral()
+_jade, _ = jade()
 
 nside = 256
 data = "./interp_maps/pix_resi.json"
+out_dir = "./interp_maps/beam_offsets"
+m_256 = "./interp_maps/0"
+m_32 = "../embers_out/tile_maps/tile_maps/tile_maps_clean"
 
-delta_az = 83.1912
-
-p_0 = [0, 0]
-p_2 = [90, 6.80880000000001]
-p_4 = [270, 6.80880000000001]
 
 with open(data) as f:
     tilt_resi = json.load(f)
@@ -25,10 +26,8 @@ phase_cen = {}
 
 for tile in tilt_resi.keys():
     if "rf1" in tile and "_0" in tile:
-        #  if "S06" in tile:
+        print(tile)
         min_pix = np.argmax(tilt_resi[tile])
-        #  if min_pix <= 600:
-        #  phase_cen[f"{tile}"] = np.degrees(np.array(hp.pix2ang(nside, min_pix)))
         phase_cen[f"{tile}"] = np.array(hp.pix2ang(nside, min_pix))
 
 theta_XX = []
@@ -88,4 +87,40 @@ for i, c in enumerate(colors):
     )
 #  plt.legend()
 plt.tight_layout()
-plt.show()
+plt.savefig("./interp_maps/beam_offsets/polar_offsets.png")
+plt.close()
+
+
+m_06_32 = "../embers_out/tile_maps/tile_maps/tile_maps_clean/S08XX_rf1XX_tile_maps.npz"
+m_06_32 = np.load(m_06_32, allow_pickle=True)["0"]
+m_06_32 = np.asarray([(np.nanmedian(j) if j != [] else np.nan) for j in m_06_32])
+
+m_06_256 = "./interp_maps/0/S08XX_rf0XX_0_N256.npz"
+m_06_256 = np.load(m_06_256)["healpix"]
+
+fee_256 = "./interp_maps/FEE/fee_XX_0_N256.npz"
+fee_256 = np.load(fee_256)["healpix"]
+
+res_256 = m_06_256 - fee_256
+res_256[np.where(fee_256 < -30)] = np.nan
+
+pix = np.argmax(tilt_resi["S08XX_rf1XX_0"])
+rot_256 = reproject_map(256, pix, healpix_array=m_06_256)
+res_256_rot = rot_256 - fee_256
+res_256_rot[np.where(fee_256 < -30)] = np.nan
+
+
+fig1 = plt.figure(figsize=(8.0, 8.0))
+fig1.suptitle(f"Pix: {pix} (θ, ɸ): {np.degrees(hp.pix2ang(256, pix))}")
+
+plt.subplot(2, 2, 1)
+plot_healpix(data_map=m_06_32, vmin=-50, vmax=0, cmap=_jade, cbar=False)
+plt.subplot(2, 2, 2)
+plot_healpix(data_map=m_06_256, vmin=-50, vmax=0, cmap=_jade, cbar=False)
+plt.subplot(2, 2, 3)
+plot_healpix(data_map=res_256, vmin=-4, vmax=4, cmap="RdYlGn", cbar=False)
+plt.subplot(2, 2, 4)
+plot_healpix(data_map=res_256_rot, vmin=-4, vmax=4, cmap="RdYlGn", cbar=False)
+
+plt.tight_layout()
+plt.savefig(f"{out_dir}/S08XX_rf1_0.png")
