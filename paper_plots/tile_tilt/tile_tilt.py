@@ -5,6 +5,7 @@ import numpy as np
 from embers.rf_tools.colormaps import jade, spectral
 #  from embers.tile_maps.beam_utils import plot_healpix
 from matplotlib import pyplot as plt
+from matplotlib.lines import Line2D
 
 #  from tilt_fit import reproject_map
 
@@ -19,6 +20,24 @@ m_32 = "../embers_out/tile_maps/tile_maps/tile_maps_clean"
 
 ref_p = 243.17
 ref_t = 0.476
+
+
+tiles = [
+    "S06",
+    "S07",
+    "S08",
+    "S09",
+    "S10",
+    "S12",
+    "S29",
+    "S30",
+    "S31",
+    "S32",
+    "S33",
+    "S34",
+    "S35",
+    "S36",
+]
 
 
 with open(data) as f:
@@ -50,12 +69,39 @@ phi = np.mean([phi_XX, phi_YY], axis=0)
 
 colors = _spec(np.linspace(0.17, 0.9, len(theta_XX)))
 
-plt.style.use("seaborn")
-figure = plt.figure(figsize=(6, 6))
-ax = figure.add_subplot(111, polar=True)
+ti = [
+    Line2D(
+        [0],
+        [0],
+        color=c,
+        linewidth=3,
+        linestyle="None",
+        marker="s",
+        markerfacecolor=c,
+        markersize=6,
+    )
+    for c in colors
+]
 
-#  ax.set_ylim(0, 1.5)
-#  ax.set_rgrids([0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4], angle=90)
+
+plt.style.use("seaborn")
+
+nice_fonts = {
+    "font.family": "sans-serif",
+    "axes.labelsize": 10,
+    "font.size": 10,
+    "legend.fontsize": 7.6,
+    "xtick.labelsize": 8,
+    "ytick.labelsize": 8,
+}
+
+plt.rcParams.update(nice_fonts)
+figure = plt.figure(figsize=(3.6, 4.2))
+
+ax = figure.add_axes([0.08, 0.15, 0.84, 0.84], polar=True)
+
+ax.set_ylim(0, 1.5)
+ax.set_rgrids([0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4])
 ax.set_theta_zero_location("N")
 ax.set_theta_direction(-1)
 
@@ -88,9 +134,11 @@ for i, c in enumerate(colors):
         s=84,
         alpha=0.9,
     )
-#  plt.legend()
 ax.set_xticklabels(["N", "", "E", "", "S", "", "W", ""])
-plt.tight_layout()
+
+ax2 = figure.add_axes([0.08, 0.02, 0.84, 0.12])
+ax2.axis('off')
+ax2.legend(ti, tiles, mode="expand", ncol=5, frameon=True)
 plt.savefig("./interp_maps/beam_offsets/polar_offsets.png")
 plt.close()
 
