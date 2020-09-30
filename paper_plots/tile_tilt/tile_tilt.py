@@ -78,7 +78,9 @@ ti = [
         linestyle="None",
         marker="s",
         markerfacecolor=c,
-        markersize=6,
+        markersize=7,
+        markeredgecolor="black",
+        markeredgewidth=0.4,
     )
     for c in colors
 ]
@@ -101,7 +103,10 @@ figure = plt.figure(figsize=(3.6, 4.2))
 ax = figure.add_axes([0.08, 0.15, 0.84, 0.84], polar=True)
 
 ax.set_ylim(0, 1.5)
-ax.set_rgrids([0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4])
+ax.set_rgrids(
+    [0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4],
+    labels=["0", "0.2", "0.4", "0.6", "0.8", "1.0", "1.2", r"$1.4\degree$"],
+)
 ax.set_theta_zero_location("N")
 ax.set_theta_direction(-1)
 
@@ -137,7 +142,7 @@ for i, c in enumerate(colors):
 ax.set_xticklabels(["N", "", "E", "", "S", "", "W", ""])
 
 ax2 = figure.add_axes([0.08, 0.02, 0.84, 0.12])
-ax2.axis('off')
+ax2.axis("off")
 ax2.legend(ti, tiles, mode="expand", ncol=5, frameon=True)
 plt.savefig("./interp_maps/beam_offsets/polar_offsets.png")
 plt.close()
