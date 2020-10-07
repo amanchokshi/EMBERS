@@ -16,3 +16,4 @@ embers.egg-info/
 /paper_plots/paper_pdfs/*
 /paper_plots/tile_tilt/interp_maps/*
 /paper_plots/temp_plots/*
+/paper_plots/ref_rot/*
