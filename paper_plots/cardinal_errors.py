@@ -2,6 +2,8 @@
 # More power measured alone more sensitive axis of the dipole - perpendicular to dipole
 # And vice-versa
 
+# Rotation of reference tiles
+
 import argparse
 from pathlib import Path
 
@@ -156,7 +158,8 @@ def slice_residual():
             try:
                 map_slices = beam_slices(f_tile, fee_map, nside)
 
-                pointings = ["0", "2", "4"]
+                #  pointings = ["0", "2", "4"]
+                pointings = ["0"]
 
                 for i, p in enumerate(pointings):
                     slices = map_slices[i]
@@ -192,6 +195,7 @@ def slice_residual():
     EW_XX_res = np.nanmedian(np.array(EW_r_XX), axis=0)
     EW_YY_res = np.nanmedian(np.array(EW_r_YY), axis=0)
 
+    # Only used to extract za arrays
     f_tile = f"{map_dir}/S06XX_rf0XX_tile_maps.npz"
     map_slices = beam_slices(f_tile, fee_map, nside)
 
@@ -269,7 +273,7 @@ def slice_residual():
     plt.xlabel("Zenith Angle [degrees]")
     plt.ylabel("Residual Power [dB]")
     plt.tight_layout()
-    plt.savefig("resi.pdf")
+    plt.savefig("ref_rot/resi.pdf")
 
 
 slice_residual()
