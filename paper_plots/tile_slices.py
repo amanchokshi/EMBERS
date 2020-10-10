@@ -39,6 +39,12 @@ parser.add_argument(
     help="Healpix FEE map of mwa tile. default=../embers_out/mwa_utils/mwa_fee/mwa_fee_beam.npz",
 )
 parser.add_argument(
+    "--ref_res",
+    metavar="\b",
+    default="../embers_out/tile_maps/null_test/ref_res.npy",
+    help="Reference residuals from null test. default=../embers_out/tile_maps/null_test/ref_res.npy",
+)
+parser.add_argument(
     "--nside", metavar="\b", type=int, default=32, help="Healpix Nside. Default = 32",
 )
 
@@ -47,6 +53,7 @@ args = parser.parse_args()
 out_dir = Path(args.out_dir)
 map_dir = Path(args.map_dir)
 fee_map = args.fee_map
+ref_res = args.ref_res
 nside = args.nside
 
 # make output dir if it doesn't exist
@@ -86,6 +93,7 @@ def plt_slice(
     model_slice=None,
     delta_pow=None,
     pow_fit=None,
+    ref_res=None,
     slice_label=None,
     model_label=None,
     xlabel=False,
@@ -161,10 +169,11 @@ def plt_slice(
 
     dax.scatter(zen_angle, delta_pow, marker=".", s=30, color="#27296d")
     dax.plot(zen_angle, pow_fit, linewidth=1.4, alpha=0.9, color="#ff8264")
+    dax.fill_between(zen_angle, ref_res, alpha=0.6, color="grey", zorder=0)
     dax.set_xticks([-75, -50, -25, 0, 25, 50, 75])
     dax.set_ylim([-10, 10])
     dax.set_xlim(xlim)
-    dax.set_ylim([-5, 5])
+    #  dax.set_ylim([-5, 5])
     if ylabel is True:
         ax.set_ylabel("Power [dB]")
         dax.set_ylabel(r"$\Delta$ref [dB]")
@@ -240,7 +249,7 @@ def beam_slices(map_file, fee_map, nside):
     return maps
 
 
-def plt_grid(tile_pair, fee_map, nside, map_dir, out_dir):
+def plt_grid(tile_pair, fee_map, ref_res, nside, map_dir, out_dir):
     # This is an Awesome plot
 
     tile_name = tile_pair[0]
@@ -251,6 +260,13 @@ def plt_grid(tile_pair, fee_map, nside, map_dir, out_dir):
 
     maps_xx = beam_slices(f_xx, fee_map, nside)
     maps_yy = beam_slices(f_yy, fee_map, nside)
+
+    ref_res = np.load(ref_res, allow_pickle=True).flat[0]
+    #  za = ref_res["za"]
+    rf1_XX_NS = ref_res["rf1_XX_NS"]
+    rf1_XX_EW = ref_res["rf1_XX_EW"]
+    rf1_YY_NS = ref_res["rf1_YY_NS"]
+    rf1_YY_EW = ref_res["rf1_YY_EW"]
 
     plt.style.use("seaborn")
 
@@ -285,6 +301,7 @@ def plt_grid(tile_pair, fee_map, nside, map_dir, out_dir):
         model_slice=maps_xx[0][0][1][0],
         delta_pow=maps_xx[0][0][3],
         pow_fit=maps_xx[0][0][4],
+        ref_res=rf1_XX_NS,
         slice_label="Tile NS",
         model_label="FEE NS",
         ylabel=True,
@@ -305,6 +322,7 @@ def plt_grid(tile_pair, fee_map, nside, map_dir, out_dir):
         model_slice=maps_xx[1][0][1][0],
         delta_pow=maps_xx[1][0][3],
         pow_fit=maps_xx[1][0][4],
+        ref_res=rf1_XX_NS,
         slice_label="Tile NS",
         model_label="FEE NS",
         xlim=[-92, 92],
@@ -322,6 +340,7 @@ def plt_grid(tile_pair, fee_map, nside, map_dir, out_dir):
         model_slice=maps_xx[2][0][1][0],
         delta_pow=maps_xx[2][0][3],
         pow_fit=maps_xx[2][0][4],
+        ref_res=rf1_XX_NS,
         slice_label="Tile NS",
         model_label="FEE NS",
         xlim=[-92, 92],
@@ -339,6 +358,7 @@ def plt_grid(tile_pair, fee_map, nside, map_dir, out_dir):
         model_slice=maps_xx[0][1][1][0],
         delta_pow=maps_xx[0][1][3],
         pow_fit=maps_xx[0][1][4],
+        ref_res=rf1_XX_EW,
         slice_label="Tile EW",
         model_label="FEE EW",
         ylabel=True,
@@ -357,6 +377,7 @@ def plt_grid(tile_pair, fee_map, nside, map_dir, out_dir):
         model_slice=maps_xx[1][1][1][0],
         delta_pow=maps_xx[1][1][3],
         pow_fit=maps_xx[1][1][4],
+        ref_res=rf1_XX_EW,
         slice_label="Tile EW",
         model_label="FEE EW",
         xlim=[-92, 92],
@@ -374,6 +395,7 @@ def plt_grid(tile_pair, fee_map, nside, map_dir, out_dir):
         model_slice=maps_xx[2][1][1][0],
         delta_pow=maps_xx[2][1][3],
         pow_fit=maps_xx[2][1][4],
+        ref_res=rf1_XX_EW,
         slice_label="Tile EW",
         model_label="FEE EW",
         xlim=[-92, 92],
@@ -391,6 +413,7 @@ def plt_grid(tile_pair, fee_map, nside, map_dir, out_dir):
         model_slice=maps_yy[0][0][1][0],
         delta_pow=maps_yy[0][0][3],
         pow_fit=maps_yy[0][0][4],
+        ref_res=rf1_YY_NS,
         slice_label="Tile NS",
         model_label="FEE NS",
         ylabel=True,
@@ -409,6 +432,7 @@ def plt_grid(tile_pair, fee_map, nside, map_dir, out_dir):
         model_slice=maps_yy[1][0][1][0],
         delta_pow=maps_yy[1][0][3],
         pow_fit=maps_yy[1][0][4],
+        ref_res=rf1_YY_NS,
         slice_label="Tile NS",
         model_label="FEE NS",
         xlim=[-92, 92],
@@ -426,6 +450,7 @@ def plt_grid(tile_pair, fee_map, nside, map_dir, out_dir):
         model_slice=maps_yy[2][0][1][0],
         delta_pow=maps_yy[2][0][3],
         pow_fit=maps_yy[2][0][4],
+        ref_res=rf1_YY_NS,
         slice_label="Tile NS",
         model_label="FEE NS",
         xlim=[-92, 92],
@@ -445,6 +470,7 @@ def plt_grid(tile_pair, fee_map, nside, map_dir, out_dir):
         model_slice=maps_yy[0][1][1][0],
         delta_pow=maps_yy[0][1][3],
         pow_fit=maps_yy[0][1][4],
+        ref_res=rf1_YY_EW,
         slice_label="Tile EW",
         model_label="FEE EW",
         ylabel=True,
@@ -464,6 +490,7 @@ def plt_grid(tile_pair, fee_map, nside, map_dir, out_dir):
         model_slice=maps_yy[1][1][1][0],
         delta_pow=maps_yy[1][1][3],
         pow_fit=maps_yy[1][1][4],
+        ref_res=rf1_YY_EW,
         slice_label="Tile EW",
         model_label="FEE EW",
         xlabel=True,
@@ -482,6 +509,7 @@ def plt_grid(tile_pair, fee_map, nside, map_dir, out_dir):
         model_slice=maps_yy[2][1][1][0],
         delta_pow=maps_yy[2][1][3],
         pow_fit=maps_yy[2][1][4],
+        ref_res=rf1_YY_EW,
         slice_label="Tile EW",
         model_label="FEE EW",
         xlabel=True,
@@ -504,6 +532,7 @@ if __name__ == "__main__":
             plt_grid,
             tile_pairs,
             repeat(fee_map),
+            repeat(ref_res),
             repeat(nside),
             repeat(map_dir),
             repeat(out_dir),
