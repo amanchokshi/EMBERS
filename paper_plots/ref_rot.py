@@ -2,7 +2,7 @@ import healpy as hp
 import numpy as np
 from embers.rf_tools.colormaps import jade, spectral
 from embers.tile_maps.beam_utils import (healpix_cardinal_slices, plot_healpix,
-                                         rotate_map)
+                                         rotate_map, poly_fit)
 from healpy.rotator import euler_matrix_new as euler
 from matplotlib import pyplot as plt
 
@@ -69,6 +69,8 @@ if __name__ == "__main__":
 
     plt.plot(NS[1], NS[0], label="NS_XX")
     plt.plot(EW[1], EW[0], label="EW_XX")
+    plt.plot(NS[1][::36], poly_fit(NS[1][::36], NS[0][::36], NS[0][::36], 9), label="NS_XX")
+    plt.plot(EW[1][::36], poly_fit(EW[1][::36], EW[0][::36], EW[0][::36], 9), label="EW_XX")
     plt.xlabel("Zenith Angle [degrees]")
     plt.ylabel("Residual Power [dB]")
 
@@ -81,5 +83,5 @@ if __name__ == "__main__":
     plt.savefig("ref_rot/res_slices_2.pdf")
     plt.close()
 
-    plot_healpix(data_map=res, cmap=spec)
-    plt.savefig("ref_rot/ref_res_2.png")
+    #  plot_healpix(data_map=res, cmap=spec)
+    #  plt.savefig("ref_rot/ref_res_2.png")
