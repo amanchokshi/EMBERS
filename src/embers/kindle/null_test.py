@@ -24,9 +24,9 @@ _parser.add_argument(
 _parser.add_argument(
     "--za_max",
     metavar="\b",
-    default=80,
+    default=90,
     type=int,
-    help="Maximum zenith angle upto which to perform the null test. Default: 80 deg",
+    help="Maximum zenith angle upto which to perform the null test. Default: 90 deg",
 )
 
 _parser.add_argument(
