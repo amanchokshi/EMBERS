@@ -67,8 +67,17 @@ if __name__ == "__main__":
     #  colors = spec(np.linspace(0.14, 0.63, len(rots)))
     colors = spec([0.14, 0.21, 0.35, 0.63, 0.70])
     legs = [
-        Line2D([0], [0], linestyle="None", marker="$NS$", markerfacecolor="k", markersize=9),
-        Line2D([0], [0], linestyle="None", marker="$EW$", markerfacecolor="k", markersize=9.6),
+        Line2D(
+            [0], [0], linestyle="None", marker="$NS$", markerfacecolor="k", markersize=9
+        ),
+        Line2D(
+            [0],
+            [0],
+            linestyle="None",
+            marker="$EW$",
+            markerfacecolor="k",
+            markersize=9.6,
+        ),
         Line2D([0], [0], color=colors[0], linewidth=2,),
         Line2D(
             [0],
@@ -165,7 +174,11 @@ if __name__ == "__main__":
 
     ax = fig.add_axes([0.28, 0.754, 0.57, 0.2])
     ax.axis("off")
-    ax.legend(legs, labels, mode="expand", ncol=6, frameon=True, loc="upper left")
+    leg = ax.legend(legs, labels, mode="expand", ncol=6, frameon=True, loc="upper left")
+    leg.get_frame().set_facecolor("white")
+    for le in leg.legendHandles:
+        le.set_alpha(1)
+
     plt.tight_layout()
     plt.savefig("ref_rot/rot_res_slices.pdf")
     plt.close()
