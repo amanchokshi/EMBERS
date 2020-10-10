@@ -173,7 +173,7 @@ def slice_residual():
                     nulls = np.where(fee_slice < -30)
                     fee_slice[nulls] = np.nan
                     NS_med[nulls] = np.nan
-                    NS_resi = np.array(fee_slice - NS_med)
+                    NS_resi = np.array(NS_med - fee_slice)
                     if pol == "XX":
                         NS_r_XX.append(NS_resi)
                     else:
@@ -185,7 +185,7 @@ def slice_residual():
                     nulls = np.where(fee_slice < -30)
                     fee_slice[nulls] = np.nan
                     EW_med[nulls] = np.nan
-                    EW_resi = np.array(fee_slice - EW_med)
+                    EW_resi = np.array(EW_med - fee_slice)
                     if pol == "XX":
                         EW_r_XX.append(EW_resi)
                     else:
@@ -327,11 +327,12 @@ def slice_residual():
     plt.plot(za, EW_XX_fit, label="EW_XX", linewidth=2, color=colors[2])
     plt.plot(za, EW_YY_fit, label="EW_YY", linewidth=2, color=colors[3])
 
-    leg = plt.legend(loc="lower right", frameon=True, markerscale=4, handlelength=1)
+    leg = plt.legend(loc="upper right", frameon=True, markerscale=4, handlelength=1)
     leg.get_frame().set_facecolor("white")
     for le in leg.legendHandles:
         le.set_alpha(1)
 
+    plt.ylim([-4, 4])
     plt.xlabel("Zenith Angle [degrees]")
     plt.ylabel("Residual Power [dB]")
     plt.tight_layout()
