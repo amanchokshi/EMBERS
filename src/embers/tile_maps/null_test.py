@@ -162,6 +162,7 @@ def null_test(nside, za_max, ref_model, map_dir, out_dir):
 
     :returns:
         - Null test plot saved to out_dir
+        - Reference residuals saved to out_dir
 
     """
 
@@ -286,6 +287,22 @@ def null_test(nside, za_max, ref_model, map_dir, out_dir):
     fit_ref01_XX_EW = fit_ref0_XX_EW - fit_ref1_XX_EW
     fit_ref01_YY_NS = fit_ref0_YY_NS - fit_ref1_YY_NS
     fit_ref01_YY_EW = fit_ref0_YY_EW - fit_ref1_YY_EW
+
+    ref_res = {
+        "za": za_NS,
+        "rf0_XX_NS": fit_ref0_XX_NS,
+        "rf0_XX_EW": fit_ref0_XX_EW,
+        "rf0_YY_NS": fit_ref0_YY_NS,
+        "rf0_YY_EW": fit_ref0_YY_EW,
+        "rf1_XX_NS": fit_ref1_XX_NS,
+        "rf1_XX_EW": fit_ref1_XX_EW,
+        "rf1_YY_NS": fit_ref1_YY_NS,
+        "rf1_YY_EW": fit_ref1_YY_EW,
+    }
+
+    # Save reference residuals to numpy file in out_dir
+    # Will be used for errorbars in beam slice plots
+    np.save(f"{out_dir}/ref_res", ref_res)
 
     plt.style.use("seaborn")
     nice_fonts = {
