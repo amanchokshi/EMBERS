@@ -317,9 +317,12 @@ ti = [
         marker="o",
         markerfacecolor=c,
         markersize=7,
+        markeredgecolor="black",
+        markeredgewidth=0.4,
     )
     for c in colors
 ]
+
 
 lines = [fee_leg]
 for i in ti:
