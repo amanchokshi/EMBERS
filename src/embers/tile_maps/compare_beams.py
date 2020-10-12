@@ -158,7 +158,7 @@ def beam_slice(nside, tile_map, fee_map, out_dir):
                 sub=(2, 2, 4),
                 fig=fig1,
                 title="diff map",
-                cmap="inferno",
+                cmap="RdYlGn",
                 vmin=-10,
                 vmax=5,
                 cbar=False,
