@@ -9,9 +9,11 @@ from pathlib import Path
 import matplotlib
 import numpy as np
 from embers.rf_tools.align_data import savgol_interp
+from embers.rf_tools.colormaps import spectral
 from matplotlib import pyplot as plt
 
 matplotlib.use("Agg")
+_spec, _ = spectral()
 
 parser = argparse.ArgumentParser(
     description="""
@@ -78,6 +80,8 @@ try:
 
     fig = plt.figure(figsize=(3.6, 2.4))
 
+    colors = _spec([0.14, 0.35])
+
     tile_t = tile_time - tile_time[0]
     time_array = time_array - time_array[0]
 
@@ -89,14 +93,16 @@ try:
         time_array,
         tile_p_aligned[::, ch],
         linewidth=1,
-        color="#2c5d63",
+        color=colors[0],
+        #  color="#2c5d63",
         alpha=0.9,
         label="SavGol",
     )
     plt.scatter(
         tile_t,
         tile_p[::, ch],
-        color="#7fa998",
+        color=colors[1],
+        #  color="#7fa998",
         marker=".",
         s=2,
         alpha=0.6,
