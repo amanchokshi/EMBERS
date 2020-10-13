@@ -9,11 +9,14 @@ from pathlib import Path
 import healpy as hp
 import matplotlib
 import numpy as np
+from embers.rf_tools.colormaps import spectral
 from matplotlib import pyplot as plt
 from numpy.polynomial import polynomial as poly
 from scipy.stats import median_absolute_deviation as mad
 
 matplotlib.use("Agg")
+_spec, _ = spectral()
+colors = _spec([0.72, 0.30, 0.18])
 
 parser = argparse.ArgumentParser(
     description="""
@@ -247,7 +250,7 @@ try:
 
     fig = plt.figure(figsize=(3.6, 2.4))
 
-    plt.style.use("seaborn")
+    #  plt.style.use("seaborn")
     # plt.errorbar(
     #       za, ref_prof[0][0], yerr=ref_prof[0][1],
     #       fmt='.', color='#326765', ecolor='#7da87b',
@@ -272,18 +275,31 @@ try:
     #
     # plt.plot(za, ref_prof[2][2], linewidth=1.4, alpha=1, color='#fa4659', label=r'8$^{th}$ order fit')
 
-    plt.plot(
-        za, ref_prof[0][2], linewidth=1.4, alpha=1, color="#070d59", label="ORBCOMM"
-    )
-    plt.scatter(za, ref_prof[0][0], color="#070d59", alpha=0.6, marker="o", s=14)
+    #  plt.plot(
+    #  za, ref_prof[0][2], linewidth=1.4, alpha=1, color="#070d59", label="ORBCOMM"
+    #  )
+    #  plt.scatter(za, ref_prof[0][0], color="#070d59", alpha=0.6, marker="o", s=14)
+
+    #  plt.plot(
+    #  za, ref_prof[2][2], linewidth=1.4, alpha=1, color="#5893d4", label="METEOR"
+    #  )
+    #  plt.scatter(za, ref_prof[2][0], color="#5893d4", alpha=0.6, marker="o", s=14)
+
+    #  plt.plot(za, ref_prof[1][2], linewidth=1.4, alpha=1, color="#729d39", label="NOAA")
+    #  plt.scatter(za, ref_prof[1][0], color="#729d39", alpha=0.6, marker="o", s=14)
 
     plt.plot(
-        za, ref_prof[2][2], linewidth=1.4, alpha=1, color="#5893d4", label="METEOR"
+        za, ref_prof[0][2], linewidth=1.4, alpha=1, color=colors[0], label="ORBCOMM"
     )
-    plt.scatter(za, ref_prof[2][0], color="#5893d4", alpha=0.6, marker="o", s=14)
+    plt.scatter(za, ref_prof[0][0], color=colors[0], alpha=0.6, marker="o", s=14)
 
-    plt.plot(za, ref_prof[1][2], linewidth=1.4, alpha=1, color="#729d39", label="NOAA")
-    plt.scatter(za, ref_prof[1][0], color="#729d39", alpha=0.6, marker="o", s=14)
+    plt.plot(
+        za, ref_prof[2][2], linewidth=1.4, alpha=1, color=colors[1], label="METEOR"
+    )
+    plt.scatter(za, ref_prof[2][0], color=colors[1], alpha=0.6, marker="o", s=14)
+
+    plt.plot(za, ref_prof[1][2], linewidth=1.4, alpha=1, color=colors[2], label="NOAA")
+    plt.scatter(za, ref_prof[1][0], color=colors[2], alpha=0.6, marker="o", s=14)
 
     leg = plt.legend(frameon=True, markerscale=1, handlelength=1)
     leg.get_frame().set_facecolor("white")
