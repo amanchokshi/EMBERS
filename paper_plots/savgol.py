@@ -80,7 +80,7 @@ try:
 
     fig = plt.figure(figsize=(3.6, 2.4))
 
-    colors = _spec([0.14, 0.35])
+    colors = _spec([0.14, 0.28])
 
     tile_t = tile_time - tile_time[0]
     time_array = time_array - time_array[0]
@@ -104,8 +104,8 @@ try:
         color=colors[1],
         #  color="#7fa998",
         marker=".",
-        s=2,
-        alpha=0.6,
+        s=3,
+        alpha=0.2,
         label="AUT raw",
     )
 
