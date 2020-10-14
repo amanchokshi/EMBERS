@@ -14,6 +14,10 @@ from embers.sat_utils.sat_channels import time_tree
 from embers.tile_maps.beam_utils import chisq_fit_gain, rotate_map
 from embers.tile_maps.tile_maps import check_pointing, rf_apply_thresholds
 from matplotlib import pyplot as plt
+from embers.rf_tools.colormaps import spectral
+
+_spec, _ = spectral()
+colors = _spec([0.72, 0.30, 0.18])
 
 matplotlib.use("Agg")
 
@@ -77,13 +81,15 @@ def plt_fee_fit(
     times = (times - min(times))/60
 
     ax1.scatter(
-        times, mwa_fee_pass, color="#c70039", alpha=0.6, marker="p", s=10, label=r"B$_{fee}$"
+        times, mwa_fee_pass, color=colors[0], alpha=0.6, marker="p", s=10, label=r"B$_{fee}$"
+        #  times, mwa_fee_pass, color="#c70039", alpha=0.6, marker="p", s=10, label=r"B$_{fee}$"
     )
 
     ax1.scatter(
         times,
         mwa_pass_fit_raw,
-        color="#7da87b",
+        color=colors[1],
+        #  color="#7da87b",
         alpha=0.9,
         marker="p",
         s=10,
@@ -94,7 +100,8 @@ def plt_fee_fit(
     ax1.scatter(
         times,
         mwa_pass_fit,
-        color="#023e8a",
+        color=colors[2],
+        #  color="#023e8a",
         alpha=0.9,
         marker="p",
         s=10,
@@ -105,8 +112,7 @@ def plt_fee_fit(
     ax1.set_xlabel("Time [minutes]")
 
     leg = ax1.legend(frameon=True, markerscale=2, loc="upper left")
-    leg.get_frame().set_facecolor("grey")
-    leg.get_frame().set_alpha(0.2)
+    leg.get_frame().set_facecolor("white")
     for le in leg.legendHandles:
         le.set_alpha(1)
 
