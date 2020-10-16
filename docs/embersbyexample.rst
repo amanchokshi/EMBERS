@@ -18,7 +18,7 @@ Setup
 The above creates an :samp:`EMBERS` directory, within which we can run our example code. Outputs will by default, be saved to :samp:`~/EMBERS/embers_out`.
 
 A set of cli-tools enable easy interactions with the *EMBERS* packages. Each of the available tools can be executed with either of the following methods.
-The sample below demonstartes the usage of an example tool called :samp:`test_tool`. 
+The sample below demonstartes the usage of an example tool called :samp:`test_tool`.
 
 
 .. code-block:: console
