@@ -72,7 +72,7 @@ These expressions can be combined to obtain the beam response of the AUT:
 
 With each satellite pass, we measure a cross sectional slice of the AUT beam response. With sufficient observation time, an all-sky beam response is built up.
 
-![MWA beam maps generated using *EMBERS* with data from (Chokshi et al, in prep)](https://raw.githubusercontent.com/amanchokshi/EMBERS/master/docs/_static/imgs/beam_maps_joss.jpg)
+![MWA beam maps generated using *EMBERS* with data from (Chokshi et al, in prep). The first row ((i) - (iii)) represent all sky measured beam maps, while the second row ((iv) - (vi)) represent residuals between measurements and cutting edge simulations, with the gray regions denoting the nulls surrounding the primary and secondary beams.](https://raw.githubusercontent.com/amanchokshi/EMBERS/master/docs/_static/imgs/beam_maps_joss.jpg)
 
 
 # Acknowledgements
