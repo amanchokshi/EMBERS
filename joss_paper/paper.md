@@ -43,8 +43,9 @@ instrumental models.
 
 # Statement of Need
 
-Chokshi et al (in prep) represents the first complete large scale implementation of a satellite based beam measurement system. The large data volume recorded over 6
-months of observations necessitated the creation of an automated pipeline for its analysis. *EMBERS* contains modules to pre-process and temporally align raw
+Chokshi et al (in prep) represents the first complete large scale implementation of a satellite based beam measurement system. Previous efforts have at 
+satellite based beam measurements have validated this method on a significantly smaller scale. The large data volume recorded over 6
+months of observations and the absence of modular, parallelized software packages, necessitated the creation of an automated pipeline for its analysis. *EMBERS* contains modules to pre-process and temporally align raw
 RF data, download large batches of satellite ephemerides from Space-Track.org^[https://www.space-track.org] and compute the trajectories of satellites using
 Skyfield [@Skyfield_2019]. *EMBERS* implements a unique cross-matching technique to automatically determine the transmission frequency of satellites based on
 their trajectories and observed RF power. Satellite signals are further processed to remove modulations due to the satellites and non-linear 
