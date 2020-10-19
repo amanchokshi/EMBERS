@@ -2,6 +2,7 @@ include LICENSE
 include README.md
 include MANIFEST.in
 include requirements.txt
+recursive-include cmasher src/*
 recursive-exclude docs *
 exclude *.yml
 recursive-exclude * __pycache__
