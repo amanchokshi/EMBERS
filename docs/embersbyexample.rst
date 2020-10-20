@@ -68,7 +68,8 @@ RF Tools
 
 Waterfall Plots
 ^^^^^^^^^^^^^^^
-To get a quick preview of the raw RF data, we create waterfall plots. The following code creates a waterfall plot of sample data provided with *EMBERS*
+To get a quick preview of the raw RF data, we create waterfall plots. The following code creates a waterfall plot of sample data provided with *EMBERS* using 
+the :func:`~embers.rf_tools.rf_data.single_waterfall` function. 
 
 .. code-block:: console
 
