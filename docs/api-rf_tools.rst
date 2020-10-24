@@ -13,6 +13,7 @@
 .. autofunction:: embers.rf_tools.rf_data.plt_waterfall
 .. autofunction:: embers.rf_tools.rf_data.single_waterfall
 .. autofunction:: embers.rf_tools.rf_data.batch_waterfall
+.. autofunction:: embers.rf_tools.rf_data.waterfall_batch
 
 .. automodule:: embers.rf_tools.align_data
 .. autofunction:: embers.rf_tools.align_data.savgol_interp

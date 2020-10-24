@@ -8,13 +8,11 @@ Output files are saved to ``./embers_out/rf_tools/waterfalls``
 """
 
 import argparse
-import concurrent.futures
 import logging
-from itertools import repeat
 from pathlib import Path
 
 import pkg_resources
-from embers.rf_tools.rf_data import batch_waterfall, tile_names, time_tree
+from embers.rf_tools.rf_data import waterfall_batch
 
 _parser = argparse.ArgumentParser(
     description="""
@@ -73,41 +71,6 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(levelname)s: %(funcName)s: %(message)s",
 )
-
-
-def waterfall_batch(start_date, stop_date, data_dir, out_dir):
-    """
-    Save a series of waterfall plots in parallel.
-
-    Parameters
-    ----------
-    :param start_date: date in style YYYY-MM-DD
-    :type start_date: str
-    :param stop_date: date in style YYYY-MM-DD
-    :type stop_date: str
-    :param data_dir: path to root of rf data dir
-    :type data_dir: str
-    :param out_dir: path to output dir
-    :type out_dir: str
-
-    """
-
-    dates, time_stamps = time_tree(start_date, stop_date)
-
-    for tile in tile_names():
-        for day in range(len(dates)):
-
-            with concurrent.futures.ProcessPoolExecutor() as executor:
-                results = executor.map(
-                    batch_waterfall,
-                    repeat(tile),
-                    time_stamps[day],
-                    repeat(data_dir),
-                    repeat(out_dir),
-                )
-
-            for result in results:
-                logging.info(result)
 
 
 def main():

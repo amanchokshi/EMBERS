@@ -7,10 +7,12 @@ RF Explorers and visualise waterfall plots
 
 """
 
+import concurrent.futures
+import logging
 import re
 import time
 from datetime import datetime, timedelta
-from itertools import product
+from itertools import product, repeat
 from pathlib import Path
 
 import matplotlib
@@ -352,3 +354,38 @@ def batch_waterfall(tile, time_stamp, data_dir, out_dir):
 
     except Exception as e:
         return e
+
+
+def waterfall_batch(start_date, stop_date, data_dir, out_dir):
+    """
+    Save a series of waterfall plots in parallel.
+
+    Parameters
+    ----------
+    :param start_date: date in style YYYY-MM-DD
+    :type start_date: str
+    :param stop_date: date in style YYYY-MM-DD
+    :type stop_date: str
+    :param data_dir: path to root of rf data dir
+    :type data_dir: str
+    :param out_dir: path to output dir
+    :type out_dir: str
+
+    """
+
+    dates, time_stamps = time_tree(start_date, stop_date)
+
+    for tile in tile_names():
+        for day in range(len(dates)):
+
+            with concurrent.futures.ProcessPoolExecutor() as executor:
+                results = executor.map(
+                    batch_waterfall,
+                    repeat(tile),
+                    time_stamps[day],
+                    repeat(data_dir),
+                    repeat(out_dir),
+                )
+
+            for result in results:
+                logging.info(result)
