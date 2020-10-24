@@ -68,8 +68,8 @@ RF Tools
 
 Waterfall Plots
 ^^^^^^^^^^^^^^^
-To get a quick preview of the raw RF data, we create waterfall plots. The following code creates a waterfall plot of sample data provided with *EMBERS* using 
-the :func:`~embers.rf_tools.rf_data.single_waterfall` function. 
+To get a quick preview of the raw RF data, we create waterfall plots. Creates a waterfall plot of sample data provided with *EMBERS* using 
+the :func:`~embers.rf_tools.rf_data.single_waterfall` function with the :samp:`waterfall_single` cli tool: 
 
 .. code-block:: console
 
@@ -79,6 +79,22 @@ the :func:`~embers.rf_tools.rf_data.single_waterfall` function.
     >>> waterfall_single --help, for more options
     --------------------------------------------------
     Waterfall plot saved to ./embers_out/rf_tools/S06XX_2019-10-10-02:30.png
+
+Or using :func:`~embers.rf_tools.rf_data.single_waterfall` as shown in the example below:
+
+.. code-block:: python
+
+    import pkg_resources
+    from embers.rf_tools.rf_data import single_waterfall
+
+    # If no data provided, use package sample data
+    rf_file = pkg_resources.resource_filename(
+        "embers.kindle", "data/rf_data/S06XX/2019-10-10/S06XX_2019-10-10-02:30.txt"
+    )
+    out_dir  = "embers_out/rf_tools"
+
+    single_waterfall(rf_file, out_dir)
+
 
 .. image:: _static/imgs/waterfall_sample.png
     :width: 100%
