@@ -131,6 +131,16 @@ To get a preview of how amazing they are
 
     $ colormaps
 
+.. code-block:: python
+
+    from embers.rf_tools.colormaps import plt_colormaps, jade, spectral
+
+    spec, spec_r = spectral()
+    jade, jade_r = jade()
+    out_dir="./embers_out/rf_tools"
+
+    plt_colormaps(spec, spec_r, jade, jade_r, out_dir)
+
 .. image:: _static/imgs/colormaps.png
     :width: 100%
     :alt: EMBERS custom colormaps
@@ -203,7 +213,7 @@ Alternately, the following sample code may be used to achieve identical results:
     :width: 100%
     :alt: EMBERS custom colormaps
 
-We can now align all the raw RF files within a date interval using the :func:`~embers.rf_tools.align_data.align_batch` function. Every pair of reference and 
+We can now align all the raw RF files within a date interval using the :func:`~embers.rf_tools.align_data.align_batch` function. Every pair of reference and
 MWA tile are smoothed and aligned and saved to compressed :samp:`npz` file by :func:`~numpy.savez_compressed`.
 
 **WARNING:** This is probably the most resource hungry section. It typically took me 2 days to process 5 months of data, on a machine with 40 cpu cores. Beware, and be patient.
