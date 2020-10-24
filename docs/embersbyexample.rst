@@ -100,11 +100,26 @@ Or using :func:`~embers.rf_tools.rf_data.single_waterfall` as shown in the examp
     :width: 100%
     :alt: Waterfall Plot
 
-We can also create a set of waterfall plots for all rf_files within a date interval
+We can also create a set of waterfall plots for all rf_files within a date interval using the :func:`~embers.rf_tools.rf_data.waterfall_batch` function, with
+either the provided cli tool or with the following example code
 
 .. code-block:: console
 
     $ waterfall_batch --start_date=YYYY-MM-DD --stop_date=YYYY-MM-DD --data_dir=./tiles_data
+
+
+.. code-block:: python
+
+    import pkg_resources
+    from embers.rf_tools.rf_data import waterfall_batch
+
+    # If no data provided, use package sample data
+    data_dir = pkg_resources.resource_filename("embers.kindle", "data/rf_data/")
+    start_date = "2019-10-01"
+    stop_date = "2019-10-10"
+    out_dir  = "embers_out/rf_tools"
+
+    waterfall_batch(start_date, stop_date, data_dir, out_dir)
 
 Colormaps
 ^^^^^^^^^
