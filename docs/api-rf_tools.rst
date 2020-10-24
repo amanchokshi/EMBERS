@@ -19,6 +19,7 @@
 .. autofunction:: embers.rf_tools.align_data.savgol_interp
 .. autofunction:: embers.rf_tools.align_data.plot_savgol_interp
 .. autofunction:: embers.rf_tools.align_data.save_aligned
+.. autofunction:: embers.rf_tools.align_data.align_batch
 
 .. automodule:: embers.rf_tools.colormaps
 .. autofunction:: embers.rf_tools.colormaps.spectral

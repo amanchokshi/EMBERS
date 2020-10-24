@@ -9,14 +9,9 @@ before temorally aligning the. Save aligned data as npz files to
 """
 
 import argparse
-import concurrent.futures
-import logging
-from itertools import repeat
-from pathlib import Path
 
 import pkg_resources
-from embers.rf_tools.align_data import save_aligned
-from embers.rf_tools.rf_data import tile_names, tile_pairs, time_tree
+from embers.rf_tools.align_data import align_batch
 
 _parser = argparse.ArgumentParser(
     description="""
@@ -106,52 +101,6 @@ if _stop_date == "":
     print(">>> align_batch --help, for more options")
     print("----------------------------------------------------------")
     _stop_date = "2019-10-10"
-
-
-# Logging config
-_log_dir = Path(f"{_out_dir}")
-_log_dir.mkdir(parents=True, exist_ok=True)
-logging.basicConfig(
-    filename=f"{_out_dir}/align_batch.log",
-    level=logging.INFO,
-    format="%(levelname)s: %(funcName)s: %(message)s",
-)
-
-
-def align_batch(
-    start_date=None,
-    stop_date=None,
-    savgol_window_1=None,
-    savgol_window_2=None,
-    polyorder=None,
-    interp_type=None,
-    interp_freq=None,
-    data_dir=None,
-    out_dir=None,
-):
-
-    dates, time_stamps = time_tree(start_date, stop_date)
-
-    for pair in tile_pairs(tile_names()):
-
-        for day in range(len(dates)):
-
-            with concurrent.futures.ProcessPoolExecutor() as executor:
-                results = executor.map(
-                    save_aligned,
-                    repeat(pair),
-                    time_stamps[day],
-                    repeat(savgol_window_1),
-                    repeat(savgol_window_2),
-                    repeat(polyorder),
-                    repeat(interp_type),
-                    repeat(interp_freq),
-                    repeat(data_dir),
-                    repeat(out_dir),
-                )
-
-            for result in results:
-                logging.info(result)
 
 
 def main():

@@ -6,12 +6,16 @@ enabling comparisons between data sets
 
 """
 
+import concurrent.futures
+import logging
 import math
 import re
+from itertools import repeat
 from pathlib import Path
 
 import numpy as np
-from embers.rf_tools.rf_data import read_data
+from embers.rf_tools.rf_data import (read_data, tile_names, tile_pairs,
+                                     time_tree)
 from matplotlib import pyplot as plt
 from scipy import interpolate
 from scipy.signal import savgol_filter
@@ -294,3 +298,65 @@ def save_aligned(
 
     except Exception as e:
         return e
+
+
+def align_batch(
+    start_date=None,
+    stop_date=None,
+    savgol_window_1=None,
+    savgol_window_2=None,
+    polyorder=None,
+    interp_type=None,
+    interp_freq=None,
+    data_dir=None,
+    out_dir=None,
+):
+    """Temporally align all RF files within a date interval using :func:`~embers.rf_tools.align_data.save_aligned`.
+
+
+    :param start_date: In YYYY-MM-DD format :class:`~str`
+    :param stop_date: In YYYY-MM-DD format :class:`~str`
+    :param savgol_window_1:  window size of savgol filer, must be odd :class:`~int`
+    :param savgol_window_2:  window size of savgol filer, must be odd :class:`~int`
+    :param polyorder: polynomial order to fit to savgol_window :class:`~int`
+    :param interp_type: type of interpolation. Ex: 'cubic', 'linear' :class:`~str`
+    :param interp_freq: freqency to which power array is interpolated :class:`~int`
+    :param data_dir: root of data dir where rf data is located :class:`~str`
+    :param out_dir: relative path to output directory :class:`~str`
+
+    :return:
+        - aligned rf data saved to :samp:`npz` file by :func:`~numpy.savez_compressed` in :samp:`out_dir`
+
+    """
+
+    dates, time_stamps = time_tree(start_date, stop_date)
+
+    # Logging config
+    log_dir = Path(f"{out_dir}")
+    log_dir.mkdir(parents=True, exist_ok=True)
+    logging.basicConfig(
+        filename=f"{out_dir}/align_batch.log",
+        level=logging.INFO,
+        format="%(levelname)s: %(funcName)s: %(message)s",
+    )
+
+    for pair in tile_pairs(tile_names()):
+
+        for day in range(len(dates)):
+
+            with concurrent.futures.ProcessPoolExecutor() as executor:
+                results = executor.map(
+                    save_aligned,
+                    repeat(pair),
+                    time_stamps[day],
+                    repeat(savgol_window_1),
+                    repeat(savgol_window_2),
+                    repeat(polyorder),
+                    repeat(interp_type),
+                    repeat(interp_freq),
+                    repeat(data_dir),
+                    repeat(out_dir),
+                )
+
+            for result in results:
+                logging.info(result)
