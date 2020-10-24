@@ -68,8 +68,8 @@ RF Tools
 
 Waterfall Plots
 ^^^^^^^^^^^^^^^
-To get a quick preview of the raw RF data, we create waterfall plots. Creates a waterfall plot of sample data provided with *EMBERS* using 
-the :func:`~embers.rf_tools.rf_data.single_waterfall` function with the :samp:`waterfall_single` cli tool: 
+To get a quick preview of the raw RF data, we create waterfall plots. Creates a waterfall plot of sample data provided with *EMBERS* using
+the :func:`~embers.rf_tools.rf_data.single_waterfall` function with the :samp:`waterfall_single` cli tool:
 
 .. code-block:: console
 
@@ -138,13 +138,14 @@ To get a preview of how amazing they are
 Align Data
 ^^^^^^^^^^
 
-The RF Explorers used to record satellite data did not record data at exactly the same frequency and do not start recording at exactly the same time.
+The RF Explorers used to record satellite data may not record data at exactly the same frequency and may not start recording at exactly the same time.
 In fact, the older models record at approximately 6 Hz, while the newer ones are capable of a sampling rate of nearly 9 Hz. This discrepency in sampling
 rates makes it difficult to compare any two data samples. This issue is overcome by smoothing the data, along the time axis, with a Savitzky-Golay filter.
-Interpolating the smoothed data and resampling it at a constant frequency [ 0.5 Hz ] gives us a easier data set to work with.
+Interpolating the smoothed data and resampling it at a constant frequency [ 1 Hz ] gives us a easier data set to work with.
 
-Two level of savgol filters are applied, first to capture deep nulls + small structure, and second level to smooth over noise. :samp:`align_single` can be
-used to play with the various parameters available. Sensible defaults are provided as a starting point. The following code plots one frequency channel of
+Two level of savgol filters are applied, first to capture deep nulls + small structure, and second level to smooth over noise. A cli tool :samp:`align_single`,
+based on the :func:`~embers.rf_tools.align_data.plot_savgol_interp` function,
+can be used to play with the various parameters available. Sensible defaults are provided as a starting point. The following code plots one frequency channel of
 RF data and shows the efficacy of the selected smoothing filter.
 
 .. code-block:: console
@@ -160,18 +161,90 @@ RF data and shows the efficacy of the selected smoothing filter.
     Saving sample savgol_interp plot to: ./embers_out/rf_tools
 
 
+Alternately, the following sample code may be used to achieve identical results:
+
+.. code-block:: python
+
+    import pkg_resources
+    from embers.rf_tools.align_data import plot_savgol_interp
+
+    savgol_window_1=11
+    savgol_window_2=15
+    polyorder=2
+    interp_type="cubic"
+    interp_freq=1
+    channel=59
+    out_dir="./embers_out/rf_tools"
+
+
+    ref_file = pkg_resources.resource_filename(
+        "embers.kindle", "data/rf_data/rf0XX/2019-10-10/rf0XX_2019-10-10-02:30.txt"
+    )
+
+    tile_file = pkg_resources.resource_filename(
+        "embers.kindle", "data/rf_data/S06XX/2019-10-10/S06XX_2019-10-10-02:30.txt"
+    )
+
+
+    plot_savgol_interp(
+        ref=ref_file,
+        tile=tile_file,
+        savgol_window_1=savgol_window_1,
+        savgol_window_2=savgol_window_2,
+        polyorder=polyorder,
+        interp_type=interp_type,
+        interp_freq=interp_freq,
+        channel=channel,
+        out_dir=out_dir,
+    )
+
+
 .. image:: _static/imgs/align_data.png
     :width: 100%
     :alt: EMBERS custom colormaps
 
-We can now align all the raw RF files within a date interval. Every pair of reference and MWA tile are smoothed and aligned and saved to compressed
-:samp:`npz` file by :func:`~numpy.savez_compressed`.
+We can now align all the raw RF files within a date interval using the :func:`~embers.rf_tools.align_data.align_batch` function. Every pair of reference and 
+MWA tile are smoothed and aligned and saved to compressed :samp:`npz` file by :func:`~numpy.savez_compressed`.
 
 **WARNING:** This is probably the most resource hungry section. It typically took me 2 days to process 5 months of data, on a machine with 40 cpu cores. Beware, and be patient.
+
+The :samp:`align_batch` cli tool is a convenient way to align large volumes of data
 
 .. code-block:: console
 
     $ align_batch --start_date=YYYY-MM-DD --stop_date=YYYY-MM-DD --data_dir=./tiles_data
+
+
+Alternately, the following sample code may be used to achieve identical results:
+
+.. code-block:: python
+
+    import pkg_resources
+    from embers.rf_tools.align_data import align_batch
+
+    start_date="2019-10-01"
+    stop_date="2019-10-10"
+    savgol_window_1=11
+    savgol_window_2=15
+    polyorder=2
+    interp_type="cubic"
+    interp_freq=1
+    out_dir="./embers_out/rf_tools"
+
+    data_dir = pkg_resources.resource_filename("embers.kindle", "data/rf_data/")
+
+
+    align_batch(
+        start_date=start_date,
+        stop_date=stop_date,
+        savgol_window_1=savgol_window_1,
+        savgol_window_2=savgol_window_2,
+        polyorder=polyorder,
+        interp_type=interp_type,
+        interp_freq=interp_freq,
+        data_dir=data_dir,
+        out_dir=out_dir,
+    )
 
 
 Sat Utils
@@ -432,7 +505,7 @@ Tile Maps
 Batch process satellite RF data to create MWA beam maps and intermediate plots.
 
 As in the previous section, satellite data is gridded onto a healpix map based on ephemeris trajectories in the sky. The data from the MWA tiles is corrected
-using the RF Explorer gain calibration solution formed in the perevious section. A couple of different types of data products are created. 
+using the RF Explorer gain calibration solution formed in the perevious section. A couple of different types of data products are created.
 
 .. code-block:: console
 
@@ -476,8 +549,8 @@ Sat Plots
 .........
 Using the raw tile maps generated above, we can plot sky coverage maps for each of the 72 satellites used. This proccess was extremely useful in showing us
 that most of the 72 selected satellites are out of the frequnecy window of this experiment. This is seen by extremely sparce sky coverage for satellite data
-collected over the course of 6 months, which strongly suggests that the few passes identifies in these sparce satellite maps must be misidentifications 
-at the :samp:`satellite channels` stage of processing. We use these maps to select 18 good satellites which have excellent sky coverage. 
+collected over the course of 6 months, which strongly suggests that the few passes identifies in these sparce satellite maps must be misidentifications
+at the :samp:`satellite channels` stage of processing. We use these maps to select 18 good satellites which have excellent sky coverage.
 
 .. image:: _static/imgs/25984_0_passes.png
    :width: 32%
@@ -489,7 +562,7 @@ at the :samp:`satellite channels` stage of processing. We use these maps to sele
    :width: 32%
 
 For further processing, we restrict our maps to data from the 18 good satellite, which significantly improves the quality of the beam maps by excluding spurious
-misidentified signals. 
+misidentified signals.
 
 We also plot profiles of each satellite pass to see how effective the RF Explorer gain calibration is and also implement a p-value goodness of fit test, which
 is used to filter out the last couple of bad signals which have persisted. This filter is set to a very conservative value, only rejecting satellite passes which
@@ -513,7 +586,7 @@ tile data.
 
 Tile Maps Clean
 ...............
-We now form clean MWA beam maps at all four pointings (0, 2, 4, 41), using the 18 good satellites. The first row of images are MWA beam maps, the 
+We now form clean MWA beam maps at all four pointings (0, 2, 4, 41), using the 18 good satellites. The first row of images are MWA beam maps, the
 second row are satellite pass counts in each pixel while the third row are errors on each pixel.
 
 .. image:: _static/imgs/S07XX_rf0XX_0_clean_map.png
