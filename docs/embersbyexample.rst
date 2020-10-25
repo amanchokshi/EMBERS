@@ -410,7 +410,7 @@ or the equivalent sample script
 
 Satellite Channels
 ^^^^^^^^^^^^^^^^^^
-As access to the ORBCOMM interface box was not available, the channels in which each satellite transimits can be determined with a careful analysis of the
+As access to the ORBCOMM interface box is not readily available, the channels in which each satellite transimits can be determined with a careful analysis of the
 RF data and satellite ephemeris. We use reference data to detect satellite channels because it has the best SNR. Pairing a reference RF data file, with it's
 corresponding chrono_ephem.json file gives us the satellite expected within each 30 minute observation. Looping over the satellites in the chrono_ephem files,
 we identify the temporal region of the rf data where we expect to see its signal. We now use a series of thresholding criteria to help identify the most
@@ -440,9 +440,43 @@ window, and less than 100%. By default the :samp:`window occupancy` is defined a
 
 :samp:`0.8` ≤ :samp:`window occupancy` ≤ :samp:`1.0`
 
+The analysis discusses above is implemented with the :func:`~embers.sat_utils.sat_channels.batch_window_map` function. Satellite channels can be identified with
+the :samp:`sat_channels` cli tool:
+
 .. code-block:: console
 
     sat_channels --start_date=YYYY-MM-DD --stop_date=YYYY-MM-DD --plots=True
+
+or the sample script below:
+
+.. code-block:: python
+
+    from embers.sat_utils.sat_channels import batch_window_map
+
+    start_date = "2019-10-01"
+    stop_date = "2019-10-10"
+    ali_dir = "./embers_out/rf_tools/align_data"
+    chrono_dir = "./embers_out/sat_utils/ephem_chrono"
+    sat_thresh = 1
+    noi_thresh = 3
+    pow_thresh = 15
+    occ_thresh = 0.80
+    out_dir = "./embers_out/sat_utils/sat_channels"
+    plots = True
+
+    batch_window_map(
+        start_date,
+        stop_date,
+        ali_dir,
+        chrono_dir,
+        sat_thresh,
+        noi_thresh,
+        pow_thresh,
+        occ_thresh,
+        out_dir,
+        plots=plots,
+    )
+
 
 In the following waterfall plots, the horizontal highlighted band represents the temporal window, while the vertical highlighted channels represent possible
 identified channels. The green vertical channel represents the most probable channel.
