@@ -338,7 +338,7 @@ the :func:`~embers.sat_utils.sat_ephemeris.save_ephem` with either the following
     sat_name = tle_file.stem
     tle_dir = tle_file.parents[0]
 
-    status = save_ephem(_sat_name, _tle_dir, _cadence, _location, _alpha, _out_dir,)
+    status = save_ephem(sat_name, tle_dir, cadence, location, out_dir)
     print(status)
 
 
@@ -346,13 +346,31 @@ the :func:`~embers.sat_utils.sat_ephemeris.save_ephem` with either the following
     :width: 100%
     :alt: EMBERS custom colormaps
 
-Analysing a batch of TLE files is achieved with :samp:`ephem_batch`, which converts the TLE files downloaded with :samp:`download_tle` into satellite ephemeris
-data: rise time, set time, alt/az arrays at a given time cadence. This is saved to a npz file which will be used to plot the satellite sky coverage over the
-geographic location supplied.
+Analysing a batch of TLE files is achieved with the :func:`embers.sat_utils.sat_ephemeris.ephem_batch` function, which converts the TLE files downloaded with
+:samp:`download_tle` into satellite ephemeris data: rise time, set time, alt/az arrays at a given time cadence. This is saved to a npz file which will be used
+to plot the satellite sky coverage over the geographic location supplied. It can be used with the following cli tool
+
+.. warning::
+    The following example will only work if TLE files have been downloaded as described above
 
 .. code-block:: console
 
-    $ ephem_batch
+    $ ephem_batch --help
+
+or with the equivalent example script
+
+.. code-block:: python
+
+    from embers.sat_utils.sat_ephemeris import ephem_batch
+
+    cadence = 4
+    out_dir = "./embers_out/sat_utils/"
+    tle_dir = "./embers_out/sat_utils/TLE"
+    location = (-26.703319, 116.670815, 337.83)
+
+    ephem_batch(tle_dir, cadence, location, out_dir)
+
+
 
 Chronological ephemeris
 ^^^^^^^^^^^^^^^^^^^^^^^
