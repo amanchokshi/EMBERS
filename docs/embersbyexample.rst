@@ -305,8 +305,10 @@ or with the following example script
 
 Satellite ephemeris
 ^^^^^^^^^^^^^^^^^^^
-The downloaded TLE files must be parsed and analysed before they make any sense. A python package called :class:`~skyfield` was invaluable for this, enabling
+The downloaded TLE files must be parsed and analysed before they make any sense. A python package called :samp:`skyfield` and it's
+:class:`~skyfield.sgp4lib.EarthSatellite` class were invaluable for this, enabling
 the computation of satellites trajectories over a geographical location (MWA telescope). Sample TLE data can be analysed and a sky coverage plot created with
+the :func:`~embers.sat_utils.sat_ephemeris.save_ephem` with either the following cli tool or the equivalent sample code.
 
 
 .. code-block:: console
@@ -318,6 +320,27 @@ the computation of satellites trajectories over a geographical location (MWA tel
     ----------------------------------------------------
     Saved sky coverage plot of satellite [25984] to ./embers_out/sat_utils/ephem_plots
     Saved ephemeris of satellite [25984] to ./embers_out/sat_utils/ephem_data
+
+
+.. code-block:: python
+
+    import pkg_resources
+    from pathlib import Path
+    from embers.sat_utils.sat_ephemeris import save_ephem
+
+    cadence = 4
+    location = (-26.703319, 116.670815, 337.83)
+    out_dir = "./embers_out/sat_utils/"
+
+    tle_file = Path(
+        pkg_resources.resource_filename("embers.kindle", "data/TLE/25984.txt")
+    )
+    sat_name = tle_file.stem
+    tle_dir = tle_file.parents[0]
+
+    status = save_ephem(_sat_name, _tle_dir, _cadence, _location, _alpha, _out_dir,)
+    print(status)
+
 
 .. image:: _static/imgs/ephem_single.png
     :width: 100%
