@@ -8,9 +8,10 @@ data to json files in :samp:`./embers_out/sat_utils/ephem_chrono`
 
 """
 
-import sys
 import argparse
+import sys
 from pathlib import Path
+
 from embers.sat_utils.chrono_ephem import save_chrono_ephem
 
 _parser = argparse.ArgumentParser(
@@ -70,8 +71,12 @@ _out_dir = _args.out_dir
 if _start_date == "":
     print("-------------------------------------------")
     print("No input dates provided")
+    print("Using 2019-10-01 - 2019-10-10")
     print(">>> chrono_ephem --help, for more options")
     print("-------------------------------------------")
+
+    _start_date = "2019-10-01"
+    _stop_date = "2019-10-10"
 
 
 def main():
