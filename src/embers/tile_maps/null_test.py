@@ -307,7 +307,7 @@ def null_test(nside, za_max, ref_model, map_dir, out_dir):
     plt.style.use("seaborn")
     nice_fonts = {
         "font.family": "sans-serif",
-        "axes.labelsize": 8,
+        "axes.labelsize": 10,
         "font.size": 10,
         "legend.fontsize": 6,
         "xtick.labelsize": 8,
