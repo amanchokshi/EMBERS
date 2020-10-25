@@ -278,22 +278,6 @@ def test_window_chan_map():
     shutil.rmtree(f"{test_data}/sat_utils/good_chans_tmp")
 
 
-#  def test_window_chan_map_err(capfd):
-    #  window_chan_map(
-        #  f"{test_data}/rf_tools/align_data",
-        #  f"{test_data}/sat_utils/chrono_json",
-        #  1,
-        #  3,
-        #  15,
-        #  0.8,
-        #  "2019-10-01-14:00",
-        #  f"{test_data}/sat_utils/good_chans_tmp",
-        #  False,
-    #  )
-    #  captured = capfd.readouterr()
-    #  assert captured.out == "list index out of range\n"
-
-
 def test_batch_window_map():
     batch_window_map(
         "2019-10-01",
