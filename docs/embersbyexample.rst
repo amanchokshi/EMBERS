@@ -270,11 +270,37 @@ Download Ephemeris
     To download TLEs from `Space-Track.org <https://www.space-track.org/>`_,
     make an account and obtain login credentials.
 
-Once valid login credentials have been obtained, download tle files with
+Once valid login credentials have been obtained, download tle files with the :func:`~embers.sat_utils.sat_list.download_tle` using the following cli tool
 
 .. code-block:: console
 
     $ download_tle --start_date=YYYY-MM-DD --stop_date=YYYY-MM-DD --st_ident=** --st_pass=**
+
+or with the following example script
+
+.. code-block:: python
+
+    from embers.sat_utils.sat_list import download_tle, norad_ids
+
+
+    start_date = "2019-10-01"
+    stop_date = "2019-10-10"
+    out_dir = "./embers_out/sat_utils/TLE"
+    n_ids = norad_ids()
+
+    # Make account on space-track.org and enter credentials below
+    st_ident = "test@user.com"
+    st_pass = "*******"
+
+    download_tle(
+        start_date,
+        stop_date,
+        n_ids,
+        st_ident=st_ident,
+        st_pass=st_pass,
+        out_dir=out_dir,
+    )
+
 
 
 Satellite ephemeris
