@@ -1,11 +1,7 @@
 import argparse
-import concurrent.futures
 import json
-import logging
-from itertools import repeat
-from pathlib import Path
 
-from embers.sat_utils.sat_ephemeris import save_ephem
+from embers.sat_utils.sat_ephemeris import ephem_batch
 
 _parser = argparse.ArgumentParser(
     description="""
@@ -58,43 +54,10 @@ _alpha = _args.alpha
 _out_dir = _args.out_dir
 
 
-# Logging config
-_log_dir = Path(f"{_out_dir}/ephem_data")
-_log_dir.mkdir(parents=True, exist_ok=True)
-logging.basicConfig(
-    filename=f"{_out_dir}/ephem_data/ephem_batch.log",
-    level=logging.INFO,
-    format="%(levelname)s: %(funcName)s: %(message)s",
-)
-
-
-def ephem_batch(tle_dir, cadence, location, alpha, out_dir):
-    """
-    Process ephemeris for multiple satellites in parallel.
-
-    """
-
-    sat_names = [tle.stem for tle in Path(_tle_dir).glob("*.txt")]
-
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(
-            save_ephem,
-            sat_names,
-            repeat(tle_dir),
-            repeat(cadence),
-            repeat(location),
-            repeat(alpha),
-            repeat(out_dir),
-        )
-
-    for result in results:
-        logging.info(result)
-
-
 def main():
     """Execute batch save_ephem from terminal."""
 
-    print(f"Saving logs to {_out_dir}ephem_data")
-    print(f"Saving sky coverage plots to {_out_dir}ephem_plots")
-    print(f"Saving ephemeris of satellites to {_out_dir}ephem_data")
+    print(f"Saving logs to {_out_dir}/ephem_data")
+    print(f"Saving sky coverage plots to {_out_dir}/ephem_plots")
+    print(f"Saving ephemeris of satellites to {_out_dir}/ephem_data")
     ephem_batch(_tle_dir, _cadence, _location, _alpha, _out_dir)

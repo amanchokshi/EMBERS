@@ -7,6 +7,9 @@ from TLE files.
 
 """
 
+import concurrent.futures
+import logging
+from itertools import repeat
 from pathlib import Path
 
 import matplotlib as mpl
@@ -365,14 +368,10 @@ def save_ephem(sat, tle_dir, cadence, location, alpha, out_dir):
             )
 
             try:
-                passes, alt, az = sat_pass(
-                    sats, t_arr, index_epoch, location=location
-                )
+                passes, alt, az = sat_pass(sats, t_arr, index_epoch, location=location)
 
                 for pass_index in passes:
-                    time_array, sat_alt, sat_az = ephem_data(
-                        t_arr, pass_index, alt, az
-                    )
+                    time_array, sat_alt, sat_az = ephem_data(t_arr, pass_index, alt, az)
 
                     sat_ephem["time_array"].append(time_array)
                     sat_ephem["sat_alt"].append(sat_alt)
@@ -390,3 +389,43 @@ def save_ephem(sat, tle_dir, cadence, location, alpha, out_dir):
         return f"Saved sky coverage plot of satellite [{sat}] to {out_dir}ephem_plots \nSaved ephemeris of satellite [{sat}] to {out_dir}ephem_data"
 
     return f"File {tle_dir}/{sat} is empty, skipping"
+
+
+def ephem_batch(tle_dir, cadence, location, alpha, out_dir):
+    """
+    Process ephemeris for multiple satellites in parallel.
+
+    :param tle_dir: path to directory where :samp:`TLE` files are saved :class:`~str`
+    :param cadence: time cadence at which to evaluate sat position, in seconds :class:`~int`
+    :param location: The :samp:`gps` coordinates of the :samp:`location` at which satellite passes are to be computed. :samp:`location` is a :class:`~tuple` in the format (:samp:`latitude`, :samp:`longitude`, :samp:`elevation`), with :samp:`elevation` given in :samp:`meters`
+    :param alpha: transparency of individual passes in :func:`~embers.sat_utils.sat_ephemeris.sat_plot` default=0.5
+    :param out_dir: path to output directory :class:`~str`
+
+    :returns:
+        - satellite ephemeris at :samp:`location` and sky coverage ephemeris plot, saved to :samp:`out_dir`
+
+    """
+
+    # Logging config
+    log_dir = Path(f"{out_dir}/ephem_data")
+    log_dir.mkdir(parents=True, exist_ok=True)
+    logging.basicConfig(
+        filename=f"{out_dir}/ephem_data/ephem_batch.log",
+        level=logging.INFO,
+        format="%(levelname)s: %(funcName)s: %(message)s",
+    )
+    sat_names = [tle.stem for tle in Path(tle_dir).glob("*.txt")]
+
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(
+            save_ephem,
+            sat_names,
+            repeat(tle_dir),
+            repeat(cadence),
+            repeat(location),
+            repeat(alpha),
+            repeat(out_dir),
+        )
+
+    for result in results:
+        logging.info(result)

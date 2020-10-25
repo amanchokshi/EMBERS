@@ -50,6 +50,7 @@ Sat Utils
     sat_ephemeris.ephem_data
     sat_ephemeris.sat_plot
     sat_ephemeris.save_ephem
+    sat_ephemeris.ephem_batch
     chrono_ephem.obs_times
     chrono_ephem.interp_ephem
     chrono_ephem.write_json
