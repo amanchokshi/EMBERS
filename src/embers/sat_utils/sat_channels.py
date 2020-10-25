@@ -628,36 +628,35 @@ def window_chan_map(
         if ali_files != []:
             ali_file = ali_files[0]
             chrono_file = f"{chrono_dir}/{timestamp}.json"
-            if Path(chrono_file).is_file():
 
-                with open(chrono_file) as chrono:
-                    chrono_ephem = json.load(chrono)
+            with open(chrono_file) as chrono:
+                chrono_ephem = json.load(chrono)
 
-                    if chrono_ephem != []:
+                if chrono_ephem != []:
 
-                        norad_list = [
-                            chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))
-                        ]
+                    norad_list = [
+                        chrono_ephem[s]["sat_id"][0] for s in range(len(chrono_ephem))
+                    ]
 
-                        if norad_list != []:
+                    if norad_list != []:
 
-                            for sat_id in norad_list:
+                        for sat_id in norad_list:
 
-                                sat_chan = good_chans(
-                                    ali_file,
-                                    chrono_file,
-                                    sat_id,
-                                    sat_thresh,
-                                    noi_thresh,
-                                    pow_thresh,
-                                    occ_thresh,
-                                    timestamp,
-                                    out_dir,
-                                    plots=plots,
-                                )
+                            sat_chan = good_chans(
+                                ali_file,
+                                chrono_file,
+                                sat_id,
+                                sat_thresh,
+                                noi_thresh,
+                                pow_thresh,
+                                occ_thresh,
+                                timestamp,
+                                out_dir,
+                                plots=plots,
+                            )
 
-                                if sat_chan is not None:
-                                    channel_map[f"{sat_id}"] = sat_chan
+                            if sat_chan is not None:
+                                channel_map[f"{sat_id}"] = sat_chan
 
     except Exception as e:
         print(e)
