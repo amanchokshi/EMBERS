@@ -63,7 +63,7 @@ if _tle_dir == "":
     print(">>> ephem_single --help, for more options")
     print("----------------------------------------------------")
     _tle_file = Path(
-        pkg_resources.resource_filename("embers.kindle", "data/TLE/25984.txt")
+        pkg_resources.resource_filename("embers.kindle", "data/TLE/25417.txt")
     )
     _sat_name = _tle_file.stem
     _tle_dir = _tle_file.parents[0]
