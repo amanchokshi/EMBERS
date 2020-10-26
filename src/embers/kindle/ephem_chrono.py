@@ -27,10 +27,16 @@ _parser.add_argument(
     help="pytz timezone, default=Australia/Perth",
 )
 _parser.add_argument(
-    "--start_date", metavar="\b", default="", help="start date in YYYY-MM-DD format"
+    "--start_date",
+    metavar="\b",
+    default="2019-10-10",
+    help="start date in YYYY-MM-DD format. Default=2019-10-10",
 )
 _parser.add_argument(
-    "--stop_date", metavar="\b", default="", help="stop date in YYYY-MM-DD format"
+    "--stop_date",
+    metavar="\b",
+    default="2019-10-10",
+    help="stop date in YYYY-MM-DD format. Default=2019-10-10",
 )
 _parser.add_argument(
     "--interp_type",
@@ -66,17 +72,6 @@ _interp_type = _args.interp_type
 _interp_freq = _args.interp_freq
 _ephem_dir = _args.ephem_dir
 _out_dir = _args.out_dir
-
-
-if _start_date == "":
-    print("-------------------------------------------")
-    print("No input dates provided")
-    print("Using 2019-10-01 - 2019-10-10")
-    print(">>> chrono_ephem --help, for more options")
-    print("-------------------------------------------")
-
-    _start_date = "2019-10-01"
-    _stop_date = "2019-10-10"
 
 
 def main():

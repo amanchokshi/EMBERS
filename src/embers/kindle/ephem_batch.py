@@ -42,8 +42,8 @@ _parser.add_argument(
 _parser.add_argument(
     "--out_dir",
     metavar="\b",
-    default="./embers_out/sat_utils/",
-    help="Path to output directory. Default=./embers_out/sat_utils/",
+    default="./embers_out/sat_utils",
+    help="Path to output directory. Default=./embers_out/sat_utils",
 )
 
 _args = _parser.parse_args()

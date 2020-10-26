@@ -351,9 +351,11 @@ chronological ephemeris data to json files in :samp:`./embers_out/sat_utils/ephe
 
 Use the following cli tool to collate satellite data
 
-.. code-block:: console
+.. code-block::
 
-    $ ephem_chrono --start_date=YYYY-MM-DD --stop_date=YYYY-MM-DD
+    $ ephem_chrono
+    >>> Saving chronological Ephem files to: ./embers_out/sat_utils/ephem_chrono
+    >>> Grab a coffee, this may take more than a couple of minutes!
 
 or the equivalent sample script
 
@@ -362,7 +364,7 @@ or the equivalent sample script
     from embers.sat_utils.chrono_ephem import save_chrono_ephem
 
     time_zone = "Australia/Perth"
-    start_date = "2019-10-01"
+    start_date = "2019-10-10"
     stop_date = "2019-10-10"
     interp_type = "cubic"
     interp_freq = 1
