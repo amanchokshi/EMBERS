@@ -155,23 +155,17 @@ RF data and shows the efficacy of the selected smoothing filter.
 .. code-block:: console
 
     $ align_single
-    ----------------------------------------------------------
-    No ref_file provided, using packaged sample data
-    No tile_file provided, using packaged sample data
-    No frequency channel provided, using 59 for sample data
-
-    >>> savgol_interp_sample --help, for more options
-    ----------------------------------------------------------
-    Saving sample savgol_interp plot to: ./embers_out/rf_tools
+    >>> Saving sample savgol_interp plot to: ./embers_out/rf_tools
 
 
 Alternately, the following sample code may be used to achieve identical results:
 
 .. code-block:: python
 
-    import pkg_resources
     from embers.rf_tools.align_data import plot_savgol_interp
 
+    ref_file="tiles_data/rf0XX/2019-10-10/rf0XX_2019-10-10-02:30.txt"
+    tile_file="tiles_data/S06XX/2019-10-10/S06XX_2019-10-10-02:30.txt"
     savgol_window_1=11
     savgol_window_2=15
     polyorder=2
@@ -179,15 +173,6 @@ Alternately, the following sample code may be used to achieve identical results:
     interp_freq=1
     channel=59
     out_dir="./embers_out/rf_tools"
-
-
-    ref_file = pkg_resources.resource_filename(
-        "embers.kindle", "data/rf_data/rf0XX/2019-10-10/rf0XX_2019-10-10-02:30.txt"
-    )
-
-    tile_file = pkg_resources.resource_filename(
-        "embers.kindle", "data/rf_data/S06XX/2019-10-10/S06XX_2019-10-10-02:30.txt"
-    )
 
 
     plot_savgol_interp(

@@ -9,7 +9,6 @@ interpolation and Savitzky–Golay smoothing. Save plot to :samp:`./embers_out/r
 
 import argparse
 
-import pkg_resources
 from embers.rf_tools.align_data import plot_savgol_interp
 
 _parser = argparse.ArgumentParser(
@@ -19,9 +18,17 @@ _parser = argparse.ArgumentParser(
 )
 
 _parser.add_argument(
-    "--ref_file", metavar="\b", default="", help="Reference rf data file"
+    "--ref_file",
+    metavar="\b",
+    default="tiles_data/rf0XX/2019-10-10/rf0XX_2019-10-10-02:30.txt",
+    help="Reference rf data file. Default=tiles_data/rf0XX/2019-10-10/rf0XX_2019-10-10-02:30.txt",
 )
-_parser.add_argument("--tile_file", metavar="\b", default="", help="Tile rf data file")
+_parser.add_argument(
+    "--tile_file",
+    metavar="\b",
+    default="tiles_data/S06XX/2019-10-10/S06XX_2019-10-10-02:30.txt",
+    help="Tile rf data file. Default=tiles_data/S06XX/2019-10-10/S06XX_2019-10-10-02:30.txt",
+)
 _parser.add_argument(
     "--savgol_window_1",
     metavar="\b",
@@ -53,7 +60,7 @@ _parser.add_argument(
     help="Interpolation frequency. Default=1",
 )
 _parser.add_argument(
-    "--channel", metavar="\b", default="", help="Frequency channel to plot"
+    "--channel", metavar="\b", default=59, type=int, help="Frequency channel to plot"
 )
 _parser.add_argument(
     "--out_dir",
@@ -72,28 +79,6 @@ _interp_type = _args.interp_type
 _interp_freq = _args.interp_freq
 _channel = _args.channel
 _out_dir = _args.out_dir
-
-
-# if no input files provided, use sample package data
-if _ref_file == "":
-    print("----------------------------------------------------------")
-    print("No ref_file provided, using packaged sample data")
-    _ref_file = pkg_resources.resource_filename(
-        "embers.kindle", "data/rf_data/rf0XX/2019-10-10/rf0XX_2019-10-10-02:30.txt"
-    )
-
-if _tile_file == "":
-    print("No tile_file provided, using packaged sample data")
-    _tile_file = pkg_resources.resource_filename(
-        "embers.kindle", "data/rf_data/S06XX/2019-10-10/S06XX_2019-10-10-02:30.txt"
-    )
-
-if _channel == "":
-    print("No frequency channel provided, using 59 for sample data")
-    print("")
-    print(">>> savgol_interp_sample --help, for more options")
-    print("----------------------------------------------------------")
-    _channel = 59
 
 
 def main():
