@@ -103,6 +103,9 @@ if not Path(_ali_dir).is_dir():
     print(">>> sat_channels --help, for more options")
     print("-------------------------------------------")
 
+if _start_date == "":
+    print("No data interval provided. Try 2019-10-01 - 2019-10-10")
+
 
 def main():
     """Execute sat_channels from terminal."""
