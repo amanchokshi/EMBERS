@@ -55,5 +55,5 @@ _out_dir = _args.out_dir
 
 def main():
     """Execute mwa_fee from terminal."""
-
+    print(f"MWA_FEE maps saved to: {_out_dir}")
     mwa_fee_model(_out_dir, _nside, _pointings, _flags)

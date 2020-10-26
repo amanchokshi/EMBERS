@@ -574,6 +574,7 @@ the following :samp:`mwa_fee` cli tool of example script
 .. code-block::
 
     $ mwa_fee
+    >>> MWA_FEE maps saved to: ./embers_out/mwa_utils
 
 
 .. code-block:: python
