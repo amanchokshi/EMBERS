@@ -75,23 +75,15 @@ the :func:`~embers.rf_tools.rf_data.single_waterfall` function with the :samp:`w
 .. code-block:: console
 
     $ waterfall_single
-    --------------------------------------------------
-    No input data provided, using packaged sample data
-    >>> waterfall_single --help, for more options
-    --------------------------------------------------
     Waterfall plot saved to ./embers_out/rf_tools/S06XX_2019-10-10-02:30.png
 
 Or using :func:`~embers.rf_tools.rf_data.single_waterfall` as shown in the example below:
 
 .. code-block:: python
 
-    import pkg_resources
     from embers.rf_tools.rf_data import single_waterfall
 
-    # If no data provided, use package sample data
-    rf_file = pkg_resources.resource_filename(
-        "embers.kindle", "data/rf_data/S06XX/2019-10-10/S06XX_2019-10-10-02:30.txt"
-    )
+    rf_file = "tiles_data/S06XX/2019-10-10/S06XX_2019-10-10-02:30.txt"
     out_dir  = "embers_out/rf_tools"
 
     single_waterfall(rf_file, out_dir)
