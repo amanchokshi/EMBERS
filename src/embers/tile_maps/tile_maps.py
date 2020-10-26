@@ -700,6 +700,9 @@ def rfe_collate_cali(start_gain, stop_gain, rfe_cali_dir):
     pass_data = pass_data[filtr]
     pass_resi = pass_resi[filtr]
 
+    pass_data = pass_data[~np.isnan(pass_data)]
+    pass_resi = pass_resi[~np.isnan(pass_resi)]
+
     # Median of binned data
     bin_med, bin_edges, binnumber = binned_statistic(
         pass_data, pass_resi, statistic="median", bins=16
