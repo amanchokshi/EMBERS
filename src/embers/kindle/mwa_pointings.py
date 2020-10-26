@@ -7,9 +7,7 @@ Download MWA metadata and determine the pointings of rf observations
 """
 
 import argparse
-from pathlib import Path
 
-import pkg_resources
 from embers.mwa_utils.mwa_pointings import mwa_point_meta
 
 _parser = argparse.ArgumentParser(
@@ -19,16 +17,23 @@ _parser = argparse.ArgumentParser(
 )
 
 _parser.add_argument(
-    "--start_date", metavar="\b", default="", help="start date in YYYY-MM-DD format"
+    "--start_date",
+    metavar="\b",
+    default="2019-10-10",
+    help="start date in YYYY-MM-DD format. Default=2019-10-10",
 )
 _parser.add_argument(
-    "--stop_date", metavar="\b", default="", help="stop date in YYYY-MM-DD format"
+    "--stop_date",
+    metavar="\b",
+    default="2019-10-10",
+    help="stop date in YYYY-MM-DD format. Default=2019-10-10",
 )
 _parser.add_argument(
     "--num_pages",
     metavar="\b",
+    default=2,
     type=int,
-    help="Number of pages of metadata to download. Visit ws.mwatelescope.org/metadata/find to find this",
+    help="Number of pages of metadata to download. Visit ws.mwatelescope.org/metadata/find. Default=2",
 )
 _parser.add_argument(
     "--time_thresh",
@@ -46,8 +51,8 @@ _parser.add_argument(
 _parser.add_argument(
     "--rf_dir",
     metavar="\b",
-    default="",
-    help="Path to root of directory with raw rf data",
+    default="./tiles_data",
+    help="Path to root of directory with raw rf data. Default=./tiles_data",
 )
 _parser.add_argument(
     "--out_dir",
@@ -64,22 +69,6 @@ _time_thresh = _args.time_thresh
 _time_zone = _args.time_zone
 _rf_dir = _args.rf_dir
 _out_dir = _args.out_dir
-
-
-# if no input file provided, use sample package data
-if _rf_dir == "":
-    print("----------------------------------------------------------")
-    print("required arguments missing")
-    print("Using sample data between 2019-01-01 - 2019-01-10")
-    print(">>> mwa_pointings --help, for more options")
-    print("----------------------------------------------------------")
-
-    _start_date = "2019-10-01"
-    _stop_date = "2019-10-10"
-    _num_pages = 15
-    _time_thresh = 5
-    _time_zone = "Australia/Perth"
-    _rf_dir = Path(pkg_resources.resource_filename("embers.kindle", "data/rf_data"))
 
 
 def main():

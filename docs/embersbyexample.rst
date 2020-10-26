@@ -512,12 +512,12 @@ either the following cli tool or the sample script
     from pathlib import Path
     from embers.mwa_utils.mwa_pointings import mwa_point_meta
 
-    start_date = "2019-10-01"
+    start_date = "2019-10-10"
     stop_date = "2019-10-10"
     num_pages = 15
     time_thresh = 5
     time_zone = "Australia/Perth"
-    rf_dir = Path(pkg_resources.resource_filename("embers.kindle", "data/rf_data"))
+    rf_dir = "./tiles_data"
     out_dir = "./embers_out/mwa_utils"
 
     mwa_point_meta(
