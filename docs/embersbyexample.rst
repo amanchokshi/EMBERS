@@ -654,11 +654,21 @@ There be magic here. We can finally make beam maps of the MWA tiles!
 
 Ref Models
 ^^^^^^^^^^
-Convert FEKO models on the reference antennas into usable healpix maps, which will later be used to remove effects introduced by satellite beam shapes.
+Convert FEKO models on the reference antennas into usable healpix maps using the :func:`~embers.tile_maps.ref_fee_healpix.ref_healpix_save` function.
+These maps will later be used to remove effects introduced by satellite beam shapes. Use the :samp:`ref_models` cli tool or the following sample code.
 
 .. code-block:: console
 
     $ ref_models
+
+.. code-block:: python
+
+    from embers.tile_maps.ref_fee_healpix import ref_healpix_save
+
+    nside = 32
+    out_dir = "embers_out/tile_maps/ref_models"
+
+    ref_healpix_save(_nside, _out_dir)
 
 .. image:: _static/imgs/reproject_dipole_models.png
    :width: 100%
