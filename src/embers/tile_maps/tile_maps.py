@@ -637,7 +637,8 @@ def rfe_calibration(
 
                                                         # consider residuals of sats which pass within 10 deg of zenith
                                                         # an hp index of 111 approx corresponds to a zenith angle of 10 degrees
-                                                        hp_10_deg = 111
+                                                        #  hp_10_deg = 111
+                                                        hp_10_deg = 414
                                                         
                                                         print(np.amin(u))
                                                         if np.amin(u) <= hp_10_deg:
