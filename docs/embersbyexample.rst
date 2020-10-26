@@ -320,12 +320,13 @@ Analysing a batch of TLE files is achieved with the :func:`embers.sat_utils.sat_
 :samp:`download_tle` into satellite ephemeris data: rise time, set time, alt/az arrays at a given time cadence. This is saved to a npz file which will be used
 to plot the satellite sky coverage over the geographic location supplied. It can be used with the following cli tool
 
-.. warning::
-    The following example will only work if TLE files have been downloaded as described above
-
 .. code-block:: console
 
-    $ ephem_batch --help
+    $ ephem_batch
+    >>> Saving logs to ./embers_out/sat_utils/ephem_data
+    >>> Saving sky coverage plots to ./embers_out/sat_utils/ephem_plots
+    >>> Saving ephemeris of satellites to ./embers_out/sat_utils/ephem_data
+
 
 or with the equivalent example script
 
