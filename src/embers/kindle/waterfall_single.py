@@ -22,7 +22,6 @@ _parser.add_argument(
     metavar="\b",
     default="tiles_data/S06XX/2019-10-10/S06XX_2019-10-10-02:30.txt",
     help="Path to raw rf data file. Default=tiles_data/S06XX/2019-10-10/S06XX_2019-10-10-02:30.txt",
-    required=True,
 )
 _parser.add_argument(
     "--out_dir",
