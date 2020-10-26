@@ -419,7 +419,7 @@ the :samp:`sat_channels` cli tool:
 .. code-block::
 
     $ sat_channels
-    >>> Window channel maps will be saved to: ./embers_out/sat_utils/sat_channels 
+    >>> Window channel maps will be saved to: ./embers_out/sat_utils/sat_channels
 
 or the sample script below:
 
@@ -674,6 +674,9 @@ the residual power between the scaled MWA slice and the FEE model. By repeatings
 distribution of residual power, which can be fit by a low order polymonial. This polynomial is the global calibration solution of the non-linear
 RF Explorer gain, which can be applied to data in the next step.
 
+Determine the RF Explorer gain calibration solution using the :func:`~embers.tile_maps.tile_maps.rfe_batch_cali` function with the :samp:`rfe_calibration` 
+cli tool or the following sample script
+
 .. code-block::
 
     $ rfe_calibration
@@ -753,11 +756,77 @@ Tile Maps
 Batch process satellite RF data to create MWA beam maps and intermediate plots.
 
 As in the previous section, satellite data is gridded onto a healpix map based on ephemeris trajectories in the sky. The data from the MWA tiles is corrected
-using the RF Explorer gain calibration solution formed in the perevious section. A couple of different types of data products are created.
+using the RF Explorer gain calibration solution formed in the perevious section. A couple of different types of data products are created using the 
+:func:`~embers.tile_maps.tile_maps.tile_maps_batch` with the :samp:`tile_maps` cli tool or the following sample script
 
 .. code-block::
 
-    $ tile_maps --start_date=YYYY-MM-DD --stip_date=YYYY-MM-DD --plots=True
+    $ tile_maps --start_date=2019-10-10 --stip_date=2019-10-10 --plots=True
+    >>> MWA tile map files saved to: ./embers_out/tile_maps/tile_maps
+
+.. code-block:: python
+
+    from embers.tile_maps.tile_maps import tile_maps_batch
+
+    start_date="2019-10-10"
+    stop_date="2019-10-10"
+
+    # σ threshold to detect sats in the computation of rf data noise_floor
+    sat_thresh = 1
+
+    # noise threshold: multiples of mad
+    noi_thresh = 3
+
+    # Peak power which must be exceeded for satellite pass to be considered
+    pow_thresh = 5
+
+    # Path to reference feko model
+    ref_model = "embers_out/tile_maps/ref_models/ref_dipole_models.npz"
+
+    # Path to MWA FEE model
+    fee_map = "embers_out/mwa_utils/mwa_fee/mwa_fee_beam.npz"
+
+    # Path to RF Explorer gain calibration solution
+    rfe_cali = "embers_out/tile_maps/rfe_calibration/rfe_gain_fit.npy"
+
+    # Healpix Nside
+    nside = 32
+
+    # Path to obs_pointings.json
+    obs_point_json = "embers_out/mwa_utils/obs_pointings.json"
+
+    # Directory where aligned rf data lives
+    align_dir = "embers_out/rf_tools/align_data"
+
+    # Directory where Chronological satellite ephemeris data lives
+    chrono_dir = "embers_out/sat_utils/ephem_chrono"
+
+    # Directory where satellite frequency channel maps are saved
+    chan_map_dir = "embers_out/sat_utils/sat_channels/window_maps"
+
+    # Directory where RF Explorer calibration data will be saved
+    out_dir = "./embers_out/tile_maps/rfe_calibration"
+
+    # If True, create a zillion diagnostic plots at the project_tile_healpix stage
+    plots = True
+
+    tile_maps_batch(
+        start_date,
+        stop_date,
+        sat_thresh,
+        noi_thresh,
+        pow_thresh,
+        ref_model,
+        fee_map,
+        rfe_cali,
+        nside,
+        obs_point_json,
+        align_dir,
+        chrono_dir,
+        chan_map_dir,
+        out_dir,
+        plots,
+    )
 
 Tile Maps Raw
 .............

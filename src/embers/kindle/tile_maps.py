@@ -157,9 +157,7 @@ def main():
         _chrono_dir,
         _chan_map_dir,
         _out_dir,
-        _plots
+        _plots,
     )
 
-    print("-------------------------------------------------------------")
     print(f"MWA tile map files saved to: {_out_dir}")
-
