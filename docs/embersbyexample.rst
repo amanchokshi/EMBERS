@@ -10,7 +10,7 @@ Setup
 -----
 *EMBERS* works best in a virtual environment and requires Python > 3.6. Follow the :doc:`Installation Instructions <installation>` to setup a suitable enviroment.
 
-.. code-block:: console
+.. code-block::
 
     $ mkdir ~/EMBERS
     $ cd ~/EMBERS
@@ -19,7 +19,7 @@ The above creates an :samp:`EMBERS` directory, within which we can run our examp
 
 We now download sample data required to run the following examples
 
-.. code-block:: bash
+.. code-block::
 
     git clone https://github.com/amanchokshi/EMBERS-Sample-Data.git
     mv EMBERS-Sample-Data/tiles_data .
@@ -40,7 +40,7 @@ sub directories for each MWA and reference tile exist (:samp:`S06XX`, :samp:`S06
 there exists a date directory for every day of observations in the :samp:`YYYY-MM-DD` format, within which live the raw RF data, in binary :samp:`.txt` files
 saved every 30 minutes, with the naming convention as follows :samp:`S06XX_YYYY-DD-MM-hh:mm.txt`
 
-.. code-block:: console
+.. code-block::
 
     tiles_data
     ├── S06XX
@@ -72,7 +72,7 @@ Waterfall Plots
 To get a quick preview of the raw RF data, we create waterfall plots. Creates a waterfall plot of sample data provided with *EMBERS* using
 the :func:`~embers.rf_tools.rf_data.single_waterfall` function with the :samp:`waterfall_single` cli tool:
 
-.. code-block:: console
+.. code-block::
 
     $ waterfall_single
     >>> Waterfall plot saved to ./embers_out/rf_tools/S06XX_2019-10-10-02:30.png
@@ -121,7 +121,7 @@ Colormaps
 visualise raw data and maximize dynamic range, while :samp:`jade` is perceptually uniform and sequential and is suitable for science.
 To get a preview of how amazing they are
 
-.. code-block:: console
+.. code-block::
 
     $ colormaps
 
@@ -153,7 +153,7 @@ based on the :func:`~embers.rf_tools.align_data.plot_savgol_interp` function,
 can be used to play with the various parameters available. Sensible defaults are provided as a starting point. The following code plots one frequency channel of
 RF data and shows the efficacy of the selected smoothing filter.
 
-.. code-block:: console
+.. code-block::
 
     $ align_single
     >>> Saving sample savgol_interp plot to: ./embers_out/rf_tools
@@ -200,7 +200,7 @@ MWA tile are smoothed and aligned and saved to compressed :samp:`npz` file by :f
 
 The :samp:`align_batch` cli tool is a convenient way to align large volumes of data
 
-.. code-block:: console
+.. code-block::
 
     $ align_batch
     >>> Aligned files saved to: ./embers_out/rf_tools/align_data
@@ -251,7 +251,7 @@ Download Ephemeris
 
 Once valid login credentials have been obtained, download tle files with the :func:`~embers.sat_utils.sat_list.download_tle` using the following cli tool
 
-.. code-block:: console
+.. code-block::
 
     $ download_tle --start_date=YYYY-MM-DD --stop_date=YYYY-MM-DD --st_ident=** --st_pass=**
 
@@ -320,7 +320,7 @@ Analysing a batch of TLE files is achieved with the :func:`embers.sat_utils.sat_
 :samp:`download_tle` into satellite ephemeris data: rise time, set time, alt/az arrays at a given time cadence. This is saved to a npz file which will be used
 to plot the satellite sky coverage over the geographic location supplied. It can be used with the following cli tool
 
-.. code-block:: console
+.. code-block::
 
     $ ephem_batch
     >>> Saving logs to ./embers_out/sat_utils/ephem_data
@@ -416,7 +416,7 @@ window, and less than 100%. By default the :samp:`window occupancy` is defined a
 The analysis discusses above is implemented with the :func:`~embers.sat_utils.sat_channels.batch_window_map` function. Satellite channels can be identified with
 the :samp:`sat_channels` cli tool:
 
-.. code-block:: console
+.. code-block::
 
     sat_channels --start_date=YYYY-MM-DD --stop_date=YYYY-MM-DD --plots=True
 
@@ -500,7 +500,7 @@ On the site, enter the start and stop date, change the page size to 200 and clic
 We now know that we need to download 74 pages of metadata, which can be done using the :func:`~embers.mwa_utils.mwa_pointings.mwa_point_meta` function with
 either the following cli tool or the sample script
 
-.. code-block:: console
+.. code-block::
 
     $ mwa_pointings
 
@@ -542,7 +542,7 @@ MWA Dipoles
 MWA metadata can also tell us if dipoles in the tiles which have been used are not functional. We can check this using the
 :func:`~embers.mwa_utils.mwa_dipoles.mwa_flagged_dipoles` function with the following cli tool or example script
 
-.. code-block:: console
+.. code-block::
 
     $ mwa_dipoles
 
@@ -568,7 +568,7 @@ MWA Fully Embedded Element (FEE) beam models represent the cutting edge of simul
 using the `MWA Primay Beam <https://github.com/MWATelescope/mwa_pb>`_ GitHub repository and the :func:`~embers.mwa_utils.mwa_fee.mwa_fee_model` function, with
 the following :samp:`mwa_fee` cli tool of example script
 
-.. code-block:: console
+.. code-block::
 
     $ mwa_fee
 
@@ -630,7 +630,7 @@ Ref Models
 Convert FEKO models on the reference antennas into usable healpix maps using the :func:`~embers.tile_maps.ref_fee_healpix.ref_healpix_save` function.
 These maps will later be used to remove effects introduced by satellite beam shapes. Use the :samp:`ref_models` cli tool or the following sample code.
 
-.. code-block:: console
+.. code-block::
 
     $ ref_models
 
@@ -668,7 +668,7 @@ the residual power between the scaled MWA slice and the FEE model. By repeatings
 distribution of residual power, which can be fit by a low order polymonial. This polynomial is the global calibration solution of the non-linear
 RF Explorer gain, which can be applied to data in the next step.
 
-.. code-block:: console
+.. code-block::
 
     $ rfe_calibration --start_date=YYYY-MM-DD --stop_date=YYYY-MM-DD
 
@@ -684,7 +684,7 @@ Batch process satellite RF data to create MWA beam maps and intermediate plots.
 As in the previous section, satellite data is gridded onto a healpix map based on ephemeris trajectories in the sky. The data from the MWA tiles is corrected
 using the RF Explorer gain calibration solution formed in the perevious section. A couple of different types of data products are created.
 
-.. code-block:: console
+.. code-block::
 
     $ tile_maps --start_date=YYYY-MM-DD --stip_date=YYYY-MM-DD --plots=True
 
@@ -696,7 +696,7 @@ this beam slice onto a healpix map. This function also applies RFE gain correcti
 :func:`~embers.tile_maps.tile_maps.rfe_collate_cali`. The resulting healpix map is saved to a :samp:`.npz` file in
 with the data structured in nested dictionaries, which have the following structure.
 
-.. code-block:: text
+.. code-block::
 
     map*.npz
     ├── mwa_map
@@ -806,7 +806,7 @@ Null Test
 ^^^^^^^^^
 The two reference antennas provide the ability to perform a null test, in which we compare the performance of each refrerence antenna against each other.
 
-.. code-block:: console
+.. code-block::
 
     $ null_test
 
@@ -820,7 +820,7 @@ Compare Beams
 ^^^^^^^^^^^^^
 Compare measured MWA beam maps created above, with MWA FEE models
 
-.. code-block:: console
+.. code-block::
 
     $ compare_beams
 
