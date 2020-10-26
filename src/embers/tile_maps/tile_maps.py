@@ -632,6 +632,7 @@ def rfe_calibration(
                                                     )
 
                                                     # a goodness of fit threshold
+                                                    print(pval)
                                                     if pval >= 0.8:
 
                                                         # consider residuals of sats which pass within 10 deg of zenith
@@ -660,7 +661,6 @@ def rfe_calibration(
 
     # Save gain residuals to json file
     with open(f"{out_dir}/{tile}_{ref}_gain_fit.json", "w") as outfile:
-        print(resi_gain)
         json.dump(resi_gain, outfile, indent=4)
 
 
