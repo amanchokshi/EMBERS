@@ -419,7 +419,7 @@ the :samp:`sat_channels` cli tool:
 .. code-block::
 
     $ sat_channels
-    >>> print(f"Window channel maps will be saved to: ./embers_out/sat_utils/sat_channels 
+    >>> Window channel maps will be saved to: ./embers_out/sat_utils/sat_channels 
 
 or the sample script below:
 
