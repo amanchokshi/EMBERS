@@ -676,7 +676,8 @@ RF Explorer gain, which can be applied to data in the next step.
 
 .. code-block::
 
-    $ rfe_calibration --start_date=YYYY-MM-DD --stop_date=YYYY-MM-DD
+    $ rfe_calibration
+    >>> RF Explorer calibration files saved to: ./embers_out/tile_maps/rfe_calibration
 
 The following plot represents RF Explorer gain calibration using 6 months of data
 
