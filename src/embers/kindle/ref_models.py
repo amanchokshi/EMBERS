@@ -22,7 +22,7 @@ _parser.add_argument(
 _parser.add_argument(
     "--out_dir",
     metavar="\b",
-    default="embers_out/tile_maps/ref_models",
+    default="./embers_out/tile_maps/ref_models",
     help="Dir where reference models are saved. Default=./embers_out/tile_maps/ref_models",
 )
 
@@ -33,5 +33,5 @@ _out_dir = _args.out_dir
 def main():
     """Execute ref_healpix_save reference models from terminal"""
 
-    print(f"Reference models saved to {_out_dir}")
+    print(f"Reference models saved to: {_out_dir}")
     ref_healpix_save(_nside, _out_dir)

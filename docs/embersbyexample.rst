@@ -637,13 +637,15 @@ These maps will later be used to remove effects introduced by satellite beam sha
 .. code-block::
 
     $ ref_models
+    >>> Reference models saved to: ./embers_out/tile_maps/ref_models
+
 
 .. code-block:: python
 
     from embers.tile_maps.ref_fee_healpix import ref_healpix_save
 
     nside = 32
-    out_dir = "embers_out/tile_maps/ref_models"
+    out_dir = "./embers_out/tile_maps/ref_models"
 
     ref_healpix_save(_nside, _out_dir)
 
