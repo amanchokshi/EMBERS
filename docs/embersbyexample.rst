@@ -529,7 +529,7 @@ either the following cli tool or the sample script
 
 .. code-block:: console
 
-    $ mwa_pointings --start_date=YYYY-MM-DD --stop_date=YYYY-MM-DD --num_pages=74 --rf_dir=./tiles_data
+    $ mwa_pointings
 
 
 .. code-block:: python
