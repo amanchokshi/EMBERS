@@ -546,13 +546,15 @@ MWA metadata can also tell us if dipoles in the tiles which have been used are n
 .. code-block::
 
     $ mwa_dipoles
-
+    >>> Downloading MWA metafits files
+    >>> Due to download limits, this will take a while
+    >>> ETA: Approximately 0H:06M
 
 .. code-block:: python
 
     from embers.mwa_utils.mwa_dipoles import mwa_flagged_dipoles
 
-    num_files = 10
+    num_files = 14
     out_dir = "./embers_out/mwa_utils"
 
     mwa_flagged_dipoles(num_files, out_dir)
