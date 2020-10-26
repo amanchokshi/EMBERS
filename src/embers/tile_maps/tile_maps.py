@@ -632,16 +632,14 @@ def rfe_calibration(
                                                     )
 
                                                     # a goodness of fit threshold
-                                                    print(pval)
                                                     if pval >= 0.8:
 
-                                                        # consider residuals of sats which pass within 10 deg of zenith
-                                                        # an hp index of 111 approx corresponds to a zenith angle of 10 degrees
+                                                        # consider residuals of sats which pass within 21 deg of zenith
+                                                        # an hp index of 111 approx corresponds to a zenith angle of 21 degrees
                                                         #  hp_10_deg = 111
-                                                        hp_10_deg = 414
-                                                        
-                                                        print(np.amin(u))
-                                                        if np.amin(u) <= hp_10_deg:
+                                                        hp_21_deg = 414
+
+                                                        if np.amin(u) <= hp_21_deg:
 
                                                             # only passes longer than 10 minutes
                                                             if (
@@ -702,9 +700,6 @@ def rfe_collate_cali(start_gain, stop_gain, rfe_cali_dir):
     filtr = np.where(np.logical_and(pass_data <= -25, pass_data >= -65))
     pass_data = pass_data[filtr]
     pass_resi = pass_resi[filtr]
-
-    pass_data = pass_data[~np.isnan(pass_data)]
-    pass_resi = pass_resi[~np.isnan(pass_resi)]
 
     # Median of binned data
     bin_med, bin_edges, binnumber = binned_statistic(
