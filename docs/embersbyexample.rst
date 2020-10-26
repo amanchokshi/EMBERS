@@ -96,7 +96,7 @@ Or using :func:`~embers.rf_tools.rf_data.single_waterfall` as shown in the examp
 We can also create a set of waterfall plots for all rf_files within a date interval using the :func:`~embers.rf_tools.rf_data.waterfall_batch` function, with
 either the provided cli tool or with the following example code
 
-.. code-block:: console
+.. code-block::
 
     $ waterfall_batch
     >>> Processing rf data files between 2019-10-10 and 2019-10-10
