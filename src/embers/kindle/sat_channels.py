@@ -74,8 +74,8 @@ _parser.add_argument(
 _parser.add_argument(
     "--plots",
     metavar="\b",
-    default="False",
-    help="If True, create a bunch of useful diagnostic plots. Default=False",
+    default="True",
+    help="If True, create a bunch of useful diagnostic plots. Default=True",
 )
 
 _args = _parser.parse_args()
