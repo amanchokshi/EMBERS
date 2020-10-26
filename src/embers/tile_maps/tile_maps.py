@@ -660,6 +660,7 @@ def rfe_calibration(
 
     # Save gain residuals to json file
     with open(f"{out_dir}/{tile}_{ref}_gain_fit.json", "w") as outfile:
+        print(resi_gain)
         json.dump(resi_gain, outfile, indent=4)
 
 
