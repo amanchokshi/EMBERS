@@ -19,19 +19,19 @@ _parser = argparse.ArgumentParser(
 _parser.add_argument(
     "--start_date",
     metavar="\b",
-    default="2019-10-10",
+    default="2019-10-09",
     help="start date in YYYY-MM-DD format. Default=2019-10-10",
 )
 _parser.add_argument(
     "--stop_date",
     metavar="\b",
-    default="2019-10-10",
+    default="2019-10-11",
     help="stop date in YYYY-MM-DD format. Default=2019-10-10",
 )
 _parser.add_argument(
     "--num_pages",
     metavar="\b",
-    default=2,
+    default=4,
     type=int,
     help="Number of pages of metadata to download. Visit ws.mwatelescope.org/metadata/find. Default=2",
 )
@@ -39,7 +39,7 @@ _parser.add_argument(
     "--time_thresh",
     metavar="\b",
     type=int,
-    default=100,
+    default=2,
     help="Minimum integration in hours, at a pointing",
 )
 _parser.add_argument(
