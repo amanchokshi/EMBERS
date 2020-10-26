@@ -7,7 +7,9 @@ Download MWA metadata and determine the pointings of rf observations
 """
 
 import argparse
+from pathlib import Path
 
+import pkg_resources
 from embers.mwa_utils.mwa_pointings import mwa_point_meta
 
 _parser = argparse.ArgumentParser(
@@ -68,8 +70,16 @@ _out_dir = _args.out_dir
 if _rf_dir == "":
     print("----------------------------------------------------------")
     print("required arguments missing")
+    print("Using sample data between 2019-01-01 - 2019-01-10")
     print(">>> mwa_pointings --help, for more options")
     print("----------------------------------------------------------")
+
+    _start_date = "2019-10-01"
+    _stop_date = "2019-10-10"
+    _num_pages = 15
+    _time_thresh = 5
+    _time_zone = "Australia/Perth"
+    _rf_dir = Path(pkg_resources.resource_filename("embers.kindle", "data/rf_data"))
 
 
 def main():
