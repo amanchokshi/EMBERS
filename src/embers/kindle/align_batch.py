@@ -10,7 +10,6 @@ before temorally aligning the. Save aligned data as npz files to
 
 import argparse
 
-import pkg_resources
 from embers.rf_tools.align_data import align_batch
 
 _parser = argparse.ArgumentParser(
@@ -20,11 +19,17 @@ _parser = argparse.ArgumentParser(
 )
 
 _parser.add_argument(
-    "--start_date", metavar="\b", default="", help="start date in YYYY-MM-DD format"
+    "--start_date",
+    metavar="\b",
+    default="2019-10-10",
+    help="start date in YYYY-MM-DD format",
 )
 
 _parser.add_argument(
-    "--stop_date", metavar="\b", default="", help="stop date in YYYY-MM-DD format"
+    "--stop_date",
+    metavar="\b",
+    default="2019-10-10",
+    help="stop date in YYYY-MM-DD format",
 )
 
 _parser.add_argument(
@@ -63,7 +68,10 @@ _parser.add_argument(
 )
 
 _parser.add_argument(
-    "--data_dir", metavar="\b", default="", help="root of dir where rf data is saved"
+    "--data_dir",
+    metavar="\b",
+    default="./tiles_data",
+    help="Root of dir where rf data is saved. Default=./tiles_data",
 )
 
 _parser.add_argument(
@@ -83,24 +91,6 @@ _interp_type = _args.interp_type
 _interp_freq = _args.interp_freq
 _data_dir = _args.data_dir
 _out_dir = _args.out_dir
-
-
-# if no input file provided, use sample package data
-if _data_dir == "":
-    print("----------------------------------------------------------")
-    print("No data dir provided, using packaged sample data")
-    _data_dir = pkg_resources.resource_filename("embers.kindle", "data/rf_data/")
-
-if _start_date == "":
-    print("No start_date provided, using 2019-10-01 for sample data")
-    _start_date = "2019-10-01"
-
-if _stop_date == "":
-    print("No stop_date provided, using 2019-10-10 for sample data")
-    print("")
-    print(">>> align_batch --help, for more options")
-    print("----------------------------------------------------------")
-    _stop_date = "2019-10-10"
 
 
 def main():

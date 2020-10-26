@@ -201,14 +201,14 @@ The :samp:`align_batch` cli tool is a convenient way to align large volumes of d
 
 .. code-block:: console
 
-    $ align_batch --start_date=YYYY-MM-DD --stop_date=YYYY-MM-DD --data_dir=./tiles_data
+    $ align_batch
+    >>> Aligned files saved to: ./embers_out/rf_tools/align_data
 
 
 Alternately, the following sample code may be used to achieve identical results:
 
 .. code-block:: python
 
-    import pkg_resources
     from embers.rf_tools.align_data import align_batch
 
     start_date="2019-10-01"
@@ -218,9 +218,8 @@ Alternately, the following sample code may be used to achieve identical results:
     polyorder=2
     interp_type="cubic"
     interp_freq=1
+    data_dir = "./tiles_data"
     out_dir="./embers_out/rf_tools"
-
-    data_dir = pkg_resources.resource_filename("embers.kindle", "data/rf_data/")
 
 
     align_batch(
