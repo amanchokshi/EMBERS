@@ -19,11 +19,11 @@ _parser = argparse.ArgumentParser(
 )
 
 _parser.add_argument(
-    "--start_date", metavar="\b", default="2019-10-10", required=True, help="start date in YYYY-MM-DD format. Default=2019-10-10"
+    "--start_date", metavar="\b", default="2019-10-10", help="start date in YYYY-MM-DD format. Default=2019-10-10"
 )
 
 _parser.add_argument(
-    "--stop_date", metavar="\b", default="2019-10-10", required=True, help="stop date in YYYY-MM-DD format. Default=2019-10-10"
+    "--stop_date", metavar="\b", default="2019-10-10", help="stop date in YYYY-MM-DD format. Default=2019-10-10"
 )
 
 _parser.add_argument(
