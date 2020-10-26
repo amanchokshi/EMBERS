@@ -674,7 +674,7 @@ the residual power between the scaled MWA slice and the FEE model. By repeatings
 distribution of residual power, which can be fit by a low order polymonial. This polynomial is the global calibration solution of the non-linear
 RF Explorer gain, which can be applied to data in the next step.
 
-Determine the RF Explorer gain calibration solution using the :func:`~embers.tile_maps.tile_maps.rfe_batch_cali` function with the :samp:`rfe_calibration` 
+Determine the RF Explorer gain calibration solution using the :func:`~embers.tile_maps.tile_maps.rfe_batch_cali` function with the :samp:`rfe_calibration`
 cli tool or the following sample script
 
 .. code-block::
@@ -756,7 +756,7 @@ Tile Maps
 Batch process satellite RF data to create MWA beam maps and intermediate plots.
 
 As in the previous section, satellite data is gridded onto a healpix map based on ephemeris trajectories in the sky. The data from the MWA tiles is corrected
-using the RF Explorer gain calibration solution formed in the perevious section. A couple of different types of data products are created using the 
+using the RF Explorer gain calibration solution formed in the perevious section. A couple of different types of data products are created using the
 :func:`~embers.tile_maps.tile_maps.tile_maps_batch` with the :samp:`tile_maps` cli tool or the following sample script
 
 .. code-block::
@@ -944,11 +944,41 @@ second row are satellite pass counts in each pixel while the third row are error
 
 Null Test
 ^^^^^^^^^
-The two reference antennas provide the ability to perform a null test, in which we compare the performance of each refrerence antenna against each other.
+The two reference antennas provide the ability to perform a null test, in which we compare the performance of each refrerence antenna against each other using 
+the :func:`~embers.tile_maps.null_test.null_test` function. This can be achieved using the :samp:`null_test` cli tool or the following sample script
 
 .. code-block::
 
     $ null_test
+    >>> Null tests saved to embers_out/tile_maps/null_test
+
+.. code-block:: python
+
+    from embers.tile_maps.null_test import null_test
+
+    # Healpix Nside
+    nside = 32
+
+    # Maximum zenith angle upto which to perform the null test
+    za_max = 90
+
+    # Reference feko healpix model created by embers.tile_maps.ref_fee_healpix
+    ref_model = "embers_out/tile_maps/ref_models/ref_dipole_models.npz"
+
+    # Directory with tile_maps_raw, created by embers.tile_maps.tile_maps.project_tile_healpix
+    map_dir = "embers_out/tile_maps/tile_maps/tile_maps_raw"
+
+    # Dir where null tests will be saved
+    out_dir = "./embers_out/tile_maps/null_test"
+
+    null_test(
+        nside,
+        za_max,
+        ref_model,
+        map_dir,
+        out_dir
+    )
+
 
 The first two rows represent slices of the measured reference beam pattern, compared to the FEKO reference beam model. The last row compares corresponding
 slices of two reference maps against each other.
@@ -958,11 +988,36 @@ slices of two reference maps against each other.
 
 Compare Beams
 ^^^^^^^^^^^^^
-Compare measured MWA beam maps created above, with MWA FEE models
+Compare measured MWA beam maps created above, with MWA FEE models using the :func:`~embers.tile_maps.compare_beams.batch_compare_beam` function with the 
+:samp:`compare_beams` cli tool or the following sample script
 
 .. code-block::
 
     $ compare_beams
+    >>> Beam comparison plots saved to: ./embers_out/tile_maps/compare_beams
+
+.. code-block:: python
+
+    from embers.tile_maps.compare_beams import batch_compare_beam
+
+    # Healpix Nside
+    nside=32
+
+    # MWA FEE healpix model created by embers.mwa_utils.mwa_fee
+    fee_map = "embers_out/mwa_utils/mwa_fee/mwa_fee_beam.npz"
+
+    # Directory with tile_maps_clean, created by embers.tile_maps.tile_maps.mwa_clean_maps
+    map_dir = "embers_out/tile_maps/tile_maps/tile_maps_clean"
+
+    # Dir where beam comparison plots will be saved
+    out_dir = "./embers_out/tile_maps/compare_beams"
+
+    batch_compare_beam(
+        nside,
+        fee_map,
+        map_dir,
+        out_dir
+    )
 
 .. image:: _static/imgs/S07XX_rf0XX_0_beam_slices.png
    :width: 49%
