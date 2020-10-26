@@ -19,7 +19,7 @@ _parser = argparse.ArgumentParser(
 _parser.add_argument(
     "--num_files",
     metavar="\b",
-    default=20,
+    default=14,
     type=int,
     help="Number of metafits files to download Default: 20",
 )
