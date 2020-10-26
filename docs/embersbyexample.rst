@@ -524,13 +524,33 @@ On the site, enter the start and stop date, change the page size to 200 and clic
 .. image:: _static/imgs/metadata-2.jpg
     :width: 100%
 
-We now know that we need to download 200 pages of metadata, which can be done with
+We now know that we need to download 74 pages of metadata, which can be done using the :func:`~embers.mwa_utils.mwa_pointings.mwa_point_meta` function with
+either the following cli tool or the sample script
 
 .. code-block:: console
 
-    $ mwa_pointings --start_date=YYYY-MM-DD --stop_date=YYYY-MM-DD --num_pages=77 --rf_dir=./tiles_data
+    $ mwa_pointings --start_date=YYYY-MM-DD --stop_date=YYYY-MM-DD --num_pages=74 --rf_dir=./tiles_data
 
-This process will take a couple of hours due to network limits on frequency of downloads from the MWA servers. A file called obs_pointing.json will be created which
+
+.. code-block:: python
+
+    import pkg_resources
+    from pathlib import Path
+    from embers.mwa_utils.mwa_pointings import mwa_point_meta
+
+    start_date = "2019-10-01"
+    stop_date = "2019-10-10"
+    num_pages = 15
+    time_thresh = 5
+    time_zone = "Australia/Perth"
+    rf_dir = Path(pkg_resources.resource_filename("embers.kindle", "data/rf_data"))
+    out_dir = "./embers_out/mwa_utils"
+
+    mwa_point_meta(
+        start_date, stop_date, num_pages, time_thresh, time_zone, rf_dir, out_dir
+    )
+
+This process can take up to a couple of hours due to network limits on frequency of downloads from the MWA servers. A file called obs_pointing.json will be created which
 contains all 30 minute observations with more than a 60% majority of time at a single pointing. A histogram showing maximum theoretical integration times per
 pointing is created. This limit is often not achieved due to pointings changing during 30 minute observations and equipment malfunctions. By checking to see if
 corresponding RF raw data files exist for given observation times, a plot of actual integration time for each tile is generated.
@@ -543,13 +563,26 @@ The following plots contain data from ~6 months between 2019-09-12 and 2020-03-1
 .. image:: _static/imgs/tiles_pointing_integration.png
    :width: 100%
 
+
 MWA Dipoles
 ^^^^^^^^^^^
-MWA metadata can also tell us if dipoles in the tiles which have been used are not functional.
+MWA metadata can also tell us if dipoles in the tiles which have been used are not functional. We can check this using the
+:func:`~embers.mwa_utils.mwa_dipoles.mwa_flagged_dipoles` function with the following cli tool or example script
 
 .. code-block:: console
 
     $ mwa_dipoles
+
+
+.. code-block:: python
+
+    from embers.mwa_utils.mwa_dipoles import mwa_flagged_dipoles
+
+    num_files = 10
+    out_dir = "./embers_out/mwa_utils"
+
+    mwa_flagged_dipoles(num_files, out_dir)
+
 
 .. image:: _static/imgs/flagged_dipoles.png
     :width: 100%
@@ -559,11 +592,34 @@ The above figure show us that tile :samp:`S33YY` had its 9th dipole flagged for 
 MWA FEE
 ^^^^^^^
 MWA Fully Embedded Element (FEE) beam models represent the cutting edge of simulated MWA beam models. We generate MWA FEE model healpix maps at the given nside
-using the `MWA Primay Beam <https://github.com/MWATelescope/mwa_pb>`_ GitHub repository.
+using the `MWA Primay Beam <https://github.com/MWATelescope/mwa_pb>`_ GitHub repository and the :func:`~embers.mwa_utils.mwa_fee.mwa_fee_model` function, with
+the following :samp:`mwa_fee` cli tool of example script
 
 .. code-block:: console
 
     $ mwa_fee
+
+
+.. code-block:: python
+
+    from embers.mwa_utils.mwa_fee import mwa_fee_model
+
+    # Healpix nside
+    nside = 32
+
+    # List of MWA pointings at which to evaluate the beam
+    pts = "0, 2, 4, 41"
+    pointings = [int(item) for item in pts.split(',')]
+
+    # List of flagged dipoles with indices from 1 to 32
+    # 1-16 are dipoles of XX pol while 17-32 are for YY
+    # 0 == No flagged dipoles
+    fgs = "0"
+    flags = [int(item) for item in _args.flags.split(',') if not "0"]
+
+    out_dir = "./embers_out/mwa_utils"
+
+    mwa_fee_model(out_dir, nside, pointings, flags)
 
 
 .. image:: _static/imgs/mwa_fee_beam_0_XX.png
