@@ -19,10 +19,10 @@ _parser = argparse.ArgumentParser(
     """
 )
 _parser.add_argument(
-    "--start_date", metavar="\b", default="", help="start date in YYYY-MM-DD format"
+    "--start_date", metavar="\b", default="2019-10-10", help="start date in YYYY-MM-DD format. Default=2019-10-10"
 )
 _parser.add_argument(
-    "--stop_date", metavar="\b", default="", help="stop date in YYYY-MM-DD format"
+    "--stop_date", metavar="\b", default="2019-10-10", help="stop date in YYYY-MM-DD format. Default=2019-10-10"
 )
 _parser.add_argument(
     "--ali_dir",
@@ -94,17 +94,6 @@ if _plots == "True":
     _plots = True
 
 Path(_out_dir).mkdir(parents=True, exist_ok=True)
-
-
-# if no input file provided, use sample package data
-if not Path(_ali_dir).is_dir():
-    print("-------------------------------------------")
-    print("Check input data directories")
-    print(">>> sat_channels --help, for more options")
-    print("-------------------------------------------")
-
-if _start_date == "":
-    print("No data interval provided. Try 2019-10-01 - 2019-10-10")
 
 
 def main():

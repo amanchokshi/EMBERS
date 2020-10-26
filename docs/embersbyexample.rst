@@ -418,7 +418,8 @@ the :samp:`sat_channels` cli tool:
 
 .. code-block::
 
-    sat_channels --start_date=YYYY-MM-DD --stop_date=YYYY-MM-DD --plots=True
+    $ sat_channels
+    >>> print(f"Window channel maps will be saved to: ./embers_out/sat_utils/sat_channels 
 
 or the sample script below:
 
@@ -426,7 +427,7 @@ or the sample script below:
 
     from embers.sat_utils.sat_channels import batch_window_map
 
-    start_date = "2019-10-01"
+    start_date = "2019-10-10"
     stop_date = "2019-10-10"
     ali_dir = "./embers_out/rf_tools/align_data"
     chrono_dir = "./embers_out/sat_utils/ephem_chrono"
