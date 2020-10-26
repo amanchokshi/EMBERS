@@ -17,20 +17,21 @@ Setup
 
 The above creates an :samp:`EMBERS` directory, within which we can run our example code. Outputs will by default, be saved to :samp:`~/EMBERS/embers_out`.
 
-A set of cli-tools enable easy interactions with the *EMBERS* packages. Each of the available tools can be executed with either of the following methods.
-The sample below demonstartes the usage of an example tool called :samp:`test_tool`.
+We now download sample data required to run the following examples
+
+.. code-block:: bash
+   
+    git clone https://github.com/amanchokshi/EMBERS-Sample-Data.git
+    mv EMBERS-Sample-Data/tiles_data .
+    mkdir -p embers_out/sat_utils
+    mv EMBERS-Sample-Data/TLE embers_out/sat_utils/
+    
+    rm -rf EMBERS-Sample-Data
 
 
-.. code-block:: console
+A set of command-line (cli) tools enable easy interactions with the *EMBERS* packages. The following examples demonstarte the use of these cli-tools as well as
+equivalent example scripts. Each cli-tool come built with help functions, which can be accessed at any time with the :samp:`--help` flag
 
-    $ python -m test_tool
-    $ test_tool
-
-Each tools come built with help functions, which can be accessed at any time with the :samp:`--help` flag
-
-.. code-block:: console
-
-    $ test_tool --help
 
 Raw Data Tree
 ^^^^^^^^^^^^^
