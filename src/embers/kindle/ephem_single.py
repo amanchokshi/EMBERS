@@ -15,10 +15,16 @@ _parser = argparse.ArgumentParser(
 )
 
 _parser.add_argument(
-    "--sat", metavar="\b", help="The Norad cat ID of satellite. Example: 21576"
+    "--sat",
+    metavar="\b",
+    default="25417",
+    help="The Norad cat ID of satellite. Example: 25417",
 )
 _parser.add_argument(
-    "--tle_dir", metavar="\b", default="", help="Path to directory with TLE files"
+    "--tle_dir",
+    metavar="\b",
+    default="./embers_out/sat_utils/TLE",
+    help="Path to directory with TLE files. Default=./embers_out/sat_utils/TLE",
 )
 _parser.add_argument(
     "--cadence",
@@ -55,18 +61,6 @@ _cadence = _args.cadence
 _location = _args.location
 _alpha = _args.alpha
 _out_dir = _args.out_dir
-
-# if no input file provided, use sample package data
-if _tle_dir == "":
-    print("----------------------------------------------------")
-    print("No tle_dir path provided, using packaged sample data")
-    print(">>> ephem_single --help, for more options")
-    print("----------------------------------------------------")
-    _tle_file = Path(
-        pkg_resources.resource_filename("embers.kindle", "data/TLE/25417.txt")
-    )
-    _sat_name = _tle_file.stem
-    _tle_dir = _tle_file.parents[0]
 
 
 def main():

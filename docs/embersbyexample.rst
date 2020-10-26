@@ -139,6 +139,7 @@ To get a preview of how amazing they are
     :width: 100%
     :alt: EMBERS custom colormaps
 
+
 Align Data
 ^^^^^^^^^^
 
@@ -211,7 +212,7 @@ Alternately, the following sample code may be used to achieve identical results:
 
     from embers.rf_tools.align_data import align_batch
 
-    start_date="2019-10-01"
+    start_date="2019-10-10"
     stop_date="2019-10-10"
     savgol_window_1=11
     savgol_window_2=15
@@ -289,32 +290,23 @@ the computation of satellites trajectories over a geographical location (MWA tel
 the :func:`~embers.sat_utils.sat_ephemeris.save_ephem` with either the following cli tool or the equivalent sample code.
 
 
-.. code-block:: console
+.. code-block::
 
     $ ephem_single
-    ----------------------------------------------------
-    No tle_dir path provided, using packaged sample data
-    >>> ephem_single --help, for more options
-    ----------------------------------------------------
-    Saved sky coverage plot of satellite [25984] to ./embers_out/sat_utils/ephem_plots
-    Saved ephemeris of satellite [25984] to ./embers_out/sat_utils/ephem_data
+    >>> Saved sky coverage plot of satellite [25417] to ./embers_out/sat_utils/ephem_plots
+    >>> Saved ephemeris of satellite [25417] to ./embers_out/sat_utils/ephem_data
 
 
 .. code-block:: python
 
-    import pkg_resources
     from pathlib import Path
     from embers.sat_utils.sat_ephemeris import save_ephem
 
+    sat="25417"
+    tle_dir="./embers_out/sat_utils/TLE"
     cadence = 4
     location = (-26.703319, 116.670815, 337.83)
     out_dir = "./embers_out/sat_utils/"
-
-    tle_file = Path(
-        pkg_resources.resource_filename("embers.kindle", "data/TLE/25984.txt")
-    )
-    sat_name = tle_file.stem
-    tle_dir = tle_file.parents[0]
 
     status = save_ephem(sat_name, tle_dir, cadence, location, out_dir)
     print(status)
