@@ -39,7 +39,7 @@ _parser.add_argument(
     "--time_thresh",
     metavar="\b",
     type=int,
-    default=2,
+    default=1,
     help="Minimum integration in hours, at a pointing",
 )
 _parser.add_argument(

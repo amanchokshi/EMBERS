@@ -504,7 +504,9 @@ either the following cli tool or the sample script
 .. code-block::
 
     $ mwa_pointings
-
+    >>> Downloading MWA metadata
+    >>> Due to download limits, this will take a while
+    >>> ETA: Approximately 0H:01M
 
 .. code-block:: python
 
