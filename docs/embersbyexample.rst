@@ -679,6 +679,70 @@ RF Explorer gain, which can be applied to data in the next step.
     $ rfe_calibration
     >>> RF Explorer calibration files saved to: ./embers_out/tile_maps/rfe_calibration
 
+.. code-block:: python
+
+    from embers.tile_maps.tile_maps import rfe_batch_cali
+
+    start_date="2019-10-10"
+    stop_date="2019-10-10"
+
+    # Power at which RFE gain variations begin
+    start_gain = -50
+
+    # Power at which RFE gain variations saturate
+    stop_gain = -30
+
+    # σ threshold to detect sats in the computation of rf data noise_floor
+    sat_thresh = 1
+
+    # noise threshold: multiples of mad
+    noi_thresh = 3
+
+    # Peak power which must be exceeded for satellite pass to be considered
+    pow_thresh = 5
+
+    # Path to reference feko model
+    ref_model = "embers_out/tile_maps/ref_models/ref_dipole_models.npz"
+
+    # Path to MWA FEE model
+    fee_map = "embers_out/mwa_utils/mwa_fee/mwa_fee_beam.npz"
+
+    # Healpix Nside
+    nside = 32
+
+    # Path to obs_pointings.json
+    obs_point_json = "embers_out/mwa_utils/obs_pointings.json"
+
+    # Directory where aligned rf data lives
+    align_dir = "embers_out/rf_tools/align_data"
+
+    # Directory where Chronological satellite ephemeris data lives
+    chrono_dir = "embers_out/sat_utils/ephem_chrono"
+
+    # Directory where satellite frequency channel maps are saved
+    chan_map_dir = "embers_out/sat_utils/sat_channels/window_maps"
+
+    # Directory where RF Explorer calibration data will be saved
+    out_dir = "./embers_out/tile_maps/rfe_calibration"
+
+    rfe_batch_cali(
+        start_date,
+        stop_date,
+        start_gain,
+        stop_gain,
+        sat_thresh,
+        noi_thresh,
+        pow_thresh,
+        ref_model,
+        fee_map,
+        nside,
+        obs_point_json,
+        align_dir,
+        chrono_dir,
+        chan_map_dir,
+        out_dir,
+    )
+
 The following plot represents RF Explorer gain calibration using 6 months of data
 
 .. image:: _static/imgs/rfe_gain_fit.png
