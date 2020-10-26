@@ -20,12 +20,12 @@ The above creates an :samp:`EMBERS` directory, within which we can run our examp
 We now download sample data required to run the following examples
 
 .. code-block:: bash
-   
+
     git clone https://github.com/amanchokshi/EMBERS-Sample-Data.git
     mv EMBERS-Sample-Data/tiles_data .
     mkdir -p embers_out/sat_utils
     mv EMBERS-Sample-Data/TLE embers_out/sat_utils/
-    
+
     rm -rf EMBERS-Sample-Data
 
 
@@ -75,7 +75,7 @@ the :func:`~embers.rf_tools.rf_data.single_waterfall` function with the :samp:`w
 .. code-block:: console
 
     $ waterfall_single
-    Waterfall plot saved to ./embers_out/rf_tools/S06XX_2019-10-10-02:30.png
+    >>> Waterfall plot saved to ./embers_out/rf_tools/S06XX_2019-10-10-02:30.png
 
 Or using :func:`~embers.rf_tools.rf_data.single_waterfall` as shown in the example below:
 
@@ -98,21 +98,22 @@ either the provided cli tool or with the following example code
 
 .. code-block:: console
 
-    $ waterfall_batch --start_date=YYYY-MM-DD --stop_date=YYYY-MM-DD --data_dir=./tiles_data
+    $ waterfall_batch
+    >>> Processing rf data files between 2019-10-10 and 2019-10-10
+    >>> Saving waterfall plots to: ./embers_out/rf_tools/waterfalls
 
 
 .. code-block:: python
 
-    import pkg_resources
     from embers.rf_tools.rf_data import waterfall_batch
 
-    # If no data provided, use package sample data
-    data_dir = pkg_resources.resource_filename("embers.kindle", "data/rf_data/")
-    start_date = "2019-10-01"
+    data_dir = "./tiles_data"
+    start_date = "2019-10-10"
     stop_date = "2019-10-10"
     out_dir  = "embers_out/rf_tools"
 
     waterfall_batch(start_date, stop_date, data_dir, out_dir)
+
 
 Colormaps
 ^^^^^^^^^
