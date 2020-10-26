@@ -10,7 +10,7 @@ Setup
 -----
 *EMBERS* works best in a virtual environment and requires Python > 3.6. Follow the :doc:`Installation Instructions <installation>` to setup a suitable enviroment.
 
-.. code-block::
+.. code-block:: console
 
     $ mkdir ~/EMBERS
     $ cd ~/EMBERS
@@ -19,7 +19,7 @@ The above creates an :samp:`EMBERS` directory, within which we can run our examp
 
 We now download sample data required to run the following examples
 
-.. code-block::
+.. code-block:: console
 
     git clone https://github.com/amanchokshi/EMBERS-Sample-Data.git
     mv EMBERS-Sample-Data/tiles_data .
@@ -40,7 +40,7 @@ sub directories for each MWA and reference tile exist (:samp:`S06XX`, :samp:`S06
 there exists a date directory for every day of observations in the :samp:`YYYY-MM-DD` format, within which live the raw RF data, in binary :samp:`.txt` files
 saved every 30 minutes, with the naming convention as follows :samp:`S06XX_YYYY-DD-MM-hh:mm.txt`
 
-.. code-block::
+.. code-block:: console
 
     tiles_data
     ├── S06XX
