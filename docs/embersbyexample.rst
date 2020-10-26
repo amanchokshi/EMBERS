@@ -614,13 +614,13 @@ the following :samp:`mwa_fee` cli tool of example script
 .. image:: _static/imgs/mwa_fee_beam_0_YY.png
     :width: 24%
 
-.. image:: _static/imgs/mwa_fee_beam_0_YY.png
+.. image:: _static/imgs/mwa_fee_beam_2_YY.png
     :width: 24%
 
-.. image:: _static/imgs/mwa_fee_beam_0_YY.png
+.. image:: _static/imgs/mwa_fee_beam_4_YY.png
     :width: 24%
 
-.. image:: _static/imgs/mwa_fee_beam_0_YY.png
+.. image:: _static/imgs/mwa_fee_beam_41_YY.png
     :width: 24%
 
 Tile Maps
