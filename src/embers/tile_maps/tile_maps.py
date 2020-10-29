@@ -1584,7 +1584,7 @@ def tile_maps_batch(
             repeat(chan_map_dir),
             repeat(out_dir),
             repeat(plots),
-            repeat(rfe_cali_bool),
+            repeat(rfe_cali_bool=rfe_cali_bool),
         )
 
     sat_list = list(norad_ids().values())
