@@ -22,7 +22,7 @@ sys.path.insert(0, os.path.abspath("../src"))
 project = "embers"
 copyright = "2020, Aman Chokshi"
 author = "Aman Chokshi"
-version = "0.7.6"
+version = "0.7.7"
 
 # -- General configuration ---------------------------------------------------
 
