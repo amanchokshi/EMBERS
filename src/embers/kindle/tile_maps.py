@@ -116,6 +116,13 @@ _parser.add_argument(
     help="If True, create a zillion diagnostic plots at the project_tile_healpix stage. Default: False",
 )
 
+_parser.add_argument(
+    "--rfe_cali_bool",
+    metavar="\b",
+    default="True",
+    help="If True, apply RFE calibration. Default: True",
+)
+
 _args = _parser.parse_args()
 _start_date = _args.start_date
 _stop_date = _args.stop_date
@@ -132,11 +139,18 @@ _chrono_dir = _args.chrono_dir
 _chan_map_dir = _args.chan_map_dir
 _out_dir = _args.out_dir
 _plots = _args.plots
+_rfe_cali_bool = _args.rfe_cali_bool
+
 
 if _plots == "False":
     _plots is False
 else:
     _plots = True
+
+if _rfe_cali_bool == "True":
+    _rfe_cali_bool is True
+else:
+    _rfe_cali_bool is False
 
 
 def main():
@@ -158,6 +172,7 @@ def main():
         _chan_map_dir,
         _out_dir,
         _plots,
+        _rfe_cali_bool,
     )
 
     print(f"MWA tile map files saved to: {_out_dir}")

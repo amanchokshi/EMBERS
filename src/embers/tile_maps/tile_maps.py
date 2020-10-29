@@ -866,6 +866,7 @@ def project_tile_healpix(
     chan_map_dir,
     out_dir,
     plots,
+    rfe_cali_bool=True,
 ):
     """There be magic here. Project satellite RF data onto a sky healpix map.
 
@@ -917,6 +918,7 @@ def project_tile_healpix(
     :param chan_map_dir: Path to directory containing satellite frequency channel maps. Output from :func:`~embers.sat_utils.sat_channels.batch_window_map`
     :param out_dir: Output directory where rfe calibration data will be saved as a :samp:`json` file
     :param plots: If True, create a zillion diagnostic plots
+    :param rfe_cali_bool: Turn RFE calibration on or off. Default = True
 
     :returns:
         - Tile maps saved as :samp:`.npz` file to :samp:`out_dir`
@@ -1130,13 +1132,19 @@ def project_tile_healpix(
                                                 # The max root of the polynomial is where we begin to apply the gain correction from
                                                 rfe_thresh = max(gain_cal.roots)
 
-                                                # When the power exceeds rfe_thresh, add to it using the rfe gain polynomial
-                                                tile_pass_rfe = [
-                                                    i + gain_cal(i)
-                                                    if i >= rfe_thresh
-                                                    else i
-                                                    for i in tile_pass
-                                                ]
+                                                # Turn RFE calibrati on or off
+                                                if rfe_cali_bool:
+
+                                                    # When the power exceeds rfe_thresh, add to it using the rfe gain polynomial
+                                                    tile_pass_rfe = [
+                                                        i + gain_cal(i)
+                                                        if i >= rfe_thresh
+                                                        else i
+                                                        for i in tile_pass
+                                                    ]
+
+                                                else:
+                                                    tile_pass_rfe = tile_pass
 
                                                 # magic here
                                                 # the beam shape finally emerges
@@ -1510,6 +1518,7 @@ def tile_maps_batch(
     chan_map_dir,
     out_dir,
     plots,
+    rfe_cali_bool,
 ):
     """Batch process satellite RF data to create clean beam maps and all intermediate data products.
 
@@ -1534,6 +1543,7 @@ def tile_maps_batch(
     :param chan_map_dir: Path to directory containing satellite frequency channel maps. Output from :func:`~embers.sat_utils.sat_channels.batch_window_map`
     :param out_dir: Output directory where rfe calibration data will be saved as a :samp:`json` file
     :param plots: If True, create a zillion diagnostic plots for the :func:`~embers.tile_maps.tile_maps.project_tile_healpix` stage
+    :param rfe_cali_bool: Turn RFE calibration on or off. Default=True.
 
     """
 
@@ -1574,6 +1584,7 @@ def tile_maps_batch(
             repeat(chan_map_dir),
             repeat(out_dir),
             repeat(plots),
+            repeat(rfe_cali_bool),
         )
 
     sat_list = list(norad_ids().values())

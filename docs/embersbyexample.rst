@@ -810,6 +810,9 @@ using the RF Explorer gain calibration solution formed in the perevious section.
     # If True, create a zillion diagnostic plots at the project_tile_healpix stage
     plots = True
 
+    # Turn RFE calibration on or off. Default=True.
+    rfe_cali_bool = True
+
     tile_maps_batch(
         start_date,
         stop_date,
@@ -826,6 +829,7 @@ using the RF Explorer gain calibration solution formed in the perevious section.
         chan_map_dir,
         out_dir,
         plots,
+        rfe_cali_bool,
     )
 
 Tile Maps Raw
@@ -944,7 +948,7 @@ second row are satellite pass counts in each pixel while the third row are error
 
 Null Test
 ^^^^^^^^^
-The two reference antennas provide the ability to perform a null test, in which we compare the performance of each refrerence antenna against each other using 
+The two reference antennas provide the ability to perform a null test, in which we compare the performance of each refrerence antenna against each other using
 the :func:`~embers.tile_maps.null_test.null_test` function. This can be achieved using the :samp:`null_test` cli tool or the following sample script
 
 .. code-block:: console
@@ -988,7 +992,7 @@ slices of two reference maps against each other.
 
 Compare Beams
 ^^^^^^^^^^^^^
-Compare measured MWA beam maps created above, with MWA FEE models using the :func:`~embers.tile_maps.compare_beams.batch_compare_beam` function with the 
+Compare measured MWA beam maps created above, with MWA FEE models using the :func:`~embers.tile_maps.compare_beams.batch_compare_beam` function with the
 :samp:`compare_beams` cli tool or the following sample script
 
 .. code-block:: console
