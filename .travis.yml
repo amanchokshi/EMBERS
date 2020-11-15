@@ -6,6 +6,7 @@ jobs:
     - python: 3.6
     - python: 3.7
     - python: 3.8
+  allow_failures:	
     - python: 3.9-dev
 
 before_install:
