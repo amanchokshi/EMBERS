@@ -81,7 +81,7 @@ def plt_fee_fit(
     times = (times - min(times))/60
 
     ax1.scatter(
-        times, mwa_fee_pass, color=colors[0], alpha=0.6, marker="p", s=10, label=r"B$_{fee}$"
+        times, mwa_fee_pass, color=colors[0], alpha=0.6, marker="p", s=10, label=r"B$_{FEE}$"
         #  times, mwa_fee_pass, color="#c70039", alpha=0.6, marker="p", s=10, label=r"B$_{fee}$"
     )
 
