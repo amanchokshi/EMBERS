@@ -131,7 +131,9 @@ Tile Maps
 Kindle
 ======
 
-:mod:`embers.kindle` contains a set of command-line (cli) tools or executable script to process data in various ways
+:mod:`embers.kindle` contains a set of command-line (cli) tools or executable script to process data in various ways. 
+Check out :doc:`Embers by Example <embersbyexample>` for comprehensive real world examples of the following cli-tools.
+
 
 .. currentmodule:: embers.kindle
 
@@ -140,3 +142,18 @@ Kindle
     waterfall_single.main
     waterfall_batch.main
     colormaps.main
+    align_single.main
+    align_batch.main
+    download_tle.main
+    ephem_single.main
+    ephem_batch.main
+    ephem_chrono.main
+    sat_channels.main
+    mwa_pointings.main
+    mwa_dipoles.main
+    mwa_fee.main
+    ref_models.main
+    rfe_calibration.main
+    tile_maps.main
+    null_test.main
+    compare_beams.main

@@ -14,68 +14,77 @@ from pathlib import Path
 
 from embers.sat_utils.chrono_ephem import save_chrono_ephem
 
-_parser = argparse.ArgumentParser(
-    description="""
-    Create chronological ephemeris json files
-    """
-)
-
-_parser.add_argument(
-    "--time_zone",
-    metavar="\b",
-    default="Australia/Perth",
-    help="pytz timezone, default=Australia/Perth",
-)
-_parser.add_argument(
-    "--start_date",
-    metavar="\b",
-    default="2019-10-10",
-    help="start date in YYYY-MM-DD format. Default=2019-10-10",
-)
-_parser.add_argument(
-    "--stop_date",
-    metavar="\b",
-    default="2019-10-10",
-    help="stop date in YYYY-MM-DD format. Default=2019-10-10",
-)
-_parser.add_argument(
-    "--interp_type",
-    metavar="\b",
-    default="cubic",
-    help="Interpolation type. Default=cubic",
-)
-_parser.add_argument(
-    "--interp_freq",
-    metavar="\b",
-    type=int,
-    default=1,
-    help="Interpolation frequency. Default=1",
-)
-_parser.add_argument(
-    "--ephem_dir",
-    metavar="\b",
-    default="./embers_out/sat_utils/ephem_data",
-    help="Directory where npz ephemeris files are saved. Default: ./embers_out/sat_utils/ephem_data",
-)
-_parser.add_argument(
-    "--out_dir",
-    metavar="\b",
-    default="./embers_out/sat_utils/ephem_chrono",
-    help="Dir where chrono_ephem json files will be saved. Default=./embers_out/sat_utils/ephem_chrono",
-)
-
-_args = _parser.parse_args()
-_time_zone = _args.time_zone
-_start_date = _args.start_date
-_stop_date = _args.stop_date
-_interp_type = _args.interp_type
-_interp_freq = _args.interp_freq
-_ephem_dir = _args.ephem_dir
-_out_dir = _args.out_dir
-
 
 def main():
-    """Execute chrono_ephem from terminal."""
+    """
+    Collate ephemeris data generated above by :samp:`ephem_batch` for multiple satellites and determine all satellites present in each
+    30 minute observation and what their trajectories at the geographic location. The :func:`~embers.sat_utils.chrono_ephem.save_chrono_ephem` function saves
+    chronological ephemeris data to json files in :samp:`./embers_out/sat_utils/ephem_chrono`.
+
+    .. code-block:: console
+
+        $ ephem_chrono --help
+
+    """
+
+    _parser = argparse.ArgumentParser(
+        description="""
+        Create chronological ephemeris json files
+        """
+    )
+
+    _parser.add_argument(
+        "--time_zone",
+        metavar="\b",
+        default="Australia/Perth",
+        help="pytz timezone, default=Australia/Perth",
+    )
+    _parser.add_argument(
+        "--start_date",
+        metavar="\b",
+        default="2019-10-10",
+        help="start date in YYYY-MM-DD format. Default=2019-10-10",
+    )
+    _parser.add_argument(
+        "--stop_date",
+        metavar="\b",
+        default="2019-10-10",
+        help="stop date in YYYY-MM-DD format. Default=2019-10-10",
+    )
+    _parser.add_argument(
+        "--interp_type",
+        metavar="\b",
+        default="cubic",
+        help="Interpolation type. Default=cubic",
+    )
+    _parser.add_argument(
+        "--interp_freq",
+        metavar="\b",
+        type=int,
+        default=1,
+        help="Interpolation frequency. Default=1",
+    )
+    _parser.add_argument(
+        "--ephem_dir",
+        metavar="\b",
+        default="./embers_out/sat_utils/ephem_data",
+        help="Directory where npz ephemeris files are saved. Default: ./embers_out/sat_utils/ephem_data",
+    )
+    _parser.add_argument(
+        "--out_dir",
+        metavar="\b",
+        default="./embers_out/sat_utils/ephem_chrono",
+        help="Dir where chrono_ephem json files will be saved. Default=./embers_out/sat_utils/ephem_chrono",
+    )
+
+    _args = _parser.parse_args()
+    _time_zone = _args.time_zone
+    _start_date = _args.start_date
+    _stop_date = _args.stop_date
+    _interp_type = _args.interp_type
+    _interp_freq = _args.interp_freq
+    _ephem_dir = _args.ephem_dir
+    _out_dir = _args.out_dir
 
     print(f"Saving chronological Ephem files to: {_out_dir}")
     print("Grab a coffee, this may take more than a couple of minutes!")

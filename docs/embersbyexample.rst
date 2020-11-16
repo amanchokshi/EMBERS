@@ -15,7 +15,7 @@ Setup
     $ mkdir ~/EMBERS
     $ cd ~/EMBERS
 
-The above creates an :samp:`EMBERS` directory, within which we can run our example code. Outputs will by default, be saved to :samp:`~/EMBERS/embers_out`. 
+The above creates an :samp:`EMBERS` directory, within which we can run our example code. Outputs will by default, be saved to :samp:`~/EMBERS/embers_out`.
 Alternately, for an directory in an arbitrary location :samp:`/foobar/EMBERS`, outputs will be saved to :samp:`/foobar/EMBERS/embers_out`.
 
 We now download sample data required to run the subsequent examples from the `EMBERS Sample Data github repository <https://github.com/amanchokshi/EMBERS-Sample-Data>`_.
@@ -321,7 +321,7 @@ the :func:`~embers.sat_utils.sat_ephemeris.save_ephem` with either the following
     :width: 100%
     :alt: EMBERS custom colormaps
 
-Analysing a batch of TLE files is achieved with the :func:`embers.sat_utils.sat_ephemeris.ephem_batch` function, which converts the TLE files downloaded with
+Analysing a batch of TLE files is achieved with the :func:`~embers.sat_utils.sat_ephemeris.ephem_batch` function, which converts the TLE files downloaded with
 :samp:`download_tle` into satellite ephemeris data: rise time, set time, alt/az arrays at a given time cadence. This is saved to a npz file which will be used
 to plot the satellite sky coverage over the geographic location supplied. It can be used with the following cli tool
 
