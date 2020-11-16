@@ -138,3 +138,4 @@ Kindle
 .. autosummary::
 
     waterfall_single.main
+    waterfall_batch.main
