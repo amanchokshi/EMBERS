@@ -360,8 +360,6 @@ def waterfall_batch(start_date, stop_date, data_dir, out_dir):
     """
     Save a series of waterfall plots in parallel.
 
-    Parameters
-    ----------
     :param start_date: date in style YYYY-MM-DD
     :type start_date: str
     :param stop_date: date in style YYYY-MM-DD
