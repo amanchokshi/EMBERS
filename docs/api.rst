@@ -139,3 +139,4 @@ Kindle
 
     waterfall_single.main
     waterfall_batch.main
+    colormaps.main
