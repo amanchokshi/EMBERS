@@ -36,7 +36,7 @@ _out_dir = _args.out_dir
 
 
 def main():
-    """Executable: save singel waterfall plot"""
+    """Executable: save single waterfall plot"""
 
     print(f"Waterfall plot saved to ./{_out_dir}/{Path(_rf_file).stem}.png")
     single_waterfall(_rf_file, _out_dir)
