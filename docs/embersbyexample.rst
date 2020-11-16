@@ -15,7 +15,8 @@ Setup
     $ mkdir ~/EMBERS
     $ cd ~/EMBERS
 
-The above creates an :samp:`EMBERS` directory, within which we can run our example code. Outputs will by default, be saved to :samp:`~/EMBERS/embers_out`.
+The above creates an :samp:`EMBERS` directory, within which we can run our example code. Outputs will by default, be saved to :samp:`~/EMBERS/embers_out`. 
+Alternately, for an directory in an arbitrary location :samp:`/foobar/EMBERS`, outputs will be saved to :samp:`/foobar/EMBERS/embers_out`.
 
 We now download sample data required to run the subsequent examples from the `EMBERS Sample Data github repository <https://github.com/amanchokshi/EMBERS-Sample-Data>`_.
 This repository contains one day of satellite radio data and will require 4GB of disk space.
