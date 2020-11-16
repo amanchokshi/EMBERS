@@ -26,7 +26,7 @@ This repository contains one day of satellite radio data and will require 4GB of
 
 .. code-block:: console
 
-    git clone https://github.com/amanchokshi/EMBERS-Sample-Data.git
+    git clone --depth 1 https://github.com/amanchokshi/EMBERS-Sample-Data.git
     mv EMBERS-Sample-Data/tiles_data .
     mkdir -p embers_out/sat_utils
     mv EMBERS-Sample-Data/TLE embers_out/sat_utils/
