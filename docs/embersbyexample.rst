@@ -20,6 +20,9 @@ The above creates an :samp:`EMBERS` directory, within which we can run our examp
 We now download sample data required to run the subsequent examples from the `EMBERS Sample Data github repository <https://github.com/amanchokshi/EMBERS-Sample-Data>`_.
 This repository contains one day of satellite radio data and will require 4GB of disk space.
 
+.. warning::
+    4GB of free disk space required to download EMBERS sample data
+
 .. code-block:: console
 
     git clone https://github.com/amanchokshi/EMBERS-Sample-Data.git
