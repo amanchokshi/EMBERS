@@ -93,7 +93,7 @@ MWA Utils
 Tile Maps
 =========
 
-   .. currentmodule:: embers.tile_maps
+.. currentmodule:: embers.tile_maps
 
 .. autosummary::
 
@@ -130,3 +130,11 @@ Tile Maps
 
 Kindle
 ======
+
+:mod:`embers.kindle` contains a set of command-line (cli) tools or executable script to process data in various ways
+
+.. currentmodule:: embers.kindle
+
+.. autosummary::
+
+    waterfall_single.main
