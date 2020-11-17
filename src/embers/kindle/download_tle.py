@@ -70,6 +70,7 @@ def main():
         except Exception:
             pass
 
+    print(f"TLE files saved to {_out_dir}")
     download_tle(
         _start_date,
         _stop_date,

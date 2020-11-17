@@ -98,7 +98,7 @@ def main():
     _channel = _args.channel
     _out_dir = _args.out_dir
 
-    print(f"Saving sample savgol_interp plot to: {_out_dir}")
+    print(f"Saving sample savgol_interp plot to: {_out_dir}/savgol_interp_sample.png")
     plot_savgol_interp(
         ref=_ref_file,
         tile=_tile_file,
