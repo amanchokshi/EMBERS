@@ -766,7 +766,7 @@ using the RF Explorer gain calibration solution formed in the perevious section.
 
 .. code-block:: console
 
-    $ tile_maps --start_date=2019-10-10 --stip_date=2019-10-10 --plots=True
+    $ tile_maps --start_date=2019-10-10 --stop_date=2019-10-10 --plots=True
     >>> MWA tile map files saved to: ./embers_out/tile_maps/tile_maps
 
 .. code-block:: python
