@@ -84,3 +84,4 @@ def main():
     mwa_point_meta(
         _start_date, _stop_date, _num_pages, _time_thresh, _time_zone, _rf_dir, _out_dir
     )
+    print(f"MWA tile pointing data saved to {_out_dir}")

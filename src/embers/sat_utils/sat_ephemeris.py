@@ -386,7 +386,7 @@ def save_ephem(sat, tle_dir, cadence, location, alpha, out_dir):
         plt.savefig(f"{out_dir}/ephem_plots/{sat}.png")
         np.savez_compressed(f"{out_dir}/ephem_data/{sat}.npz", **sat_ephem)
 
-        return f"Saved sky coverage plot of satellite [{sat}] to {out_dir}ephem_plots \nSaved ephemeris of satellite [{sat}] to {out_dir}ephem_data"
+        return f"Saved sky coverage plot of satellite [{sat}] to {out_dir}ephem_plots/{sat}.png \nSaved ephemeris of satellite [{sat}] to {out_dir}ephem_data/{sat}.npz"
 
     return f"File {tle_dir}/{sat} is empty, skipping"
 

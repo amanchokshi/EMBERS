@@ -46,3 +46,4 @@ def main():
     _out_dir = _args.out_dir
 
     mwa_flagged_dipoles(_num_files, _out_dir)
+    print(f"MWA dipole flagging data saved to {_out_dir}")
