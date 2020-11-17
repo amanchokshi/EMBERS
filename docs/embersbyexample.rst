@@ -210,6 +210,7 @@ We can now align all the raw RF files within a date interval using the :func:`~e
 MWA tile are smoothed and aligned and saved to compressed :samp:`npz` file by :func:`~numpy.savez_compressed`.
 
 **WARNING:** This is probably the most resource hungry section. It typically took me 2 days to process 5 months of data, on a machine with 40 cpu cores. Beware, and be patient.
+The :samp:`--max_cores` option is available to limit number of cores used by the :samp:`align_batch` paralelized cli-tool.
 
 The :samp:`align_batch` cli tool is a convenient way to align large volumes of data
 
@@ -337,6 +338,8 @@ Analysing a batch of TLE files is achieved with the :func:`~embers.sat_utils.sat
 :samp:`download_tle` into satellite ephemeris data: rise time, set time, alt/az arrays at a given time cadence. This is saved to a npz file which will be used
 to plot the satellite sky coverage over the geographic location supplied. It can be used with the following cli tool
 
+The :samp:`--max_cores` option is available to limit number of cores used by the :samp:`ephem_batch` paralelized cli-tool below.
+
 .. code-block:: console
 
     $ ephem_batch
@@ -432,6 +435,8 @@ window, and less than 100%. By default the :samp:`window occupancy` is defined a
 
 The analysis discusses above is implemented with the :func:`~embers.sat_utils.sat_channels.batch_window_map` function. Satellite channels can be identified with
 the :samp:`sat_channels` cli tool:
+
+The :samp:`--max_cores` option is available to limit number of cores used by the :samp:`sat_channels` paralelized cli-tool below.
 
 .. code-block:: console
 
@@ -699,6 +704,8 @@ RF Explorer gain, which can be applied to data in the next step.
 Determine the RF Explorer gain calibration solution using the :func:`~embers.tile_maps.tile_maps.rfe_batch_cali` function with the :samp:`rfe_calibration`
 cli tool or the following sample script
 
+The :samp:`--max_cores` option is available to limit number of cores used by the :samp:`rfe_calibration` paralelized cli-tool below.
+
 .. code-block:: console
 
     $ rfe_calibration
@@ -780,6 +787,8 @@ Batch process satellite RF data to create MWA beam maps and intermediate plots.
 As in the previous section, satellite data is gridded onto a healpix map based on ephemeris trajectories in the sky. The data from the MWA tiles is corrected
 using the RF Explorer gain calibration solution formed in the perevious section. A couple of different types of data products are created using the
 :func:`~embers.tile_maps.tile_maps.tile_maps_batch` with the :samp:`tile_maps` cli tool or the following sample script
+
+The :samp:`--max_cores` option is available to limit number of cores used by the :samp:`tile_maps` paralelized cli-tool below.
 
 .. code-block:: console
 
@@ -1016,6 +1025,8 @@ Compare Beams
 ^^^^^^^^^^^^^
 Compare measured MWA beam maps created above, with MWA FEE models using the :func:`~embers.tile_maps.compare_beams.batch_compare_beam` function with the
 :samp:`compare_beams` cli tool or the following sample script
+
+The :samp:`--max_cores` option is available to limit number of cores used by the :samp:`compare_beams` paralelized cli-tool below.
 
 .. code-block:: console
 
