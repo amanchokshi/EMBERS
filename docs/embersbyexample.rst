@@ -22,7 +22,8 @@ We now download sample data required to run the subsequent examples from the `EM
 This repository contains one day of satellite radio data and will require 4GB of disk space.
 
 .. warning::
-    4GB of free disk space required to download EMBERS sample data
+    4GB of free disk space required to download EMBERS sample data. Users may run into issues while cloning the sample data to hard-drives formatted
+    using the :samp:`VFAT` filesystem.
 
 .. code-block:: console
 
@@ -1067,3 +1068,25 @@ The :samp:`--max_cores` option is available to limit number of cores used by the
 
 .. image:: _static/imgs/S07XX_rf0XX_41_beam_slices.png
    :width: 49%
+
+
+Testing EMBERS
+--------------
+EMBERS comes with a set of automated tests which can be run. To do this, install EMBERS from the github repository, install the necessary python dependancies
+and follow the installations below.
+
+.. code-block:: console
+
+    git clone https://github.com/amanchokshi/EMBERS.git
+    cd EMBERS
+
+    # Setup a virtual enviroment
+    python -m venv embers-env
+    source embers-env/bin/activate
+
+    pip install .
+    pip install -r requirements_dev.txt
+
+    # Run automated tests
+    pytest
+
