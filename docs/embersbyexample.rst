@@ -86,11 +86,13 @@ Or using :func:`~embers.rf_tools.rf_data.single_waterfall` as shown in the examp
 
 .. code-block:: python
 
+    from pathlib import Path
     from embers.rf_tools.rf_data import single_waterfall
 
     rf_file = "tiles_data/S06XX/2019-10-10/S06XX_2019-10-10-02:30.txt"
     out_dir  = "embers_out/rf_tools"
 
+    print(f"Waterfall plot saved to ./{out_dir}/{Path(rf_file).stem}.png")
     single_waterfall(rf_file, out_dir)
 
 
@@ -117,6 +119,8 @@ either the provided cli tool or with the following example code
     stop_date = "2019-10-10"
     out_dir  = "embers_out/rf_tools"
 
+    print(f"Processing rf data files between {start_date} and {stop_date}")
+    print(f"Saving waterfall plots to: ./{log_dir}")
     waterfall_batch(start_date, stop_date, data_dir, out_dir)
 
 
@@ -129,6 +133,7 @@ To get a preview of how amazing they are
 .. code-block:: console
 
     $ colormaps
+    >>> Plot of embers colormaps saved to ./embers_out/rf_tools/colormaps.pngy
 
 .. code-block:: python
 
@@ -139,6 +144,7 @@ To get a preview of how amazing they are
     out_dir="./embers_out/rf_tools"
 
     plt_colormaps(spec, spec_r, jade, jade_r, out_dir)
+    print(f"Plot of embers colormaps saved to {out_dir}/colormaps.pngy")
 
 .. image:: _static/imgs/colormaps.png
     :width: 100%
@@ -161,7 +167,7 @@ RF data and shows the efficacy of the selected smoothing filter.
 .. code-block:: console
 
     $ align_single
-    >>> Saving sample savgol_interp plot to: ./embers_out/rf_tools
+    >>> Saving sample savgol_interp plot to: ./embers_out/rf_tools/savgol_interp_sample.png
 
 
 Alternately, the following sample code may be used to achieve identical results:
@@ -192,6 +198,8 @@ Alternately, the following sample code may be used to achieve identical results:
         channel=channel,
         out_dir=out_dir,
     )
+
+    print(f"Saving sample savgol_interp plot to: {out_dir}/savgol_interp_sample.png")
 
 
 .. image:: _static/imgs/align_data.png
@@ -239,6 +247,7 @@ Alternately, the following sample code may be used to achieve identical results:
         data_dir=data_dir,
         out_dir=out_dir,
     )
+    print(f"Aligned files saved to: {out_dir}")
 
 
 Sat Utils
@@ -259,6 +268,7 @@ Once valid login credentials have been obtained, download tle files with the :fu
 .. code-block:: console
 
     $ download_tle --start_date=YYYY-MM-DD --stop_date=YYYY-MM-DD --st_ident=** --st_pass=**
+    >>> TLE files saved to ./embers_out/sat_utils/TLE
 
 or with the following example script
 
@@ -285,6 +295,8 @@ or with the following example script
         out_dir=out_dir,
     )
 
+    print(f"TLE files saved to {out_dir}")
+
 
 
 Satellite ephemeris
@@ -298,8 +310,8 @@ the :func:`~embers.sat_utils.sat_ephemeris.save_ephem` with either the following
 .. code-block:: console
 
     $ ephem_single
-    >>> Saved sky coverage plot of satellite [25417] to ./embers_out/sat_utils/ephem_plots
-    >>> Saved ephemeris of satellite [25417] to ./embers_out/sat_utils/ephem_data
+    >>> Saved sky coverage plot of satellite [25417] to ./embers_out/sat_utils/ephem_plots/25417.png
+    >>> Saved ephemeris of satellite [25417] to ./embers_out/sat_utils/ephem_data/25417.npz
 
 
 .. code-block:: python
@@ -512,6 +524,7 @@ either the following cli tool or the sample script
     >>> Downloading MWA metadata
     >>> Due to download limits, this will take a while
     >>> ETA: Approximately 0H:01M
+    >>> MWA tile pointing data saved to ./embers_out/mwa_utils
 
 .. code-block:: python
 
@@ -528,6 +541,7 @@ either the following cli tool or the sample script
     mwa_point_meta(
         start_date, stop_date, num_pages, time_thresh, time_zone, rf_dir, out_dir
     )
+    print(f"MWA tile pointing data saved to {out_dir}")
 
 This process can take up to a couple of hours due to network limits on frequency of downloads from the MWA servers. A file called obs_pointing.json will be created which
 contains all 30 minute observations with more than a 60% majority of time at a single pointing. A histogram showing maximum theoretical integration times per
@@ -554,6 +568,7 @@ MWA metadata can also tell us if dipoles in the tiles which have been used are n
     >>> Downloading MWA metafits files
     >>> Due to download limits, this will take a while
     >>> ETA: Approximately 0H:06M
+    >>> MWA dipole flagging data saved to ./embers_out/mwa_utils
 
 .. code-block:: python
 
@@ -563,6 +578,7 @@ MWA metadata can also tell us if dipoles in the tiles which have been used are n
     out_dir = "./embers_out/mwa_utils"
 
     mwa_flagged_dipoles(num_files, out_dir)
+    print(f"MWA dipole flagging data saved to {out_dir}")
 
 
 .. image:: _static/imgs/flagged_dipoles.png
@@ -602,6 +618,7 @@ the following :samp:`mwa_fee` cli tool of example script
     out_dir = "./embers_out/mwa_utils"
 
     mwa_fee_model(out_dir, nside, pointings, flags)
+    print(f"MWA_FEE maps saved to: {out_dir}")
 
 
 .. image:: _static/imgs/mwa_fee_beam_0_XX.png
