@@ -140,6 +140,14 @@ def main():
         help="If True, apply RFE calibration. Default: True",
     )
 
+    _parser.add_argument(
+        "--max_cores",
+        metavar="\b",
+        default=0,
+        type=int,
+        help="Maximum number of cores to be used by this script. By default all core available cores are used",
+    )
+
     _args = _parser.parse_args()
     _start_date = _args.start_date
     _stop_date = _args.stop_date
@@ -157,6 +165,10 @@ def main():
     _out_dir = _args.out_dir
     _plots = _args.plots
     _rfe_cali_bool = _args.rfe_cali_bool
+    _max_cores = _args.max_cores
+
+    if _max_cores == 0:
+        _max_cores is None
 
     if _plots == "False":
         _plots is False
@@ -185,6 +197,7 @@ def main():
         _out_dir,
         _plots,
         _rfe_cali_bool,
+        max_cores=_max_cores,
     )
 
     print(f"MWA tile map files saved to: {_out_dir}")

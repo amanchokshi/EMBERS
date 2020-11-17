@@ -95,6 +95,14 @@ def main():
         help="Dir where savgol-interp sample plot is saved. Default=./embers_out/rf_tools/align_data",
     )
 
+    _parser.add_argument(
+        "--max_cores",
+        metavar="\b",
+        default=0,
+        type=int,
+        help="Maximum number of cores to be used by this script. By default all core available cores are used",
+    )
+
     _args = _parser.parse_args()
     _start_date = _args.start_date
     _stop_date = _args.stop_date
@@ -105,6 +113,10 @@ def main():
     _interp_freq = _args.interp_freq
     _data_dir = _args.data_dir
     _out_dir = _args.out_dir
+    _max_cores = _args.max_cores
+
+    if _max_cores == 0:
+        _max_cores is None
 
     print(f"Aligned files saved to: {_out_dir}")
     align_batch(
@@ -117,4 +129,5 @@ def main():
         interp_freq=_interp_freq,
         data_dir=_data_dir,
         out_dir=_out_dir,
+        max_cores=_max_cores,
     )

@@ -59,6 +59,13 @@ def main():
         default="./embers_out/sat_utils",
         help="Path to output directory. Default=./embers_out/sat_utils",
     )
+    _parser.add_argument(
+        "--max_cores",
+        metavar="\b",
+        default=0,
+        type=int,
+        help="Maximum number of cores to be used by this script. By default all core available cores are used",
+    )
 
     _args = _parser.parse_args()
     _tle_dir = _args.tle_dir
@@ -66,8 +73,12 @@ def main():
     _location = _args.location
     _alpha = _args.alpha
     _out_dir = _args.out_dir
+    _max_cores = _args.max_cores
+
+    if _max_cores == 0:
+        _max_cores is None
 
     print(f"Saving logs to {_out_dir}/ephem_data")
     print(f"Saving sky coverage plots to {_out_dir}/ephem_plots")
     print(f"Saving ephemeris of satellites to {_out_dir}/ephem_data")
-    ephem_batch(_tle_dir, _cadence, _location, _alpha, _out_dir)
+    ephem_batch(_tle_dir, _cadence, _location, _alpha, _out_dir, max_cores=_max_cores)

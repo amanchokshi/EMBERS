@@ -94,6 +94,13 @@ def main():
         default="True",
         help="If True, create a bunch of useful diagnostic plots. Default=True",
     )
+    _parser.add_argument(
+        "--max_cores",
+        metavar="\b",
+        default=0,
+        type=int,
+        help="Maximum number of cores to be used by this script. By default all core available cores are used",
+    )
 
     _args = _parser.parse_args()
     _start_date = _args.start_date
@@ -106,6 +113,10 @@ def main():
     _occ_thresh = _args.occ_thresh
     _out_dir = _args.out_dir
     _plots = _args.plots
+    _max_cores = _args.max_cores
+
+    if _max_cores == 0:
+        _max_cores is None
 
     if _plots == "True":
         _plots = True
@@ -126,4 +137,5 @@ def main():
         _occ_thresh,
         _out_dir,
         plots=_plots,
+        max_cores=_max_cores,
     )

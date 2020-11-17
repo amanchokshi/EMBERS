@@ -176,13 +176,14 @@ def beam_slice(nside, tile_map, fee_map, out_dir):
             print(e)
 
 
-def batch_compare_beam(nside, fee_map, map_dir, out_dir):
+def batch_compare_beam(nside, fee_map, map_dir, out_dir, max_cores=None):
     """Batch compare multiple beam maps
 
     :param nside: Healpix nside
     :param fee_map: MWA FEE model created  my :func:`~embers.mwa_utils.mwa_fee`
     :param map_dir: Path to dir with clean MWA tile maps created by :func:`~embers.tile_maps.tile_maps.mwa_clean_maps`
     :param out_dir: Path to output directory where diagnostic plots will be saved
+    :param max_cores: Maximum number of cores to be used by this script. Default=None, which means that all available cores are used
     """
 
     # make output dir if it doesn't exist
@@ -192,7 +193,7 @@ def batch_compare_beam(nside, fee_map, map_dir, out_dir):
     map_files = [item for item in map_dir.glob("*.npz")]
 
     # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=max_cores) as executor:
         executor.map(
             beam_slice, repeat(nside), map_files, repeat(fee_map), repeat(out_dir)
         )

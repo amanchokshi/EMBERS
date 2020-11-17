@@ -310,6 +310,7 @@ def align_batch(
     interp_freq=None,
     data_dir=None,
     out_dir=None,
+    max_cores=None,
 ):
     """Temporally align all RF files within a date interval using :func:`~embers.rf_tools.align_data.save_aligned`.
 
@@ -323,6 +324,7 @@ def align_batch(
     :param interp_freq: freqency to which power array is interpolated :class:`~int`
     :param data_dir: root of data dir where rf data is located :class:`~str`
     :param out_dir: relative path to output directory :class:`~str`
+    :param max_cores: Maximum number of cores to be used by this script. Default=None, which means that all available cores are used
 
     :return:
         - aligned rf data saved to :samp:`npz` file by :func:`~numpy.savez_compressed` in :samp:`out_dir`
@@ -344,7 +346,9 @@ def align_batch(
 
         for day in range(len(dates)):
 
-            with concurrent.futures.ProcessPoolExecutor() as executor:
+            with concurrent.futures.ProcessPoolExecutor(
+                max_workers=max_cores
+            ) as executor:
                 results = executor.map(
                     save_aligned,
                     repeat(pair),

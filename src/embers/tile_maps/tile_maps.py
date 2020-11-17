@@ -784,6 +784,7 @@ def rfe_batch_cali(
     chrono_dir,
     chan_map_dir,
     out_dir,
+    max_cores=None,
 ):
 
     """Batch gain calibrate all pairs of RF explorers and compute a global solution.
@@ -803,6 +804,7 @@ def rfe_batch_cali(
     :param chrono_dir: Path to directory containing chronological ephemeris data output from :func:`~embers.sat_utils.chrono_ephem.save_chrono_ephem`
     :param chan_map_dir: Path to directory containing satellite frequency channel maps. Output from :func:`~embers.sat_utils.sat_channels.batch_window_map`
     :param out_dir: Output directory where rfe calibration data will be saved as a :samp:`json` file
+    :param max_cores: Maximum number of cores to be used by this script. Default=None, which means that all available cores are used
 
     :returns:
         - Json files saved to out_dir, contains RF explorer calibration data. Plot and data of global calibration solution saved too.
@@ -827,7 +829,7 @@ def rfe_batch_cali(
     Path(out_dir).mkdir(parents=True, exist_ok=True)
 
     # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=max_cores) as executor:
         executor.map(
             rfe_calibration,
             repeat(start_date),
@@ -1519,6 +1521,7 @@ def tile_maps_batch(
     out_dir,
     plots,
     rfe_cali_bool=True,
+    max_cores=None,
 ):
     """Batch process satellite RF data to create clean beam maps and all intermediate data products.
 
@@ -1544,6 +1547,7 @@ def tile_maps_batch(
     :param out_dir: Output directory where rfe calibration data will be saved as a :samp:`json` file
     :param plots: If True, create a zillion diagnostic plots for the :func:`~embers.tile_maps.tile_maps.project_tile_healpix` stage
     :param rfe_cali_bool: Turn RFE calibration on or off. Default=True.
+    :param max_cores: Maximum number of cores to be used by this script. Default=None, which means that all available cores are used
 
     """
 
@@ -1565,7 +1569,7 @@ def tile_maps_batch(
     Path(out_dir).mkdir(parents=True, exist_ok=True)
 
     # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=max_cores) as executor:
         executor.map(
             project_tile_healpix,
             repeat(start_date),

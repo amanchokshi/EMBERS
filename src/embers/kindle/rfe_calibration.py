@@ -136,6 +136,14 @@ def main():
         help="Directory where RF Explorer calibration data will be saved. Default=./embers_out/tile_maps/rfe_calibration",
     )
 
+    _parser.add_argument(
+        "--max_cores",
+        metavar="\b",
+        default=0,
+        type=int,
+        help="Maximum number of cores to be used by this script. By default all core available cores are used",
+    )
+
     _args = _parser.parse_args()
     _start_date = _args.start_date
     _stop_date = _args.stop_date
@@ -152,6 +160,10 @@ def main():
     _chrono_dir = _args.chrono_dir
     _chan_map_dir = _args.chan_map_dir
     _out_dir = _args.out_dir
+    _max_cores = _args.max_cores
+
+    if _max_cores == 0:
+        _max_cores is None
 
     print(f"RF Explorer calibration files saved to: {_out_dir}")
     rfe_batch_cali(
@@ -170,4 +182,5 @@ def main():
         _chrono_dir,
         _chan_map_dir,
         _out_dir,
+        max_cores=_max_cores,
     )

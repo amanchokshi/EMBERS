@@ -691,6 +691,7 @@ def batch_window_map(
     occ_thresh,
     out_dir,
     plots=None,
+    max_cores=None,
 ):
     """Find satellite channels for all rfobservations in a date interval
 
@@ -735,6 +736,7 @@ def batch_window_map(
     :param occ_thresh: Window occupation threshold. Minimum fractional signal above the noise floor in window :class:`~float`
     :param out_dir: Path to output directory to save plots :class:`~str`
     :param plots: If :samp:`True`, disagnostic plots are generated and saved to :samp:`out_dir`
+    :param max_cores: Maximum number of cores to be used by this script. Default=None, which means that all available cores are used
 
     :returns:
         - :samp:`window_chan_map` json file saved to :samp:`out_dir/window_maps/.json`
@@ -746,7 +748,7 @@ def batch_window_map(
     timestamps = [timestamp for t_list in time_stamps for timestamp in t_list]
 
     # Parallization magic happens here
-    with concurrent.futures.ProcessPoolExecutor() as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=max_cores) as executor:
         executor.map(
             window_chan_map,
             repeat(ali_dir),

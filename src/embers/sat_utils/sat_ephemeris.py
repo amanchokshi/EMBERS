@@ -391,15 +391,16 @@ def save_ephem(sat, tle_dir, cadence, location, alpha, out_dir):
     return f"File {tle_dir}/{sat} is empty, skipping"
 
 
-def ephem_batch(tle_dir, cadence, location, alpha, out_dir):
+def ephem_batch(tle_dir, cadence, location, alpha, out_dir, max_cores=None):
     """
     Process ephemeris for multiple satellites in parallel.
 
-    :param tle_dir: path to directory where :samp:`TLE` files are saved :class:`~str`
-    :param cadence: time cadence at which to evaluate sat position, in seconds :class:`~int`
+    :param tle_dir: Path to directory where :samp:`TLE` files are saved :class:`~str`
+    :param cadence: Time cadence at which to evaluate sat position, in seconds :class:`~int`
     :param location: The :samp:`gps` coordinates of the :samp:`location` at which satellite passes are to be computed. :samp:`location` is a :class:`~tuple` in the format (:samp:`latitude`, :samp:`longitude`, :samp:`elevation`), with :samp:`elevation` given in :samp:`meters`
-    :param alpha: transparency of individual passes in :func:`~embers.sat_utils.sat_ephemeris.sat_plot` default=0.5
-    :param out_dir: path to output directory :class:`~str`
+    :param alpha: Transparency of individual passes in :func:`~embers.sat_utils.sat_ephemeris.sat_plot` default=0.5
+    :param out_dir: Path to output directory :class:`~str`
+    :param max_cores: Maximum number of cores to be used by this script. Default=None, which means that all available cores are used
 
     :returns:
         - satellite ephemeris at :samp:`location` and sky coverage ephemeris plot, saved to :samp:`out_dir`
@@ -416,7 +417,7 @@ def ephem_batch(tle_dir, cadence, location, alpha, out_dir):
     )
     sat_names = [tle.stem for tle in Path(tle_dir).glob("*.txt")]
 
-    with concurrent.futures.ProcessPoolExecutor() as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=max_cores) as executor:
         results = executor.map(
             save_ephem,
             sat_names,
