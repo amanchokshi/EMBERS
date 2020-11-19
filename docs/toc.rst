@@ -17,4 +17,5 @@ Welcome to the documentation for EMBERS.
    api-mwa_utils
    api-tile_maps
    api-kindle
+   performance
    
