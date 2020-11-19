@@ -211,8 +211,9 @@ We can now align all the raw RF files within a date interval using the :func:`~e
 MWA tile are smoothed and aligned and saved to compressed :samp:`npz` file by :func:`~numpy.savez_compressed`.
 
 **WARNING:** This is probably the most resource hungry section. It typically took me 2 days to process 5 months of data, on a machine with 40 cpu cores. Beware, and be patient.
-The :samp:`--max_cores` option is available to limit number of cores used by the :samp:`align_batch` paralelized cli-tool. An analysis of the performance of this
-tool can be found at :doc:`performance`. 
+The :samp:`--max_cores` option is available to limit number of cores used by the :samp:`align_batch` paralelized cli-tool. If you are experimenting with EMBERS
+on a laptop it is highly suggested that you use set :samp:`--max_cores=1` for any batch script. This is sufficent for testing and will not run your laptop to the 
+ground by using all availible resources. An analysis of the performance of this tool can be found at :doc:`performance`. 
 
 The :samp:`align_batch` cli tool is a convenient way to align large volumes of data
 
