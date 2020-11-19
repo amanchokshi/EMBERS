@@ -87,7 +87,6 @@ def main():
     _out_dir = _args.out_dir
 
     print(f"Saving chronological Ephem files to: {_out_dir}")
-    print("Grab a coffee, this may take more than a couple of minutes!")
 
     # save log file
     Path(_out_dir).mkdir(parents=True, exist_ok=True)

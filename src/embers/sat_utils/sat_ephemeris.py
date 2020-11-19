@@ -384,6 +384,7 @@ def save_ephem(sat, tle_dir, cadence, location, alpha, out_dir):
 
         plt = sat_plot(sat, sat_ephem["sat_alt"], sat_ephem["sat_az"], alpha=alpha)
         plt.savefig(f"{out_dir}/ephem_plots/{sat}.png")
+        plt.close()
         np.savez_compressed(f"{out_dir}/ephem_data/{sat}.npz", **sat_ephem)
 
         return f"Saved sky coverage plot of satellite [{sat}] to {out_dir}ephem_plots/{sat}.png \nSaved ephemeris of satellite [{sat}] to {out_dir}ephem_data/{sat}.npz"
