@@ -53,12 +53,20 @@ def main():
         help="Dir where beam comparison plots will be saved. Default=./embers_out/tile_maps/compare_beams",
     )
 
+    _parser.add_argument(
+        "--max_cores",
+        metavar="\b",
+        type=int,
+        help="Maximum number of cores to be used by this script. By default all core available cores are used",
+    )
+
     _args = _parser.parse_args()
     _nside = _args.nside
     _fee_map = _args.fee_map
     _map_dir = Path(_args.map_dir)
     _out_dir = Path(_args.out_dir)
+    _max_cores = _args.max_cores
 
-    batch_compare_beam(_nside, _fee_map, _map_dir, _out_dir)
+    batch_compare_beam(_nside, _fee_map, _map_dir, _out_dir, max_cores=_max_cores)
 
     print(f"Beam comparison plots saved to: {_out_dir}")

@@ -98,7 +98,6 @@ def main():
     _parser.add_argument(
         "--max_cores",
         metavar="\b",
-        default=0,
         type=int,
         help="Maximum number of cores to be used by this script. By default all core available cores are used",
     )
@@ -114,9 +113,6 @@ def main():
     _data_dir = _args.data_dir
     _out_dir = _args.out_dir
     _max_cores = _args.max_cores
-
-    if _max_cores == 0:
-        _max_cores is None
 
     print(f"Aligned files saved to: {_out_dir}")
     align_batch(
