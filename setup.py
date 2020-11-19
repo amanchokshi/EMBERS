@@ -26,7 +26,7 @@ def data_files(data_dir, data_types):
 
 setup(
     name="embers",
-    version="0.8.2",
+    version="0.8.3",
     license="MIT",
     author="Aman Chokshi",
     author_email="achokshi@student.unimelb.edu.au",
