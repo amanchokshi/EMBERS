@@ -57,5 +57,5 @@ Here are the essential project links:
 .. |DOI| image:: https://zenodo.org/badge/218209312.svg
    :target: https://zenodo.org/badge/latestdoi/218209312
 
-.. |JOSS| image:: https://joss.theoj.org/papers/10.21105/joss.02629/status.svg
+.. |JOSS| image:: https://img.shields.io/badge/JOSS-paper-green
    :target: https://doi.org/10.21105/joss.02629
