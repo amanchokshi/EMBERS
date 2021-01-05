@@ -169,7 +169,7 @@ def plt_slice(
 
     dax.scatter(zen_angle, delta_pow, marker=".", s=30, color="#27296d")
     dax.plot(zen_angle, pow_fit, linewidth=1.4, alpha=0.9, color="#ff8264")
-    dax.fill_between(zen_angle, ref_res, alpha=0.6, color="grey", zorder=0)
+    dax.fill_between(zen_angle, ref_res, alpha=0.9, color="#008891", edgecolor="black", zorder=0)
     dax.set_xticks([-75, -50, -25, 0, 25, 50, 75])
     dax.set_ylim([-10, 10])
     dax.set_xlim(xlim)
