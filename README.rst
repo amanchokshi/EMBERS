@@ -6,7 +6,7 @@
 
 *Experimental Measurement of BEam Responses with Satellites*
 ============================================================
-|JOSS| |PyPI| |License| |ReadTheDocs| |Travis| |Coverage| |Python| |DOI|
+|JOSS| |PyPI| |License| |ReadTheDocs| |Coverage| |Python| |DOI|
 
 *EMBERS* is a pure-Python astronomy software package designed to enable polarised measurements of radio telescope antenna beam-patterns using satellites.
 
@@ -27,6 +27,13 @@ Here are the essential project links:
 * `Contributing to EMBERS <https://github.com/amanchokshi/EMBERS/blob/master/contrib.rst>`_
 
 * `Issue tracker <https://github.com/amanchokshi/EMBERS/issues>`_ on GitHub
+
+If you used this project check out the two papers, and consider citing them:
+
+* `EMBERS: Experimental Measurement of BEam Responses with Satellites <https://ui.adsabs.harvard.edu/abs/2020JOSS....5.2629C/abstract>`_
+
+* `Dual polarization measurements of MWA beampatterns at 137 MHz <https://ui.adsabs.harvard.edu/abs/2021MNRAS.502.1990C/abstract>`_
+
 
 .. |ReadTheDocs| image:: https://img.shields.io/readthedocs/embers/latest?color=green&logo=Read%20The%20Docs&logoColor=white
     :target: https://embers.readthedocs.io
