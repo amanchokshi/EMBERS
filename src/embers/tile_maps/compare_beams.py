@@ -98,7 +98,7 @@ def beam_slice(nside, tile_map, fee_map, out_dir):
             residuals[np.where(tile_med == np.nan)] = np.nan
 
             # This is an Awesome plot
-            plt.style.use("seaborn")
+            plt.style.use("seaborn-v0_8")
             fig1 = plt.figure(figsize=(10, 8))
             ax = plt.gca()
             ax.set_axis_off()

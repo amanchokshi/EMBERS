@@ -19,7 +19,7 @@ from embers.rf_tools.colormaps import spectral
 from embers.rf_tools.rf_data import time_tree
 from matplotlib import pylab as pl
 from matplotlib import pyplot as plt
-from scipy.stats import median_absolute_deviation as mad
+from scipy.stats import median_abs_deviation as mad
 
 mpl.use("Agg")
 
@@ -80,7 +80,7 @@ def noise_floor(sat_thresh, noi_thresh, power):
     σ_noise = mad(noise_data, axis=None)
     noise_threshold = μ_noise + noi_thresh * σ_noise
 
-    return noise_threshold
+    return noise_threshold, 1.4826 * σ_noise
 
 
 def time_filter(s_rise, s_set, times):
@@ -202,7 +202,7 @@ def plt_channel(
 
     """
     plt.rcParams.update(plt.rcParamsDefault)
-    plt.style.use("seaborn")
+    plt.style.use("seaborn-v0_8")
 
     # plt channel power
     plt.plot(
@@ -267,7 +267,7 @@ def plt_sats(ids, chrono_file, timestamp):
     """
 
     plt.rcParams.update(plt.rcParamsDefault)
-    plt.style.use("seaborn")
+    plt.style.use("seaborn-v0_8")
     figure = plt.figure(figsize=(7, 6))
     ax = figure.add_subplot(111, polar=True)
     ax.set_ylim(90, 0)
@@ -385,7 +385,7 @@ def good_chans(
     p_med = np.median(power)
 
     # Determine noise threshold
-    noise_threshold = noise_floor(sat_thresh, noi_thresh, power)
+    noise_threshold, _ = noise_floor(sat_thresh, noi_thresh, power)
 
     with open(chrono_file) as chrono:
         chrono_ephem = json.load(chrono)

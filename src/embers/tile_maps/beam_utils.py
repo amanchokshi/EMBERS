@@ -13,9 +13,10 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from numpy.polynomial import polynomial as poly
 from scipy import optimize as opt
 from scipy.stats import chisquare
-from scipy.stats import median_absolute_deviation as mad
+from scipy.stats import median_abs_deviation as mad
 
 matplotlib.use("Agg")
+
 
 # rotate func written by Jack Line
 def rotate_map(nside, angle=None, healpix_array=None, savetag=None, flip=False):
@@ -263,15 +264,32 @@ def chisq_fit_test(data=None, model=None, offset=20):
         - pvalue - an indicator for goodess of fit
     """
 
-    bad_values = np.isnan(data)
-    data = data[~bad_values]
-    model = model[~bad_values]
+    data = np.asarray(data, dtype=float)
+    model = np.asarray(model, dtype=float)
 
-    data = np.asarray(data) - np.nanmin(model) + offset
-    model = np.asarray(model) - np.nanmin(model) + offset
+    mask = np.isfinite(data) & np.isfinite(model)
+    data = data[mask]
+    model = model[mask]
+
+    if data.size == 0 or model.size == 0:
+        return np.nan
+
+    baseline = np.nanmin(model)
+    data = data - baseline + offset
+    model = model - baseline + offset
+
+    if np.any(data < 0) or np.any(model < 0):
+        return np.nan
+
+    model_sum = np.sum(model)
+    data_sum = np.sum(data)
+
+    if model_sum <= 0 or data_sum <= 0:
+        return np.nan
+
+    model = model * (data_sum / model_sum)
 
     _, pvalue = chisquare(data, f_exp=model)
-
     return pvalue
 
 
@@ -292,7 +310,6 @@ def plt_slice(
     ylim=[-26, 12],
     title=None,
 ):
-
     """Plot a slice of measured beam map with errorbars fit the fee beam model. Subplot with residual power.
 
     :param fig: Figure number

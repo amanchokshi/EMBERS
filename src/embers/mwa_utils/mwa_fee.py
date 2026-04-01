@@ -153,7 +153,7 @@ def mwa_fee_model(out_dir, nside, pointings=[0, 2, 4, 41], flags=[]):
 
         fee_beam[str(p)] = [normed_beam_XX, normed_beam_YY]
 
-        plt.style.use("seaborn")
+        plt.style.use("seaborn-v0_8")
         fig = plt.figure(figsize=(6, 6))
         fig.suptitle(f"MWA FEE MAP @ pointing [{p}] XX", fontsize=16, y=0.92)
         plot_healpix(data_map=normed_beam_XX, sub=(1, 1, 1), cmap=jd, vmin=-50, vmax=0)

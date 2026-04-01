@@ -143,7 +143,7 @@ def find_flags(out_dir):
     n = len(keys) - 1
     colors = pl.cm.Spectral(np.linspace(0, 1, n))
 
-    plt.style.use("seaborn")
+    plt.style.use("seaborn-v0_8")
 
     _, axs = plt.subplots(4, 7, figsize=(18, 9), sharex=True, sharey=True,)
     axs = axs.ravel()

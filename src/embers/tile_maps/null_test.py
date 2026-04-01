@@ -304,7 +304,7 @@ def null_test(nside, za_max, ref_model, map_dir, out_dir):
     # Will be used for errorbars in beam slice plots
     np.save(f"{out_dir}/ref_res", ref_res)
 
-    plt.style.use("seaborn")
+    plt.style.use("seaborn-v0_8")
     nice_fonts = {
         "font.family": "sans-serif",
         "axes.labelsize": 10,

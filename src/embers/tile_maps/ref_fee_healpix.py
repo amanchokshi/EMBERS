@@ -129,7 +129,7 @@ def ref_healpix_save(nside, out_dir):
     )
 
     # Plot the things to sanity check and save results
-    plt.style.use("seaborn")
+    plt.style.use("seaborn-v0_8")
     fig = plt.figure(figsize=(10, 14))
 
     ax3 = fig.add_subplot(2, 2, 1)

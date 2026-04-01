@@ -282,7 +282,7 @@ def sat_plot(sat_id, alt, az, alpha=0.5):
 
     """
 
-    plt.style.use("seaborn")
+    plt.style.use("seaborn-v0_8")
     figure = plt.figure(figsize=(6, 6))
     ax = figure.add_subplot(111, polar=True)
     ax.set_ylim(90, 0)

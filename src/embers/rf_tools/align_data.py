@@ -159,7 +159,7 @@ def plot_savgol_interp(
     )
 
     # Sample align plot
-    plt.style.use("seaborn")
+    plt.style.use("seaborn-v0_8")
     plt.rcParams["figure.figsize"] = (9, 6)
 
     # convert times to minuts from first datapoint

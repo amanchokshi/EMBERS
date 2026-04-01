@@ -14,17 +14,26 @@ from pathlib import Path
 import healpy as hp
 import matplotlib
 import numpy as np
-from embers.rf_tools.colormaps import jade, spectral
-from embers.rf_tools.rf_data import tile_names
-from embers.sat_utils.sat_channels import (noise_floor, read_aligned,
-                                           time_filter, time_tree)
-from embers.sat_utils.sat_list import norad_ids
-from embers.tile_maps.beam_utils import (chisq_fit_gain, chisq_fit_test,
-                                         plot_healpix, rotate_map)
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.stats import binned_statistic
-from scipy.stats import median_absolute_deviation as mad
+from scipy.stats import median_abs_deviation as mad
+
+from embers.rf_tools.colormaps import jade, spectral
+from embers.rf_tools.rf_data import tile_names
+from embers.sat_utils.sat_channels import (
+    noise_floor,
+    read_aligned,
+    time_filter,
+    time_tree,
+)
+from embers.sat_utils.sat_list import norad_ids
+from embers.tile_maps.beam_utils import (
+    chisq_fit_gain,
+    chisq_fit_test,
+    plot_healpix,
+    rotate_map,
+)
 
 matplotlib.use("Agg")
 spec, _ = spectral()
@@ -76,7 +85,6 @@ def plt_channel(
     pointing,
     timestamp,
 ):
-
     """Plot power in a frequency channel of raw rf data, with various thresholds
 
     :param out_dir: Output directory where plot will be saved
@@ -96,7 +104,7 @@ def plt_channel(
     """
 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-    plt.style.use("seaborn")
+    plt.style.use("seaborn-v0_8")
 
     fig = plt.figure(figsize=(8, 6))
     fig.suptitle(
@@ -105,7 +113,13 @@ def plt_channel(
 
     ax1 = fig.add_subplot(2, 1, 1)
     ax1.plot(
-        times, ref, linestyle="-", linewidth=2, alpha=1.0, color="#729d39", label="ref",
+        times,
+        ref,
+        linestyle="-",
+        linewidth=2,
+        alpha=1.0,
+        color="#729d39",
+        label="ref",
     )
     ax1.fill_between(times, y1=ref, y2=-120, color="#729d39", alpha=0.7)
     ax1.axhline(
@@ -123,7 +137,7 @@ def plt_channel(
     leg = ax1.legend(frameon=True)
     leg.get_frame().set_facecolor("grey")
     leg.get_frame().set_alpha(0.2)
-    for le in leg.legendHandles:
+    for le in leg.legend_handles:
         le.set_alpha(1)
 
     ax2 = fig.add_subplot(2, 1, 2)
@@ -152,7 +166,7 @@ def plt_channel(
     leg = ax2.legend(frameon=True)
     leg.get_frame().set_facecolor("grey")
     leg.get_frame().set_alpha(0.2)
-    for le in leg.legendHandles:
+    for le in leg.legend_handles:
         le.set_alpha(1)
 
     plt.tight_layout()
@@ -182,7 +196,7 @@ def plt_fee_fit(
 
     pval = chisq_fit_test(data=mwa_pass_fit, model=mwa_fee_pass)
 
-    plt.style.use("seaborn")
+    plt.style.use("seaborn-v0_8")
 
     fig = plt.figure(figsize=(8, 6))
     ax1 = fig.add_subplot(1, 1, 1)
@@ -216,7 +230,7 @@ def plt_fee_fit(
     leg = ax1.legend(frameon=True)
     leg.get_frame().set_facecolor("grey")
     leg.get_frame().set_alpha(0.2)
-    for le in leg.legendHandles:
+    for le in leg.legend_handles:
         le.set_alpha(1)
 
     delta_p_raw = np.array(mwa_fee_pass) - np.array(mwa_pass_fit_raw)
@@ -248,9 +262,9 @@ def plt_fee_fit(
     leg = dax.legend(loc="lower left", frameon=True, markerscale=2, handlelength=1)
     leg.get_frame().set_facecolor("grey")
     leg.get_frame().set_alpha(0.4)
-    for le in leg.legendHandles:
+    for le in leg.legend_handles:
         le.set_alpha(1)
-    dax.set_xlabel("Times [min]")
+    dax.set_xlabel("Times [s]")
     dax.set_yticks([-20, 0, 20])
     dax.set_ylabel(r"$\Delta$P [dBm]")
 
@@ -272,7 +286,6 @@ def rf_apply_thresholds(
     plots,
     out_dir,
 ):
-
     """Apply power, noise thresholds to rf data arrays.
 
     For a particular NORAD sat ID, crop a pair of ref, tile data arrays to when the satellite is above the horizon
@@ -299,8 +312,10 @@ def rf_apply_thresholds(
 
     ref_p, tile_p, times = read_aligned(ali_file=ali_file)
 
-    ref_noise = noise_floor(sat_thresh, noi_thresh, ref_p)
-    tile_noise = noise_floor(sat_thresh, noi_thresh, tile_p)
+    ref_noise, ref_sig = noise_floor(sat_thresh, noi_thresh, ref_p)
+    tile_noise, tile_sig = noise_floor(sat_thresh, noi_thresh, tile_p)
+
+    mwa_sigma_db = np.sqrt(ref_sig**2 + tile_sig**2)
 
     with open(chrono_file) as chrono:
         chrono_ephem = json.load(chrono)
@@ -317,7 +332,6 @@ def rf_apply_thresholds(
         intvl = time_filter(rise_ephem, set_ephem, np.asarray(times))
 
         if intvl is not None:
-
             w_start, w_stop = intvl
 
             # Slice [crop] the ref/tile/times arrays to the times of sat pass and extract sat_chan
@@ -325,50 +339,107 @@ def rf_apply_thresholds(
             tile_c = tile_p[w_start : w_stop + 1, sat_chan]
             times_c = times[w_start : w_stop + 1]
 
-            alt = np.asarray(norad_ephem["sat_alt"])
-            az = np.asarray(norad_ephem["sat_az"])
+            # alt = np.asarray(norad_ephem["sat_alt"])
+            # az = np.asarray(norad_ephem["sat_az"])
+            # print(ref_c.shape, tile_c.shape, times_c.shape, alt.shape, az.shape, np.asarray(norad_ephem["sat_alt"]).shape, np.asarray(norad_ephem["sat_az"]).shape)
+
+            ephem_times = np.asarray(norad_ephem["time_array"], dtype=float)
+            alt = np.asarray(norad_ephem["sat_alt"], dtype=float)
+            az = np.asarray(norad_ephem["sat_az"], dtype=float)
+
+            alt_c = np.interp(times_c, ephem_times, alt)
+
+            sin_az = np.sin(az)
+            cos_az = np.cos(az)
+
+            sin_interp = np.interp(times_c, ephem_times, sin_az)
+            cos_interp = np.interp(times_c, ephem_times, cos_az)
+
+            az_c = np.arctan2(sin_interp, cos_interp)
+            az_c = np.mod(az_c, 2 * np.pi)
 
             if (np.nanmax(ref_c - ref_noise) >= pow_thresh) and (
                 np.nanmax(tile_c - tile_noise) >= pow_thresh
             ):
+                mask = (ref_c >= ref_noise) & (tile_c >= tile_noise)
 
-                # Apply noise criteria. In the window, where are ref_power and tile power
-                # above their respective thresholds?
-                if np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0].size != 0:
-                    good_ref = ref_c[
-                        np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]
-                    ]
-                    good_tile = tile_c[
-                        np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]
-                    ]
-                    good_alt = alt[
-                        np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]
-                    ]
-                    good_az = az[
-                        np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]
-                    ]
-
-                    if plots is True:
-                        plt_channel(
-                            f"{out_dir}/pass_plots/{tile}_{ref}/{point}",
-                            times_c,
-                            ref_c,
-                            tile_c,
-                            ref_noise,
-                            tile_noise,
-                            sat_chan,
-                            sat_id,
-                            point,
-                            timestamp,
-                        )
-
-                    return [good_ref, good_tile, good_alt, good_az, times_c]
-
-                else:
+                if not np.any(mask):
                     return 0
+
+                idx = np.flatnonzero(mask)
+                i0 = idx[0]
+                i1 = idx[-1] + 1
+
+                good_ref = ref_c[i0:i1]
+                good_tile = tile_c[i0:i1]
+                good_alt = alt_c[i0:i1]
+                good_az = az_c[i0:i1]
+                good_times = times_c[i0:i1]
+
+                if plots is True:
+                    plt_channel(
+                        f"{out_dir}/pass_plots/{tile}_{ref}/{point}",
+                        times_c,
+                        ref_c,
+                        tile_c,
+                        ref_noise,
+                        tile_noise,
+                        sat_chan,
+                        sat_id,
+                        point,
+                        timestamp,
+                    )
+
+                return [good_ref, good_tile, good_alt, good_az, good_times, mwa_sigma_db]
 
             else:
                 return 0
+
+            # if (np.nanmax(ref_c - ref_noise) >= pow_thresh) and (
+            #     np.nanmax(tile_c - tile_noise) >= pow_thresh
+            # ):
+            #     # # Apply noise criteria. In the window, where are ref_power and tile power
+            #     # # above their respective thresholds?
+            #     # if np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0].size != 0:
+            #     #     good_ref = ref_c[
+            #     #         np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]
+            #     #     ]
+            #     #     good_tile = tile_c[
+            #     #         np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]
+            #     #     ]
+            #     #     good_alt = alt[
+            #     #         np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]
+            #     #     ]
+            #     #     good_az = az[
+            #     #         np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]
+            #     #     ]
+            #     #
+            #     #     good_times = times_c[
+            #     #         np.where((ref_c >= ref_noise) & (tile_c >= tile_noise))[0]
+            #     #     ]
+            #
+            #     if plots is True:
+            #         plt_channel(
+            #             f"{out_dir}/pass_plots/{tile}_{ref}/{point}",
+            #             times_c,
+            #             ref_c,
+            #             tile_c,
+            #             ref_noise,
+            #             tile_noise,
+            #             sat_chan,
+            #             sat_id,
+            #             point,
+            #             timestamp,
+            #         )
+            #
+            #     return [ref_c, tile_c, alt_c, az_c, times_c]
+            #     # return [good_ref, good_tile, good_alt, good_az, good_times]
+            #
+            # # else:
+            # #     return 0
+            #
+            # else:
+            #     return 0
 
         else:
             return 0
@@ -438,7 +509,6 @@ def rfe_calibration(
         rotated_fee = rotate_map(nside, angle=-(1 * np.pi) / 2.0, healpix_array=ref_fee)
 
     for day in range(len(dates)):
-
         for window in range(len(timestamps[day])):
             timestamp = timestamps[day][window]
 
@@ -446,7 +516,6 @@ def rfe_calibration(
             point = check_pointing(timestamp, obs_point_json)
 
             if point == 0:
-
                 if "XX" in tile:
                     mwa_fee = fee_m[str(point)][0]
                 else:
@@ -458,7 +527,6 @@ def rfe_calibration(
 
                 # check if file exists
                 if ali_file.is_file():
-
                     # Chrono and map Ephemeris file
                     chrono_file = Path(f"{chrono_dir}/{timestamp}.json")
                     channel_map = Path(f"{chan_map_dir}/{timestamp}.json")
@@ -467,16 +535,13 @@ def rfe_calibration(
                         chrono_ephem = json.load(chrono)
 
                         if chrono_ephem != []:
-
                             norad_list = [
                                 chrono_ephem[s]["sat_id"][0]
                                 for s in range(len(chrono_ephem))
                             ]
 
                             if norad_list != []:
-
                                 if channel_map.is_file():
-
                                     with open(channel_map) as ch_map:
                                         chan_map = json.load(ch_map)
 
@@ -485,7 +550,6 @@ def rfe_calibration(
                                         ]
 
                                         for sat in chan_sat_ids:
-
                                             chan = chan_map[f"{sat}"]
 
                                             sat_data = rf_apply_thresholds(
@@ -502,13 +566,13 @@ def rfe_calibration(
                                             )
 
                                             if sat_data != 0:
-
                                                 (
                                                     ref_power,
                                                     tile_power,
                                                     alt,
                                                     az,
                                                     times,
+                                                    mwa_sigma_db,
                                                 ) = sat_data
 
                                                 # Altitude is in deg while az is in radians
@@ -620,7 +684,6 @@ def rfe_calibration(
                                                     ].size
                                                     >= 30
                                                 ):
-
                                                     # determine how well the data fits the model with chi-square
                                                     pval = chisq_fit_test(
                                                         data=mwa_pass_fit[dis_filter][
@@ -633,20 +696,17 @@ def rfe_calibration(
 
                                                     # a goodness of fit threshold
                                                     if pval >= 0.8:
-
                                                         # consider residuals of sats which pass within 21 deg of zenith
                                                         # an hp index of 111 approx corresponds to a zenith angle of 21 degrees
                                                         #  hp_10_deg = 111
                                                         hp_21_deg = 414
 
                                                         if np.amin(u) <= hp_21_deg:
-
                                                             # only passes longer than 10 minutes
                                                             if (
                                                                 np.amax(times_pass)
                                                                 - np.amin(times_pass)
                                                             ) >= 600:
-
                                                                 # residuals between scaled FEE and mwa pass
                                                                 resi = (
                                                                     mwa_fee_pass
@@ -754,7 +814,7 @@ def rfe_collate_cali(start_gain, stop_gain, rfe_cali_dir):
 
     leg = plt.legend(loc="lower right", frameon=True, markerscale=0.9, handlelength=1.4)
     leg.get_frame().set_facecolor("#cccccc")
-    for le in leg.legendHandles:
+    for le in leg.legend_handles:
         le.set_alpha(0.77)
 
     plt.xlabel("Observed power [dBm]")
@@ -786,7 +846,6 @@ def rfe_batch_cali(
     out_dir,
     max_cores=None,
 ):
-
     """Batch gain calibrate all pairs of RF explorers and compute a global solution.
 
     :param start_date: Start date in :samp:`YYYY-MM-DD-HH:MM` format
@@ -993,7 +1052,6 @@ def project_tile_healpix(
         rotated_fee = rotate_map(nside, angle=-(1 * np.pi) / 2.0, healpix_array=ref_fee)
 
     for day in range(len(dates)):
-
         for window in range(len(timestamps[day])):
             timestamp = timestamps[day][window]
 
@@ -1001,7 +1059,6 @@ def project_tile_healpix(
             point = check_pointing(timestamp, obs_point_json)
 
             if point is not None:
-
                 if "XX" in tile:
                     mwa_fee = fee_m[str(point)][0]
                 else:
@@ -1013,7 +1070,6 @@ def project_tile_healpix(
 
                 # check if file exists
                 if ali_file.is_file():
-
                     # Chrono and map Ephemeris file
                     chrono_file = Path(f"{chrono_dir}/{timestamp}.json")
                     channel_map = Path(f"{chan_map_dir}/{timestamp}.json")
@@ -1022,16 +1078,13 @@ def project_tile_healpix(
                         chrono_ephem = json.load(chrono)
 
                         if chrono_ephem != []:
-
                             norad_list = [
                                 chrono_ephem[s]["sat_id"][0]
                                 for s in range(len(chrono_ephem))
                             ]
 
                             if norad_list != []:
-
                                 if channel_map.is_file():
-
                                     with open(channel_map) as ch_map:
                                         chan_map = json.load(ch_map)
 
@@ -1040,7 +1093,6 @@ def project_tile_healpix(
                                         ]
 
                                         for sat in chan_sat_ids:
-
                                             chan = chan_map[f"{sat}"]
 
                                             sat_data = rf_apply_thresholds(
@@ -1057,7 +1109,6 @@ def project_tile_healpix(
                                             )
 
                                             if sat_data != 0:
-
                                                 (
                                                     ref_power,
                                                     tile_power,
@@ -1136,7 +1187,6 @@ def project_tile_healpix(
 
                                                 # Turn RFE calibrati on or off
                                                 if rfe_cali_bool is True:
-
                                                     # When the power exceeds rfe_thresh, add to it using the rfe gain polynomial
                                                     tile_pass_rfe = [
                                                         i + gain_cal(i)
@@ -1165,7 +1215,6 @@ def project_tile_healpix(
                                                 mwa_pass_fit = mwa_pass - offset[0]
 
                                                 if mwa_pass_fit.size != 0:
-
                                                     # determine how well the data fits the model with chi-square
                                                     pval = chisq_fit_test(
                                                         data=mwa_pass_fit,
@@ -1199,10 +1248,8 @@ def project_tile_healpix(
 
                                                     # a goodness of fit threshold
                                                     if pval >= 0.8:
-
                                                         # loop though all healpix pixels for the pass
                                                         for i in range(len(u)):
-
                                                             tile_data["mwa_maps"][
                                                                 f"{point}"
                                                             ][u[i]].append(
@@ -1242,7 +1289,6 @@ def project_tile_healpix(
 
     # loop over pointings for all maps
     for p in pointings:
-
         mwa_map = np.asarray(tile_data["mwa_maps"][p])
         tile_map = np.asarray(tile_data["tile_maps"][p])
         ref_map = np.asarray(tile_data["ref_maps"][p])
@@ -1256,7 +1302,6 @@ def project_tile_healpix(
 
         # loop over all sats
         for s in sat_ids:
-
             mwa_sat_data[p][s] = []
             ref_sat_data[p][s] = []
             tile_sat_data[p][s] = []
@@ -1264,7 +1309,6 @@ def project_tile_healpix(
 
             # loop over every healpix pixel
             for i in range(len(ref_map)):
-
                 # Find subset of data for each sat
                 sat_idx = np.where(np.asarray(sat_map[i]) == s)
                 mwa_sat_data[p][s].append((np.asarray(mwa_map[i])[sat_idx]).tolist())
@@ -1337,14 +1381,11 @@ def mwa_clean_maps(nside, tile_map_raw, out_dir):
     mwa_maps_good = {p: [] for p in pointings}
 
     for p in pointings:
-
         # mwa map
         mwa_map_good = [[] for pixel in range(hp.nside2npix(nside))]
 
         for sat in good_sats:
-
             for pix in range(hp.nside2npix(nside)):
-
                 mwa_map_good[pix].extend(mwa_map[p][sat][pix])
 
         mwa_maps_good[p].extend(mwa_map_good)
@@ -1375,13 +1416,12 @@ def plt_sat_maps(sat, out_dir):
     tile_data = {key: tile_data[key].item() for key in tile_data}
 
     for p in pointings:
-
         Path(f"{out_dir}/tile_maps_raw/sat_plots/{p}/").mkdir(
             parents=True, exist_ok=True
         )
 
         try:
-            plt.style.use("seaborn")
+            plt.style.use("seaborn-v0_8")
             fig = plt.figure(figsize=(10, 10))
             fig.suptitle(f"Satellite [{sat}] @ pointing {p}", fontsize=16)
             tile_sat_med = [
@@ -1418,7 +1458,6 @@ def plt_clean_maps(clean_map, out_dir):
     tile_data = np.load(f, allow_pickle=True)
 
     for p in pointings:
-
         Path(f"{out_dir}/tile_maps_clean/clean_plots/{p}/tile_maps").mkdir(
             parents=True, exist_ok=True
         )
@@ -1435,7 +1474,7 @@ def plt_clean_maps(clean_map, out_dir):
                 [(np.nanmedian(i) if i != [] else np.nan) for i in tile_data[p]]
             )
 
-            plt.style.use("seaborn")
+            plt.style.use("seaborn-v0_8")
             fig = plt.figure(figsize=(10, 10))
             fig.suptitle(f"Good Map: {tile}/{ref} @ {p}", fontsize=16)
             plot_healpix(
@@ -1463,7 +1502,7 @@ def plt_clean_maps(clean_map, out_dir):
             vmin = np.nanmin(tile_map_mad)
             vmax = np.nanmax(tile_map_mad)
 
-            plt.style.use("seaborn")
+            plt.style.use("seaborn-v0_8")
             fig = plt.figure(figsize=(10, 10))
             fig.suptitle(f"Good Map MAD: {tile}/{ref} @ {p}", fontsize=16)
             plot_healpix(
@@ -1485,7 +1524,7 @@ def plt_clean_maps(clean_map, out_dir):
         try:
             tile_map_counts = [len(np.array(i)[~np.isnan(i)]) for i in tile_data[p]]
 
-            plt.style.use("seaborn")
+            plt.style.use("seaborn-v0_8")
             fig = plt.figure(figsize=(10, 10))
             fig.suptitle(f"Good Map Counts: {tile}/{ref} @ {p}", fontsize=16)
             plot_healpix(

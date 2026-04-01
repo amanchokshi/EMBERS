@@ -239,7 +239,7 @@ def pointing_hist(pointings, int_hours, time_thresh, out_dir):
     x = range(len(time_point))
     leg = [int(i) for i in time_point]
 
-    plt.style.use("seaborn")
+    plt.style.use("seaborn-v0_8")
     _, ax = plt.subplots(figsize=(8, 6))
     pal = sns.cubehelix_palette(
         len(time_point), start=0.4, rot=-0.5, dark=0.4, reverse=True
@@ -499,7 +499,7 @@ def plt_hist_array(tile_ints, out_dir):
 
     """
 
-    plt.style.use("seaborn")
+    plt.style.use("seaborn-v0_8")
     fig = plt.figure(figsize=(14, 10))
 
     # Tile names
