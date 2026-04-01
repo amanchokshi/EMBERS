@@ -18,3 +18,5 @@ embers.egg-info/
 /paper_plots/temp_plots/*
 /paper_plots/ref_rot/*
 reprocess
+embers_out_orig
+tiles_data
