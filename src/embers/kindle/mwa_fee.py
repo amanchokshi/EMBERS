@@ -7,6 +7,9 @@ Tool to create XX & YY FEE (Fully Embedded Element) simulated beam maps.
 
 import argparse
 
+import numpy as np
+
+np.complex = complex
 from embers.mwa_utils.mwa_fee import mwa_fee_model
 
 

@@ -1,9 +1,11 @@
+setuptools<81
+numpy<2
 astropy
+wget
 healpy
 h5py
 matplotlib
 mwa-pb
-numpy
 pandas
 pytz
 ratelimiter

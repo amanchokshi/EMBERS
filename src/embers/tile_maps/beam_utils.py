@@ -421,7 +421,7 @@ def plot_healpix(
 
     warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-    hp.delgraticules()
+    # hp.delgraticules()
     hp.orthview(
         map=data_map,
         coord="E",

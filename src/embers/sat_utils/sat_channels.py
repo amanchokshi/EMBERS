@@ -248,7 +248,7 @@ def plt_channel(
     leg = plt.legend(frameon=True)
     leg.get_frame().set_facecolor("grey")
     leg.get_frame().set_alpha(0.2)
-    for leg in leg.legendHandles:
+    for leg in leg.legend_handles:
         leg.set_alpha(1)
 
     return plt
@@ -303,7 +303,7 @@ def plt_sats(ids, chrono_file, timestamp):
     )
     leg.get_frame().set_facecolor("grey")
     leg.get_frame().set_alpha(0.4)
-    for leg in leg.legendHandles:
+    for leg in leg.legend_handles:
         leg.set_alpha(1)
 
     plt.tight_layout()

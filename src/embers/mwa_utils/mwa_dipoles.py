@@ -153,7 +153,6 @@ def find_flags(out_dir):
             flags["obsid"],
             flags[keys[i + 1]],
             color=colors[i],
-            linewidths=0.1,
             s=49,
             alpha=0.88,
             edgecolors="black",

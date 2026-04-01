@@ -200,7 +200,7 @@ def plot_savgol_interp(
 
     leg = plt.legend(loc="upper left", frameon=True)
     leg.get_frame().set_facecolor("white")
-    for leg in leg.legendHandles:
+    for leg in leg.legend_handles:
         leg.set_alpha(1)
 
     plt.ylim(-110, -20)
