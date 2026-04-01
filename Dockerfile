@@ -24,7 +24,7 @@ ARG EMBERS_REF=1.0.1
 
 RUN git clone --depth 1 --branch ${EMBERS_REF} https://github.com/amanchokshi/embers.git \
     && cd embers \
-    && python -m pip install --upgrade pip setuptools wheel \
+    && python -m pip install --upgrade pip \
     && python -m pip install .
 
 WORKDIR /work
