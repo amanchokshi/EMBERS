@@ -875,6 +875,18 @@ def rfe_calibration(
         json.dump(resi_gain, outfile, indent=4)
 
 
+def fit_offset(data, model):
+    """Fit an additive offset between data and model in dB."""
+    data = np.asarray(data, dtype=float)
+    model = np.asarray(model, dtype=float)
+
+    mask = np.isfinite(data) & np.isfinite(model)
+    if not np.any(mask):
+        return np.nan
+
+    return np.median(data[mask] - model[mask])
+
+
 def rfe_calibration_new(
     start_date,
     stop_date,
@@ -1117,7 +1129,6 @@ def rfe_calibration_new(
                                                                     
                                                                 plot_dir = (
                                                                     Path(out_dir)
-                                                                    / "rfe_calibration"
                                                                     / "fit_plots"
                                                                     / f"{tile}_{ref}"
                                                                 )
