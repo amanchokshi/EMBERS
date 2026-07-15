@@ -21,19 +21,11 @@ from scipy.stats import median_abs_deviation as mad
 
 from embers.rf_tools.colormaps import jade, spectral
 from embers.rf_tools.rf_data import tile_names
-from embers.sat_utils.sat_channels import (
-    noise_floor,
-    read_aligned,
-    time_filter,
-    time_tree,
-)
+from embers.sat_utils.sat_channels import (noise_floor, read_aligned,
+                                           time_filter, time_tree)
 from embers.sat_utils.sat_list import norad_ids
-from embers.tile_maps.beam_utils import (
-    chisq_fit_gain,
-    chisq_fit_test,
-    plot_healpix,
-    rotate_map,
-)
+from embers.tile_maps.beam_utils import (chisq_fit_gain, chisq_fit_test,
+                                         plot_healpix, rotate_map)
 
 matplotlib.use("Agg")
 spec, _ = spectral()
@@ -780,6 +772,7 @@ def rfe_calibration_new(
     resi_gain["mwa_pass_data"] = []
     resi_gain["tile_pass_data"] = []
     resi_gain["pass_resi"] = []
+    resi_gain["hpx_idx"] = []
 
     ref, tile = tile_pair
 
@@ -942,7 +935,7 @@ def rfe_calibration_new(
                                                     np.isfinite(tile_pass)
                                                     & np.isfinite(mwa_pass)
                                                     & np.isfinite(mwa_fee_pass)
-                                                    & (tile_pass <= -35.0)
+                                                    & (tile_pass <= -40.0)
                                                     & (mwa_fee_pass >= -50.0)
                                                 )
 
@@ -967,7 +960,20 @@ def rfe_calibration_new(
                                                         hp_30_deg = 840
 
                                                         if np.amin(u) <= hp_30_deg:
-                                                            if np.ptp(times_pass) >= 600:
+                                                            if np.ptp(times_pass) >= 480:
+
+                                                                plot_dir = Path(f"{out_dir}/fit_plots/{tile}_{ref}")
+                                                                plot_dir.mkdir(parents=True, exist_ok=True)
+                                                                plt_fee_fit(
+                                                                    times_pass,
+                                                                    mwa_fee_scaled,
+                                                                    mwa_pass,
+                                                                    plot_dir,
+                                                                    0,
+                                                                    timestamp,
+                                                                    sat,
+                                                                )
+
                                                                 # Positive residual means the observed tile signal
                                                                 # is weaker than expected from the scaled FEE model.
                                                                 residual = mwa_fee_scaled - mwa_pass
@@ -987,6 +993,9 @@ def rfe_calibration_new(
                                                                 )
                                                                 resi_gain["pass_resi"].extend(
                                                                     residual[save_mask].tolist()
+                                                                )
+                                                                resi_gain["hpx_idx"].extend(
+                                                                    u[save_mask].tolist()
                                                                 )
 
     # Save gain residuals to json file
@@ -1160,7 +1169,7 @@ def rfe_batch_cali(
     # Parallization magic happens here
     with concurrent.futures.ProcessPoolExecutor(max_workers=max_cores) as executor:
         executor.map(
-            rfe_calibration,
+            rfe_calibration_new,
             repeat(start_date),
             repeat(stop_date),
             tile_pairs,
@@ -1177,7 +1186,7 @@ def rfe_batch_cali(
             repeat(out_dir),
         )
 
-    rfe_collate_cali(start_gain, stop_gain, out_dir)
+    # rfe_collate_cali(start_gain, stop_gain, out_dir)
 
 
 def project_tile_healpix(
