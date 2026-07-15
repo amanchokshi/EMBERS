@@ -266,6 +266,165 @@ def plt_fee_fit(
     plt.close()
 
 
+def plt_fee_fit_new(
+    times_pass: np.ndarray,
+    mwa_fee_scaled: np.ndarray,
+    mwa_pass: np.ndarray,
+    fit_mask: np.ndarray,
+    pval: float,
+    out_dir: str | Path,
+    timestamp: str,
+    sat: int,
+    compression_threshold: float = -35.0,
+) -> None:
+    """
+    Plot the reconstructed MWA beam slice, scaled FEE model, and residuals.
+
+    Parameters
+    ----------
+    times_pass
+        Time of each HEALPix-averaged sample in Unix seconds.
+    mwa_fee_scaled
+        FEE beam slice after applying the fitted additive offset.
+    mwa_pass
+        Reconstructed MWA beam slice:
+
+            mwa_pass = tile_pass - ref_pass + ref_fee_pass
+
+    fit_mask
+        Boolean mask indicating samples used to determine the FEE
+        normalization.
+    pval
+        Goodness-of-fit value for the normalization region.
+    out_dir
+        Output directory.
+    timestamp
+        Observation timestamp.
+    sat
+        NORAD satellite ID.
+    compression_threshold
+        Conservative tile-power threshold used to determine the fit mask.
+        Retained here for API compatibility.
+    """
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    times_pass = np.asarray(times_pass, dtype=float)
+    mwa_fee_scaled = np.asarray(mwa_fee_scaled, dtype=float)
+    mwa_pass = np.asarray(mwa_pass, dtype=float)
+    fit_mask = np.asarray(fit_mask, dtype=bool)
+
+    if not (
+        times_pass.shape
+        == mwa_fee_scaled.shape
+        == mwa_pass.shape
+        == fit_mask.shape
+    ):
+        raise ValueError(
+            "times_pass, mwa_fee_scaled, mwa_pass, and fit_mask "
+            "must have matching shapes."
+        )
+
+    sort_idx = np.argsort(times_pass)
+
+    t = times_pass[sort_idx]
+    mwa_pass_sorted = mwa_pass[sort_idx]
+    mwa_fee_scaled_sorted = mwa_fee_scaled[sort_idx]
+    fit_mask_sorted = fit_mask[sort_idx]
+
+    # Positive residual means the reconstructed beam is weaker
+    # than predicted by the scaled FEE model.
+    residual_sorted = mwa_fee_scaled_sorted - mwa_pass_sorted
+
+    fig, (ax_beam, ax_resi) = plt.subplots(
+        nrows=2,
+        ncols=1,
+        figsize=(8, 5),
+        # sharex=True,
+        gridspec_kw={
+            "height_ratios": [3, 2],
+            "hspace": 0.05,
+        },
+    )
+
+    # ------------------------------------------------------------------
+    # Top panel: beam slices
+    # ------------------------------------------------------------------
+    ax_beam.scatter(
+        t,
+        mwa_pass_sorted,
+        color="#7da87b",
+        edgecolors="#222222",
+        linewidths=0.1,
+        label="Reconstructed beam",
+        s=32,
+        zorder=2,
+    )
+
+    ax_beam.plot(
+        t,
+        mwa_fee_scaled_sorted,
+        color="k",
+        lw=2,
+        label="Scaled FEE model",
+        zorder=1,
+    )
+
+    ax_beam.scatter(
+        t[fit_mask_sorted],
+        mwa_pass_sorted[fit_mask_sorted],
+        s=12,
+        marker="x",
+        color="#c70039",
+        linewidths=1.2,
+        label="Fit samples",
+        zorder=3,
+    )
+
+    ax_beam.set_ylabel("Beam response [dB]")
+    ax_beam.set_xlabel("Time along pass [s]")
+    ax_beam.grid(alpha=0.3)
+    ax_beam.legend(frameon=False)
+
+    ax_beam.set_title(
+        f"NORAD {sat} [{timestamp} | pval: {pval:.4f}]"
+    )
+
+    # ------------------------------------------------------------------
+    # Bottom panel: residuals
+    # ------------------------------------------------------------------
+    ax_resi.scatter(
+        mwa_pass_sorted,
+        residual_sorted,
+        color="#7da87b",
+        edgecolors="#222222",
+        linewidths=0.1,
+        s=24,
+        zorder=2,
+    )
+
+    ax_resi.scatter(
+        mwa_pass_sorted[fit_mask_sorted],
+        residual_sorted[fit_mask_sorted],
+        s=12,
+        marker="x",
+        color="#c70039",
+        linewidths=1.2,
+        zorder=3,
+    )
+
+    ax_resi.set_xlabel("Beam response [dB]")
+    ax_resi.set_ylabel("Residual\n[dB]")
+    ax_resi.grid(alpha=0.3)
+
+    fig.savefig(
+        out_dir / f"{timestamp}_{sat}.png",
+        dpi=150,
+    )
+
+    plt.close(fig)
+
+
 def rf_apply_thresholds(
     ali_file,
     chrono_file,
@@ -715,16 +874,6 @@ def rfe_calibration(
     with open(f"{out_dir}/{tile}_{ref}_gain_fit.json", "w") as outfile:
         json.dump(resi_gain, outfile, indent=4)
 
-def fit_offset(data, model):
-    """Fit an additive offset between data and model in dB."""
-    data = np.asarray(data, dtype=float)
-    model = np.asarray(model, dtype=float)
-
-    mask = np.isfinite(data) & np.isfinite(model)
-    if not np.any(mask):
-        return np.nan
-
-    return np.median(data[mask] - model[mask])
 
 def rfe_calibration_new(
     start_date,
@@ -807,9 +956,9 @@ def rfe_calibration_new(
                 ali_file = Path(
                     f"{align_dir}/{dates[day]}/{timestamp}/{ref}_{tile}_{timestamp}_aligned.npz"
                 )
-
                 # check if file exists
                 if ali_file.is_file():
+                    
                     # Chrono and map Ephemeris file
                     chrono_file = Path(f"{chrono_dir}/{timestamp}.json")
                     channel_map = Path(f"{chan_map_dir}/{timestamp}.json")
@@ -936,7 +1085,7 @@ def rfe_calibration_new(
                                                     & np.isfinite(mwa_pass)
                                                     & np.isfinite(mwa_fee_pass)
                                                     & (tile_pass <= -40.0)
-                                                    & (mwa_fee_pass >= -50.0)
+                                                    & (mwa_fee_pass >= -55.0)
                                                 )
 
                                                 # Require enough reliable samples to perform the normalization.
@@ -956,27 +1105,40 @@ def rfe_calibration_new(
                                                         model=mwa_fee_scaled[fit_mask],
                                                     )
 
-                                                    if np.isfinite(pval) and pval >= 0.8:
-                                                        hp_30_deg = 840
-
-                                                        if np.amin(u) <= hp_30_deg:
-                                                            if np.ptp(times_pass) >= 480:
-
-                                                                plot_dir = Path(f"{out_dir}/fit_plots/{tile}_{ref}")
-                                                                plot_dir.mkdir(parents=True, exist_ok=True)
-                                                                plt_fee_fit(
-                                                                    times_pass,
-                                                                    mwa_fee_scaled,
-                                                                    mwa_pass,
-                                                                    plot_dir,
-                                                                    0,
-                                                                    timestamp,
-                                                                    sat,
-                                                                )
-
+                                                    if np.isfinite(pval) and pval >= 0.1:
+                                                        hp_25_deg = 611
+                                                        if np.amin(u) <= hp_25_deg:
+                                                            if mwa_fee_pass.max() >= -15:
+                                                                # if np.ptp(times_pass) >= 480:
+                                                                    
                                                                 # Positive residual means the observed tile signal
                                                                 # is weaker than expected from the scaled FEE model.
                                                                 residual = mwa_fee_scaled - mwa_pass
+                                                                    
+                                                                plot_dir = (
+                                                                    Path(out_dir)
+                                                                    / "rfe_calibration"
+                                                                    / "fit_plots"
+                                                                    / f"{tile}_{ref}"
+                                                                )
+                                                                
+                                                                plt_fee_fit_new(
+                                                                    times_pass=times_pass,
+                                                                    mwa_fee_scaled=mwa_fee_scaled,
+                                                                    mwa_pass=mwa_pass,
+                                                                    fit_mask=fit_mask,
+                                                                    pval=pval,
+                                                                    out_dir=plot_dir,
+                                                                    timestamp=timestamp,
+                                                                    sat=sat,
+                                                                )
+                                                                
+                                                                mwa_fee_pass_plot = mwa_fee.copy()
+                                                                mwa_fee_pass_plot[u] += 30
+                                                                fig, ax = plt.subplots()
+                                                                plot_healpix(mwa_fee_pass_plot, fig=fig, cmap="viridis")
+                                                                plt.savefig(f"{plot_dir}/{timestamp}_{sat}_MWA_FEE.png")
+                                                                plt.close()
 
                                                                 # Save against the actual recorded tile power.
                                                                 save_mask = (
