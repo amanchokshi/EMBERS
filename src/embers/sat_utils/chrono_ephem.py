@@ -588,7 +588,7 @@ def save_chrono_ephem(
 
     ephem_files = sorted(Path(ephem_dir).glob("*.npz"))
 
-    max_workers=None,
+    max_workers=None
     if max_workers is None:
         max_workers = int(
             os.environ.get(
