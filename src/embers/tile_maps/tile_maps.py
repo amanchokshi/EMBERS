@@ -887,6 +887,295 @@ def fit_offset(data, model):
     return np.median(data[mask] - model[mask])
 
 
+# def rfe_calibration_new(
+#     start_date,
+#     stop_date,
+#     tile_pair,
+#     sat_thresh,
+#     noi_thresh,
+#     pow_thresh,
+#     ref_model,
+#     fee_map,
+#     nside,
+#     obs_point_json,
+#     align_dir,
+#     chrono_dir,
+#     chan_map_dir,
+#     out_dir,
+# ):
+#     """Calibrate the gain variations of a RF Explorers at high powers.
+#
+#     For a given pair of reference and MWA tile rf data files, within a time interval, critically characterize the gain variations
+#     of the RF Explorers, at high power, where they enter a non-linear regime. This is done my comparing satellite passes with
+#     corresponding slices of the MWA FEE beam model, and determining the power deficit.
+#
+#     :param start_date: Start date in :samp:`YYYY-MM-DD-HH:MM` format
+#     :param stop_date: Stop date in :samp:`YYYY-MM-DD-HH:MM` format
+#     :param tile_pair: A pair of reference and MWA tile names. Ex: ["rf0XX", "S06XX"]
+#     :param sat_thresh: σ threshold to detect sats in the computation of rf data noise_floor. A good default is 1
+#     :param noi_thresh: Noise Threshold: Multiples of MAD. 3 is a good default
+#     :param pow_thresh: Peak power which must be exceeded for satellite pass to be considered
+#     :param ref_model: Path to reference feko model :samp:`.npz` file, output by :func:`~embers.tile_maps.ref_fee_healpix.ref_healpix_save`
+#     :param fee_map: Path to MWA fee model :samp:`.npz` file, output by :func:`~embers.mwa_utils.mwa_fee.mwa_fee_model`
+#     :param nside: Healpix nside
+#     :param obs_point_json: Path to :samp:`obs_pointings.json` created by :func:`~embers.mwa_utils.mwa_pointings.obs_pointings`
+#     :param align_dir: Path to directory containing aligned rf data files, output from :func:`~embers.rf_tools.align_data.save_aligned`
+#     :param chrono_dir: Path to directory containing chronological ephemeris data output from :func:`~embers.sat_utils.chrono_ephem.save_chrono_ephem`
+#     :param chan_map_dir: Path to directory containing satellite frequency channel maps. Output from :func:`~embers.sat_utils.sat_channels.batch_window_map`
+#     :param out_dir: Output directory where rfe calibration data will be saved as a :samp:`json` file
+#
+#     :returns:
+#         - Json file saved to out_dir which contains RF explorer calibration data.
+#
+#     """
+#
+#     resi_gain = {}
+#     resi_gain["mwa_pass_data"] = []
+#     resi_gain["tile_pass_data"] = []
+#     resi_gain["pass_resi"] = []
+#     resi_gain["hpx_idx"] = []
+#
+#     ref, tile = tile_pair
+#
+#     dates, timestamps = time_tree(start_date, stop_date)
+#
+#     # Load reference FEE model
+#     # Rotate the fee models by -pi/2 to move model from spherical (E=0) to Alt/Az (N=0)
+#     ref_fee_model = np.load(ref_model, allow_pickle=True)
+#
+#     fee_m = np.load(fee_map, allow_pickle=True)
+#
+#     if "XX" in tile:
+#         ref_fee = ref_fee_model["XX"]
+#         rotated_fee = rotate_map(nside, angle=-(1 * np.pi) / 2.0, healpix_array=ref_fee)
+#     else:
+#         ref_fee = ref_fee_model["YY"]
+#         rotated_fee = rotate_map(nside, angle=-(1 * np.pi) / 2.0, healpix_array=ref_fee)
+#
+#     for day in range(len(dates)):
+#         for window in range(len(timestamps[day])):
+#             timestamp = timestamps[day][window]
+#
+#             # pointing at timestamp
+#             point = check_pointing(timestamp, obs_point_json)
+#
+#             if point == 0:
+#                 if "XX" in tile:
+#                     mwa_fee = fee_m[str(point)][0]
+#                 else:
+#                     mwa_fee = fee_m[str(point)][1]
+#
+#                 ali_file = Path(
+#                     f"{align_dir}/{dates[day]}/{timestamp}/{ref}_{tile}_{timestamp}_aligned.npz"
+#                 )
+#                 # check if file exists
+#                 if ali_file.is_file():
+#
+#                     # Chrono and map Ephemeris file
+#                     chrono_file = Path(f"{chrono_dir}/{timestamp}.json")
+#                     channel_map = Path(f"{chan_map_dir}/{timestamp}.json")
+#
+#                     with open(chrono_file) as chrono:
+#                         chrono_ephem = json.load(chrono)
+#
+#                         if chrono_ephem != []:
+#                             norad_list = [
+#                                 chrono_ephem[s]["sat_id"][0]
+#                                 for s in range(len(chrono_ephem))
+#                             ]
+#
+#                             if norad_list != []:
+#                                 if channel_map.is_file():
+#                                     with open(channel_map) as ch_map:
+#                                         chan_map = json.load(ch_map)
+#
+#                                         chan_sat_ids = [
+#                                             int(i) for i in list(chan_map.keys())
+#                                         ]
+#
+#                                         for sat in chan_sat_ids:
+#                                             chan = chan_map[f"{sat}"]
+#
+#                                             sat_data = rf_apply_thresholds(
+#                                                 ali_file,
+#                                                 chrono_file,
+#                                                 sat,
+#                                                 chan,
+#                                                 sat_thresh,
+#                                                 noi_thresh,
+#                                                 pow_thresh,
+#                                                 point,
+#                                                 False,
+#                                                 out_dir,
+#                                             )
+#
+#                                             if sat_data != 0:
+#                                                 (
+#                                                     ref_power,
+#                                                     tile_power,
+#                                                     alt,
+#                                                     az,
+#                                                     times,
+#                                                     mwa_sigma_db,
+#                                                 ) = sat_data
+#
+#                                                 # Altitude is in deg while az is in radians
+#                                                 # convert alt to radians
+#                                                 # za - zenith angle
+#                                                 alt = np.radians(alt)
+#                                                 za = np.pi / 2 - alt
+#                                                 az = np.asarray(az)
+#
+#                                                 # Now convert to healpix coordinates
+#                                                 # healpix_index = hp.ang2pix(nside,θ, ɸ)
+#                                                 healpix_index = hp.ang2pix(
+#                                                     nside, za, az
+#                                                 )
+#
+#                                                 # multiple data points fall within a single healpix pixel
+#                                                 # find the unique pixels
+#                                                 u = np.unique(healpix_index)
+#
+#                                                 ref_pass = np.array(
+#                                                     [
+#                                                         np.nanmean(
+#                                                             ref_power[
+#                                                                 np.where(
+#                                                                     healpix_index == i
+#                                                                 )[0]
+#                                                             ]
+#                                                         )
+#                                                         for i in u
+#                                                     ]
+#                                                 )
+#
+#                                                 tile_pass = np.array(
+#                                                     [
+#                                                         np.nanmean(
+#                                                             tile_power[
+#                                                                 np.where(
+#                                                                     healpix_index == i
+#                                                                 )[0]
+#                                                             ]
+#                                                         )
+#                                                         for i in u
+#                                                     ]
+#                                                 )
+#
+#                                                 times_pass = np.array(
+#                                                     [
+#                                                         np.mean(
+#                                                             times[
+#                                                                 np.where(
+#                                                                     healpix_index == i
+#                                                                 )
+#                                                             ][0]
+#                                                         )
+#                                                         for i in u
+#                                                     ]
+#                                                 )
+#
+#                                                 ref_fee_pass = np.array(
+#                                                     [rotated_fee[i] for i in u]
+#                                                 )
+#
+#                                                 mwa_fee_pass = np.array(
+#                                                     [mwa_fee[i] for i in u]
+#                                                 )
+#
+#                                                 # This is the magic. Equation [1] of the paper
+#                                                 # A measured cross sectional slice of the MWA beam
+#                                                 # Reconstruct the measured MWA beam slice.
+#                                                 mwa_pass = tile_pass - ref_pass + ref_fee_pass
+#
+#                                                 # Samples used to normalize the FEE model:
+#                                                 #   1. tile RF Explorer is safely below compression;
+#                                                 #   2. FEE model is not inside an unrealistically deep null;
+#                                                 #   3. all relevant quantities are finite.
+#                                                 fit_mask = (
+#                                                     np.isfinite(tile_pass)
+#                                                     & np.isfinite(mwa_pass)
+#                                                     & np.isfinite(mwa_fee_pass)
+#                                                     & (tile_pass <= -40.0)
+#                                                     & (mwa_fee_pass >= -55.0)
+#                                                 )
+#
+#                                                 # Require enough reliable samples to perform the normalization.
+#                                                 if np.count_nonzero(fit_mask) >= 30:
+#                                                     offset = fit_offset(
+#                                                         data=mwa_pass[fit_mask],
+#                                                         model=mwa_fee_pass[fit_mask],
+#                                                     )
+#
+#                                                     # Apply the fitted normalization to the complete model slice,
+#                                                     # including the region corresponding to compressed measurements.
+#                                                     mwa_fee_scaled = mwa_fee_pass + offset
+#
+#                                                     # Assess agreement only over the reliable fitting region.
+#                                                     pval = chisq_fit_test(
+#                                                         data=mwa_pass[fit_mask],
+#                                                         model=mwa_fee_scaled[fit_mask],
+#                                                     )
+#
+#                                                     if np.isfinite(pval) and pval >= 0.1:
+#                                                         hp_25_deg = 611
+#                                                         if np.amin(u) <= hp_25_deg:
+#                                                             if mwa_fee_pass.max() >= -15:
+#                                                                 # if np.ptp(times_pass) >= 480:
+#
+#                                                                 # Positive residual means the observed tile signal
+#                                                                 # is weaker than expected from the scaled FEE model.
+#                                                                 residual = mwa_fee_scaled - mwa_pass
+#
+#                                                                 plot_dir = (
+#                                                                     Path(out_dir)
+#                                                                     / "fit_plots"
+#                                                                     / f"{tile}_{ref}"
+#                                                                 )
+#
+#                                                                 plt_fee_fit_new(
+#                                                                     times_pass=times_pass,
+#                                                                     mwa_fee_scaled=mwa_fee_scaled,
+#                                                                     mwa_pass=mwa_pass,
+#                                                                     fit_mask=fit_mask,
+#                                                                     pval=pval,
+#                                                                     out_dir=plot_dir,
+#                                                                     timestamp=timestamp,
+#                                                                     sat=sat,
+#                                                                 )
+#
+#                                                                 mwa_fee_pass_plot = mwa_fee.copy()
+#                                                                 mwa_fee_pass_plot[u] += 30
+#                                                                 fig, ax = plt.subplots()
+#                                                                 plot_healpix(mwa_fee_pass_plot, fig=fig, cmap="viridis")
+#                                                                 plt.savefig(f"{plot_dir}/{timestamp}_{sat}_MWA_FEE.png")
+#                                                                 plt.close()
+#
+#                                                                 # Save against the actual recorded tile power.
+#                                                                 save_mask = (
+#                                                                     np.isfinite(mwa_pass)
+#                                                                     & np.isfinite(tile_pass)
+#                                                                     & np.isfinite(residual)
+#                                                                 )
+#
+#                                                                 resi_gain["mwa_pass_data"].extend(
+#                                                                     mwa_pass[save_mask].tolist()
+#                                                                 )
+#                                                                 resi_gain["tile_pass_data"].extend(
+#                                                                     tile_pass[save_mask].tolist()
+#                                                                 )
+#                                                                 resi_gain["pass_resi"].extend(
+#                                                                     residual[save_mask].tolist()
+#                                                                 )
+#                                                                 resi_gain["hpx_idx"].extend(
+#                                                                     u[save_mask].tolist()
+#                                                                 )
+#
+#     # Save gain residuals to json file
+#     with open(f"{out_dir}/{tile}_{ref}_gain_fit_new.json", "w") as outfile:
+#         json.dump(resi_gain, outfile, indent=4)
+
+
 def rfe_calibration_new(
     start_date,
     stop_date,
@@ -903,276 +1192,343 @@ def rfe_calibration_new(
     chan_map_dir,
     out_dir,
 ):
-    """Calibrate the gain variations of a RF Explorers at high powers.
+    """Calibrate RF Explorer gain nonlinearity at high input powers.
 
-    For a given pair of reference and MWA tile rf data files, within a time interval, critically characterize the gain variations
-    of the RF Explorers, at high power, where they enter a non-linear regime. This is done my comparing satellite passes with
-    corresponding slices of the MWA FEE beam model, and determining the power deficit.
+    For a given reference antenna and MWA tile pair, compare measured
+    satellite passes with corresponding samples from the MWA FEE beam model
+    to characterize the RF Explorer response in its nonlinear high-power
+    regime.
 
-    :param start_date: Start date in :samp:`YYYY-MM-DD-HH:MM` format
-    :param stop_date: Stop date in :samp:`YYYY-MM-DD-HH:MM` format
-    :param tile_pair: A pair of reference and MWA tile names. Ex: ["rf0XX", "S06XX"]
-    :param sat_thresh: σ threshold to detect sats in the computation of rf data noise_floor. A good default is 1
-    :param noi_thresh: Noise Threshold: Multiples of MAD. 3 is a good default
-    :param pow_thresh: Peak power which must be exceeded for satellite pass to be considered
-    :param ref_model: Path to reference feko model :samp:`.npz` file, output by :func:`~embers.tile_maps.ref_fee_healpix.ref_healpix_save`
-    :param fee_map: Path to MWA fee model :samp:`.npz` file, output by :func:`~embers.mwa_utils.mwa_fee.mwa_fee_model`
-    :param nside: Healpix nside
-    :param obs_point_json: Path to :samp:`obs_pointings.json` created by :func:`~embers.mwa_utils.mwa_pointings.obs_pointings`
-    :param align_dir: Path to directory containing aligned rf data files, output from :func:`~embers.rf_tools.align_data.save_aligned`
-    :param chrono_dir: Path to directory containing chronological ephemeris data output from :func:`~embers.sat_utils.chrono_ephem.save_chrono_ephem`
-    :param chan_map_dir: Path to directory containing satellite frequency channel maps. Output from :func:`~embers.sat_utils.sat_channels.batch_window_map`
-    :param out_dir: Output directory where rfe calibration data will be saved as a :samp:`json` file
+    Unlike the previous implementation, measurements are retained at their
+    aligned time-sample cadence rather than averaged within HEALPix pixels.
+    HEALPix interpolation is used only to evaluate the reference and MWA beam
+    models at each measured satellite direction.
 
-    :returns:
-        - Json file saved to out_dir which contains RF explorer calibration data.
+    Parameters
+    ----------
+    start_date
+        Start date in ``YYYY-MM-DD-HH:MM`` format.
+    stop_date
+        Stop date in ``YYYY-MM-DD-HH:MM`` format.
+    tile_pair
+        Reference and MWA tile names, for example ``["rf0XX", "S06XX"]``.
+    sat_thresh
+        Sigma threshold used to identify satellites when estimating the
+        RF-data noise floor.
+    noi_thresh
+        Noise threshold in multiples of the median absolute deviation.
+    pow_thresh
+        Peak-power threshold that a satellite pass must exceed.
+    ref_model
+        Path to the reference antenna FEKO model ``npz`` file.
+    fee_map
+        Path to the MWA FEE model ``npz`` file.
+    nside
+        HEALPix NSIDE of the supplied beam models.
+    obs_point_json
+        Path to ``obs_pointings.json``.
+    align_dir
+        Directory containing aligned RF data files.
+    chrono_dir
+        Directory containing chronological satellite ephemeris files.
+    chan_map_dir
+        Directory containing satellite frequency-channel maps.
+    out_dir
+        Directory in which the RF Explorer calibration JSON file and
+        diagnostic plots are saved.
 
+    Returns
+    -------
+    None
+        Results are written to
+        ``{out_dir}/{tile}_{ref}_gain_fit_new.json``.
     """
+    out_path = Path(out_dir)
+    out_path.mkdir(parents=True, exist_ok=True)
 
-    resi_gain = {}
-    resi_gain["mwa_pass_data"] = []
-    resi_gain["tile_pass_data"] = []
-    resi_gain["pass_resi"] = []
-    resi_gain["hpx_idx"] = []
+    resi_gain = {
+        "mwa_pass_data": [],
+        "tile_pass_data": [],
+        "pass_resi": [],
+        "hpx_idx": [],
+    }
 
     ref, tile = tile_pair
 
     dates, timestamps = time_tree(start_date, stop_date)
 
-    # Load reference FEE model
-    # Rotate the fee models by -pi/2 to move model from spherical (E=0) to Alt/Az (N=0)
+    # Load the reference antenna model.
     ref_fee_model = np.load(ref_model, allow_pickle=True)
 
+    # Load the MWA FEE models.
     fee_m = np.load(fee_map, allow_pickle=True)
 
+    # Rotate the reference model by -pi/2 to transform from its spherical
+    # convention (E = 0) to the Alt/Az convention (N = 0).
     if "XX" in tile:
         ref_fee = ref_fee_model["XX"]
-        rotated_fee = rotate_map(nside, angle=-(1 * np.pi) / 2.0, healpix_array=ref_fee)
     else:
         ref_fee = ref_fee_model["YY"]
-        rotated_fee = rotate_map(nside, angle=-(1 * np.pi) / 2.0, healpix_array=ref_fee)
+
+    rotated_fee = rotate_map(
+        nside,
+        angle=-np.pi / 2.0,
+        healpix_array=ref_fee,
+    )
 
     for day in range(len(dates)):
         for window in range(len(timestamps[day])):
             timestamp = timestamps[day][window]
 
-            # pointing at timestamp
+            # Find the MWA pointing corresponding to this observation.
             point = check_pointing(timestamp, obs_point_json)
 
-            if point == 0:
-                if "XX" in tile:
-                    mwa_fee = fee_m[str(point)][0]
-                else:
-                    mwa_fee = fee_m[str(point)][1]
+            # The existing calibration uses zenith-pointed observations.
+            if point != 0:
+                continue
 
-                ali_file = Path(
-                    f"{align_dir}/{dates[day]}/{timestamp}/{ref}_{tile}_{timestamp}_aligned.npz"
+            if "XX" in tile:
+                mwa_fee = fee_m[str(point)][0]
+            else:
+                mwa_fee = fee_m[str(point)][1]
+
+            ali_file = Path(
+                align_dir,
+                dates[day],
+                timestamp,
+                f"{ref}_{tile}_{timestamp}_aligned.npz",
+            )
+
+            if not ali_file.is_file():
+                continue
+
+            chrono_file = Path(chrono_dir, f"{timestamp}.json")
+            channel_map = Path(chan_map_dir, f"{timestamp}.json")
+
+            if not chrono_file.is_file() or not channel_map.is_file():
+                continue
+
+            with chrono_file.open() as chrono:
+                chrono_ephem = json.load(chrono)
+
+            if not chrono_ephem:
+                continue
+
+            norad_list = [
+                chrono_ephem[sat_idx]["sat_id"][0]
+                for sat_idx in range(len(chrono_ephem))
+            ]
+
+            if not norad_list:
+                continue
+
+            with channel_map.open() as ch_map:
+                chan_map = json.load(ch_map)
+
+            chan_sat_ids = [int(sat_id) for sat_id in chan_map]
+
+            for sat in chan_sat_ids:
+                chan = chan_map[str(sat)]
+
+                sat_data = rf_apply_thresholds(
+                    ali_file,
+                    chrono_file,
+                    sat,
+                    chan,
+                    sat_thresh,
+                    noi_thresh,
+                    pow_thresh,
+                    point,
+                    False,
+                    out_dir,
                 )
-                # check if file exists
-                if ali_file.is_file():
-                    
-                    # Chrono and map Ephemeris file
-                    chrono_file = Path(f"{chrono_dir}/{timestamp}.json")
-                    channel_map = Path(f"{chan_map_dir}/{timestamp}.json")
 
-                    with open(chrono_file) as chrono:
-                        chrono_ephem = json.load(chrono)
+                if sat_data == 0:
+                    continue
 
-                        if chrono_ephem != []:
-                            norad_list = [
-                                chrono_ephem[s]["sat_id"][0]
-                                for s in range(len(chrono_ephem))
-                            ]
+                (
+                    ref_power,
+                    tile_power,
+                    alt,
+                    az,
+                    times,
+                    mwa_sigma_db,
+                ) = sat_data
 
-                            if norad_list != []:
-                                if channel_map.is_file():
-                                    with open(channel_map) as ch_map:
-                                        chan_map = json.load(ch_map)
+                # Convert all pass quantities to arrays.
+                ref_power = np.asarray(ref_power, dtype=float)
+                tile_power = np.asarray(tile_power, dtype=float)
+                alt = np.asarray(alt, dtype=float)
+                az = np.asarray(az, dtype=float)
+                times = np.asarray(times, dtype=float)
 
-                                        chan_sat_ids = [
-                                            int(i) for i in list(chan_map.keys())
-                                        ]
+                # The altitude returned by rf_apply_thresholds is in degrees,
+                # while azimuth is already in radians.
+                za = np.pi / 2.0 - np.radians(alt)
 
-                                        for sat in chan_sat_ids:
-                                            chan = chan_map[f"{sat}"]
+                # Ensure that all sample-level arrays have consistent lengths.
+                sample_lengths = {
+                    ref_power.size,
+                    tile_power.size,
+                    za.size,
+                    az.size,
+                    times.size,
+                }
 
-                                            sat_data = rf_apply_thresholds(
-                                                ali_file,
-                                                chrono_file,
-                                                sat,
-                                                chan,
-                                                sat_thresh,
-                                                noi_thresh,
-                                                pow_thresh,
-                                                point,
-                                                False,
-                                                out_dir,
-                                            )
+                if len(sample_lengths) != 1:
+                    print(
+                        f"Skipping {timestamp}, satellite {sat}: "
+                        "inconsistent sample-array lengths."
+                    )
+                    continue
 
-                                            if sat_data != 0:
-                                                (
-                                                    ref_power,
-                                                    tile_power,
-                                                    alt,
-                                                    az,
-                                                    times,
-                                                    mwa_sigma_db,
-                                                ) = sat_data
+                if ref_power.size == 0:
+                    continue
 
-                                                # Altitude is in deg while az is in radians
-                                                # convert alt to radians
-                                                # za - zenith angle
-                                                alt = np.radians(alt)
-                                                za = np.pi / 2 - alt
-                                                az = np.asarray(az)
+                # HEALPix indices are retained as spatial metadata only.
+                # Measurements are no longer averaged within each pixel.
+                healpix_index = hp.ang2pix(
+                    nside,
+                    za,
+                    az,
+                )
 
-                                                # Now convert to healpix coordinates
-                                                # healpix_index = hp.ang2pix(nside,θ, ɸ)
-                                                healpix_index = hp.ang2pix(
-                                                    nside, za, az
-                                                )
+                # Evaluate both beam models continuously at every measured
+                # satellite direction. This interpolates the beam models,
+                # not the measured RF data.
+                ref_fee_pass = hp.get_interp_val(
+                    rotated_fee,
+                    za,
+                    az,
+                )
 
-                                                # multiple data points fall within a single healpix pixel
-                                                # find the unique pixels
-                                                u = np.unique(healpix_index)
+                mwa_fee_pass = hp.get_interp_val(
+                    mwa_fee,
+                    za,
+                    az,
+                )
 
-                                                ref_pass = np.array(
-                                                    [
-                                                        np.nanmean(
-                                                            ref_power[
-                                                                np.where(
-                                                                    healpix_index == i
-                                                                )[0]
-                                                            ]
-                                                        )
-                                                        for i in u
-                                                    ]
-                                                )
+                # Retain each aligned measurement individually.
+                ref_pass = ref_power
+                tile_pass = tile_power
+                times_pass = times
 
-                                                tile_pass = np.array(
-                                                    [
-                                                        np.nanmean(
-                                                            tile_power[
-                                                                np.where(
-                                                                    healpix_index == i
-                                                                )[0]
-                                                            ]
-                                                        )
-                                                        for i in u
-                                                    ]
-                                                )
+                # Equation (1): reconstruct the measured MWA beam slice.
+                mwa_pass = tile_pass - ref_pass + ref_fee_pass
 
-                                                times_pass = np.array(
-                                                    [
-                                                        np.mean(
-                                                            times[
-                                                                np.where(
-                                                                    healpix_index == i
-                                                                )
-                                                            ][0]
-                                                        )
-                                                        for i in u
-                                                    ]
-                                                )
+                # Use only reliable, nominally uncompressed samples to fit the
+                # additive normalization between the reconstructed beam slice
+                # and the FEE model.
+                fit_mask = (
+                    np.isfinite(tile_pass)
+                    & np.isfinite(mwa_pass)
+                    & np.isfinite(mwa_fee_pass)
+                    & (tile_pass <= -40.0)
+                    & (mwa_fee_pass >= -55.0)
+                )
 
-                                                ref_fee_pass = np.array(
-                                                    [rotated_fee[i] for i in u]
-                                                )
+                # Require enough reliable samples for normalization.
+                if np.count_nonzero(fit_mask) < 30:
+                    continue
 
-                                                mwa_fee_pass = np.array(
-                                                    [mwa_fee[i] for i in u]
-                                                )
+                offset = fit_offset(
+                    data=mwa_pass[fit_mask],
+                    model=mwa_fee_pass[fit_mask],
+                )
 
-                                                # This is the magic. Equation [1] of the paper
-                                                # A measured cross sectional slice of the MWA beam
-                                                # Reconstruct the measured MWA beam slice.
-                                                mwa_pass = tile_pass - ref_pass + ref_fee_pass
+                if not np.isfinite(offset):
+                    continue
 
-                                                # Samples used to normalize the FEE model:
-                                                #   1. tile RF Explorer is safely below compression;
-                                                #   2. FEE model is not inside an unrealistically deep null;
-                                                #   3. all relevant quantities are finite.
-                                                fit_mask = (
-                                                    np.isfinite(tile_pass)
-                                                    & np.isfinite(mwa_pass)
-                                                    & np.isfinite(mwa_fee_pass)
-                                                    & (tile_pass <= -40.0)
-                                                    & (mwa_fee_pass >= -55.0)
-                                                )
+                # Apply the fitted normalization over the complete pass,
+                # including samples potentially affected by compression.
+                mwa_fee_scaled = mwa_fee_pass + offset
 
-                                                # Require enough reliable samples to perform the normalization.
-                                                if np.count_nonzero(fit_mask) >= 30:
-                                                    offset = fit_offset(
-                                                        data=mwa_pass[fit_mask],
-                                                        model=mwa_fee_pass[fit_mask],
-                                                    )
+                # Retain the existing pass-level model-agreement test.
+                pval = chisq_fit_test(
+                    data=mwa_pass[fit_mask],
+                    model=mwa_fee_scaled[fit_mask],
+                )
 
-                                                    # Apply the fitted normalization to the complete model slice,
-                                                    # including the region corresponding to compressed measurements.
-                                                    mwa_fee_scaled = mwa_fee_pass + offset
+                if not np.isfinite(pval) or pval < 0.1:
+                    continue
 
-                                                    # Assess agreement only over the reliable fitting region.
-                                                    pval = chisq_fit_test(
-                                                        data=mwa_pass[fit_mask],
-                                                        model=mwa_fee_scaled[fit_mask],
-                                                    )
+                # Require the satellite pass to enter the main lobe.
+                min_za_deg = np.degrees(np.nanmin(za))
 
-                                                    if np.isfinite(pval) and pval >= 0.1:
-                                                        hp_25_deg = 611
-                                                        if np.amin(u) <= hp_25_deg:
-                                                            if mwa_fee_pass.max() >= -15:
-                                                                # if np.ptp(times_pass) >= 480:
-                                                                    
-                                                                # Positive residual means the observed tile signal
-                                                                # is weaker than expected from the scaled FEE model.
-                                                                residual = mwa_fee_scaled - mwa_pass
-                                                                    
-                                                                plot_dir = (
-                                                                    Path(out_dir)
-                                                                    / "fit_plots"
-                                                                    / f"{tile}_{ref}"
-                                                                )
-                                                                
-                                                                plt_fee_fit_new(
-                                                                    times_pass=times_pass,
-                                                                    mwa_fee_scaled=mwa_fee_scaled,
-                                                                    mwa_pass=mwa_pass,
-                                                                    fit_mask=fit_mask,
-                                                                    pval=pval,
-                                                                    out_dir=plot_dir,
-                                                                    timestamp=timestamp,
-                                                                    sat=sat,
-                                                                )
-                                                                
-                                                                mwa_fee_pass_plot = mwa_fee.copy()
-                                                                mwa_fee_pass_plot[u] += 30
-                                                                fig, ax = plt.subplots()
-                                                                plot_healpix(mwa_fee_pass_plot, fig=fig, cmap="viridis")
-                                                                plt.savefig(f"{plot_dir}/{timestamp}_{sat}_MWA_FEE.png")
-                                                                plt.close()
+                if not np.isfinite(min_za_deg) or min_za_deg > 25.0:
+                    continue
 
-                                                                # Save against the actual recorded tile power.
-                                                                save_mask = (
-                                                                    np.isfinite(mwa_pass)
-                                                                    & np.isfinite(tile_pass)
-                                                                    & np.isfinite(residual)
-                                                                )
+                # Require adequate model power during the pass.
+                if np.nanmax(mwa_fee_pass) < -15.0:
+                    continue
 
-                                                                resi_gain["mwa_pass_data"].extend(
-                                                                    mwa_pass[save_mask].tolist()
-                                                                )
-                                                                resi_gain["tile_pass_data"].extend(
-                                                                    tile_pass[save_mask].tolist()
-                                                                )
-                                                                resi_gain["pass_resi"].extend(
-                                                                    residual[save_mask].tolist()
-                                                                )
-                                                                resi_gain["hpx_idx"].extend(
-                                                                    u[save_mask].tolist()
-                                                                )
+                # Positive residual means that the observed tile signal is
+                # weaker than expected from the scaled FEE model.
+                residual = mwa_fee_scaled - mwa_pass
 
-    # Save gain residuals to json file
-    with open(f"{out_dir}/{tile}_{ref}_gain_fit_new.json", "w") as outfile:
+                plot_dir = (
+                    out_path
+                    / "fit_plots"
+                    / f"{tile}_{ref}"
+                )
+                plot_dir.mkdir(parents=True, exist_ok=True)
+
+                plt_fee_fit_new(
+                    times_pass=times_pass,
+                    mwa_fee_scaled=mwa_fee_scaled,
+                    mwa_pass=mwa_pass,
+                    fit_mask=fit_mask,
+                    pval=pval,
+                    out_dir=plot_dir,
+                    timestamp=timestamp,
+                    sat=sat,
+                )
+
+                # Retain the original spatial diagnostic plot. Unique pixels
+                # are used here only to highlight the satellite trajectory.
+                unique_hpx = np.unique(healpix_index)
+
+                mwa_fee_pass_plot = np.array(mwa_fee, copy=True)
+                mwa_fee_pass_plot[unique_hpx] += 30.0
+
+                fig, ax = plt.subplots()
+                plot_healpix(
+                    mwa_fee_pass_plot,
+                    fig=fig,
+                    cmap="viridis",
+                )
+                fig.savefig(
+                    plot_dir / f"{timestamp}_{sat}_MWA_FEE.png",
+                    bbox_inches="tight",
+                )
+                plt.close(fig)
+
+                # Save every finite sample rather than one mean value per
+                # occupied HEALPix pixel.
+                save_mask = (
+                    np.isfinite(mwa_pass)
+                    & np.isfinite(tile_pass)
+                    & np.isfinite(residual)
+                    & np.isfinite(ref_fee_pass)
+                    & np.isfinite(mwa_fee_pass)
+                )
+
+                resi_gain["mwa_pass_data"].extend(
+                    mwa_pass[save_mask].tolist()
+                )
+                resi_gain["tile_pass_data"].extend(
+                    tile_pass[save_mask].tolist()
+                )
+                resi_gain["pass_resi"].extend(
+                    residual[save_mask].tolist()
+                )
+                resi_gain["hpx_idx"].extend(
+                    healpix_index[save_mask].tolist()
+                )
+
+    output_file = out_path / f"{tile}_{ref}_gain_fit_new.json"
+
+    with output_file.open("w") as outfile:
         json.dump(resi_gain, outfile, indent=4)
 
 
