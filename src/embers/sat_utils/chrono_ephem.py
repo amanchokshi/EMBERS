@@ -538,6 +538,11 @@ def _process_ephem_file(
     return dict(result)
 
 
+def _process_ephem_file_from_args(args):
+    """Unpack arguments for ProcessPoolExecutor.map."""
+    return _process_ephem_file(*args)
+
+
 def save_chrono_ephem(
     time_zone,
     start_date,
