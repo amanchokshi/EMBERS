@@ -7,14 +7,19 @@ and determine all ephemeris present in 30 minute observation windows.
 
 """
 
+import os
 import json
 import math
 from datetime import datetime, timedelta
 from pathlib import Path
+from collections import defaultdict
+from concurrent.futures import ProcessPoolExecutor
 
 import numpy as np
 import pytz
 from scipy import interpolate
+
+from __future__ import annotations
 
 
 def obs_times(time_zone, start_date, stop_date):
@@ -293,6 +298,246 @@ def write_json(data, filename=None, out_dir=None):
 #                             data_json = []
 
 
+# def save_chrono_ephem(
+#     time_zone,
+#     start_date,
+#     stop_date,
+#     interp_type,
+#     interp_freq,
+#     ephem_dir,
+#     out_dir,
+# ):
+#     """Save 30-minute chronological satellite ephemerides to JSON files.
+#
+#     Native Skyfield timestamps are converted to Unix timestamps to match the
+#     RF Explorer timestamps. Satellite altitude and azimuth are interpolated
+#     to the cadence used by :mod:`~embers.rf_tools.align_data`.
+#
+#     A JSON file is created for each 30-minute observation. Each file contains
+#     the portions of all satellite passes that overlap that observation.
+#
+#     Parameters
+#     ----------
+#     time_zone
+#         ``pytz`` timezone name.
+#     start_date
+#         Start date in ``YYYY-MM-DD`` format.
+#     stop_date
+#         Stop date in ``YYYY-MM-DD`` format.
+#     interp_type
+#         Interpolation type, for example ``"cubic"`` or ``"linear"``.
+#     interp_freq
+#         Interpolation frequency in Hz.
+#     ephem_dir
+#         Directory containing the satellite ephemeris ``npz`` files produced
+#         by :func:`~embers.sat_utils.sat_ephemeris.save_ephem`.
+#     out_dir
+#         Directory in which the chronological ephemeris JSON files are saved.
+#     """
+#     obs_time, obs_unix, obs_unix_end = obs_times(
+#         time_zone,
+#         start_date,
+#         stop_date,
+#     )
+#
+#     out_path = Path(out_dir)
+#     out_path.mkdir(parents=True, exist_ok=True)
+#
+#     # Create an empty JSON file for each 30-minute observation.
+#     for observation in obs_time:
+#         write_json(
+#             [],
+#             filename=f"{observation}.json",
+#             out_dir=out_dir,
+#         )
+#
+#     # Loop over all satellite ephemeris files.
+#     for ephem_npz in Path(ephem_dir).glob("*.npz"):
+#
+#         # Extract data from the satellite ephemeris file.
+#         with np.load(ephem_npz, allow_pickle=True) as ephem_data:
+#             t_array = ephem_data["time_array"]
+#             s_alt = ephem_data["sat_alt"]
+#             s_az = ephem_data["sat_az"]
+#             s_id = str(ephem_data["sat_id"])
+#
+#         # Loop over each pass contained in the ephemeris file.
+#         for pass_idx in range(len(t_array)):
+#
+#             # Ignore passes containing fewer than 10 native samples.
+#             if t_array[pass_idx].shape[0] < 10:
+#                 continue
+#
+#             time_interp, sat_alt, sat_az = interp_ephem(
+#                 t_array[pass_idx],
+#                 s_alt[pass_idx],
+#                 s_az[pass_idx],
+#                 interp_type,
+#                 interp_freq,
+#             )
+#
+#             # Convert to arrays so searchsorted and slicing behave consistently.
+#             time_interp = np.asarray(time_interp)
+#             sat_alt = np.asarray(sat_alt)
+#             sat_az = np.asarray(sat_az)
+#
+#             # Loop over each 30-minute observation window.
+#             for obs_int in range(len(obs_unix)):
+#                 obs_start = obs_unix[obs_int]
+#                 obs_stop = obs_unix_end[obs_int]
+#
+#                 # Locate the portion of the pass inside the observation.
+#                 #
+#                 # side="left" includes samples exactly at obs_start.
+#                 # side="right" includes samples exactly at obs_stop.
+#                 start_idx = np.searchsorted(
+#                     time_interp,
+#                     obs_start,
+#                     side="left",
+#                 )
+#                 stop_idx = np.searchsorted(
+#                     time_interp,
+#                     obs_stop,
+#                     side="right",
+#                 )
+#
+#                 # No satellite samples overlap this observation.
+#                 if start_idx >= stop_idx:
+#                     continue
+#
+#                 sat_ephem = {
+#                     "sat_id": [s_id],
+#                     "time_array": time_interp[start_idx:stop_idx].tolist(),
+#                     "sat_alt": sat_alt[start_idx:stop_idx].tolist(),
+#                     "sat_az": sat_az[start_idx:stop_idx].tolist(),
+#                 }
+#
+#                 print(f"Satellite {s_id} in {obs_time[obs_int]}")
+#
+#                 json_path = out_path / f"{obs_time[obs_int]}.json"
+#
+#                 # Load the passes already associated with this observation.
+#                 with json_path.open("r") as json_file:
+#                     data_json = json.load(json_file)
+#
+#                 # Add this pass and write the updated list back to disk.
+#                 data_json.append(sat_ephem)
+#
+#                 write_json(
+#                     data_json,
+#                     filename=json_path.name,
+#                     out_dir=out_dir,
+#                 )
+
+
+def _process_ephem_file(
+    ephem_npz,
+    obs_time,
+    obs_unix,
+    obs_unix_end,
+    interp_type,
+    interp_freq,
+):
+    """Process one satellite ephemeris file.
+
+    This helper must be defined at module scope so it can be used by
+    ProcessPoolExecutor.
+
+    Returns
+    -------
+    dict
+        Mapping from observation index to satellite-pass dictionaries.
+    """
+    obs_unix = np.asarray(obs_unix, dtype=float)
+    obs_unix_end = np.asarray(obs_unix_end, dtype=float)
+
+    result = defaultdict(list)
+
+    with np.load(ephem_npz, allow_pickle=True) as ephem_data:
+        t_array = ephem_data["time_array"]
+        s_alt = ephem_data["sat_alt"]
+        s_az = ephem_data["sat_az"]
+        s_id = str(ephem_data["sat_id"])
+
+    for pass_idx in range(len(t_array)):
+        pass_time = np.asarray(t_array[pass_idx])
+
+        if pass_time.size < 10:
+            continue
+
+        time_interp, sat_alt, sat_az = interp_ephem(
+            pass_time,
+            s_alt[pass_idx],
+            s_az[pass_idx],
+            interp_type,
+            interp_freq,
+        )
+
+        time_interp = np.asarray(time_interp)
+        sat_alt = np.asarray(sat_alt)
+        sat_az = np.asarray(sat_az)
+
+        if time_interp.size == 0:
+            continue
+
+        pass_start = time_interp[0]
+        pass_stop = time_interp[-1]
+
+        # Find only the observation windows that could overlap this pass.
+        #
+        # first_obs:
+        #     First observation whose end is at or after pass_start.
+        #
+        # last_obs:
+        #     One past the final observation whose start is at or before
+        #     pass_stop.
+        first_obs = np.searchsorted(
+            obs_unix_end,
+            pass_start,
+            side="left",
+        )
+        last_obs = np.searchsorted(
+            obs_unix,
+            pass_stop,
+            side="right",
+        )
+
+        for obs_int in range(first_obs, last_obs):
+            obs_start = obs_unix[obs_int]
+            obs_stop = obs_unix_end[obs_int]
+
+            start_idx = np.searchsorted(
+                time_interp,
+                obs_start,
+                side="left",
+            )
+            stop_idx = np.searchsorted(
+                time_interp,
+                obs_stop,
+                side="right",
+            )
+
+            if start_idx >= stop_idx:
+                continue
+
+            result[obs_int].append(
+                {
+                    "sat_id": [s_id],
+                    "time_array": (
+                        time_interp[start_idx:stop_idx].tolist()
+                    ),
+                    "sat_alt": (
+                        sat_alt[start_idx:stop_idx].tolist()
+                    ),
+                    "sat_az": (
+                        sat_az[start_idx:stop_idx].tolist()
+                    ),
+                }
+            )
+
+    return dict(result)
+
+
 def save_chrono_ephem(
     time_zone,
     start_date,
@@ -308,8 +553,8 @@ def save_chrono_ephem(
     RF Explorer timestamps. Satellite altitude and azimuth are interpolated
     to the cadence used by :mod:`~embers.rf_tools.align_data`.
 
-    A JSON file is created for each 30-minute observation. Each file contains
-    the portions of all satellite passes that overlap that observation.
+    Satellite ephemeris files are processed in parallel. JSON files are
+    written only by the parent process to avoid concurrent-write conflicts.
 
     Parameters
     ----------
@@ -324,10 +569,9 @@ def save_chrono_ephem(
     interp_freq
         Interpolation frequency in Hz.
     ephem_dir
-        Directory containing the satellite ephemeris ``npz`` files produced
-        by :func:`~embers.sat_utils.sat_ephemeris.save_ephem`.
+        Directory containing satellite ephemeris ``npz`` files.
     out_dir
-        Directory in which the chronological ephemeris JSON files are saved.
+        Output directory for chronological ephemeris JSON files.
     """
     obs_time, obs_unix, obs_unix_end = obs_times(
         time_zone,
@@ -335,91 +579,80 @@ def save_chrono_ephem(
         stop_date,
     )
 
+    obs_time = list(obs_time)
+    obs_unix = np.asarray(obs_unix, dtype=float)
+    obs_unix_end = np.asarray(obs_unix_end, dtype=float)
+
     out_path = Path(out_dir)
     out_path.mkdir(parents=True, exist_ok=True)
 
-    # Create an empty JSON file for each 30-minute observation.
-    for observation in obs_time:
+    ephem_files = sorted(Path(ephem_dir).glob("*.npz"))
+
+    max_workers=None,
+    if max_workers is None:
+        max_workers = int(
+            os.environ.get(
+                "SLURM_CPUS_PER_TASK",
+                os.cpu_count() or 1,
+            )
+        )
+
+    # Avoid starting more processes than there are files.
+    max_workers = max(
+        1,
+        min(max_workers, len(ephem_files)),
+    )
+
+    # Accumulate all passes by observation. This keeps all JSON writing in
+    # the parent process and avoids race conditions.
+    observation_data = [
+        [] for _ in obs_time
+    ]
+
+    worker_args = [
+        (
+            ephem_file,
+            obs_time,
+            obs_unix,
+            obs_unix_end,
+            interp_type,
+            interp_freq,
+        )
+        for ephem_file in ephem_files
+    ]
+
+    if max_workers == 1:
+        results = map(
+            lambda args: _process_ephem_file(*args),
+            worker_args,
+        )
+    else:
+        with ProcessPoolExecutor(
+            max_workers=max_workers
+        ) as executor:
+            results = executor.map(
+                _process_ephem_file_from_args,
+                worker_args,
+            )
+
+            # Consume results before leaving the executor context.
+            results = list(results)
+
+    for file_result in results:
+        for obs_int, satellite_passes in file_result.items():
+            observation_data[obs_int].extend(satellite_passes)
+
+            for sat_pass in satellite_passes:
+                print(
+                    f"Satellite {sat_pass['sat_id'][0]} "
+                    f"in {obs_time[obs_int]}"
+                )
+
+    # Write each observation file once, rather than repeatedly reading and
+    # rewriting it for every overlapping satellite pass.
+    for obs_int, observation in enumerate(obs_time):
         write_json(
-            [],
+            observation_data[obs_int],
             filename=f"{observation}.json",
             out_dir=out_dir,
         )
-
-    # Loop over all satellite ephemeris files.
-    for ephem_npz in Path(ephem_dir).glob("*.npz"):
-
-        # Extract data from the satellite ephemeris file.
-        with np.load(ephem_npz, allow_pickle=True) as ephem_data:
-            t_array = ephem_data["time_array"]
-            s_alt = ephem_data["sat_alt"]
-            s_az = ephem_data["sat_az"]
-            s_id = str(ephem_data["sat_id"])
-
-        # Loop over each pass contained in the ephemeris file.
-        for pass_idx in range(len(t_array)):
-
-            # Ignore passes containing fewer than 10 native samples.
-            if t_array[pass_idx].shape[0] < 10:
-                continue
-
-            time_interp, sat_alt, sat_az = interp_ephem(
-                t_array[pass_idx],
-                s_alt[pass_idx],
-                s_az[pass_idx],
-                interp_type,
-                interp_freq,
-            )
-
-            # Convert to arrays so searchsorted and slicing behave consistently.
-            time_interp = np.asarray(time_interp)
-            sat_alt = np.asarray(sat_alt)
-            sat_az = np.asarray(sat_az)
-
-            # Loop over each 30-minute observation window.
-            for obs_int in range(len(obs_unix)):
-                obs_start = obs_unix[obs_int]
-                obs_stop = obs_unix_end[obs_int]
-
-                # Locate the portion of the pass inside the observation.
-                #
-                # side="left" includes samples exactly at obs_start.
-                # side="right" includes samples exactly at obs_stop.
-                start_idx = np.searchsorted(
-                    time_interp,
-                    obs_start,
-                    side="left",
-                )
-                stop_idx = np.searchsorted(
-                    time_interp,
-                    obs_stop,
-                    side="right",
-                )
-
-                # No satellite samples overlap this observation.
-                if start_idx >= stop_idx:
-                    continue
-
-                sat_ephem = {
-                    "sat_id": [s_id],
-                    "time_array": time_interp[start_idx:stop_idx].tolist(),
-                    "sat_alt": sat_alt[start_idx:stop_idx].tolist(),
-                    "sat_az": sat_az[start_idx:stop_idx].tolist(),
-                }
-
-                print(f"Satellite {s_id} in {obs_time[obs_int]}")
-
-                json_path = out_path / f"{obs_time[obs_int]}.json"
-
-                # Load the passes already associated with this observation.
-                with json_path.open("r") as json_file:
-                    data_json = json.load(json_file)
-
-                # Add this pass and write the updated list back to disk.
-                data_json.append(sat_ephem)
-
-                write_json(
-                    data_json,
-                    filename=json_path.name,
-                    out_dir=out_dir,
-                )
