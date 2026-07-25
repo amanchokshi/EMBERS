@@ -84,53 +84,118 @@ def noise_floor(sat_thresh, noi_thresh, power):
 
 
 def time_filter(s_rise, s_set, times):
-    """Determine indices of time array when a satellite is above the horizon.
+    """Determine indices where a satellite pass overlaps an RF time array.
 
-    Isolate the portion of a rf power array where a satellite is above the
-    horizon using the rise and set times of a satellite's ephemeris. This
-    function returns a pair of indices which can be used to slice the rf
-    power and times arrays to precisely only include the satellite.
+    Parameters
+    ----------
+    s_rise
+        Satellite rise time as a Unix timestamp.
+    s_set
+        Satellite set time as a Unix timestamp.
+    times
+        Sorted RF-data Unix timestamps.
 
-    :param s_rise: satellite rise time from ephemeris :class:`~float`
-    :param s_set: satellite set time from ephemeris :class:`~float`
-    :param times: time array corresponding to the rf power array :class:`~numpy.ndarry`
-
-    :returns:
-        intvl: :samp:`None` if satellite is not above the horizon within the :samp:`times` array
-        intvl: [i_0, i_1], pair of indices of :samp:`times` array, when satellite is above the horizon
-
+    Returns
+    -------
+    list[int] or None
+        Inclusive start and stop indices of the overlapping interval, or
+        ``None`` if the satellite pass does not overlap the RF observation.
     """
+    times = np.asarray(times, dtype=float)
 
-    # I. sat rises before times, sets within times window
-    if s_rise < times[0] and s_set > times[0] and s_set <= times[-1]:
-        i_0 = np.where(times == times[0])[0][0]
-        i_1 = np.where(times == s_set)[0][0]
-        intvl = [i_0, i_1]
+    if times.size == 0:
+        return None
 
-    # II. sat rises and sets within times
-    elif s_rise >= times[0] and s_set <= times[-1]:
-        i_0 = np.where(times == s_rise)[0][0]
-        i_1 = np.where(times == s_set)[0][0]
-        intvl = [i_0, i_1]
+    s_rise = float(s_rise)
+    s_set = float(s_set)
 
-    # III. sat rises within times, and sets after
-    elif s_rise >= times[0] and s_rise < times[-1] and s_set > times[-1]:
-        i_0 = np.where(times == s_rise)[0][0]
-        i_1 = np.where(times == times[-1])[0][0]
-        intvl = [i_0, i_1]
+    if not np.isfinite(s_rise) or not np.isfinite(s_set):
+        return None
 
-    # IV. sat rises before times and sets after
-    elif s_rise < times[0] and s_set > times[-1]:
-        i_0 = np.where(times == times[0])[0][0]
-        i_1 = np.where(times == times[-1])[0][0]
-        intvl = [i_0, i_1]
+    if s_set < s_rise:
+        raise ValueError(
+            f"Satellite set time ({s_set}) precedes rise time ({s_rise})."
+        )
 
-    # V. sat completely out of times. Could be on either side
-    else:
-        intvl = None
+    # No overlap between the satellite pass and RF observation.
+    if s_set < times[0] or s_rise > times[-1]:
+        return None
 
-    # intvl = interval
-    return intvl
+    # Restrict the pass interval to the RF observation interval.
+    overlap_start = max(s_rise, times[0])
+    overlap_stop = min(s_set, times[-1])
+
+    # First RF sample at or after the overlap start.
+    i_0 = np.searchsorted(
+        times,
+        overlap_start,
+        side="left",
+    )
+
+    # Last RF sample at or before the overlap stop.
+    i_1 = (
+        np.searchsorted(
+            times,
+            overlap_stop,
+            side="right",
+        )
+        - 1
+    )
+
+    if i_0 > i_1:
+        return None
+
+    return [int(i_0), int(i_1)]
+
+
+# def time_filter(s_rise, s_set, times):
+#     """Determine indices of time array when a satellite is above the horizon.
+#
+#     Isolate the portion of a rf power array where a satellite is above the
+#     horizon using the rise and set times of a satellite's ephemeris. This
+#     function returns a pair of indices which can be used to slice the rf
+#     power and times arrays to precisely only include the satellite.
+#
+#     :param s_rise: satellite rise time from ephemeris :class:`~float`
+#     :param s_set: satellite set time from ephemeris :class:`~float`
+#     :param times: time array corresponding to the rf power array :class:`~numpy.ndarry`
+#
+#     :returns:
+#         intvl: :samp:`None` if satellite is not above the horizon within the :samp:`times` array
+#         intvl: [i_0, i_1], pair of indices of :samp:`times` array, when satellite is above the horizon
+#
+#     """
+#
+#     # I. sat rises before times, sets within times window
+#     if s_rise < times[0] and s_set > times[0] and s_set <= times[-1]:
+#         i_0 = np.where(times == times[0])[0][0]
+#         i_1 = np.where(times == s_set)[0][0]
+#         intvl = [i_0, i_1]
+#
+#     # II. sat rises and sets within times
+#     elif s_rise >= times[0] and s_set <= times[-1]:
+#         i_0 = np.where(times == s_rise)[0][0]
+#         i_1 = np.where(times == s_set)[0][0]
+#         intvl = [i_0, i_1]
+#
+#     # III. sat rises within times, and sets after
+#     elif s_rise >= times[0] and s_rise < times[-1] and s_set > times[-1]:
+#         i_0 = np.where(times == s_rise)[0][0]
+#         i_1 = np.where(times == times[-1])[0][0]
+#         intvl = [i_0, i_1]
+#
+#     # IV. sat rises before times and sets after
+#     elif s_rise < times[0] and s_set > times[-1]:
+#         i_0 = np.where(times == times[0])[0][0]
+#         i_1 = np.where(times == times[-1])[0][0]
+#         intvl = [i_0, i_1]
+#
+#     # V. sat completely out of times. Could be on either side
+#     else:
+#         intvl = None
+#
+#     # intvl = interval
+#     return intvl
 
 
 def plt_window_chans(power, sat_id, start, stop, cmap, chs=None, good_ch=None):
