@@ -7,6 +7,8 @@ and determine all ephemeris present in 30 minute observation windows.
 
 """
 
+from __future__ import annotations
+
 import os
 import json
 import math
@@ -18,8 +20,6 @@ from concurrent.futures import ProcessPoolExecutor
 import numpy as np
 import pytz
 from scipy import interpolate
-
-from __future__ import annotations
 
 
 def obs_times(time_zone, start_date, stop_date):
