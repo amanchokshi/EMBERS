@@ -108,6 +108,118 @@ def savgol_interp(
     return (ref_ali, tile_ali, time_array, ref_power, tile_power, ref_time, tile_time)
 
 
+def nearest_interp(
+    ref,
+    tile,
+    interp_freq=5,
+):
+    """Align two power arrays using nearest-neighbour resampling.
+
+    Resample the reference and tile measurements onto a common time grid,
+    making the dimensions of the two power arrays equal and enabling
+    comparisons between corresponding data points. Each aligned value is
+    selected from the nearest original measurement; no smoothing is applied.
+
+    .. code-block:: python
+
+        from embers.rf_tools.align_data import nearest_interp
+
+        nearest_interp_tuple = nearest_interp(
+            "~/embers-data/rf0XX.txt",
+            "~/embers-data/S06XX",
+            interp_freq=5,
+        )
+
+        (
+            ref_ali,
+            tile_ali,
+            time_array,
+            ref_power,
+            tile_power,
+            ref_time,
+            tile_time,
+        ) = nearest_interp_tuple
+
+    Parameters
+    ----------
+    ref
+        Path to the reference data file.
+    tile
+        Path to the tile data file.
+    interp_freq
+        Frequency in Hz of the common output time grid.
+
+    Returns
+    -------
+    ref_ali
+        Reference power measurements aligned to ``time_array``.
+    tile_ali
+        Tile power measurements aligned to ``time_array``.
+    time_array
+        Common time array.
+    ref_power
+        Raw reference power array.
+    tile_power
+        Raw tile power array.
+    ref_time
+        Raw reference time array.
+    tile_time
+        Raw tile time array.
+    """
+    if interp_freq <= 0:
+        raise ValueError("interp_freq must be greater than zero.")
+
+    # Read time and power arrays from data files.
+    ref_power, ref_time = read_data(ref)
+    tile_power, tile_time = read_data(tile)
+
+    # Restrict the common grid to the overlapping integer-second interval.
+    start_time = math.ceil(max(ref_time[0], tile_time[0]))
+    stop_time = math.floor(min(ref_time[-1], tile_time[-1]))
+
+    if stop_time <= start_time:
+        raise ValueError("Reference and tile data do not overlap in time.")
+
+    # Common time grid.
+    time_array = np.arange(
+        start_time,
+        stop_time,
+        1 / interp_freq,
+    )
+
+    # Nearest-neighbour resampling functions.
+    ref_interp = interpolate.interp1d(
+        ref_time,
+        ref_power,
+        axis=0,
+        kind="nearest",
+        bounds_error=True,
+        assume_sorted=True,
+    )
+    tile_interp = interpolate.interp1d(
+        tile_time,
+        tile_power,
+        axis=0,
+        kind="nearest",
+        bounds_error=True,
+        assume_sorted=True,
+    )
+
+    # Select the nearest original measurements at each common grid time.
+    ref_ali = ref_interp(time_array)
+    tile_ali = tile_interp(time_array)
+
+    return (
+        ref_ali,
+        tile_ali,
+        time_array,
+        ref_power,
+        tile_power,
+        ref_time,
+        tile_time,
+    )
+
+
 def plot_savgol_interp(
     ref=None,
     tile=None,
@@ -270,13 +382,19 @@ def save_aligned(
     tile_file = f"{data_dir}/{tile}/{date}/{tile}_{time_stamp}.txt"
 
     try:
-        ref_ali, tile_ali, time_array, _, _, _, _ = savgol_interp(
+        # ref_ali, tile_ali, time_array, _, _, _, _ = savgol_interp(
+        # ref_ali, tile_ali, time_array, _, _, _, _ = nearest_interp(
+        #     ref_file,
+        #     tile_file,
+        #     savgol_window_1=savgol_window_1,
+        #     savgol_window_2=savgol_window_2,
+        #     polyorder=polyorder,
+        #     interp_type=interp_type,
+        #     interp_freq=interp_freq,
+        # )
+        ref_ali, tile_ali, time_array, _, _, _, _ = nearest_interp(
             ref_file,
             tile_file,
-            savgol_window_1=savgol_window_1,
-            savgol_window_2=savgol_window_2,
-            polyorder=polyorder,
-            interp_type=interp_type,
             interp_freq=interp_freq,
         )
 
