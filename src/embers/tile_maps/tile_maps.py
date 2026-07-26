@@ -1176,6 +1176,362 @@ def fit_offset(data, model):
 #         json.dump(resi_gain, outfile, indent=4)
 
 
+# def rfe_calibration_new(
+#     start_date,
+#     stop_date,
+#     tile_pair,
+#     sat_thresh,
+#     noi_thresh,
+#     pow_thresh,
+#     ref_model,
+#     fee_map,
+#     nside,
+#     obs_point_json,
+#     align_dir,
+#     chrono_dir,
+#     chan_map_dir,
+#     out_dir,
+# ):
+#     """Calibrate RF Explorer gain nonlinearity at high input powers.
+#
+#     For a given reference antenna and MWA tile pair, compare measured
+#     satellite passes with corresponding samples from the MWA FEE beam model
+#     to characterize the RF Explorer response in its nonlinear high-power
+#     regime.
+#
+#     Unlike the previous implementation, measurements are retained at their
+#     aligned time-sample cadence rather than averaged within HEALPix pixels.
+#     HEALPix interpolation is used only to evaluate the reference and MWA beam
+#     models at each measured satellite direction.
+#
+#     Parameters
+#     ----------
+#     start_date
+#         Start date in ``YYYY-MM-DD-HH:MM`` format.
+#     stop_date
+#         Stop date in ``YYYY-MM-DD-HH:MM`` format.
+#     tile_pair
+#         Reference and MWA tile names, for example ``["rf0XX", "S06XX"]``.
+#     sat_thresh
+#         Sigma threshold used to identify satellites when estimating the
+#         RF-data noise floor.
+#     noi_thresh
+#         Noise threshold in multiples of the median absolute deviation.
+#     pow_thresh
+#         Peak-power threshold that a satellite pass must exceed.
+#     ref_model
+#         Path to the reference antenna FEKO model ``npz`` file.
+#     fee_map
+#         Path to the MWA FEE model ``npz`` file.
+#     nside
+#         HEALPix NSIDE of the supplied beam models.
+#     obs_point_json
+#         Path to ``obs_pointings.json``.
+#     align_dir
+#         Directory containing aligned RF data files.
+#     chrono_dir
+#         Directory containing chronological satellite ephemeris files.
+#     chan_map_dir
+#         Directory containing satellite frequency-channel maps.
+#     out_dir
+#         Directory in which the RF Explorer calibration JSON file and
+#         diagnostic plots are saved.
+#
+#     Returns
+#     -------
+#     None
+#         Results are written to
+#         ``{out_dir}/{tile}_{ref}_gain_fit_new.json``.
+#     """
+#     out_path = Path(out_dir)
+#     out_path.mkdir(parents=True, exist_ok=True)
+#
+#     resi_gain = {
+#         "mwa_pass_data": [],
+#         "tile_pass_data": [],
+#         "pass_resi": [],
+#         "hpx_idx": [],
+#     }
+#
+#     ref, tile = tile_pair
+#
+#     dates, timestamps = time_tree(start_date, stop_date)
+#
+#     # Load the reference antenna model.
+#     ref_fee_model = np.load(ref_model, allow_pickle=True)
+#
+#     # Load the MWA FEE models.
+#     fee_m = np.load(fee_map, allow_pickle=True)
+#
+#     # Rotate the reference model by -pi/2 to transform from its spherical
+#     # convention (E = 0) to the Alt/Az convention (N = 0).
+#     if "XX" in tile:
+#         ref_fee = ref_fee_model["XX"]
+#     else:
+#         ref_fee = ref_fee_model["YY"]
+#
+#     rotated_fee = rotate_map(
+#         nside,
+#         angle=-np.pi / 2.0,
+#         healpix_array=ref_fee,
+#     )
+#
+#     for day in range(len(dates)):
+#         for window in range(len(timestamps[day])):
+#             timestamp = timestamps[day][window]
+#
+#             # Find the MWA pointing corresponding to this observation.
+#             point = check_pointing(timestamp, obs_point_json)
+#
+#             # The existing calibration uses zenith-pointed observations.
+#             if point != 0:
+#                 continue
+#
+#             if "XX" in tile:
+#                 mwa_fee = fee_m[str(point)][0]
+#             else:
+#                 mwa_fee = fee_m[str(point)][1]
+#
+#             ali_file = Path(
+#                 align_dir,
+#                 dates[day],
+#                 timestamp,
+#                 f"{ref}_{tile}_{timestamp}_aligned.npz",
+#             )
+#
+#             if not ali_file.is_file():
+#                 continue
+#
+#             chrono_file = Path(chrono_dir, f"{timestamp}.json")
+#             channel_map = Path(chan_map_dir, f"{timestamp}.json")
+#
+#             if not chrono_file.is_file() or not channel_map.is_file():
+#                 continue
+#
+#             with chrono_file.open() as chrono:
+#                 chrono_ephem = json.load(chrono)
+#
+#             if not chrono_ephem:
+#                 continue
+#
+#             norad_list = [
+#                 chrono_ephem[sat_idx]["sat_id"][0]
+#                 for sat_idx in range(len(chrono_ephem))
+#             ]
+#
+#             if not norad_list:
+#                 continue
+#
+#             with channel_map.open() as ch_map:
+#                 chan_map = json.load(ch_map)
+#
+#             chan_sat_ids = [int(sat_id) for sat_id in chan_map]
+#
+#             for sat in chan_sat_ids:
+#                 chan = chan_map[str(sat)]
+#
+#                 sat_data = rf_apply_thresholds(
+#                     ali_file,
+#                     chrono_file,
+#                     sat,
+#                     chan,
+#                     sat_thresh,
+#                     noi_thresh,
+#                     pow_thresh,
+#                     point,
+#                     False,
+#                     out_dir,
+#                 )
+#
+#                 if sat_data == 0:
+#                     continue
+#
+#                 (
+#                     ref_power,
+#                     tile_power,
+#                     alt,
+#                     az,
+#                     times,
+#                     mwa_sigma_db,
+#                 ) = sat_data
+#
+#                 # Convert all pass quantities to arrays.
+#                 ref_power = np.asarray(ref_power, dtype=float)
+#                 tile_power = np.asarray(tile_power, dtype=float)
+#                 alt = np.asarray(alt, dtype=float)
+#                 az = np.asarray(az, dtype=float)
+#                 times = np.asarray(times, dtype=float)
+#
+#                 # The altitude returned by rf_apply_thresholds is in degrees,
+#                 # while azimuth is already in radians.
+#                 za = np.pi / 2.0 - np.radians(alt)
+#
+#                 # Ensure that all sample-level arrays have consistent lengths.
+#                 sample_lengths = {
+#                     ref_power.size,
+#                     tile_power.size,
+#                     za.size,
+#                     az.size,
+#                     times.size,
+#                 }
+#
+#                 if len(sample_lengths) != 1:
+#                     print(
+#                         f"Skipping {timestamp}, satellite {sat}: "
+#                         "inconsistent sample-array lengths."
+#                     )
+#                     continue
+#
+#                 if ref_power.size == 0:
+#                     continue
+#
+#                 # HEALPix indices are retained as spatial metadata only.
+#                 # Measurements are no longer averaged within each pixel.
+#                 healpix_index = hp.ang2pix(
+#                     nside,
+#                     za,
+#                     az,
+#                 )
+#
+#                 # Evaluate both beam models continuously at every measured
+#                 # satellite direction. This interpolates the beam models,
+#                 # not the measured RF data.
+#                 ref_fee_pass = hp.get_interp_val(
+#                     rotated_fee,
+#                     za,
+#                     az,
+#                 )
+#
+#                 mwa_fee_pass = hp.get_interp_val(
+#                     mwa_fee,
+#                     za,
+#                     az,
+#                 )
+#
+#                 # Retain each aligned measurement individually.
+#                 ref_pass = ref_power
+#                 tile_pass = tile_power
+#                 times_pass = times
+#
+#                 # Equation (1): reconstruct the measured MWA beam slice.
+#                 mwa_pass = tile_pass - ref_pass + ref_fee_pass
+#
+#                 # Use only reliable, nominally uncompressed samples to fit the
+#                 # additive normalization between the reconstructed beam slice
+#                 # and the FEE model.
+#                 fit_mask = (
+#                     np.isfinite(tile_pass)
+#                     & np.isfinite(mwa_pass)
+#                     & np.isfinite(mwa_fee_pass)
+#                     & (tile_pass <= -40.0)
+#                     & (mwa_fee_pass >= -55.0)
+#                 )
+#
+#                 # Require enough reliable samples for normalization.
+#                 if np.count_nonzero(fit_mask) < 30:
+#                     continue
+#
+#                 offset = fit_offset(
+#                     data=mwa_pass[fit_mask],
+#                     model=mwa_fee_pass[fit_mask],
+#                 )
+#
+#                 if not np.isfinite(offset):
+#                     continue
+#
+#                 # Apply the fitted normalization over the complete pass,
+#                 # including samples potentially affected by compression.
+#                 mwa_fee_scaled = mwa_fee_pass + offset
+#
+#                 # Retain the existing pass-level model-agreement test.
+#                 pval = chisq_fit_test(
+#                     data=mwa_pass[fit_mask],
+#                     model=mwa_fee_scaled[fit_mask],
+#                 )
+#
+#                 if not np.isfinite(pval) or pval < 0.1:
+#                     continue
+#
+#                 # Require the satellite pass to enter the main lobe.
+#                 min_za_deg = np.degrees(np.nanmin(za))
+#
+#                 if not np.isfinite(min_za_deg) or min_za_deg > 25.0:
+#                     continue
+#
+#                 # Require adequate model power during the pass.
+#                 if np.nanmax(mwa_fee_pass) < -15.0:
+#                     continue
+#
+#                 # Positive residual means that the observed tile signal is
+#                 # weaker than expected from the scaled FEE model.
+#                 residual = mwa_fee_scaled - mwa_pass
+#
+#                 plot_dir = (
+#                     out_path
+#                     / "fit_plots"
+#                     / f"{tile}_{ref}"
+#                 )
+#                 plot_dir.mkdir(parents=True, exist_ok=True)
+#
+#                 plt_fee_fit_new(
+#                     times_pass=times_pass,
+#                     mwa_fee_scaled=mwa_fee_scaled,
+#                     mwa_pass=mwa_pass,
+#                     fit_mask=fit_mask,
+#                     pval=pval,
+#                     out_dir=plot_dir,
+#                     timestamp=timestamp,
+#                     sat=sat,
+#                 )
+#
+#                 # Retain the original spatial diagnostic plot. Unique pixels
+#                 # are used here only to highlight the satellite trajectory.
+#                 unique_hpx = np.unique(healpix_index)
+#
+#                 mwa_fee_pass_plot = np.array(mwa_fee, copy=True)
+#                 mwa_fee_pass_plot[unique_hpx] += 30.0
+#
+#                 fig, ax = plt.subplots()
+#                 plot_healpix(
+#                     mwa_fee_pass_plot,
+#                     fig=fig,
+#                     cmap="viridis",
+#                 )
+#                 fig.savefig(
+#                     plot_dir / f"{timestamp}_{sat}_MWA_FEE.png",
+#                     bbox_inches="tight",
+#                 )
+#                 plt.close(fig)
+#
+#                 # Save every finite sample rather than one mean value per
+#                 # occupied HEALPix pixel.
+#                 save_mask = (
+#                     np.isfinite(mwa_pass)
+#                     & np.isfinite(tile_pass)
+#                     & np.isfinite(residual)
+#                     & np.isfinite(ref_fee_pass)
+#                     & np.isfinite(mwa_fee_pass)
+#                 )
+#
+#                 resi_gain["mwa_pass_data"].extend(
+#                     mwa_pass[save_mask].tolist()
+#                 )
+#                 resi_gain["tile_pass_data"].extend(
+#                     tile_pass[save_mask].tolist()
+#                 )
+#                 resi_gain["pass_resi"].extend(
+#                     residual[save_mask].tolist()
+#                 )
+#                 resi_gain["hpx_idx"].extend(
+#                     healpix_index[save_mask].tolist()
+#                 )
+#
+#     output_file = out_path / f"{tile}_{ref}_gain_fit_new.json"
+#
+#     with output_file.open("w") as outfile:
+#         json.dump(resi_gain, outfile, indent=4)
+
+
 def rfe_calibration_new(
     start_date,
     stop_date,
@@ -1196,13 +1552,19 @@ def rfe_calibration_new(
 
     For a given reference antenna and MWA tile pair, compare measured
     satellite passes with corresponding samples from the MWA FEE beam model
-    to characterize the RF Explorer response in its nonlinear high-power
+    to characterise the RF Explorer response in its nonlinear high-power
     regime.
 
-    Unlike the previous implementation, measurements are retained at their
-    aligned time-sample cadence rather than averaged within HEALPix pixels.
-    HEALPix interpolation is used only to evaluate the reference and MWA beam
-    models at each measured satellite direction.
+    Measurements are retained at their aligned time-sample cadence rather
+    than averaged within HEALPix pixels. The reference and MWA beam models
+    are evaluated at each measured satellite direction.
+
+    Passes are retained when, over samples where the peak-normalised MWA
+    model is above -50 dB:
+
+    - the Pearson correlation coefficient between the measured and model
+      slices is at least 0.5; and
+    - the peak-to-peak residual is less than 50 dB.
 
     Parameters
     ----------
@@ -1234,8 +1596,7 @@ def rfe_calibration_new(
     chan_map_dir
         Directory containing satellite frequency-channel maps.
     out_dir
-        Directory in which the RF Explorer calibration JSON file and
-        diagnostic plots are saved.
+        Directory in which the calibration JSON file is saved.
 
     Returns
     -------
@@ -1250,21 +1611,18 @@ def rfe_calibration_new(
         "mwa_pass_data": [],
         "tile_pass_data": [],
         "pass_resi": [],
-        "hpx_idx": [],
     }
 
     ref, tile = tile_pair
 
     dates, timestamps = time_tree(start_date, stop_date)
 
-    # Load the reference antenna model.
+    # Load the reference antenna and MWA FEE models.
     ref_fee_model = np.load(ref_model, allow_pickle=True)
-
-    # Load the MWA FEE models.
     fee_m = np.load(fee_map, allow_pickle=True)
 
-    # Rotate the reference model by -pi/2 to transform from its spherical
-    # convention (E = 0) to the Alt/Az convention (N = 0).
+    # Rotate the reference model from its spherical convention (E = 0)
+    # to the Alt/Az convention (N = 0).
     if "XX" in tile:
         ref_fee = ref_fee_model["XX"]
     else:
@@ -1276,14 +1634,12 @@ def rfe_calibration_new(
         healpix_array=ref_fee,
     )
 
-    for day in range(len(dates)):
-        for window in range(len(timestamps[day])):
-            timestamp = timestamps[day][window]
-
-            # Find the MWA pointing corresponding to this observation.
+    for day, date in enumerate(dates):
+        for timestamp in timestamps[day]:
+            # The RFE calibration is constructed only from zenith-pointed
+            # observations.
             point = check_pointing(timestamp, obs_point_json)
 
-            # The existing calibration uses zenith-pointed observations.
             if point != 0:
                 continue
 
@@ -1294,41 +1650,40 @@ def rfe_calibration_new(
 
             ali_file = Path(
                 align_dir,
-                dates[day],
+                date,
                 timestamp,
                 f"{ref}_{tile}_{timestamp}_aligned.npz",
             )
 
-            if not ali_file.is_file():
+            chrono_file = Path(
+                chrono_dir,
+                f"{timestamp}.json",
+            )
+
+            channel_map_file = Path(
+                chan_map_dir,
+                f"{timestamp}.json",
+            )
+
+            if (
+                not ali_file.is_file()
+                or not chrono_file.is_file()
+                or not channel_map_file.is_file()
+            ):
                 continue
 
-            chrono_file = Path(chrono_dir, f"{timestamp}.json")
-            channel_map = Path(chan_map_dir, f"{timestamp}.json")
-
-            if not chrono_file.is_file() or not channel_map.is_file():
-                continue
-
-            with chrono_file.open() as chrono:
-                chrono_ephem = json.load(chrono)
+            with chrono_file.open() as stream:
+                chrono_ephem = json.load(stream)
 
             if not chrono_ephem:
                 continue
 
-            norad_list = [
-                chrono_ephem[sat_idx]["sat_id"][0]
-                for sat_idx in range(len(chrono_ephem))
-            ]
+            with channel_map_file.open() as stream:
+                chan_map = json.load(stream)
 
-            if not norad_list:
-                continue
-
-            with channel_map.open() as ch_map:
-                chan_map = json.load(ch_map)
-
-            chan_sat_ids = [int(sat_id) for sat_id in chan_map]
-
-            for sat in chan_sat_ids:
-                chan = chan_map[str(sat)]
+            for sat_id, channel in chan_map.items():
+                sat = int(sat_id)
+                chan = int(channel)
 
                 sat_data = rf_apply_thresholds(
                     ali_file,
@@ -1352,50 +1707,30 @@ def rfe_calibration_new(
                     alt,
                     az,
                     times,
-                    mwa_sigma_db,
+                    _mwa_sigma_db,
                 ) = sat_data
 
-                # Convert all pass quantities to arrays.
                 ref_power = np.asarray(ref_power, dtype=float)
                 tile_power = np.asarray(tile_power, dtype=float)
                 alt = np.asarray(alt, dtype=float)
                 az = np.asarray(az, dtype=float)
                 times = np.asarray(times, dtype=float)
 
-                # The altitude returned by rf_apply_thresholds is in degrees,
-                # while azimuth is already in radians.
-                za = np.pi / 2.0 - np.radians(alt)
-
-                # Ensure that all sample-level arrays have consistent lengths.
                 sample_lengths = {
                     ref_power.size,
                     tile_power.size,
-                    za.size,
+                    alt.size,
                     az.size,
                     times.size,
                 }
 
-                if len(sample_lengths) != 1:
-                    print(
-                        f"Skipping {timestamp}, satellite {sat}: "
-                        "inconsistent sample-array lengths."
-                    )
+                if len(sample_lengths) != 1 or ref_power.size == 0:
                     continue
 
-                if ref_power.size == 0:
-                    continue
+                # rf_apply_thresholds returns altitude in degrees and azimuth
+                # in radians.
+                za = np.pi / 2.0 - np.radians(alt)
 
-                # HEALPix indices are retained as spatial metadata only.
-                # Measurements are no longer averaged within each pixel.
-                healpix_index = hp.ang2pix(
-                    nside,
-                    za,
-                    az,
-                )
-
-                # Evaluate both beam models continuously at every measured
-                # satellite direction. This interpolates the beam models,
-                # not the measured RF data.
                 ref_fee_pass = hp.get_interp_val(
                     rotated_fee,
                     za,
@@ -1408,26 +1743,34 @@ def rfe_calibration_new(
                     az,
                 )
 
-                # Retain each aligned measurement individually.
-                ref_pass = ref_power
-                tile_pass = tile_power
-                times_pass = times
-
-                # Equation (1): reconstruct the measured MWA beam slice.
-                mwa_pass = tile_pass - ref_pass + ref_fee_pass
-
-                # Use only reliable, nominally uncompressed samples to fit the
-                # additive normalization between the reconstructed beam slice
-                # and the FEE model.
-                fit_mask = (
-                    np.isfinite(tile_pass)
-                    & np.isfinite(mwa_pass)
-                    & np.isfinite(mwa_fee_pass)
-                    & (tile_pass <= -40.0)
-                    & (mwa_fee_pass >= -55.0)
+                ref_fee_pass = np.asarray(
+                    ref_fee_pass,
+                    dtype=float,
+                )
+                mwa_fee_pass = np.asarray(
+                    mwa_fee_pass,
+                    dtype=float,
                 )
 
-                # Require enough reliable samples for normalization.
+                # Reconstruct the measured MWA beam slice.
+                mwa_pass = (
+                    tile_power
+                    - ref_power
+                    + ref_fee_pass
+                )
+
+                # Use low-power, nominally uncompressed measurements to
+                # determine only the additive offset between the measured
+                # pass and the fixed-shape MWA model.
+                fit_mask = (
+                    np.isfinite(tile_power)
+                    & np.isfinite(mwa_pass)
+                    & np.isfinite(mwa_fee_pass)
+                    & (tile_power <= -40.0)
+                    & (mwa_fee_pass >= -50.0)
+                    & (mwa_fee_pass <= 0.0)
+                )
+
                 if np.count_nonzero(fit_mask) < 30:
                     continue
 
@@ -1439,97 +1782,95 @@ def rfe_calibration_new(
                 if not np.isfinite(offset):
                     continue
 
-                # Apply the fitted normalization over the complete pass,
-                # including samples potentially affected by compression.
+                # Apply only an additive offset. The MWA model shape and
+                # dynamic range remain unchanged.
                 mwa_fee_scaled = mwa_fee_pass + offset
 
-                # Retain the existing pass-level model-agreement test.
-                pval = chisq_fit_test(
-                    data=mwa_pass[fit_mask],
-                    model=mwa_fee_scaled[fit_mask],
+                # Evaluate pass quality only where the original,
+                # peak-normalised MWA model lies between -50 and 0 dB.
+                quality_mask = (
+                    np.isfinite(mwa_pass)
+                    & np.isfinite(mwa_fee_pass)
+                    & np.isfinite(mwa_fee_scaled)
+                    & (mwa_fee_pass >= -50.0)
+                    & (mwa_fee_pass <= 0.0)
                 )
 
-                if not np.isfinite(pval) or pval < 0.1:
+                if np.count_nonzero(quality_mask) < 30:
                     continue
 
-                # Require the satellite pass to enter the main lobe.
-                min_za_deg = np.degrees(np.nanmin(za))
+                data_quality = mwa_pass[quality_mask]
+                model_quality = mwa_fee_pass[quality_mask]
 
-                if not np.isfinite(min_za_deg) or min_za_deg > 25.0:
+                if (
+                    np.ptp(data_quality) == 0.0
+                    or np.ptp(model_quality) == 0.0
+                ):
                     continue
 
-                # Require adequate model power during the pass.
+                correlation = np.corrcoef(
+                    data_quality,
+                    model_quality,
+                )[0, 1]
+
+                # Positive residual means that the measured tile response is
+                # weaker than expected from the offset-normalised FEE model.
+                residual = mwa_fee_scaled - mwa_pass
+
+                residual_dynamic_range_db = np.ptp(
+                    residual[quality_mask]
+                )
+
+                if (
+                    not np.isfinite(correlation)
+                    or not np.isfinite(residual_dynamic_range_db)
+                    or correlation < 0.5
+                    or residual_dynamic_range_db >= 50.0
+                ):
+                    continue
+
+                # The RFE compression calibration requires passes entering
+                # the high-power main-lobe region.
+                min_za_deg = np.degrees(
+                    np.nanmin(za)
+                )
+
+                if (
+                    not np.isfinite(min_za_deg)
+                    or min_za_deg > 25.0
+                ):
+                    continue
+
                 if np.nanmax(mwa_fee_pass) < -15.0:
                     continue
 
-                # Positive residual means that the observed tile signal is
-                # weaker than expected from the scaled FEE model.
-                residual = mwa_fee_scaled - mwa_pass
-
-                plot_dir = (
-                    out_path
-                    / "fit_plots"
-                    / f"{tile}_{ref}"
-                )
-                plot_dir.mkdir(parents=True, exist_ok=True)
-
-                plt_fee_fit_new(
-                    times_pass=times_pass,
-                    mwa_fee_scaled=mwa_fee_scaled,
-                    mwa_pass=mwa_pass,
-                    fit_mask=fit_mask,
-                    pval=pval,
-                    out_dir=plot_dir,
-                    timestamp=timestamp,
-                    sat=sat,
-                )
-
-                # Retain the original spatial diagnostic plot. Unique pixels
-                # are used here only to highlight the satellite trajectory.
-                unique_hpx = np.unique(healpix_index)
-
-                mwa_fee_pass_plot = np.array(mwa_fee, copy=True)
-                mwa_fee_pass_plot[unique_hpx] += 30.0
-
-                fig, ax = plt.subplots()
-                plot_healpix(
-                    mwa_fee_pass_plot,
-                    fig=fig,
-                    cmap="viridis",
-                )
-                fig.savefig(
-                    plot_dir / f"{timestamp}_{sat}_MWA_FEE.png",
-                    bbox_inches="tight",
-                )
-                plt.close(fig)
-
-                # Save every finite sample rather than one mean value per
-                # occupied HEALPix pixel.
                 save_mask = (
                     np.isfinite(mwa_pass)
-                    & np.isfinite(tile_pass)
+                    & np.isfinite(tile_power)
                     & np.isfinite(residual)
-                    & np.isfinite(ref_fee_pass)
-                    & np.isfinite(mwa_fee_pass)
                 )
 
                 resi_gain["mwa_pass_data"].extend(
                     mwa_pass[save_mask].tolist()
                 )
                 resi_gain["tile_pass_data"].extend(
-                    tile_pass[save_mask].tolist()
+                    tile_power[save_mask].tolist()
                 )
                 resi_gain["pass_resi"].extend(
                     residual[save_mask].tolist()
                 )
-                resi_gain["hpx_idx"].extend(
-                    healpix_index[save_mask].tolist()
-                )
 
-    output_file = out_path / f"{tile}_{ref}_gain_fit_new.json"
+    output_file = (
+        out_path
+        / f"{tile}_{ref}_gain_fit_new.json"
+    )
 
-    with output_file.open("w") as outfile:
-        json.dump(resi_gain, outfile, indent=4)
+    with output_file.open("w") as stream:
+        json.dump(
+            resi_gain,
+            stream,
+            indent=4,
+        )
 
 
 def rfe_collate_cali(start_gain, stop_gain, rfe_cali_dir):
