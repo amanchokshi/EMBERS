@@ -1634,6 +1634,27 @@ def rfe_calibration_new(
         healpix_array=ref_fee,
     )
 
+    good_sats = {
+        25338,
+        25982,
+        25984,
+        25985,
+        28654,
+        40086,
+        40087,
+        40091,
+        41179,
+        41180,
+        41182,
+        41183,
+        41184,
+        41185,
+        41187,
+        41188,
+        41189,
+        44387,
+    }
+
     for day, date in enumerate(dates):
         for timestamp in timestamps[day]:
             # The RFE calibration is constructed only from zenith-pointed
@@ -1683,6 +1704,10 @@ def rfe_calibration_new(
 
             for sat_id, channel in chan_map.items():
                 sat = int(sat_id)
+
+                if sat not in good_sats:
+                    continue
+
                 chan = int(channel)
 
                 sat_data = rf_apply_thresholds(
